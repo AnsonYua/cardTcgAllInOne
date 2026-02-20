@@ -10,6 +10,8 @@ import { DelayedTriggerManager } from './DelayedTriggerManager';
 import { DeployTargetManager } from '../DeployTargetManager';
 import type { SequenceContinuationAfterChoiceContext } from './sequence/SequenceContinuationContext';
 import { EffectSelfTargetNormalizer } from '../targets/EffectSelfTargetNormalizer';
+import { EffectConditionEvaluator } from '../conditions/EffectConditionEvaluator';
+import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 
 export type SequenceStep = {
     action: string;
@@ -113,20 +115,24 @@ export class SequenceEffectManager {
             const stepId = typeof step.stepId === 'string' ? step.stepId : undefined;
 
             if (stepAction === 'conditional') {
-                const conditionMet = this.evaluateConditional(ctx, params);
-                if (!conditionMet) {
-                    continue;
-                }
-
-                const thenSteps = Array.isArray(params.then)
-                    ? (params.then as SequenceStep[])
-                    : [];
-                if (thenSteps.length === 0) {
+                const conditionMet = this.evaluateConditional(
+                    gameEnv,
+                    playerId,
+                    sourceCarduid,
+                    ctx,
+                    params
+                );
+                const branchSteps = conditionMet
+                    ? (Array.isArray(params.then) ? (params.then as SequenceStep[]) : [])
+                    : (Array.isArray(params.else) ? (params.else as SequenceStep[]) : []);
+                if (branchSteps.length === 0) {
+                    this.markResolved(ctx, stepId || step.effectId || stepAction);
                     continue;
                 }
 
                 const remaining = steps.slice(index + 1);
-                const stitched = [...thenSteps, ...remaining];
+                const stitched = [...branchSteps, ...remaining];
+                this.markResolved(ctx, stepId || step.effectId || stepAction);
                 return this.runSteps(gameEnv, playerId, sourceCarduid, stitched, ctx, cardPlayNotificationId);
             }
 
@@ -392,11 +398,19 @@ export class SequenceEffectManager {
         ctx.resolvedStepIds.add(key);
     }
 
-    private static evaluateConditional(ctx: SequenceContext, params: Record<string, unknown>): boolean {
+    private static evaluateConditional(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        sourceCarduid: string,
+        ctx: SequenceContext,
+        params: Record<string, unknown>
+    ): boolean {
         const conditions = Array.isArray(params.if) ? (params.if as Array<Record<string, unknown>>) : [];
         if (conditions.length === 0) {
             return false;
         }
+
+        const sourceCard = sourceCarduid ? SlotZoneUtils.getCardByUid(gameEnv, sourceCarduid) : null;
 
         return conditions.every(condition => {
             if (!condition || typeof condition !== 'object') {
@@ -430,7 +444,41 @@ export class SequenceEffectManager {
                 });
             }
 
-            return false;
+            if (type === 'milledCardHasTraitsAny') {
+                const traitsAny = Array.isArray(condition.traits)
+                    ? condition.traits.filter((entry): entry is string => typeof entry === 'string')
+                    : Array.isArray(condition.traitsAny)
+                        ? condition.traitsAny.filter((entry): entry is string => typeof entry === 'string')
+                        : [];
+                if (traitsAny.length === 0) {
+                    return false;
+                }
+
+                const movedCards = stepId.length > 0 && Array.isArray(ctx.movedCardsByStepId[stepId])
+                    ? ctx.movedCardsByStepId[stepId]
+                    : ctx.movedCards;
+                if (!Array.isArray(movedCards) || movedCards.length === 0) {
+                    return false;
+                }
+
+                return movedCards.some((card: any) => {
+                    const cardTraits = Array.isArray(card?.cardData?.traits) ? card.cardData.traits : [];
+                    return traitsAny.some((trait: string) => cardTraits.includes(trait));
+                });
+            }
+
+            return EffectConditionEvaluator.validateEffectConditions(
+                ensureEffectDefaults({
+                    effectId: 'sequence_conditional_runtime_check',
+                    type: 'internal',
+                    trigger: 'SEQUENCE_STEP',
+                    action: 'noop',
+                    conditions: [condition]
+                } as any),
+                gameEnv,
+                playerId,
+                sourceCard as any
+            );
         });
     }
 }

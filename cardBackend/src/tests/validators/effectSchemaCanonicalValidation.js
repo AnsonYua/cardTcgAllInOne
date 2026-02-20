@@ -6,6 +6,8 @@ const {
   CANONICAL_EFFECT_TRIGGERS,
   CANONICAL_CONDITION_TYPES,
   CANONICAL_SELECTION_TYPES,
+  CANONICAL_TARGET_FILTER_KEYS,
+  SEQUENCE_INTERNAL_CONDITION_TYPES,
   normalizeConditionTypeAlias,
   normalizeSelectionTypeAlias
 } = require('../../services/effects/schema/EffectSchema.ts');
@@ -27,6 +29,70 @@ const CARD_FILES = [
 function loadCardFile(fileName) {
   const filePath = path.join(__dirname, '..', '..', 'data', fileName);
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+function validateConditionEntry(condition, conditionPath, context, diagnostics, options = {}) {
+  const allowSequenceInternal = options.allowSequenceInternal === true;
+  const allowedType = (type) =>
+    CANONICAL_CONDITION_TYPES.has(type) ||
+    (allowSequenceInternal && SEQUENCE_INTERNAL_CONDITION_TYPES.has(type));
+
+  if (typeof condition === 'string') {
+    if (!allowedType(condition)) {
+      diagnostics.push({
+        severity: 'error',
+        cardId: context.cardId,
+        effectId: context.effectId || 'unknown',
+        jsonPath: conditionPath,
+        message: `unknown string condition ${condition}`
+      });
+    }
+    return;
+  }
+
+  if (!condition || typeof condition !== 'object') {
+    diagnostics.push({
+      severity: 'error',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: conditionPath,
+      message: 'invalid condition shape'
+    });
+    return;
+  }
+
+  const rawType = typeof condition.type === 'string' ? condition.type : '';
+  const normalizedType = normalizeConditionTypeAlias(rawType);
+  if (!rawType) {
+    diagnostics.push({
+      severity: 'error',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: `${conditionPath}.type`,
+      message: 'condition.type must be a non-empty string'
+    });
+    return;
+  }
+
+  if (normalizedType !== rawType) {
+    diagnostics.push({
+      severity: 'error',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: `${conditionPath}.type`,
+      message: `non-canonical condition alias ${rawType}; use ${normalizedType}`
+    });
+  }
+
+  if (!allowedType(normalizedType)) {
+    diagnostics.push({
+      severity: 'error',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: `${conditionPath}.type`,
+      message: `unknown condition type ${rawType}`
+    });
+  }
 }
 
 function walkEffects(node, context, diagnostics) {
@@ -65,62 +131,20 @@ function walkEffects(node, context, diagnostics) {
   if (Array.isArray(node.conditions)) {
     node.conditions.forEach((condition, index) => {
       const conditionPath = `${context.jsonPath}.conditions[${index}]`;
-      if (typeof condition === 'string') {
-        if (!CANONICAL_CONDITION_TYPES.has(condition)) {
-          diagnostics.push({
-            severity: 'error',
-            cardId: context.cardId,
-            effectId: nextContext.effectId || 'unknown',
-            jsonPath: conditionPath,
-            message: `unknown string condition ${condition}`
-          });
-        }
-        return;
-      }
+      validateConditionEntry(condition, conditionPath, {
+        cardId: context.cardId,
+        effectId: nextContext.effectId
+      }, diagnostics);
+    });
+  }
 
-      if (!condition || typeof condition !== 'object') {
-        diagnostics.push({
-          severity: 'error',
-          cardId: context.cardId,
-          effectId: nextContext.effectId || 'unknown',
-          jsonPath: conditionPath,
-          message: 'invalid condition shape'
-        });
-        return;
-      }
-
-      const rawType = typeof condition.type === 'string' ? condition.type : '';
-      const normalizedType = normalizeConditionTypeAlias(rawType);
-      if (!rawType) {
-        diagnostics.push({
-          severity: 'error',
-          cardId: context.cardId,
-          effectId: nextContext.effectId || 'unknown',
-          jsonPath: `${conditionPath}.type`,
-          message: 'condition.type must be a non-empty string'
-        });
-        return;
-      }
-
-      if (normalizedType !== rawType) {
-        diagnostics.push({
-          severity: 'error',
-          cardId: context.cardId,
-          effectId: nextContext.effectId || 'unknown',
-          jsonPath: `${conditionPath}.type`,
-          message: `non-canonical condition alias ${rawType}; use ${normalizedType}`
-        });
-      }
-
-      if (!CANONICAL_CONDITION_TYPES.has(normalizedType)) {
-        diagnostics.push({
-          severity: 'error',
-          cardId: context.cardId,
-          effectId: nextContext.effectId || 'unknown',
-          jsonPath: `${conditionPath}.type`,
-          message: `unknown condition type ${rawType}`
-        });
-      }
+  if (Array.isArray(node.if)) {
+    node.if.forEach((condition, index) => {
+      const conditionPath = `${context.jsonPath}.if[${index}]`;
+      validateConditionEntry(condition, conditionPath, {
+        cardId: context.cardId,
+        effectId: nextContext.effectId
+      }, diagnostics, { allowSequenceInternal: true });
     });
   }
 
@@ -155,6 +179,20 @@ function walkEffects(node, context, diagnostics) {
           effectId: nextContext.effectId || 'unknown',
           jsonPath: `${pathBase}.type`,
           message: `unknown selection type ${rawType}`
+        });
+      }
+    }
+  }
+
+  if (node.target && typeof node.target === 'object' && node.target.filters && typeof node.target.filters === 'object') {
+    for (const filterKey of Object.keys(node.target.filters)) {
+      if (!CANONICAL_TARGET_FILTER_KEYS.has(filterKey)) {
+        diagnostics.push({
+          severity: 'error',
+          cardId: context.cardId,
+          effectId: nextContext.effectId || 'unknown',
+          jsonPath: `${context.jsonPath}.target.filters.${filterKey}`,
+          message: `unknown target filter key ${filterKey}`
         });
       }
     }

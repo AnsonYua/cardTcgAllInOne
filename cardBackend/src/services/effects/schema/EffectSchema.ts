@@ -37,7 +37,9 @@ export const CANONICAL_EFFECT_TRIGGERS = new Set<string>([
 ]);
 
 export const CANONICAL_CONDITION_TYPES = new Set<string>([
+    'turnPlayer',
     'playerLevel',
+    'handSize',
     'pairedPilotColor',
     'pairedPilotTrait',
     'pairedPilotTraitAny',
@@ -54,16 +56,33 @@ export const CANONICAL_CONDITION_TYPES = new Set<string>([
     'noUnitTokenWithTrait',
     'cardsInTrash',
     'cardsInTrashWithTraitsAny',
+    'cardsInTrashWithNameIncludes',
+    'cardsInZone',
     'unitsInPlayWithTrait',
     'unitsInPlayWithFilter',
     'unitsInPlay',
     'cardsInPlay',
+    'cardsInPlayWithFilter',
     'sourceTrait',
+    'sourceColor',
     'hasAnotherLinkedUnit',
     'hasAnotherLinkedUnitWithTrait',
     'hasAnotherUnitWithTrait',
     'noPairedPilot',
+    'sourcePairedWithPilot',
     'battleOpponentLevel',
+    'sourceIsBattling',
+    'battleTargetHasTrigger',
+    'sourceDeployedFrom',
+    'eventType',
+    'eventAttacker',
+    'eventAttackerController',
+    'eventAttackerHasKeyword',
+    'eventAttackerIsNotSource',
+    'eventTarget',
+    'eventTargetController',
+    'eventTargetTraitsAny',
+    'eventTargetWasRested',
     'sourceStatus',
     'sourceDamaged',
     'sourceLevel',
@@ -78,11 +97,46 @@ export const CANONICAL_CONDITION_TYPES = new Set<string>([
     'unitRestedByEffectEvent'
 ]);
 
+export const SEQUENCE_INTERNAL_CONDITION_TYPES = new Set<string>([
+    'stepResolved',
+    'milledAnyCardHasTrait',
+    'milledCardHasTraitsAny'
+]);
+
 export const CANONICAL_SELECTION_TYPES = new Set<string>([
     'player_choice',
     'HIGHEST_LEVEL',
     'LOWEST_HP',
     'JUST_LINKED'
+]);
+
+export const CANONICAL_TARGET_FILTER_KEYS = new Set<string>([
+    'ap',
+    'cardType',
+    'color',
+    'colorNot',
+    'controller',
+    'damaged',
+    'excludeCarduids',
+    'excludeSelf',
+    'hp',
+    'isBattling',
+    'isEventAttacker',
+    'isEventDefender',
+    'isExtraEnergy',
+    'isLinkUnit',
+    'isRested',
+    'keywords',
+    'level',
+    'linkStatus',
+    'pairedPilot',
+    'pairedPilotTrait',
+    'pairedUnitLevel',
+    'status',
+    'traits',
+    'traitsAll',
+    'traitsAny',
+    'zone'
 ]);
 
 const CONDITION_TYPE_ALIASES: Record<string, string> = {

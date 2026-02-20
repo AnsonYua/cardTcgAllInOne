@@ -134,10 +134,20 @@ export class TargetResolver {
                     const wantsUnit =
                         targetConfig.type === 'unit' ||
                         (targetConfig.type === 'card' && filteredCardType === 'unit');
+                    const wantsPilot =
+                        targetConfig.type === 'pilot' ||
+                        (targetConfig.type === 'card' && filteredCardType === 'pilot');
 
                     if (wantsUnit && SlotZoneUtils.hasUnit(slotZone)) {
                         const unit = SlotZoneUtils.getUnit(slotZone);
-                        if (unit && this.validateTargetFilters(gameEnv, unit, targetConfig.filters || {}, targetPlayerId, sourceCarduid)) {
+                        if (unit && this.validateTargetFilters(
+                            gameEnv,
+                            unit,
+                            targetConfig.filters || {},
+                            targetPlayerId,
+                            sourceCarduid,
+                            slotName
+                        )) {
                             targets.push({
                                 carduid: unit.carduid,
                                 zone: slotName,
@@ -146,6 +156,26 @@ export class TargetResolver {
                                 computed: getSlotTotals(slotZone)
                             });
                             console.log(`✅ Added unit target: ${unit.carduid} in ${slotName}`);
+                        }
+                    }
+
+                    if (wantsPilot && slotZone.pilot) {
+                        const pilot = slotZone.pilot;
+                        if (this.validateTargetFilters(
+                            gameEnv,
+                            pilot,
+                            targetConfig.filters || {},
+                            targetPlayerId,
+                            sourceCarduid,
+                            slotName
+                        )) {
+                            targets.push({
+                                carduid: pilot.carduid,
+                                zone: slotName,
+                                playerId: targetPlayerId,
+                                cardData: pilot.cardData
+                            });
+                            console.log(`✅ Added pilot target: ${pilot.carduid} in ${slotName}`);
                         }
                     }
                 }
@@ -181,7 +211,8 @@ export class TargetResolver {
         card: UnitZoneCard | PilotZoneCard,
         filters: TargetFilters = {},
         targetPlayerId?: string,
-        sourceCarduid?: string
+        sourceCarduid?: string,
+        slotNameHint?: string
     ): boolean {
         const cardType = typeof (card as any)?.cardData?.cardType === 'string'
             ? ((card as any).cardData.cardType as string).toLowerCase()
@@ -198,6 +229,9 @@ export class TargetResolver {
             ? filters.excludeCarduids.filter((id): id is string => typeof id === 'string')
             : [];
         if (excludeCarduids.length > 0 && excludeCarduids.includes(card.carduid)) {
+            return false;
+        }
+        if (filters.excludeSelf === true && typeof sourceCarduid === 'string' && sourceCarduid.length > 0 && card.carduid === sourceCarduid) {
             return false;
         }
 
@@ -255,6 +289,11 @@ export class TargetResolver {
                 return false;
             }
         }
+        if (typeof (filters as any).isRested === 'boolean') {
+            if ((card.isRested === true) !== ((filters as any).isRested === true)) {
+                return false;
+            }
+        }
 
         const cardColor = typeof (card.cardData as any)?.color === 'string' ? ((card.cardData as any).color as string) : undefined;
         const colorResult = TargetFilterUtils.validateColorFilter(cardColor, filters);
@@ -291,6 +330,70 @@ export class TargetResolver {
             }
         }
 
+        const slotContext = this.resolveSlotContext(gameEnv, card, targetPlayerId, slotNameHint);
+
+        if (typeof (filters as any).pairedPilot === 'string') {
+            const pairedPilotFilter = String((filters as any).pairedPilot).toLowerCase();
+            const hasPairedPilot = Boolean(slotContext?.slot?.pilot);
+            if (pairedPilotFilter === 'any' && !hasPairedPilot) {
+                return false;
+            }
+            if (pairedPilotFilter === 'none' && hasPairedPilot) {
+                return false;
+            }
+        }
+
+        if (typeof (filters as any).pairedPilotTrait === 'string') {
+            const expectedTrait = String((filters as any).pairedPilotTrait);
+            const pilotTraits = Array.isArray(slotContext?.slot?.pilot?.cardData?.traits)
+                ? slotContext!.slot.pilot.cardData.traits
+                : [];
+            if (!pilotTraits.includes(expectedTrait)) {
+                return false;
+            }
+        }
+
+        if ((filters as any).pairedUnitLevel !== undefined) {
+            const pairedUnitLevelFilter = (filters as any).pairedUnitLevel;
+            const pairedUnit = slotContext?.slot?.unit;
+            const level = this.getEffectiveUnitLevel(pairedUnit);
+            if (typeof level !== 'number') {
+                return false;
+            }
+            if (typeof pairedUnitLevelFilter === 'number') {
+                if (level !== pairedUnitLevelFilter) {
+                    return false;
+                }
+            } else if (typeof pairedUnitLevelFilter === 'string') {
+                if (!validateComparisonFilter(level, pairedUnitLevelFilter)) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+
+        if (typeof (filters as any).isBattling === 'boolean') {
+            const expectedBattling = (filters as any).isBattling === true;
+            const battle = gameEnv.currentBattle;
+            const unitCarduid = slotContext?.slot?.unit?.carduid;
+            const isBattling = Boolean(
+                unitCarduid &&
+                battle &&
+                (battle.attackerCarduid === unitCarduid || battle.targetCarduid === unitCarduid)
+            );
+            if (isBattling !== expectedBattling) {
+                return false;
+            }
+        }
+
+        if (typeof (filters as any).isLinkUnit === 'boolean') {
+            const linked = LinkUtils.isLinkedPair(slotContext?.slot?.unit, slotContext?.slot?.pilot);
+            if (linked !== ((filters as any).isLinkUnit === true)) {
+                return false;
+            }
+        }
+
         const keywordResult = TargetKeywordFilterUtils.validateKeywordFilters(card, filters);
         if (!keywordResult.ok) {
             console.log(`❌ Card ${card.carduid} failed keyword filter: ${keywordResult.reason ?? 'unknown'}`);
@@ -298,6 +401,55 @@ export class TargetResolver {
         }
 
         return true;
+    }
+
+    private static resolveSlotContext(
+        gameEnv: GameEnvironment,
+        card: UnitZoneCard | PilotZoneCard,
+        targetPlayerId?: string,
+        slotNameHint?: string
+    ): { slot: any; slotName: string } | null {
+        if (!targetPlayerId) {
+            return null;
+        }
+
+        const player = gameEnv.getPlayer(targetPlayerId);
+        if (!player?.zones) {
+            return null;
+        }
+
+        if (slotNameHint) {
+            const hinted = SlotZoneUtils.getSlotZone(player.zones, slotNameHint);
+            if (hinted.isValid && hinted.slot) {
+                const matchesHinted =
+                    hinted.slot.unit?.carduid === card.carduid ||
+                    hinted.slot.pilot?.carduid === card.carduid;
+                if (matchesHinted) {
+                    return { slot: hinted.slot, slotName: slotNameHint };
+                }
+            }
+        }
+
+        for (const slotName of SLOT_ZONES) {
+            const slotResult = SlotZoneUtils.getSlotZone(player.zones, slotName);
+            if (!slotResult.isValid || !slotResult.slot) {
+                continue;
+            }
+            if (slotResult.slot.unit?.carduid === card.carduid || slotResult.slot.pilot?.carduid === card.carduid) {
+                return { slot: slotResult.slot, slotName };
+            }
+        }
+
+        return null;
+    }
+
+    private static getEffectiveUnitLevel(unit: UnitZoneCard | null | undefined): number | null {
+        if (!unit) {
+            return null;
+        }
+        const baseLevel = typeof unit?.cardData?.level === 'number' ? unit.cardData.level : 0;
+        const levelModifier = typeof (unit as any)?.modifyLevel === 'number' ? (unit as any).modifyLevel : 0;
+        return baseLevel + levelModifier;
     }
 
     private static isUnitLinked(
