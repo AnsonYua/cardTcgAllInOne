@@ -103,4 +103,31 @@ export class AllowAttackTargetRuleEvaluator {
 
         return true;
     }
+
+    static canGrantActiveTargetPermission(rule: { parameters?: unknown }): boolean {
+        const rawParams = rule?.parameters;
+        const parameters = rawParams && typeof rawParams === 'object' ? (rawParams as Record<string, unknown>) : {};
+
+        if (parameters.allowActiveTarget === true) {
+            return true;
+        }
+
+        if (typeof parameters.status === 'string' && parameters.status.toLowerCase() === 'active') {
+            return true;
+        }
+
+        if (typeof parameters.level === 'string') {
+            return true;
+        }
+
+        if (typeof parameters.ap === 'number' || typeof parameters.ap === 'string') {
+            return true;
+        }
+
+        if (typeof parameters.damaged === 'boolean') {
+            return true;
+        }
+
+        return false;
+    }
 }

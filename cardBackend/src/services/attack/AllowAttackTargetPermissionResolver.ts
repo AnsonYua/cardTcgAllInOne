@@ -7,11 +7,14 @@ import { getSlotTotals } from '../../utils/FieldValueCalculator';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { AllowAttackTargetRuleEvaluator } from './AllowAttackTargetRuleEvaluator';
 import { SlotHealthStorage } from '../health/SlotHealthStorage';
+import { EffectSourceConditionEvaluator } from '../conditions/EffectSourceConditionEvaluator';
+import type { EffectDefinition } from '../EventQueue/interfaces/GameEvent';
 
 type AllowAttackTargetRuleLike = {
     action?: unknown;
     conditions?: unknown;
     parameters?: unknown;
+    sourceConditions?: unknown;
 };
 
 export class AllowAttackTargetPermissionResolver {
@@ -53,10 +56,27 @@ export class AllowAttackTargetPermissionResolver {
                 rule
             });
 
+        const sourceOwnerPlayerId = attackerLookup.found && attackerLookup.playerId
+            ? attackerLookup.playerId
+            : null;
+
         for (const source of effectSources) {
             const effects = source?.cardData?.effects?.rules || [];
             for (const rule of effects) {
                 if (!rule || (rule as any).action !== 'allow_attack_target') {
+                    continue;
+                }
+                if (!AllowAttackTargetRuleEvaluator.canGrantActiveTargetPermission(rule as any)) {
+                    continue;
+                }
+                if (
+                    !EffectSourceConditionEvaluator.sourceConditionsMet(
+                        rule as EffectDefinition,
+                        source as any,
+                        gameEnv,
+                        sourceOwnerPlayerId
+                    )
+                ) {
                     continue;
                 }
                 if (allowsTarget(rule as any)) {
@@ -80,6 +100,10 @@ export class AllowAttackTargetPermissionResolver {
                     conditions: [],
                     parameters: allow
                 };
+
+                if (!AllowAttackTargetRuleEvaluator.canGrantActiveTargetPermission(synthesizedRule as any)) {
+                    continue;
+                }
 
                 if (allowsTarget(synthesizedRule)) {
                     return true;

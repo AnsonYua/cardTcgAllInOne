@@ -188,8 +188,8 @@ describe('Deploy effect order choice', () => {
         };
 
         const result = DeployEffectManager.executeDeployEffect(deployEvent, gameEnv);
-        expect(result.success).toBe(false);
-        expect((result.error || '').toLowerCase()).toContain('token');
+        expect(result.success).toBe(true);
+        expect(result.error).toBeUndefined();
 
         const promptChoiceEvent = gameEnv.processingQueue.find((e) => e.type === EventType.PROMPT_CHOICE);
         const optionChoiceEvent = gameEnv.processingQueue.find((e) => e.type === EventType.OPTION_CHOICE);

@@ -18,6 +18,7 @@ export type SequenceStep = {
     stepId?: string;
     effectId?: string;
     optional?: boolean;
+    conditions?: Array<Record<string, unknown>>;
     target?: Record<string, unknown>;
     timing?: Record<string, unknown>;
     parameters?: Record<string, unknown>;
@@ -113,6 +114,17 @@ export class SequenceEffectManager {
             const stepAction = step.action;
             const params = (step.parameters || {}) as Record<string, unknown>;
             const stepId = typeof step.stepId === 'string' ? step.stepId : undefined;
+            const stepEffect = this.buildStepEffect(step, stepId);
+            const sourceCard = sourceCarduid ? SlotZoneUtils.getCardByUid(gameEnv, sourceCarduid) : null;
+            const stepEligible = EffectConditionEvaluator.validateEffectConditions(
+                stepEffect,
+                gameEnv,
+                playerId,
+                sourceCard as any
+            );
+            if (!stepEligible) {
+                continue;
+            }
 
             if (stepAction === 'conditional') {
                 const conditionMet = this.evaluateConditional(
@@ -213,19 +225,6 @@ export class SequenceEffectManager {
 
             const stepScope = typeof (step.target as any)?.scope === 'string' ? ((step.target as any).scope as string) : '';
 
-            const stepEffect = ensureEffectDefaults({
-                effectId: (typeof step.effectId === 'string' && step.effectId.length > 0)
-                    ? step.effectId
-                    : (stepId || stepAction),
-                type: 'internal',
-                trigger: 'SEQUENCE_STEP',
-                optional: Boolean(step.optional),
-                action: stepAction,
-                ...(step.target ? { target: step.target as any } : {}),
-                ...(step.timing ? { timing: step.timing as any } : {}),
-                ...(step.parameters ? { parameters: step.parameters as any } : {})
-            } as any);
-
             if (stepScope === 'previous_target') {
                 if (!Array.isArray(ctx.previousTargets) || ctx.previousTargets.length === 0) {
                     continue;
@@ -302,26 +301,42 @@ export class SequenceEffectManager {
         ctx: SequenceContext,
         cardPlayNotificationId?: string
     ): SequenceProcessResult | null {
-        const count = typeof params.value === 'number' ? params.value : 0;
+        const targetCount = typeof (step.target as any)?.count === 'number'
+            ? ((step.target as any).count as number)
+            : undefined;
+        const count = typeof params.value === 'number'
+            ? params.value
+            : (typeof targetCount === 'number' ? targetCount : 1);
 
         if (count <= 0) {
             return null;
+        }
+
+        const targetConfig = (step.target && typeof step.target === 'object')
+            ? ({ ...(step.target as Record<string, unknown>) } as Record<string, unknown>)
+            : {};
+        if (typeof targetConfig.type !== 'string') {
+            targetConfig.type = 'card';
+        }
+        if (typeof targetConfig.scope !== 'string') {
+            targetConfig.scope = 'self_hand';
+        }
+        if (typeof targetConfig.count !== 'number') {
+            targetConfig.count = count;
+        }
+        if (!targetConfig.selection || typeof targetConfig.selection !== 'object') {
+            targetConfig.selection = { type: 'player_choice' };
         }
 
         const discardEffect = ensureEffectDefaults({
             effectId: stepId || step.effectId || 'sequence_discard',
             type: 'internal',
             trigger: 'SEQUENCE_STEP',
+            optional: Boolean(step.optional),
             action: 'discardFromHand',
-            target: {
-                type: 'card',
-                scope: 'self_hand',
-                count: count,
-                selection: {
-                    type: 'player_choice'
-                }
-            },
+            target: targetConfig as any,
             parameters: {
+                ...(step.parameters ? { ...(step.parameters as Record<string, unknown>) } : {}),
                 value: count
             }
         } as any);
@@ -396,6 +411,22 @@ export class SequenceEffectManager {
             return;
         }
         ctx.resolvedStepIds.add(key);
+    }
+
+    private static buildStepEffect(step: SequenceStep, stepId?: string): EffectDefinition {
+        return ensureEffectDefaults({
+            effectId: (typeof step.effectId === 'string' && step.effectId.length > 0)
+                ? step.effectId
+                : (stepId || step.action),
+            type: 'internal',
+            trigger: 'SEQUENCE_STEP',
+            optional: Boolean(step.optional),
+            action: step.action,
+            ...(Array.isArray(step.conditions) ? { conditions: step.conditions as any } : {}),
+            ...(step.target ? { target: step.target as any } : {}),
+            ...(step.timing ? { timing: step.timing as any } : {}),
+            ...(step.parameters ? { parameters: step.parameters as any } : {})
+        } as any);
     }
 
     private static evaluateConditional(

@@ -1,0 +1,139 @@
+const { GameEnvironment } = require('../models/GameEnvironment');
+const { AttackPreparationManager } = require('../services/AttackPreparationManager');
+
+function createUnit(carduid, cardId, rules = []) {
+    return {
+        carduid,
+        cardId,
+        cardData: {
+            id: cardId,
+            name: cardId,
+            cardType: 'unit',
+            level: 4,
+            ap: 3,
+            hp: 3,
+            effects: { rules }
+        },
+        originalAP: 3,
+        originalHP: 3,
+        continueModifyAP: 0,
+        continueModifyHP: 0,
+        damageReceived: 0,
+        effectUsage: {},
+        isRested: false,
+        playedThisTurn: false,
+        canAttackOnPlayTurn: false,
+        canAttackThisTurn: true
+    };
+}
+
+function createPilot(carduid) {
+    return {
+        carduid,
+        cardId: 'PILOT-001',
+        cardData: {
+            id: 'PILOT-001',
+            name: 'Pilot',
+            cardType: 'pilot',
+            ap: 1,
+            hp: 1,
+            effects: { rules: [] }
+        },
+        originalAP: 1,
+        originalHP: 1,
+        continueModifyAP: 0,
+        continueModifyHP: 0,
+        effectUsage: {},
+        isRested: false
+    };
+}
+
+describe('allow_attack_target active target strictness', () => {
+    test('allowAttackOnDeployTurn-only rule does not grant active enemy targeting', () => {
+        const gameEnv = new GameEnvironment();
+        const attackerPlayer = gameEnv.addPlayer('playerId_1', 'P1');
+        const defenderPlayer = gameEnv.addPlayer('playerId_2', 'P2');
+
+        attackerPlayer.zones.slot1.unit = createUnit('GD01-066_attacker_0001', 'GD01-066', [
+            {
+                action: 'allow_attack_target',
+                sourceConditions: [{ type: 'paired' }],
+                parameters: {
+                    allowAttackOnDeployTurn: true
+                }
+            }
+        ]);
+        attackerPlayer.zones.slot1.pilot = createPilot('pilot_for_pair_0001');
+        defenderPlayer.zones.slot1.unit = createUnit('enemy_active_0001', 'ST03-006', []);
+        defenderPlayer.zones.slot1.unit.isRested = false;
+
+        const result = AttackPreparationManager.prepareUnitAttack(
+            gameEnv,
+            'playerId_1',
+            'GD01-066_attacker_0001',
+            'playerId_2',
+            'enemy_active_0001'
+        );
+
+        expect(result.success).toBe(false);
+        expect(result.error).toContain('Target unit must be rested');
+    });
+
+    test('rested enemy target remains valid without active-target permission', () => {
+        const gameEnv = new GameEnvironment();
+        const attackerPlayer = gameEnv.addPlayer('playerId_1', 'P1');
+        const defenderPlayer = gameEnv.addPlayer('playerId_2', 'P2');
+
+        attackerPlayer.zones.slot1.unit = createUnit('GD01-066_attacker_0002', 'GD01-066', [
+            {
+                action: 'allow_attack_target',
+                sourceConditions: [{ type: 'paired' }],
+                parameters: {
+                    allowAttackOnDeployTurn: true
+                }
+            }
+        ]);
+        attackerPlayer.zones.slot1.pilot = createPilot('pilot_for_pair_0002');
+        defenderPlayer.zones.slot1.unit = createUnit('enemy_rested_0001', 'ST03-006', []);
+        defenderPlayer.zones.slot1.unit.isRested = true;
+
+        const result = AttackPreparationManager.prepareUnitAttack(
+            gameEnv,
+            'playerId_1',
+            'GD01-066_attacker_0002',
+            'playerId_2',
+            'enemy_rested_0001'
+        );
+
+        expect(result.success).toBe(true);
+    });
+
+    test('explicit active-target rule still allows active enemy targeting', () => {
+        const gameEnv = new GameEnvironment();
+        const attackerPlayer = gameEnv.addPlayer('playerId_1', 'P1');
+        const defenderPlayer = gameEnv.addPlayer('playerId_2', 'P2');
+
+        attackerPlayer.zones.slot1.unit = createUnit('explicit_active_attacker_0001', 'CUSTOM-001', [
+            {
+                action: 'allow_attack_target',
+                parameters: {
+                    status: 'active',
+                    level: '<=5'
+                }
+            }
+        ]);
+        defenderPlayer.zones.slot1.unit = createUnit('enemy_active_0002', 'ST03-006', []);
+        defenderPlayer.zones.slot1.unit.cardData.level = 3;
+        defenderPlayer.zones.slot1.unit.isRested = false;
+
+        const result = AttackPreparationManager.prepareUnitAttack(
+            gameEnv,
+            'playerId_1',
+            'explicit_active_attacker_0001',
+            'playerId_2',
+            'enemy_active_0002'
+        );
+
+        expect(result.success).toBe(true);
+    });
+});

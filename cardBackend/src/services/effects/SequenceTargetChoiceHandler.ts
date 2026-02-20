@@ -33,7 +33,8 @@ export class SequenceTargetChoiceHandler {
         }
 
         const resolvedStepIds = Array.isArray(ctx.ctx?.resolvedStepIds) ? [...ctx.ctx.resolvedStepIds] : [];
-        if (ctx.resolveKey) {
+        const stepApplied = normalizedTargets.length > 0;
+        if (ctx.resolveKey && stepApplied) {
             resolvedStepIds.push(ctx.resolveKey);
         }
 

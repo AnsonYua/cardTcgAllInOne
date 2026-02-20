@@ -1,6 +1,7 @@
 const { GameEnvironment } = require('../models/GameEnvironment');
 const { TutorTopDeckManager } = require('../services/effects/TutorTopDeckManager');
 const { PromptChoiceManager } = require('../services/effects/PromptChoiceManager');
+const { OptionChoiceManager } = require('../services/effects/OptionChoiceManager');
 const { EventType } = require('../models/GameEnums');
 
 function buildTutorEffect() {
@@ -66,5 +67,47 @@ describe('TutorTopDeck reveal confirm flow', () => {
         expect(optionChoiceEvent.data.availableOptions[1].payload.action).toBe('BOTTOM');
         expect(optionChoiceEvent.data.defaultOptionIndex).toBe(1);
         expect(optionChoiceEvent.data.context.tutor.lookedCarduids).toHaveLength(3);
+    });
+
+    test('taking a tutor card emits revealed CARD_ADDED_TO_HAND payload', () => {
+        const gameEnv = new GameEnvironment();
+        const player = gameEnv.addPlayer('playerId_1', 'P1');
+
+        player.deck.mainDeck = [
+            'GD01-031_e802bddc-f0b8-41ff-adf6-ad6350f3b3a7',
+            'GD03-109_01a0d739-d31e-4071-b7fa-878627ff72ad',
+            'ST03-010_75206309-0b49-4d09-b49c-6760e16f781f',
+        ];
+
+        const staged = TutorTopDeckManager.processTutorTopDeckEffect(
+            gameEnv,
+            'playerId_1',
+            'ST03-006_8c5de4d8-58b3-46c4-8507-9445e994d58d',
+            buildTutorEffect(),
+        );
+        expect(staged.success).toBe(true);
+
+        const promptChoiceEvent = gameEnv.processingQueue.find((e) => e.type === EventType.PROMPT_CHOICE);
+        promptChoiceEvent.status = 'RESOLVING';
+        promptChoiceEvent.data.userDecisionMade = true;
+        promptChoiceEvent.data.selectedOptionIndex = 0;
+        const promptResult = PromptChoiceManager.executePromptChoice(promptChoiceEvent, gameEnv);
+        expect(promptResult.success).toBe(true);
+
+        const optionChoiceEvent = gameEnv.processingQueue.find((e) => e.type === EventType.OPTION_CHOICE);
+        optionChoiceEvent.status = 'RESOLVING';
+        optionChoiceEvent.data.userDecisionMade = true;
+        optionChoiceEvent.data.selectedOptionIndex = 0;
+        const optionResult = OptionChoiceManager.executeOptionChoice(optionChoiceEvent, gameEnv);
+        expect(optionResult.success).toBe(true);
+
+        const addToHandEvent = gameEnv.notificationQueue
+            .slice()
+            .reverse()
+            .find((note) => note.type === 'CARD_ADDED_TO_HAND');
+        expect(addToHandEvent).toBeTruthy();
+        expect(addToHandEvent.payload.reason).toBe('tutor_top_deck');
+        expect(addToHandEvent.payload.reveal).toBe(true);
+        expect(addToHandEvent.payload.revealToOpponent).toBe(true);
     });
 });

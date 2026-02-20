@@ -404,6 +404,7 @@ export class TutorTopDeckManager {
                 reason: 'tutor_top_deck',
                 extraPayload: {
                     reveal: params.reveal,
+                    revealToOpponent: params.reveal,
                     sourceCarduid: params.sourceCarduid,
                     effectId: params.effectId
                 }

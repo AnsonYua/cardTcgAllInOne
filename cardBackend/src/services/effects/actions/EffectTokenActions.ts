@@ -14,6 +14,9 @@ export function applyConditionalTokenDeployEffect(
 
     const planResult = ConditionalTokenDeployManager.buildPlan(gameEnv, sourcePlayerId, effect);
     if (!planResult.success) {
+        if (planResult.error === 'No matching token condition found for board state') {
+            return { success: true };
+        }
         return { success: false, error: planResult.error };
     }
 

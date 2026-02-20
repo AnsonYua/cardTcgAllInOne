@@ -748,7 +748,8 @@
                       "token": {
                         "cardId": "T-004"
                       },
-                      "count": 2
+                      "count": 2,
+                      "selfTurn": true
                     }
                   }
                 }

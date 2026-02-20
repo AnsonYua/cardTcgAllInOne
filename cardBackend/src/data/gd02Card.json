@@ -6586,11 +6586,70 @@
               "version": 1,
               "steps": [
                 {
-                  "action": "discard",
-                  "parameters": {
-                    "value": 1
+                  "action": "addToHand",
+                  "target": {
+                    "type": "card",
+                    "scope": "self_shield",
+                    "count": 1,
+                    "selection": {
+                      "type": "player_choice"
+                    }
                   },
-                  "notes": "Design placeholder: discard not yet implemented."
+                  "parameters": {
+                    "from": "shield",
+                    "value": 1
+                  }
+                },
+                {
+                  "action": "conditional",
+                  "parameters": {
+                    "if": [
+                      {
+                        "type": "turnPlayer",
+                        "scope": "self"
+                      }
+                    ],
+                    "then": [
+                      {
+                        "stepId": "discard_red_card",
+                        "action": "discard",
+                        "optional": true,
+                        "target": {
+                          "type": "card",
+                          "scope": "self_hand",
+                          "count": 1,
+                          "selection": {
+                            "type": "player_choice"
+                          },
+                          "filters": {
+                            "color": "Red"
+                          }
+                        },
+                        "parameters": {
+                          "value": 1
+                        }
+                      },
+                      {
+                        "action": "conditional",
+                        "parameters": {
+                          "if": [
+                            {
+                              "type": "stepResolved",
+                              "stepId": "discard_red_card"
+                            }
+                          ],
+                          "then": [
+                            {
+                              "action": "draw",
+                              "parameters": {
+                                "value": 1
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
                 }
               ]
             }

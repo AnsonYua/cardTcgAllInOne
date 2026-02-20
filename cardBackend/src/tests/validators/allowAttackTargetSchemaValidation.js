@@ -38,6 +38,7 @@ function walkRules(node, context, out, inheritedTrigger) {
     out.push({
       trigger,
       target: node.target,
+      parameters: node.parameters,
       context
     });
   }
@@ -49,6 +50,7 @@ function walkRules(node, context, out, inheritedTrigger) {
 
 function validateAllowAttackTargetSchema() {
   const errors = [];
+  const warnings = [];
 
   for (const fileName of CARD_FILES) {
     const cards = loadCards(fileName);
@@ -60,6 +62,7 @@ function validateAllowAttackTargetSchema() {
       for (const entry of collected) {
         const trigger = typeof entry.trigger === 'string' ? entry.trigger.toUpperCase() : '';
         const target = entry.target && typeof entry.target === 'object' ? entry.target : null;
+        const params = entry.parameters && typeof entry.parameters === 'object' ? entry.parameters : {};
 
         if (!target && trigger !== 'CONTINUOUS') {
           errors.push(
@@ -83,12 +86,31 @@ function validateAllowAttackTargetSchema() {
             `${fileName}:${cardId}:${entry.context} allow_attack_target scope=self without player_choice is ambiguous; use source/source_paired_unit`
           );
         }
+
+        const hasExplicitActiveTargetConstraint =
+          params.allowActiveTarget === true ||
+          (typeof params.status === 'string' && params.status.toLowerCase() === 'active') ||
+          typeof params.level === 'string' ||
+          typeof params.ap === 'string' ||
+          typeof params.ap === 'number' ||
+          typeof params.damaged === 'boolean';
+        const allowAttackOnDeployTurnOnly =
+          params.allowAttackOnDeployTurn === true && !hasExplicitActiveTargetConstraint;
+        if (!allowAttackOnDeployTurnOnly && !hasExplicitActiveTargetConstraint) {
+          warnings.push(
+            `${fileName}:${cardId}:${entry.context} allow_attack_target has no explicit active-target constraints; it will not grant active-target permission`
+          );
+        }
       }
     }
   }
 
   if (errors.length > 0) {
     throw new Error(errors.join('\n'));
+  }
+
+  if (warnings.length > 0) {
+    console.warn(warnings.join('\n'));
   }
 
   console.log('OK: allow_attack_target schema validation');
