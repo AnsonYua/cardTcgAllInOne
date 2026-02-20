@@ -6,6 +6,7 @@ import { CardDatabaseManager } from '../models/CardSystem';
 import {
     DeployEffectEvent,
     EffectDefinition,
+    OptionChoiceOption,
     PlayCardEventData
 } from './EventQueue/interfaces/GameEvent';
 import { EventFactory } from './EventQueue/EventFactory';
@@ -20,6 +21,7 @@ import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { EffectEligibilityEvaluator } from './effects/EffectEligibilityEvaluator';
 import { DeployEffectOptionPresenter } from './effects/DeployEffectOptionPresenter';
 import { ChoiceEventScheduler } from './choices/ChoiceEventScheduler';
+import { ChoiceDisplayBuilder } from './choices/ChoiceDisplayBuilder';
 import { EventPriority } from './EventQueue/interfaces/GameEvent';
 import { ChoiceNotificationEmitter } from './notifications/ChoiceNotificationEmitter';
 import { CardPlayNotificationLifecycle } from './notifications/CardPlayNotificationLifecycle';
@@ -246,14 +248,18 @@ export class DeployEffectManager {
     private static buildDeployEffectOrderOptions(
         effects: EffectDefinition[],
         sourceCarduid: string
-    ): Array<{ index: number; label: string; payload: { effect: EffectDefinition } }> {
-        return effects.map((effect, index) => ({
-            index,
-            label: DeployEffectOptionPresenter.describe(effect, sourceCarduid),
-            payload: {
-                effect
-            }
-        }));
+    ): OptionChoiceOption[] {
+        return effects.map((effect, index) => {
+            const label = DeployEffectOptionPresenter.describe(effect, sourceCarduid);
+            return {
+                index,
+                label,
+                display: ChoiceDisplayBuilder.text(label),
+                payload: {
+                    effect
+                }
+            };
+        });
     }
 
     /**

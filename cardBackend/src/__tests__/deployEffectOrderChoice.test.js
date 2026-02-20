@@ -49,6 +49,14 @@ describe('Deploy effect order choice', () => {
         expect(promptChoiceEvent.data.context.kind).toBe('DEPLOY_EFFECT_ORDER');
         expect(promptChoiceEvent.data.availableOptions).toHaveLength(2);
         expect(promptChoiceEvent.data.headerText).toBe('Choose Deploy Effect');
+        expect(promptChoiceEvent.data.availableOptions[0].display).toMatchObject({
+            mode: 'text',
+            label: promptChoiceEvent.data.availableOptions[0].label
+        });
+        expect(promptChoiceEvent.data.availableOptions[1].display).toMatchObject({
+            mode: 'text',
+            label: promptChoiceEvent.data.availableOptions[1].label
+        });
     });
 
     test('deploy_effect_order OPTION_CHOICE enqueues a single-effect deploy event + remainingEffects', () => {

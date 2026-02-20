@@ -8,6 +8,7 @@ import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { ExecutionResult } from '../ExecutionResult';
 import { GameNotificationManager } from '../GameNotificationManager';
 import { ChoiceEventScheduler } from '../choices/ChoiceEventScheduler';
+import { ChoiceDisplayBuilder } from '../choices/ChoiceDisplayBuilder';
 import { getCardIdFromUid } from '../../utils/CardUtils';
 
 export interface TokenChoiceResult {
@@ -98,11 +99,7 @@ export class TokenChoiceManager {
                     hp: tokenDataResult.tokenData.hp,
                     traits: tokenDataResult.tokenData.traits
                 },
-                display: {
-                    mode: 'card',
-                    cardId: tokenDataResult.tokenData.id,
-                    label: tokenDataResult.tokenData.name
-                }
+                display: ChoiceDisplayBuilder.card(tokenDataResult.tokenData.id, tokenDataResult.tokenData.name)
             });
         }
 

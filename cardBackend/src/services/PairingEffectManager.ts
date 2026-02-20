@@ -30,6 +30,7 @@ import { EffectRuleCatalog } from './effects/EffectRuleCatalog';
 import { PairingConditionEvaluator } from './conditions/PairingConditionEvaluator';
 import { ContinuousEffectManager } from './ContinuousEffectManager';
 import { ChoiceEventScheduler } from './choices/ChoiceEventScheduler';
+import { ChoiceDisplayBuilder } from './choices/ChoiceDisplayBuilder';
 import { EventPriority } from './EventQueue/interfaces/GameEvent';
 import { ChoiceNotificationEmitter } from './notifications/ChoiceNotificationEmitter';
 import { GameNotificationManager } from './GameNotificationManager';
@@ -451,14 +452,14 @@ export class PairingEffectManager implements StandardEffectManager {
             // non-conflicting; otherwise let the player pick which one resolves next.
             if (pairingEffects.length > 1) {
                 if (this.shouldPromptForPairingEffectOrder(pairingEffects)) {
-                    const options = pairingEffects.map((effect, index) => ({
-                        index,
-                        label: this.describePairingEffectOption(gameEnv, playerId, effect),
-                        display: {
-                            mode: 'text' as const,
-                            label: this.describePairingEffectOption(gameEnv, playerId, effect)
-                        }
-                    }));
+                    const options = pairingEffects.map((effect, index) => {
+                        const optionLabel = this.describePairingEffectOption(gameEnv, playerId, effect);
+                        return {
+                            index,
+                            label: optionLabel,
+                            display: ChoiceDisplayBuilder.text(optionLabel)
+                        };
+                    });
 
                     const choiceEffect = ensureEffectDefaults({
                         effectId: 'pairing_effect_order',
@@ -556,14 +557,14 @@ export class PairingEffectManager implements StandardEffectManager {
                         nextEvent.priority = EventPriority.NORMAL;
                         gameEnv.enqueueForProcessing(nextEvent);
                     } else {
-                        const options = remainingEffects.map((remainingEffect, index) => ({
-                            index,
-                            label: this.describePairingEffectOption(gameEnv, playerId, remainingEffect),
-                            display: {
-                                mode: 'text' as const,
-                                label: this.describePairingEffectOption(gameEnv, playerId, remainingEffect)
-                            }
-                        }));
+                        const options = remainingEffects.map((remainingEffect, index) => {
+                            const optionLabel = this.describePairingEffectOption(gameEnv, playerId, remainingEffect);
+                            return {
+                                index,
+                                label: optionLabel,
+                                display: ChoiceDisplayBuilder.text(optionLabel)
+                            };
+                        });
 
                         const choiceEffect = ensureEffectDefaults({
                             effectId: 'pairing_effect_order',
