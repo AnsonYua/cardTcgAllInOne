@@ -14,6 +14,7 @@ export class ChoiceEventScheduler {
             sourceCarduid: string;
             effect: EffectDefinition;
             availableTargets: TargetReference[];
+            context?: Record<string, unknown>;
             cardPlayNotificationId?: string;
         }
     ): TargetChoiceEvent {
@@ -23,6 +24,10 @@ export class ChoiceEventScheduler {
             effect: params.effect,
             availableTargets: params.availableTargets
         });
+
+        if (params.context) {
+            (choiceEvent.data as any).context = params.context;
+        }
 
         if (params.cardPlayNotificationId) {
             (choiceEvent.data as any).cardPlayNotificationId = params.cardPlayNotificationId;

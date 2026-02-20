@@ -10,7 +10,10 @@ export class TargetSelectionPipeline {
         gameEnv: GameEnvironment,
         targets: TargetReference[],
         effect: EffectDefinition,
-        sourceCarduid: string
+        sourceCarduid: string,
+        selectionContext?: {
+            justLinkedUnitCarduid?: string;
+        }
     ): TargetReference[] {
         let result = targets;
 
@@ -19,7 +22,7 @@ export class TargetSelectionPipeline {
             result = TargetSelectionUtils.excludeCarduid(result, sourceCarduid);
         }
 
-        result = TargetSelectionUtils.applySelection(gameEnv, result, effect.target?.selection);
+        result = TargetSelectionUtils.applySelection(gameEnv, result, effect.target?.selection, selectionContext);
         return result;
     }
 }

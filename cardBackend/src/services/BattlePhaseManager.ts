@@ -36,6 +36,7 @@ import { DefenseAreaBattleDamageTriggeredEffectManager } from './effects/Defense
 import { ShieldAreaCardDamagedTriggerDispatcher } from './effects/ShieldAreaCardDamagedTriggerDispatcher';
 import { ActionStepBattleConsistencyService } from './battle/ActionStepBattleConsistencyService';
 import { SlotHealthService } from './health/SlotHealthService';
+import { BattleDamageToUnitTriggeredEffectManager } from './effects/BattleDamageToUnitTriggeredEffectManager';
 
 export class BattlePhaseManager {
     private static openBattleAndRefreshContinuous(gameEnv: GameEnvironment, context: BattleContext, label: string): void {
@@ -585,6 +586,38 @@ export class BattlePhaseManager {
 
             attackerDestroyed = attackerHealthAfter.remainingHp <= 0;
             defenderDestroyed = defenderHealthAfter.remainingHp <= 0;
+        }
+
+        if (defenderDamageTaken > 0) {
+            const triggerResult = BattleDamageToUnitTriggeredEffectManager.process(gameEnv, {
+                attackingPlayerId: attacker.id,
+                defendingPlayerId: defender.id,
+                attackerSlot,
+                defenderSlot: targetSlotName,
+                sourceUnit: attackingUnit,
+                targetUnit,
+                damage: defenderDamageTaken
+            });
+            if (!triggerResult.success) {
+                this.clearBattleAndRefreshContinuous(gameEnv, 'battle_damage_to_unit_trigger_failed_defender');
+                return { success: false, error: triggerResult.error || 'Failed to process BATTLE_DAMAGE_TO_UNIT trigger' };
+            }
+        }
+
+        if (attackerDamageTaken > 0) {
+            const triggerResult = BattleDamageToUnitTriggeredEffectManager.process(gameEnv, {
+                attackingPlayerId: defender.id,
+                defendingPlayerId: attacker.id,
+                attackerSlot: targetSlotName,
+                defenderSlot: attackerSlot,
+                sourceUnit: targetUnit,
+                targetUnit: attackingUnit,
+                damage: attackerDamageTaken
+            });
+            if (!triggerResult.success) {
+                this.clearBattleAndRefreshContinuous(gameEnv, 'battle_damage_to_unit_trigger_failed_attacker');
+                return { success: false, error: triggerResult.error || 'Failed to process BATTLE_DAMAGE_TO_UNIT trigger' };
+            }
         }
 
         emitBattleResolutionNotification(gameEnv, context, {

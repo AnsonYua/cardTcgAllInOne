@@ -53,7 +53,10 @@ export class DeployTargetManager {
         playerId: string,
         sourceCarduid: string,
         effect: EffectDefinition,
-        cardPlayNotificationId?: string
+        cardPlayNotificationId?: string,
+        selectionContext?: {
+            justLinkedUnitCarduid?: string;
+        }
     ): DeployTargetResult {
         const normalizedEffect = ensureEffectDefaults(effect);
         const effectAction = EffectExecutor.getEffectAction(normalizedEffect);
@@ -98,7 +101,13 @@ export class DeployTargetManager {
             if (!availableTargets) {
                 availableTargets = TargetResolver.generateAvailableTargets(gameEnv, playerId, targetConfig, sourceCarduid);
             }
-            availableTargets = TargetSelectionPipeline.apply(gameEnv, availableTargets, normalizedEffect, sourceCarduid);
+            availableTargets = TargetSelectionPipeline.apply(
+                gameEnv,
+                availableTargets,
+                normalizedEffect,
+                sourceCarduid,
+                selectionContext
+            );
 
             const excludePairedUnit = normalizedEffect.parameters?.excludePairedUnit === true;
             const pairedSlot = typeof (normalizedEffect as any).pairedSlot === 'string' ? ((normalizedEffect as any).pairedSlot as string) : '';
@@ -152,6 +161,7 @@ export class DeployTargetManager {
                     sourceCarduid,
                     effect: normalizedEffect,
                     availableTargets,
+                    ...(selectionContext ? { context: selectionContext } : {}),
                     cardPlayNotificationId
                 });
                 

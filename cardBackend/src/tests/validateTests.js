@@ -50,6 +50,9 @@ const {
 const {
   validateAllowAttackTargetSchema
 } = require('./validators/allowAttackTargetSchemaValidation');
+const {
+  validateEffectSchemaCanonical
+} = require('./validators/effectSchemaCanonicalValidation');
 
 function main() {
   const root = sharedGameStatesRoot();
@@ -77,6 +80,7 @@ function main() {
   validateGd02069DuringLinkActivatedAbility();
   validateGd03079RestBaseReplacement();
   validateAllowAttackTargetSchema();
+  validateEffectSchemaCanonical();
 
   console.log('OK: action scenarios validated');
 }

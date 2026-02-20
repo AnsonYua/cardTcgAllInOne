@@ -4,6 +4,10 @@ import type { EffectTargetConfig, TargetReference } from '../EventQueue/interfac
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import { PlayerCardManager } from '../PlayerCardManager';
 
+export interface TargetSelectionContext {
+    justLinkedUnitCarduid?: string;
+}
+
 export class TargetSelectionUtils {
     static excludeCarduid(
         targets: TargetReference[],
@@ -18,7 +22,8 @@ export class TargetSelectionUtils {
     static applySelection(
         gameEnv: GameEnvironment,
         targets: TargetReference[],
-        selection: EffectTargetConfig['selection'] | undefined
+        selection: EffectTargetConfig['selection'] | undefined,
+        selectionContext?: TargetSelectionContext
     ): TargetReference[] {
         if (!selection || !selection.type) {
             return targets;
@@ -29,9 +34,18 @@ export class TargetSelectionUtils {
                 return this.filterHighestLevelTargets(targets);
             case 'LOWEST_HP':
                 return this.filterLowestHpTargets(gameEnv, targets);
+            case 'JUST_LINKED':
+                return this.filterJustLinkedTargets(targets, selectionContext?.justLinkedUnitCarduid);
             default:
                 return targets;
         }
+    }
+
+    private static filterJustLinkedTargets(targets: TargetReference[], justLinkedUnitCarduid: string | undefined): TargetReference[] {
+        if (!justLinkedUnitCarduid) {
+            return [];
+        }
+        return targets.filter((target) => target.carduid === justLinkedUnitCarduid);
     }
 
     private static filterHighestLevelTargets(targets: TargetReference[]): TargetReference[] {

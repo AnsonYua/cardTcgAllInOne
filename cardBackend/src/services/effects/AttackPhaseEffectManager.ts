@@ -93,7 +93,8 @@ export class AttackPhaseEffectManager {
                     gameEnv,
                     playerId,
                     attackEvent: event,
-                    sourceSlot: slotZone?.slot
+                    sourceSlot: slotZone?.slot,
+                    sourceCard
                 })) {
                     continue;
                 }

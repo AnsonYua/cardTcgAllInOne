@@ -87,16 +87,24 @@ export class CardPlayExecutor {
 
                 const pairedSlotName = placementResult.placedZone || eventData.slotName;
                 let pairedUnitColor: string | undefined;
+                let pairedUnitCarduid: string | undefined;
+                let pairedPilotLevel: number | undefined;
                 const player = gameEnv.getPlayer(playerId);
                 if (pairedSlotName && player?.zones) {
                     const slotResult = SlotZoneUtils.getSlotZone(player.zones, pairedSlotName);
                     if (slotResult.isValid) {
                         pairedUnitColor = slotResult.slot?.unit?.cardData?.color;
+                        pairedUnitCarduid = slotResult.slot?.unit?.carduid;
+                        pairedPilotLevel = typeof slotResult.slot?.pilot?.cardData?.level === 'number'
+                            ? slotResult.slot.pilot.cardData.level
+                            : undefined;
                     }
                 }
 
                 const globalResult = PairingGlobalEffectManager.enqueueGlobalPairingTriggeredEffects(gameEnv, playerId, {
-                    pairedUnitColor
+                    pairedUnitColor,
+                    pairedUnitCarduid,
+                    pairedPilotLevel
                 });
                 if (!globalResult.success) {
                     console.log(`⚠️ Global pairing effect error: ${globalResult.error}`);

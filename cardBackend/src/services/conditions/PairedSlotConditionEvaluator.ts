@@ -4,8 +4,33 @@
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { CardTraitUtils } from '../../utils/CardTraitUtils';
+import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 
 export class PairedSlotConditionEvaluator {
+    static pairedPilotLevel(
+        gameEnv: GameEnvironment,
+        sourceCarduid: string,
+        expectedLevel: unknown
+    ): boolean {
+        if (!sourceCarduid) {
+            return false;
+        }
+
+        const search = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, sourceCarduid);
+        if (!search.found) {
+            return false;
+        }
+
+        const pilotLevel = typeof search.pilot?.cardData?.level === 'number' ? search.pilot.cardData.level : 0;
+        if (typeof expectedLevel === 'number') {
+            return pilotLevel === expectedLevel;
+        }
+        if (typeof expectedLevel === 'string') {
+            return validateComparisonFilter(pilotLevel, expectedLevel);
+        }
+        return false;
+    }
+
     static pairedPilotColor(
         gameEnv: GameEnvironment,
         sourceCarduid: string,

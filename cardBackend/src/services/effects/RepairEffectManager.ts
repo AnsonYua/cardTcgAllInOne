@@ -308,14 +308,14 @@ export class RepairEffectManager implements StandardEffectManager {
             const type = typeof (condition as any).type === 'string' ? ((condition as any).type as string) : '';
             const value = (condition as any).value;
 
-            if (type === 'sourceHP') {
+            if (type === 'sourceHp') {
                 if (!SourceStatConditionEvaluator.sourceHpMatches(gameEnv, sourceUnitCarduid, value)) {
                     return false;
                 }
                 continue;
             }
 
-            if (type === 'sourceAp' || type === 'sourceAP') {
+            if (type === 'sourceAp') {
                 if (!SourceStatConditionEvaluator.sourceApMatches(gameEnv, sourceUnitCarduid, value)) {
                     return false;
                 }

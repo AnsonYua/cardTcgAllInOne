@@ -228,6 +228,14 @@ export class ConditionEvaluators {
         return PairedSlotConditionEvaluator.pairedPilotTrait(gameEnv, sourceCarduid, expected);
     }
 
+    static pairedPilotLevel(
+        gameEnv: GameEnvironment,
+        sourceCarduid: string,
+        value: unknown
+    ): boolean {
+        return PairedSlotConditionEvaluator.pairedPilotLevel(gameEnv, sourceCarduid, value);
+    }
+
     static pairedUnitColor(
         gameEnv: GameEnvironment,
         sourceCarduid: string,
@@ -269,6 +277,39 @@ export class ConditionEvaluators {
         excludeCarduid?: string
     ): boolean {
         return LinkConditionEvaluator.hasAnotherLinkedUnitWithTrait(gameEnv, playerId, traitsAny, excludeCarduid);
+    }
+
+    static hasAnotherUnitWithTrait(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        traitsAny: string[],
+        excludeCarduid?: string
+    ): boolean {
+        const normalizedTraits = Array.isArray(traitsAny)
+            ? traitsAny.filter((trait): trait is string => typeof trait === 'string' && trait.length > 0)
+            : [];
+        if (normalizedTraits.length === 0) {
+            return false;
+        }
+
+        const units = SlotZoneUtils.getAllPlayerSlotUnits(gameEnv, playerId);
+        for (const unitResult of units) {
+            const unit = unitResult?.unit;
+            if (!unit?.carduid) {
+                continue;
+            }
+            if (excludeCarduid && unit.carduid === excludeCarduid) {
+                continue;
+            }
+
+            const cardTraits = Array.isArray(unit.cardData?.traits) ? unit.cardData.traits : [];
+            const hasAny = normalizedTraits.some((trait) => cardTraits.includes(trait));
+            if (hasAny) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     static unitsInPlayWithTrait(

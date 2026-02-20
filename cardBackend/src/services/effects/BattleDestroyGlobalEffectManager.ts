@@ -2,7 +2,7 @@
 // Handles "global" BATTLE_DESTROY triggered effects that listen to other units' battle destroys.
 
 import type { GameEnvironment } from '../../models/GameEnvironment';
-import type { UnitZoneCard, PilotZoneCard } from '../../models/CardSystem';
+import type { UnitZoneCard, PilotZoneCard, BaseCard } from '../../models/CardSystem';
 import type { EffectDefinition, TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { SLOT_ZONES } from '../../config/gameConstants';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
@@ -10,11 +10,13 @@ import { ContinuousEffectManager } from '../ContinuousEffectManager';
 import { EffectExecutor } from './EffectExecutor';
 import { EffectRuleCatalog } from './EffectRuleCatalog';
 import { EffectUsageTracker } from './EffectUsageTracker';
+import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 
-type SlotCard = { card: UnitZoneCard | PilotZoneCard; slotName: string };
+type SlotCard = { card: UnitZoneCard | PilotZoneCard | BaseCard; slotName: string };
 
 export interface BattleDestroyGlobalContext {
     sourcePlayerId: string;
+    sourceSlot: string;
     destroyedPlayerId: string;
     sourceUnit: UnitZoneCard;
     destroyedUnit: UnitZoneCard;
@@ -44,6 +46,12 @@ export class BattleDestroyGlobalEffectManager {
             }
             if (slot?.pilot) {
                 candidates.push({ card: slot.pilot as PilotZoneCard, slotName });
+            }
+        }
+        const bases = Array.isArray((player.zones as any).base) ? (player.zones as any).base : [];
+        for (const base of bases) {
+            if (base?.carduid) {
+                candidates.push({ card: base as BaseCard, slotName: 'base' });
             }
         }
 
@@ -101,22 +109,11 @@ export class BattleDestroyGlobalEffectManager {
                     }
                 }
 
-                // GD02-002 expects "set this unit as active" (self).
-                const action = EffectExecutor.getEffectAction(normalized);
-                if (action !== 'setActive') {
-                    continue;
-                }
-
-                const targetRef: TargetReference = {
-                    playerId: context.sourcePlayerId,
-                    zone: slotName,
-                    carduid: card.carduid
-                };
-
+                const forcedTargets = this.resolveForcedTargetsFromBattleContext(normalized, context, slotName, card.carduid);
                 const result = EffectExecutor.applyEffectToTargets(
                     gameEnv,
                     normalized,
-                    [targetRef],
+                    forcedTargets,
                     context.sourcePlayerId,
                     card.carduid
                 );
@@ -131,6 +128,31 @@ export class BattleDestroyGlobalEffectManager {
         }
 
         return { success: true };
+    }
+
+    private static resolveForcedTargetsFromBattleContext(
+        effect: EffectDefinition,
+        context: BattleDestroyGlobalContext,
+        sourceSlotName: string,
+        sourceCarduid: string
+    ): TargetReference[] {
+        const targetFilters = effect.target?.filters && typeof effect.target.filters === 'object'
+            ? (effect.target.filters as Record<string, unknown>)
+            : {};
+
+        if (targetFilters.isEventAttacker === true) {
+            return [{
+                playerId: context.sourcePlayerId,
+                zone: context.sourceSlot || sourceSlotName,
+                carduid: context.sourceUnit.carduid
+            }];
+        }
+
+        return [{
+            playerId: context.sourcePlayerId,
+            zone: sourceSlotName,
+            carduid: sourceCarduid
+        }];
     }
 
     private static isBattleDestroyTrigger(effect: EffectDefinition): boolean {
@@ -166,6 +188,10 @@ export class BattleDestroyGlobalEffectManager {
             const sourceCardType = typeof typed.sourceCardType === 'string' ? typed.sourceCardType : 'unit';
             const destroyedCardType = typeof typed.destroyedCardType === 'string' ? typed.destroyedCardType : 'unit';
             const damageType = typeof typed.damageType === 'string' ? typed.damageType : 'battle';
+            const sourceTraitsAny = Array.isArray(typed.sourceTraitsAny)
+                ? typed.sourceTraitsAny.filter((trait): trait is string => typeof trait === 'string')
+                : [];
+            const sourceLevel = typed.sourceLevel;
 
             if (damageType !== 'battle') {
                 return false;
@@ -186,6 +212,26 @@ export class BattleDestroyGlobalEffectManager {
             }
             if (destroyedController === 'self' && context.destroyedPlayerId !== ownerPlayerId) {
                 return false;
+            }
+
+            if (sourceTraitsAny.length > 0) {
+                const sourceCardTraits = Array.isArray(context.sourceUnit.cardData?.traits)
+                    ? context.sourceUnit.cardData.traits
+                    : [];
+                const hasAnyTrait = sourceTraitsAny.some((trait) => sourceCardTraits.includes(trait));
+                if (!hasAnyTrait) {
+                    return false;
+                }
+            }
+
+            const attackerLevel = typeof context.sourceUnit.cardData?.level === 'number' ? context.sourceUnit.cardData.level : 0;
+            if (typeof sourceLevel === 'number' && attackerLevel !== sourceLevel) {
+                return false;
+            }
+            if (typeof sourceLevel === 'string') {
+                if (!validateComparisonFilter(attackerLevel, sourceLevel)) {
+                    return false;
+                }
             }
         }
 

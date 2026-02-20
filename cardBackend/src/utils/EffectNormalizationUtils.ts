@@ -7,6 +7,10 @@ import {
     EffectTargetConfig,
     TargetFilters
 } from '../services/EventQueue/interfaces/GameEvent';
+import {
+    normalizeConditionTypeAlias,
+    normalizeSelectionTypeAlias
+} from '../services/effects/schema/EffectSchema';
 
 interface NormalizeEffectRuleOptions {
     fallbackEffectId: string;
@@ -55,7 +59,7 @@ export function normalizeEffectRule(
     });
 
     const conditions = Array.isArray(raw['conditions'])
-        ? (raw['conditions'] as EffectCondition[])
+        ? normalizeConditions(raw['conditions'] as EffectCondition[])
         : undefined;
 
     const sourceConditions = Array.isArray(raw['sourceConditions'])
@@ -323,12 +327,14 @@ export function normalizeTargetConfig(
     const selectionValue = target['selection'];
     if (selectionValue && typeof selectionValue === 'object') {
         const selection = selectionValue as Record<string, unknown>;
-        const selectionType = resolveString(selection['type']);
-        if (selectionType) {
+        const selectionTypeRaw = resolveString(selection['type']);
+        const tieBreakerRaw = typeof selection['tieBreaker'] === 'string' ? selection['tieBreaker'] : undefined;
+        const normalizedSelection = normalizeSelectionTypeAlias(selectionTypeRaw, tieBreakerRaw);
+        if (normalizedSelection.type) {
             normalized.selection = {
                 ...selection,
-                type: selectionType,
-                ...(typeof selection['tieBreaker'] === 'string' ? { tieBreaker: selection['tieBreaker'] } : {})
+                type: normalizedSelection.type,
+                ...(normalizedSelection.tieBreaker ? { tieBreaker: normalizedSelection.tieBreaker } : {})
             };
         }
     }
@@ -381,6 +387,24 @@ function resolveTrigger(triggerValue: unknown, defaultTrigger?: string): string 
     }
 
     return defaultTrigger;
+}
+
+function normalizeConditions(conditions: EffectCondition[]): EffectCondition[] {
+    return conditions.map((condition) => {
+        if (!condition || typeof condition !== 'object' || Array.isArray(condition)) {
+            return condition;
+        }
+        const typed = condition as Record<string, unknown>;
+        const rawType = typeof typed.type === 'string' ? typed.type : undefined;
+        const normalizedType = normalizeConditionTypeAlias(rawType);
+        if (!normalizedType || normalizedType === rawType) {
+            return condition;
+        }
+        return {
+            ...typed,
+            type: normalizedType
+        };
+    });
 }
 
 function resolveAction(actionValue: unknown): string | undefined {

@@ -7,12 +7,15 @@ import { getSlotTotals } from '../../../utils/FieldValueCalculator';
 import type { GameEnvironment } from '../../../models/GameEnvironment';
 import { ConditionEvaluators } from '../../conditions/ConditionEvaluators';
 import { SlotHealthStorage } from '../../health/SlotHealthStorage';
+import { EffectConditionEvaluator } from '../../conditions/EffectConditionEvaluator';
+import { normalizeConditionTypeAlias } from '../schema/EffectSchema';
 
 export interface AttackConditionContext {
     gameEnv: GameEnvironment;
     playerId: string;
     attackEvent: PlayerActionEvent;
     sourceSlot: any;
+    sourceCard?: any;
 }
 
 export class AttackConditionEvaluator {
@@ -33,14 +36,16 @@ export class AttackConditionEvaluator {
         const sourceUnit = sourceSlot?.unit;
         const sourceLevel = typeof sourceUnit?.cardData?.level === 'number' ? (sourceUnit.cardData.level as number) : 0;
         const sourceDamaged = SlotHealthStorage.getSharedDamage(sourceSlot) > 0;
+        const sourceCard = context.sourceCard || sourceUnit;
 
         for (const raw of conditions) {
             if (!raw || typeof raw !== 'object') {
-                continue;
+                return false;
             }
 
             const typed = raw as Record<string, unknown>;
-            const type = typeof typed.type === 'string' ? typed.type : '';
+            const rawType = typeof typed.type === 'string' ? typed.type : '';
+            const type = normalizeConditionTypeAlias(rawType) || '';
 
             if (type === 'attackTargetCardType') {
                 const expected = typeof typed.value === 'string' ? typed.value.toLowerCase() : '';
@@ -103,6 +108,15 @@ export class AttackConditionEvaluator {
                     return false;
                 }
                 continue;
+            }
+
+            if (!EffectConditionEvaluator.validateEffectConditions(
+                { ...effect, conditions: [typed] },
+                gameEnv,
+                playerId,
+                sourceCard
+            )) {
+                return false;
             }
         }
 

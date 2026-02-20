@@ -7,6 +7,9 @@ import { BattleConditionEvaluator } from './BattleConditionEvaluator';
 import { SourceTraitConditionEvaluator } from './SourceTraitConditionEvaluator';
 import { SlotCardStateUtils } from './SlotCardStateUtils';
 import { SlotHealthService } from '../health/SlotHealthService';
+import { SourceStatConditionEvaluator } from './SourceStatConditionEvaluator';
+import { normalizeConditionTypeAlias } from '../effects/schema/EffectSchema';
+import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 
 type ZoneCardWithData = {
     carduid: string;
@@ -58,7 +61,7 @@ export class EffectConditionEvaluator {
 
             default:
                 console.log(`⚠️ Unknown actionTurn: ${actionTurn}`);
-                return true;
+                return false;
         }
     }
 
@@ -91,16 +94,17 @@ export class EffectConditionEvaluator {
 
                 default:
                     console.log(`⚠️ Unknown condition: ${condition}`);
-                    return true;
+                    return false;
             }
         }
 
         if (!condition || typeof condition !== 'object') {
-            return true;
+            return false;
         }
 
         const typedCondition = condition as Record<string, unknown>;
-        const type = (typedCondition.type as string) || '';
+        const rawType = typeof typedCondition.type === 'string' ? typedCondition.type : '';
+        const type = normalizeConditionTypeAlias(rawType) || '';
         const scope = (typedCondition.scope as string) || 'player';
 
         switch (type) {
@@ -121,6 +125,13 @@ export class EffectConditionEvaluator {
                     ? (sourceCard as any).carduid
                     : '';
                 return ConditionEvaluators.pairedPilotTrait(gameEnv, sourceCarduid, typedCondition.value);
+            }
+
+            case 'pairedPilotLevel': {
+                const sourceCarduid = typeof (sourceCard as any)?.carduid === 'string'
+                    ? (sourceCard as any).carduid
+                    : '';
+                return ConditionEvaluators.pairedPilotLevel(gameEnv, sourceCarduid, typedCondition.value);
             }
 
             case 'pairedUnitColor': {
@@ -177,7 +188,7 @@ export class EffectConditionEvaluator {
                     case 'DRAW_PHASE':
                         return gameEnv.phase === GamePhase.DRAW_PHASE;
                     default:
-                        return true;
+                        return false;
                 }
 
             case 'opponentHandSize':
@@ -311,6 +322,23 @@ export class EffectConditionEvaluator {
                 return ConditionEvaluators.hasAnotherLinkedUnitWithTrait(gameEnv, cardOwnerPlayerId, traitsAny, exclude);
             }
 
+            case 'hasAnotherUnitWithTrait': {
+                if (!cardOwnerPlayerId) {
+                    return false;
+                }
+                const traitsAny = Array.isArray((typedCondition as any).traits)
+                    ? (typedCondition as any).traits.filter((t: unknown) => typeof t === 'string')
+                    : Array.isArray((typedCondition as any).traitsAny)
+                        ? (typedCondition as any).traitsAny.filter((t: unknown) => typeof t === 'string')
+                        : typeof (typedCondition as any).value === 'string'
+                            ? [(typedCondition as any).value]
+                            : [];
+                const exclude = typeof (sourceCard as any)?.carduid === 'string'
+                    ? (sourceCard as any).carduid
+                    : undefined;
+                return ConditionEvaluators.hasAnotherUnitWithTrait(gameEnv, cardOwnerPlayerId, traitsAny, exclude);
+            }
+
             case 'noPairedPilot': {
                 if (scope === 'source') {
                     const sourceCarduid = typeof (sourceCard as any)?.carduid === 'string'
@@ -334,7 +362,7 @@ export class EffectConditionEvaluator {
 
             case 'sourceStatus': {
                 if (scope !== 'source') {
-                    return true;
+                    return false;
                 }
                 if (!sourceCard) {
                     return false;
@@ -357,12 +385,12 @@ export class EffectConditionEvaluator {
                 }
 
                 console.log(`⚠️ Unknown sourceStatus value: ${desired}`);
-                return true;
+                return false;
             }
 
             case 'sourceDamaged': {
                 if (scope !== 'source') {
-                    return true;
+                    return false;
                 }
                 if (!sourceCard) {
                     return false;
@@ -382,9 +410,54 @@ export class EffectConditionEvaluator {
                 return damaged === expected;
             }
 
+            case 'sourceLevel': {
+                if (scope !== 'source') {
+                    return false;
+                }
+                if (!sourceCard) {
+                    return false;
+                }
+                const sourceLevel = typeof (sourceCard as any)?.cardData?.level === 'number'
+                    ? (sourceCard as any).cardData.level
+                    : (typeof (sourceCard as any)?.level === 'number' ? (sourceCard as any).level : 0);
+                if (typeof typedCondition.value === 'number') {
+                    return sourceLevel === typedCondition.value;
+                }
+                if (typeof typedCondition.value === 'string') {
+                    return validateComparisonFilter(sourceLevel, typedCondition.value);
+                }
+                return true;
+            }
+
+            case 'sourceAp': {
+                if (scope !== 'source') {
+                    return false;
+                }
+                const sourceCarduid = typeof (sourceCard as any)?.carduid === 'string'
+                    ? (sourceCard as any).carduid
+                    : '';
+                if (!sourceCarduid) {
+                    return false;
+                }
+                return SourceStatConditionEvaluator.sourceApMatches(gameEnv, sourceCarduid, typedCondition.value);
+            }
+
+            case 'sourceHp': {
+                if (scope !== 'source') {
+                    return false;
+                }
+                const sourceCarduid = typeof (sourceCard as any)?.carduid === 'string'
+                    ? (sourceCard as any).carduid
+                    : '';
+                if (!sourceCarduid) {
+                    return false;
+                }
+                return SourceStatConditionEvaluator.sourceHpMatches(gameEnv, sourceCarduid, typedCondition.value);
+            }
+
             default:
                 console.log(`⚠️ Unknown structured condition: ${type}`);
-                return true;
+                return false;
         }
     }
 }

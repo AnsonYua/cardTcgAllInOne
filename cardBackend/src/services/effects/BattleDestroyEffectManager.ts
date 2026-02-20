@@ -47,6 +47,7 @@ export class BattleDestroyEffectManager {
 
         const globalResult = BattleDestroyGlobalEffectManager.processGlobalBattleDestroyEffects(gameEnv, {
             sourcePlayerId: context.sourcePlayerId,
+            sourceSlot: context.sourceSlot,
             destroyedPlayerId: context.destroyedPlayerId,
             sourceUnit: context.sourceUnit,
             destroyedUnit: context.destroyedUnit

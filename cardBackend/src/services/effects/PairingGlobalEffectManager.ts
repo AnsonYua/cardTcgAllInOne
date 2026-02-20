@@ -8,9 +8,12 @@ import { EffectRuleCatalog } from './EffectRuleCatalog';
 import { ContinuousEffectManager } from '../ContinuousEffectManager';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { EffectUsageTracker } from './EffectUsageTracker';
+import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 
 type PairingGlobalContext = {
     pairedUnitColor?: string;
+    pairedUnitCarduid?: string;
+    pairedPilotLevel?: number;
 };
 
 type EffectWithRestrictions = EffectDefinition & { restrictions?: string[] };
@@ -34,10 +37,22 @@ export class PairingGlobalEffectManager {
             const sources: ZoneCard[] = [];
             for (const slotName of SLOT_ZONES) {
                 const slotResult = SlotZoneUtils.getSlotZone(player.zones, slotName);
-                if (!slotResult.isValid || !slotResult.slot?.unit?.carduid) {
+                if (!slotResult.isValid) {
                     continue;
                 }
-                sources.push(slotResult.slot.unit as ZoneCard);
+                if (slotResult.slot?.unit?.carduid) {
+                    sources.push(slotResult.slot.unit as ZoneCard);
+                }
+                if (slotResult.slot?.pilot?.carduid) {
+                    sources.push(slotResult.slot.pilot as ZoneCard);
+                }
+            }
+
+            const bases = Array.isArray((player.zones as any).base) ? (player.zones as any).base : [];
+            for (const base of bases) {
+                if (base?.carduid) {
+                    sources.push(base as ZoneCard);
+                }
             }
 
             let effectsQueued = 0;
@@ -79,7 +94,11 @@ export class PairingGlobalEffectManager {
                         gameEnv,
                         playerId,
                         sourceCard.carduid,
-                        normalizedEffect
+                        normalizedEffect,
+                        undefined,
+                        {
+                            justLinkedUnitCarduid: pairingContext.pairedUnitCarduid
+                        }
                     );
 
                     if (!result.success) {
@@ -108,9 +127,24 @@ export class PairingGlobalEffectManager {
         const requiredColor = typeof parameters?.['pairedUnitColor'] === 'string'
             ? (parameters!['pairedUnitColor'] as string)
             : undefined;
+        const requiredPilotLevel = parameters?.['pairedPilotLevel'];
 
         if (requiredColor) {
-            return (context.pairedUnitColor || '').toLowerCase() === requiredColor.toLowerCase();
+            if ((context.pairedUnitColor || '').toLowerCase() !== requiredColor.toLowerCase()) {
+                return false;
+            }
+        }
+
+        if (typeof requiredPilotLevel === 'number') {
+            return typeof context.pairedPilotLevel === 'number' && context.pairedPilotLevel === requiredPilotLevel;
+        }
+
+        if (typeof requiredPilotLevel === 'string') {
+            const level = typeof context.pairedPilotLevel === 'number' ? context.pairedPilotLevel : null;
+            if (level === null) {
+                return false;
+            }
+            return validateComparisonFilter(level, requiredPilotLevel);
         }
 
         return true;
