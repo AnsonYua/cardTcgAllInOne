@@ -535,6 +535,11 @@ export interface TokenChoiceOption {
     count: number;
     tokenData?: Record<string, unknown>;
     tokenResourcePath?: string;
+    display?: {
+        mode: 'card' | 'text';
+        cardId?: string;
+        label?: string;
+    };
 }
 
 export interface TokenChoiceEventData {
@@ -555,6 +560,11 @@ export interface OptionChoiceOption {
     index: number;
     label: string;
     payload?: Record<string, unknown>;
+    display?: {
+        mode: 'card' | 'text';
+        cardId?: string;
+        label?: string;
+    };
 }
 
 export interface OptionChoiceEventData {

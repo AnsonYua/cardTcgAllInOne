@@ -9,6 +9,7 @@ import { GameNotificationManager } from '../GameNotificationManager';
 import { HandZoneManager } from '../zones/HandZoneManager';
 import { DeckZoneManager, type DeckBottomOrder } from '../zones/DeckZoneManager';
 import { ChoiceEventScheduler } from '../choices/ChoiceEventScheduler';
+import { ChoiceDisplayBuilder } from '../choices/ChoiceDisplayBuilder';
 import type { ExecutionResult } from '../ExecutionResult';
 import { getCardIdFromUid } from '../../utils/CardUtils';
 
@@ -176,8 +177,18 @@ export class TutorTopDeckManager {
 
         if (isGd01048DeployTutor) {
             const options: OptionChoiceOption[] = [
-                { index: 0, label: 'Top', payload: { action: 'TOP' } },
-                { index: 1, label: 'Bottom', payload: { action: 'BOTTOM' } }
+                {
+                    index: 0,
+                    label: 'Top',
+                    payload: { action: 'TOP' },
+                    display: ChoiceDisplayBuilder.text('Top')
+                },
+                {
+                    index: 1,
+                    label: 'Bottom',
+                    payload: { action: 'BOTTOM' },
+                    display: ChoiceDisplayBuilder.text('Bottom')
+                }
             ];
 
             ChoiceEventScheduler.enqueuePromptChoice(gameEnv, {
@@ -207,7 +218,8 @@ export class TutorTopDeckManager {
             options.push({
                 index: i,
                 label: `Reveal and add ${choice.cardId} to hand`,
-                payload: { action: 'TAKE', carduid: choice.carduid }
+                payload: { action: 'TAKE', carduid: choice.carduid, cardId: choice.cardId },
+                display: ChoiceDisplayBuilder.card(choice.cardId, `Reveal and add ${choice.cardId} to hand`)
             });
         }
 
@@ -215,7 +227,8 @@ export class TutorTopDeckManager {
         options.push({
             index: noneIndex,
             label: 'Put it on the bottom of your deck',
-            payload: { action: 'BOTTOM' }
+            payload: { action: 'BOTTOM' },
+            display: ChoiceDisplayBuilder.text('Put it on the bottom of your deck')
         });
 
         ChoiceEventScheduler.enqueueOptionChoice(gameEnv, {

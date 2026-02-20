@@ -453,7 +453,11 @@ export class PairingEffectManager implements StandardEffectManager {
                 if (this.shouldPromptForPairingEffectOrder(pairingEffects)) {
                     const options = pairingEffects.map((effect, index) => ({
                         index,
-                        label: this.describePairingEffectOption(gameEnv, playerId, effect)
+                        label: this.describePairingEffectOption(gameEnv, playerId, effect),
+                        display: {
+                            mode: 'text' as const,
+                            label: this.describePairingEffectOption(gameEnv, playerId, effect)
+                        }
                     }));
 
                     const choiceEffect = ensureEffectDefaults({
@@ -554,7 +558,11 @@ export class PairingEffectManager implements StandardEffectManager {
                     } else {
                         const options = remainingEffects.map((remainingEffect, index) => ({
                             index,
-                            label: this.describePairingEffectOption(gameEnv, playerId, remainingEffect)
+                            label: this.describePairingEffectOption(gameEnv, playerId, remainingEffect),
+                            display: {
+                                mode: 'text' as const,
+                                label: this.describePairingEffectOption(gameEnv, playerId, remainingEffect)
+                            }
                         }));
 
                         const choiceEffect = ensureEffectDefaults({

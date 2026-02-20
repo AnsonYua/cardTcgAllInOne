@@ -97,6 +97,11 @@ export class TokenChoiceManager {
                     ap: tokenDataResult.tokenData.ap,
                     hp: tokenDataResult.tokenData.hp,
                     traits: tokenDataResult.tokenData.traits
+                },
+                display: {
+                    mode: 'card',
+                    cardId: tokenDataResult.tokenData.id,
+                    label: tokenDataResult.tokenData.name
                 }
             });
         }

@@ -43,6 +43,8 @@ describe('Pairing effect order choice', () => {
         expect(optionChoiceEvent).toBeTruthy();
         expect(optionChoiceEvent.data.effect.action).toBe('pairing_effect_order');
         expect(optionChoiceEvent.data.availableOptions).toHaveLength(2);
+        expect(optionChoiceEvent.data.availableOptions[0].display).toBeTruthy();
+        expect(optionChoiceEvent.data.availableOptions[0].display.mode).toBe('text');
     });
 
     test('non-conflicting pairing effects auto-resolve in card-text order (no OPTION_CHOICE)', () => {
