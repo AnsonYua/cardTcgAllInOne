@@ -518,8 +518,8 @@ export class EffectConditionEvaluator {
                 continue;
             }
             const slotRef = SlotZoneUtils.findSlotByCarduid(player.zones, sourceCarduid);
-            if (slotRef?.slot?.unit?.carduid) {
-                return slotRef.slot.unit.carduid;
+            if (slotRef?.unit?.carduid) {
+                return slotRef.unit.carduid;
             }
         }
 
