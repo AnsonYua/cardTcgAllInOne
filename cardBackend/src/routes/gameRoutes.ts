@@ -148,7 +148,7 @@ router.get('/cards', gameController.getCardData.bind(gameController));
 router.get('/cardSets', gameController.getCardSets.bind(gameController));
 
 /**
- * List top deck pick list parsed from requirement/topDeck.md
+ * List top deck pick list parsed from src/data/topDeck.md
  * GET /api/game/topDecks
  */
 router.get('/topDecks', gameController.getTopDecks.bind(gameController));

@@ -18,6 +18,7 @@
 - `Command card`：一次性效果卡
 - `Base card`：基地卡
 - `Trash`：棄牌區
+- `Breach`：先賦予 Breach 數值，之後在 `BATTLE_DESTROY` 才會追加防區傷害（先 base，否則 shield）
 - `Once per turn`：每回合一次（由 usage tracker 管控）
 
 ## 回合時機矩陣（簡表）
@@ -42,6 +43,11 @@
 - `addBasicEnergy`, `addExtraEnergy`
 - `discardFromHand`, `moveFromTrashToDeck`, `exileFromTrash`
 - `grant_keyword`, `grant_breach`, `prevent_battle_damage`, `prevent_damage`
+
+`grant_breach` 補充：
+- 先在 `src/services/effects/actions/EffectBreachActions.ts` 賦予 Breach 數值。
+- 再由 `src/services/effects/BattleDestroyEffectManager.ts` 在 `BATTLE_DESTROY` 觸發追加傷害。
+- 追加傷害實作在 `src/services/effects/actions/EffectShieldActions.ts`（先 base，否則 shield）。
 
 多步驟路由：`src/services/effects/EffectActionRouter.ts`
 - `sequence`, `conditional`, `draw_then_discard`, `tutor_top_deck`, `deploy_from_top_deck`

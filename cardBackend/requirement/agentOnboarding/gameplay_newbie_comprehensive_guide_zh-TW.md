@@ -56,7 +56,11 @@ Start Turn -> Draw -> Main -> Attack/Blocker/Action Step -> End Turn
 
 ### 關鍵字概念（新手重點）
 - `Burst`：護盾受擊後可能出現的觸發效果，通常會先進入 burst choice 流程。
-- `Breach`：和戰鬥結果連動的壓制效果，會提高打穿防區的壓力。
+- `Breach`：分兩步驟運作。
+  1) 先取得 `Breach` 數值（例如 Breach 1）。
+  2) 當你的單位在戰鬥中擊破對方單位（`BATTLE_DESTROY`）時才觸發。
+  之後系統會套用 `damageShield`。
+  規則：先檢查對手 `base`；若沒有 `base`，才處理 shield 側。
 - `First Strike`：在戰鬥順序中，這個單位會先造成戰鬥傷害。
 - `High-Maneuver`：這個單位有特殊攻擊目標規則，通常更不容易被一般防線阻擋。
 - `Repair`：回復傷害（HP）的效果，常見於回合結束或卡文指定時機。
@@ -64,7 +68,10 @@ Start Turn -> Draw -> Main -> Attack/Blocker/Action Step -> End Turn
 
 ### 快速例子
 - `Burst` 例子：你的 `shield` 被打到後，跳出 `BURST_EFFECT_CHOICE`，你可以決定是否發動 burst。
-- `Breach` 例子：你的攻擊單位戰鬥獲勝且有 `Breach`，會對對手防區產生額外壓力。
+- `Breach` 例子（會觸發）：你的攻擊單位有 `Breach 1`，且在戰鬥中擊破對方單位。
+  系統會再造成 1 點防區傷害（先 base，否則 shield）。
+- `Breach` 例子（不會觸發）：你的攻擊單位沒有擊破對方單位。
+  這次就不會有 Breach 追加傷害。
 - `First Strike` 例子：兩個單位交戰時，帶有 `First Strike` 的那一方先造成戰鬥傷害。
 - `High-Maneuver` 例子：你的單位用特殊目標規則攻擊，對手較難用一般防線應對。
 - `Repair` 例子：你的單位先前受到 2 點傷害，觸發 `Repair` 後會回復部分 HP。

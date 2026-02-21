@@ -47,7 +47,7 @@ Start Turn -> Draw -> Main -> Attack/Blocker/Action Step -> End Turn
 - `Continuous`: always active while condition is true.
 - `Blocker`: can intercept attacks.
 - `Repair`: heal HP.
-- `Breach`: pushes extra shield damage pressure.
+- `Breach`: gives extra defense-area damage after battle destroy.
 - `First Strike`: hits first in battle order.
 - `High-Maneuver`: special attack targeting rule.
 - `Activate`: player chooses when to use.
@@ -81,7 +81,11 @@ Start Turn -> Draw -> Main -> Attack/Blocker/Action Step -> End Turn
 
 ### Keyword concepts (important)
 - `Burst`: a shield-hit trigger. When burst condition is met, a burst choice/effect can appear.
-- `Breach`: pressure effect tied to battle outcomes. It helps push damage pressure toward defense cards.
+- `Breach`: works in two steps.
+  1) You first gain a `Breach` value (example: Breach 1).
+  2) It triggers when your unit destroys an enemy unit in battle (`BATTLE_DESTROY`).
+  Then system applies `damageShield` with that value.
+  Rule: opponent `base` is checked first; if no `base`, shield side is used.
 - `First Strike`: this unit deals battle damage first in combat order.
 - `High-Maneuver`: this unit follows special attack-targeting rules and is harder to stop in normal lines.
 - `Repair`: this effect heals damage (HP), usually in allowed timing like end-turn or card text timing.
@@ -89,7 +93,10 @@ Start Turn -> Draw -> Main -> Attack/Blocker/Action Step -> End Turn
 
 ### Quick examples
 - `Burst` example: Your shield card is damaged. A `BURST_EFFECT_CHOICE` pops up, and you may activate burst text.
-- `Breach` example: Your attacker wins battle and has `Breach`, so extra pressure is applied to opponent defense cards.
+- `Breach` example (works): Your attacker has `Breach 1` and destroys an enemy unit in battle.
+  Then backend applies 1 extra defense-area damage (base first, otherwise shield).
+- `Breach` example (does not work): Your attacker did not destroy a unit.
+  Then no breach follow-up damage is applied.
 - `First Strike` example: Two units battle. The one with `First Strike` deals battle damage first.
 - `High-Maneuver` example: Your unit attacks using special targeting rules, so normal defense lines are harder to use.
 - `Repair` example: Your unit took 2 damage earlier. A `Repair` effect triggers, and that unit recovers HP.

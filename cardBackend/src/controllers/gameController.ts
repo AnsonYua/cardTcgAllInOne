@@ -1453,7 +1453,7 @@ export class GameController {
     }
 
     /**
-     * List top deck pick list parsed from requirement/topDeck.md
+     * List top deck pick list parsed from src/data/topDeck.md
      * GET /api/game/topDecks
      */
     async getTopDecks(_req: Request, res: Response): Promise<void> {

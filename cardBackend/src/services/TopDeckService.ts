@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import * as path from 'path';
+import { resolveDataPath } from '../config/dataPaths';
 
 export type TopDeckEntry = {
     id: string;
@@ -14,7 +14,7 @@ export type TopDeckItem = {
 };
 
 const TOP_DECK_ENTRY_PATTERN = /^(\d+)x([A-Z]{2}\d{2}-\d{3})$/i;
-const DEFAULT_TOP_DECK_PATH = path.resolve(__dirname, '../../requirement/topDeck.md');
+const DEFAULT_TOP_DECK_PATH = resolveDataPath('topDeck.md');
 
 const toDeckSlug = (name: string): string => {
     return name
