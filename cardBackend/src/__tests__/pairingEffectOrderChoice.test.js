@@ -3,11 +3,30 @@ const { PairingEffectManager } = require('../services/PairingEffectManager');
 const { PairingEffectOrderManager } = require('../services/effects/PairingEffectOrderManager');
 const { EventFactory } = require('../services/EventQueue/EventFactory');
 const { EventType } = require('../models/GameEnums');
+const { ChoiceConfirmationService } = require('../services/choices/ChoiceConfirmationService');
+
+const createEnemyUnit = (carduid, hp = 4) => ({
+    carduid,
+    cardData: {
+        id: carduid.split('_')[0],
+        name: 'Enemy Unit',
+        cardType: 'unit',
+        level: 3,
+        color: 'Blue',
+        ap: 2,
+        hp,
+        effects: { description: [], rules: [] }
+    },
+    isRested: false,
+    damageReceived: 0
+});
 
 describe('Pairing effect order choice', () => {
     test('PAIRING_EFFECT_TRIGGERED with multiple effects schedules an OPTION_CHOICE', () => {
         const gameEnv = new GameEnvironment();
         gameEnv.addPlayer('playerId_1', 'P1');
+        const enemy = gameEnv.addPlayer('playerId_2', 'P2');
+        enemy.zones.slot1 = { unit: createEnemyUnit('ENEMY_0001') };
 
         const multiEffectsEventData = {
             carduid: 'some_pairing_source',
@@ -197,5 +216,106 @@ describe('Pairing effect order choice', () => {
         expect(refresh.payload.reason).toBe('PAIRING_EFFECT_STEP_RESOLVED');
         expect(refresh.payload.effectId).toBe('draw_1');
         expect(refresh.payload.remainingEffects).toBe(1);
+    });
+
+    test('auto-skips no-target pairing effect and resolves remaining effect without OPTION_CHOICE', () => {
+        const gameEnv = new GameEnvironment();
+        const player = gameEnv.addPlayer('playerId_1', 'P1');
+        gameEnv.addPlayer('playerId_2', 'P2');
+        player.deck.mainDeck = ['ST01-004_draw_test_0001'];
+
+        const eventData = {
+            carduid: 'pair_source_test_0001',
+            effects: [
+                {
+                    effectId: 'paired_white_base_draw',
+                    type: 'triggered',
+                    trigger: 'PAIRING_COMPLETE',
+                    action: 'draw',
+                    sourceCarduid: 'pair_source_test_0001',
+                    target: { scope: 'self' },
+                    parameters: { value: 1 }
+                },
+                {
+                    effectId: 'paired_rest_medium_hp',
+                    type: 'triggered',
+                    trigger: 'PAIRING_COMPLETE',
+                    action: 'rest',
+                    sourceCarduid: 'pilot_source_test_0002',
+                    target: { type: 'unit', scope: 'opponent', count: 1, filters: { hp: '<=5' } }
+                }
+            ]
+        };
+
+        const result = PairingEffectManager.processPairingEffect(gameEnv, 'playerId_1', eventData);
+        expect(result.success).toBe(true);
+        expect(result.effectsProcessed).toBe(1);
+        expect(player.deck.handUids).toContain('ST01-004_draw_test_0001');
+
+        const optionChoiceEvent = gameEnv.processingQueue.find(e => e.type === EventType.OPTION_CHOICE);
+        expect(optionChoiceEvent).toBeFalsy();
+
+        const refresh = gameEnv.notificationQueue.find(n => n.type === 'GAME_ENV_REFRESH');
+        expect(refresh).toBeTruthy();
+        expect(refresh.payload.skippedNoTargetEffects).toBe(1);
+    });
+
+    test('confirmOptionChoice succeeds when draw resolves from object deck entries', async () => {
+        const gameEnv = new GameEnvironment();
+        const player = gameEnv.addPlayer('playerId_1', 'P1');
+        const enemy = gameEnv.addPlayer('playerId_2', 'P2');
+        player.deck.mainDeck = [{ carduid: 'ST01-004_objdeck_0001', cardId: 'ST01-004' }];
+        enemy.zones.slot1 = { unit: createEnemyUnit('ENEMY_0002') };
+
+        const effects = [
+            {
+                effectId: 'paired_white_base_draw',
+                type: 'triggered',
+                trigger: 'PAIRING_COMPLETE',
+                action: 'draw',
+                sourceCarduid: 'unit_source_test_0001',
+                target: { scope: 'self' },
+                parameters: { value: 1 }
+            },
+            {
+                effectId: 'paired_rest_medium_hp',
+                type: 'triggered',
+                trigger: 'PAIRING_COMPLETE',
+                action: 'rest',
+                sourceCarduid: 'pilot_source_test_0001',
+                target: { type: 'unit', scope: 'opponent', count: 1, filters: { hp: '<=5' } }
+            }
+        ];
+
+        const optionChoice = EventFactory.createOptionChoiceEvent({
+            playerId: 'playerId_1',
+            sourceCarduid: 'pilot_source_test_0001',
+            effect: { effectId: 'pairing_effect_order', type: 'internal', trigger: 'CHOICE', action: 'pairing_effect_order' },
+            availableOptions: [
+                { index: 0, label: 'draw first' },
+                { index: 1, label: 'rest first' }
+            ],
+            context: { kind: 'PAIRING_EFFECT_ORDER', pairingCarduid: 'pilot_source_test_0001', effects }
+        });
+        gameEnv.processingQueue.push(optionChoice);
+
+        const persistence = {
+            loadGameFromFile: jest.fn(async () => gameEnv),
+            saveGameToFile: jest.fn(async (_gameId, env) => {
+                JSON.stringify(env);
+            })
+        };
+
+        const result = await ChoiceConfirmationService.confirmOptionChoice(
+            persistence,
+            'test_game_id',
+            'playerId_1',
+            optionChoice.id,
+            1
+        );
+
+        expect(result.success).toBe(true);
+        expect(player.deck.handUids).toContain('ST01-004_objdeck_0001');
+        expect(player.deck.handUids.every((uid) => typeof uid === 'string')).toBe(true);
     });
 });

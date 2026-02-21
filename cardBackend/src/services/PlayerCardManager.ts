@@ -15,6 +15,7 @@ import { UnitRestrictionUtils } from './restrictions/UnitRestrictionUtils';
 import { UnitSlotDestructionFlow } from './destruction/UnitSlotDestructionFlow';
 import { SlotExitCoordinator } from './zones/SlotExitCoordinator';
 import { resolveUnitPlacementSlot } from './playCard/UnitReplaceSlotCoordinator';
+import { normalizeCarduid } from '../utils/CardUtils';
 
 export interface CardPlacementResult {
     success: boolean;
@@ -41,6 +42,14 @@ export class PlayerCardManager {
         eventData: PlayCardEventData
     ): CardPlacementResult {
         try {
+            const normalizedCarduid = normalizeCarduid(eventData.carduid as unknown as string);
+            if (!normalizedCarduid) {
+                return {
+                    success: false,
+                    error: 'Invalid carduid: expected string carduid'
+                };
+            }
+
             // Use eventData object directly to minimize property extraction conversions
             const player = gameEnv.players[playerId];
             if (!player || !player.zones) {
@@ -50,11 +59,11 @@ export class PlayerCardManager {
                 };
             }
 
-            const fullCardData = CardDatabaseManager.getCardDetailsFromCarduid(eventData.carduid);
+            const fullCardData = CardDatabaseManager.getCardDetailsFromCarduid(normalizedCarduid);
             if (!fullCardData) {
                 return {
                     success: false,
-                    error: `Card data not found for ${eventData.carduid} in card database`
+                    error: `Card data not found for ${normalizedCarduid} in card database`
                 };
             }
 
@@ -64,34 +73,34 @@ export class PlayerCardManager {
                     return this.placeUnitCard(gameEnv,
                                              player.zones, 
                                              fullCardData, 
-                                             eventData.carduid, 
+                                             normalizedCarduid, 
                                              playerId,
                                              eventData.replaceSlot as string | undefined);
 
                 case 'pilot':
                     return this.placePilotCard(player.zones, 
                                                fullCardData, 
-                                               eventData.carduid,
+                                               normalizedCarduid,
                                                playerId, 
                                                eventData.targetUnit);
 
                 case 'command':
                     return this.placeCommandCard(player.zones, 
                                                  fullCardData, 
-                                                 eventData.carduid, 
+                                                 normalizedCarduid, 
                                                  playerId);
 
                 case 'base':
                     return this.placeBaseCard(gameEnv, 
                                               player.zones, 
                                               fullCardData, 
-                                              eventData.carduid, 
+                                              normalizedCarduid, 
                                               playerId);
 
                 default:
                     return {
                         success: false,
-                        error: `cannot play as ${eventData.playAs} for card ${eventData.carduid}`
+                        error: `cannot play as ${eventData.playAs} for card ${normalizedCarduid}`
                     };
             }
 
@@ -114,6 +123,14 @@ export class PlayerCardManager {
         options: CardPlacementOptions = {}
     ): CardPlacementResult {
         try {
+            const normalizedCarduid = normalizeCarduid(carduid);
+            if (!normalizedCarduid) {
+                return {
+                    success: false,
+                    error: 'Invalid carduid: expected string carduid'
+                };
+            }
+
             const player = gameEnv.players[playerId];
             if (!player || !player.zones) {
                 return {
@@ -123,7 +140,7 @@ export class PlayerCardManager {
             }
 
             // Extract cardId from carduid
-            const cardId = carduid.split('_')[0];
+            const cardId = normalizedCarduid.split('_')[0];
 
             // Load full card data from card database
             const fullCardData = CardDatabaseManager.getCardDetails(cardId);
@@ -140,21 +157,21 @@ export class PlayerCardManager {
 
             switch (cardType) {
                 case 'unit':
-                    return this.placeUnitCard(gameEnv, player.zones, fullCardData, carduid, playerId, options.replaceSlot);
+                    return this.placeUnitCard(gameEnv, player.zones, fullCardData, normalizedCarduid, playerId, options.replaceSlot);
 
                 case 'pilot':
-                    return this.placePilotCard(player.zones, fullCardData, carduid, playerId, options.targetUnit);
+                    return this.placePilotCard(player.zones, fullCardData, normalizedCarduid, playerId, options.targetUnit);
 
                 case 'command':
-                    return this.placeCommandCard(player.zones, fullCardData, carduid, playerId);
+                    return this.placeCommandCard(player.zones, fullCardData, normalizedCarduid, playerId);
 
                 case 'base':
-                    return this.placeBaseCard(gameEnv, player.zones, fullCardData, carduid, playerId);
+                    return this.placeBaseCard(gameEnv, player.zones, fullCardData, normalizedCarduid, playerId);
 
                 default:
                     return {
                         success: false,
-                        error: `Unknown card type '${cardType}' for card ${carduid}`
+                        error: `Unknown card type '${cardType}' for card ${normalizedCarduid}`
                     };
             }
 

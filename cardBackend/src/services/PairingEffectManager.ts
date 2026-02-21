@@ -438,6 +438,7 @@ export class PairingEffectManager implements StandardEffectManager {
             let remainingEffects = Array.isArray((eventData as any).remainingEffects)
                 ? ((eventData as any).remainingEffects as PairingEffect[])
                 : [];
+            let skippedNoTargetEffectsCount = 0;
             
             if (!pairingEffects || pairingEffects.length === 0) {
                 console.log(`⚠️ No pairing effects to process`);
@@ -445,6 +446,36 @@ export class PairingEffectManager implements StandardEffectManager {
                     success: true, 
                     message: 'No pairing effects to process',
                     effectsProcessed: 0 
+                };
+            }
+
+            const initialPartition = this.partitionImmediatelyResolvableEffects(
+                gameEnv,
+                playerId,
+                eventData.carduid,
+                pairingEffects
+            );
+            pairingEffects = initialPartition.resolvableEffects;
+            skippedNoTargetEffectsCount += initialPartition.skippedNoTargetEffects.length;
+
+            if (pairingEffects.length === 0 && remainingEffects.length > 0) {
+                const remainingPartition = this.partitionImmediatelyResolvableEffects(
+                    gameEnv,
+                    playerId,
+                    eventData.carduid,
+                    remainingEffects
+                );
+                pairingEffects = remainingPartition.resolvableEffects;
+                remainingEffects = [];
+                skippedNoTargetEffectsCount += remainingPartition.skippedNoTargetEffects.length;
+            }
+
+            if (pairingEffects.length === 0) {
+                console.log(`⏭️ All pairing effects skipped due to no legal targets`);
+                return {
+                    success: true,
+                    message: 'No resolvable pairing effects',
+                    effectsProcessed: 0
                 };
             }
 
@@ -544,6 +575,17 @@ export class PairingEffectManager implements StandardEffectManager {
 
             // Schedule remaining effects after the current one (and after any pending TARGET_CHOICE).
             if (remainingEffects.length > 0) {
+                const remainingPartition = this.partitionImmediatelyResolvableEffects(
+                    gameEnv,
+                    playerId,
+                    eventData.carduid,
+                    remainingEffects
+                );
+                remainingEffects = remainingPartition.resolvableEffects;
+                skippedNoTargetEffectsCount += remainingPartition.skippedNoTargetEffects.length;
+            }
+
+            if (remainingEffects.length > 0) {
                 if (remainingEffects.length === 1) {
                     const nextEvent = EventFactory.createPairingEffectEvent(playerId, eventData.carduid, [
                         remainingEffects[0] as unknown as PairingEffectDefinition
@@ -614,6 +656,7 @@ export class PairingEffectManager implements StandardEffectManager {
                     sourceCarduid: eventData.carduid,
                     effectId,
                     remainingEffects: remainingEffects.length,
+                    skippedNoTargetEffects: skippedNoTargetEffectsCount,
                     timestamp: Date.now()
                 },
                 'normal'
@@ -646,6 +689,41 @@ export class PairingEffectManager implements StandardEffectManager {
         const sourceName = this.findCardName(gameEnv, playerId, sourceCarduid);
         const prefix = sourceName ? `${sourceName}: ` : '';
         return `${prefix}${effectId} (${action})`;
+    }
+
+    private static partitionImmediatelyResolvableEffects(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        pairingCarduid: string,
+        effects: PairingEffect[]
+    ): {
+        resolvableEffects: PairingEffect[];
+        skippedNoTargetEffects: PairingEffect[];
+    } {
+        const resolvableEffects: PairingEffect[] = [];
+        const skippedNoTargetEffects: PairingEffect[] = [];
+
+        for (const effect of effects) {
+            const sourceCarduid = typeof effect?.sourceCarduid === 'string' && effect.sourceCarduid.length > 0
+                ? effect.sourceCarduid
+                : pairingCarduid;
+            const preview = DeployTargetManager.evaluateImmediateResolution(
+                gameEnv,
+                playerId,
+                sourceCarduid,
+                effect
+            );
+
+            if (preview.noOpNoTargets) {
+                skippedNoTargetEffects.push(effect);
+                console.log(`⏭️ Auto-skipping pairing effect ${effect.effectId || 'pairing_effect'} (no legal targets)`);
+                continue;
+            }
+
+            resolvableEffects.push(effect);
+        }
+
+        return { resolvableEffects, skippedNoTargetEffects };
     }
 
     private static shouldPromptForPairingEffectOrder(effects: PairingEffect[]): boolean {

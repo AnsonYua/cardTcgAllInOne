@@ -41,6 +41,83 @@ import type { DeployTargetResult } from './DeployTargetResult';
 export type { DeployTargetResult } from './DeployTargetResult';
 
 export class DeployTargetManager {
+    static evaluateImmediateResolution(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        sourceCarduid: string,
+        effect: EffectDefinition,
+        selectionContext?: {
+            justLinkedUnitCarduid?: string;
+        },
+        dynamicFilterContext?: {
+            previousTargets?: TargetReference[];
+        }
+    ): { resolvable: boolean; noOpNoTargets: boolean; reason?: string } {
+        const normalizedEffect = ensureEffectDefaults(effect);
+        const effectAction = EffectExecutor.getEffectAction(normalizedEffect);
+
+        if (EffectExecutor.actionSupportsNoTargets(effectAction)) {
+            return { resolvable: true, noOpNoTargets: false };
+        }
+
+        try {
+            const targetConfig = TargetResolver.resolveTargetConfig(normalizedEffect);
+            let availableTargets = TargetScopeResolverRegistry.resolve(gameEnv, sourceCarduid, normalizedEffect);
+            if (!availableTargets) {
+                availableTargets = TargetResolver.generateAvailableTargets(
+                    gameEnv,
+                    playerId,
+                    targetConfig,
+                    sourceCarduid,
+                    dynamicFilterContext
+                );
+            }
+
+            availableTargets = TargetSelectionPipeline.apply(
+                gameEnv,
+                availableTargets,
+                normalizedEffect,
+                sourceCarduid,
+                selectionContext
+            );
+
+            const excludePairedUnit = normalizedEffect.parameters?.excludePairedUnit === true;
+            const pairedSlot = typeof (normalizedEffect as any).pairedSlot === 'string' ? ((normalizedEffect as any).pairedSlot as string) : '';
+            if (excludePairedUnit && pairedSlot) {
+                const player = gameEnv.getPlayer(playerId);
+                const pairedUnitCarduid = player?.zones && (player.zones as any)[pairedSlot]?.unit?.carduid;
+                if (typeof pairedUnitCarduid === 'string' && pairedUnitCarduid.length > 0) {
+                    availableTargets = TargetSelectionUtils.excludeCarduid(availableTargets, pairedUnitCarduid);
+                }
+            }
+
+            availableTargets = CostReplacementManager.augmentRestBaseTargets(
+                gameEnv,
+                playerId,
+                sourceCarduid,
+                normalizedEffect,
+                availableTargets
+            );
+
+            if (availableTargets.length > 0) {
+                return { resolvable: true, noOpNoTargets: false };
+            }
+
+            const failIfNoTargets = normalizedEffect.parameters?.failIfNoTargets === true ||
+                (normalizedEffect.target as any)?.required === true;
+            if (failIfNoTargets) {
+                return { resolvable: true, noOpNoTargets: false, reason: 'no_targets_required' };
+            }
+
+            return { resolvable: false, noOpNoTargets: true, reason: 'no_targets' };
+        } catch (error) {
+            return {
+                resolvable: true,
+                noOpNoTargets: false,
+                reason: error instanceof Error ? error.message : 'resolution_preview_failed'
+            };
+        }
+    }
 
     /**
      * Main entry point: Process effect that may require target selection

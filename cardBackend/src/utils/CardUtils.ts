@@ -21,6 +21,27 @@ export function getCardIdFromUid(carduid: string): string {
     return parts[0];
 }
 
+export type CardUidLike = string | { carduid?: unknown } | null | undefined;
+
+/**
+ * Normalize mixed carduid shapes to a usable string.
+ * Accepts plain string carduid or object-like entries containing a carduid field.
+ */
+export function normalizeCarduid(input: CardUidLike): string | undefined {
+    if (typeof input === 'string') {
+        return input.length > 0 ? input : undefined;
+    }
+
+    if (input && typeof input === 'object') {
+        const value = (input as { carduid?: unknown }).carduid;
+        if (typeof value === 'string' && value.length > 0) {
+            return value;
+        }
+    }
+
+    return undefined;
+}
+
 /**
  * Validate carduid format
  * Expected format: "cardId_timestamp_uniqueId"

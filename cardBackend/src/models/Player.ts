@@ -16,6 +16,7 @@ import {
 import { calculateBaseFieldValue, calculateSlotFieldValue } from '../utils/FieldValueCalculator';
 import { canUnitAttackThisTurn } from '../utils/UnitAttackUtils';
 import { ensureUnitTurnStateDefaults, resetUnitTurnState } from '../utils/UnitTurnStateUtils';
+import { normalizeCarduid } from '../utils/CardUtils';
 import type { DelayedTrigger } from './DelayedTrigger';
 
 // ============ ZONE INTERFACES ============
@@ -119,15 +120,28 @@ export class PlayerDeck {
     public mainDeck: string[] = [];
 
     constructor(data: any = {}) {
-        this._handUids = data.hand || [];
-        this.mainDeck = data.mainDeck || [];
+        this._handUids = PlayerDeck.normalizeUidArray(data.hand);
+        this.mainDeck = PlayerDeck.normalizeUidArray(data.mainDeck);
+    }
+
+    private static normalizeUidArray(value: unknown): string[] {
+        if (!Array.isArray(value)) {
+            return [];
+        }
+
+        return value
+            .map((entry) => normalizeCarduid(entry as any))
+            .filter((entry): entry is string => typeof entry === 'string' && entry.length > 0);
     }
     
     /**
      * Get hand as array of card objects with details from global card database
      */
     get hand(): HandCard[] {
-        return this._handUids.map(carduid => {
+        return this._handUids
+            .map(entry => normalizeCarduid(entry as unknown as string))
+            .filter((carduid): carduid is string => typeof carduid === 'string' && carduid.length > 0)
+            .map(carduid => {
             const cardId = carduid.split('_')[0];
             const cardData = CardDatabaseManager.getCardDetails(cardId);
             
@@ -141,7 +155,7 @@ export class PlayerDeck {
                     power: 0
                 }
             };
-        });
+            });
     }
     
     /**
@@ -184,8 +198,8 @@ export class PlayerDeck {
 
     static fromJSON(data: any): PlayerDeck {
         const deck = new PlayerDeck();
-        deck._handUids = data.handUids || data.hand || [];
-        deck.mainDeck = data.mainDeck || [];
+        deck._handUids = PlayerDeck.normalizeUidArray(data.handUids || data.hand);
+        deck.mainDeck = PlayerDeck.normalizeUidArray(data.mainDeck);
         return deck;
     }
 }

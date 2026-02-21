@@ -37,6 +37,7 @@ import type { AddToHandOptions } from '../zones/HandZoneManager';
 import { EffectDrawTriggerDispatcher } from './EffectDrawTriggerDispatcher';
 import { DrawNotificationPublisher } from './DrawNotificationPublisher';
 import { applyDeployEffect } from './actions/EffectDeployActions';
+import { normalizeCarduid } from '../../utils/CardUtils';
 
 interface EffectActionContext {
     gameEnv: GameEnvironment;
@@ -509,11 +510,14 @@ export class EffectExecutor {
         const drawContext = options.drawContext;
 
         for (let i = 0; i < count && deck.mainDeck.length > 0; i++) {
-            const drawnCard = deck.mainDeck.shift();
-            if (!drawnCard) continue;
-            drawnUids.push(drawnCard);
+            const rawDeckEntry = deck.mainDeck.shift();
+            const drawnCarduid = normalizeCarduid(rawDeckEntry as any);
+            if (!drawnCarduid) {
+                throw new Error(`Invalid deck entry while drawing for ${playerId}: expected carduid string or {carduid}`);
+            }
+            drawnUids.push(drawnCarduid);
 
-            const addResult = this.addCardToPlayerHand(gameEnv, playerId, drawnCard, undefined, {
+            const addResult = this.addCardToPlayerHand(gameEnv, playerId, drawnCarduid, undefined, {
                 eventType: 'CARD_DRAWN',
                 sourceZone: 'deck',
                 reason: 'draw',
@@ -521,7 +525,7 @@ export class EffectExecutor {
                 drawContext
             });
             if (!addResult.success) {
-                throw new Error(addResult.error || `Failed to add ${drawnCard} to hand`);
+                throw new Error(addResult.error || `Failed to add ${drawnCarduid} to hand`);
             }
         }
 
