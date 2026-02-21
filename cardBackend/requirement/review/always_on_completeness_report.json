@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-02-21T05:12:54.973Z",
+  "generatedAt": "2026-02-21T05:54:44.969Z",
   "entryCount": 127,
   "summary": {
-    "complete": 51,
+    "complete": 54,
     "legacy-encoding-but-behaviorally-complete": 55,
-    "likely-missing-rule": 21
+    "likely-missing-rule": 18
   },
   "entries": [
     {
@@ -173,7 +173,7 @@
       "file": "gd01Card.json",
       "cardId": "GD01-087",
       "name": "Sayla Mass",
-      "status": "likely-missing-rule"
+      "status": "complete"
     },
     {
       "file": "gd01Card.json",
@@ -191,7 +191,7 @@
       "file": "gd01Card.json",
       "cardId": "GD01-092",
       "name": "M'Quve",
-      "status": "likely-missing-rule"
+      "status": "complete"
     },
     {
       "file": "gd01Card.json",
@@ -203,7 +203,7 @@
       "file": "gd01Card.json",
       "cardId": "GD01-096",
       "name": "Cagalli Yula Athha",
-      "status": "likely-missing-rule"
+      "status": "complete"
     },
     {
       "file": "gd01Card.json",

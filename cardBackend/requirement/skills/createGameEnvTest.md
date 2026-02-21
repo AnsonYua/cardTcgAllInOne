@@ -36,7 +36,12 @@ Use this skill when you need to create or review a complete action scenario JSON
   - Level 1 → 1 energy card, Level 2 → 2 energy cards, Level 3 → 3 energy cards
   - Level 4 → 4 energy cards, Level 5 → 5 energy cards, Level 6 → 6 energy cards, Level 7 → 7 energy cards
   - Example: GD03-038 (Level 4) requires at least 4 energy cards in player's energy area
-- Card `Cost` is the number of energy cards tapped/activated to pay for playing the card
+  - Card `Cost` is the number of energy cards tapped/activated to pay for playing the card
+- **Energy Configuration Rule**
+  - Unless there's a specific test requirement for rested energy, all energy cards in the energy area should be **active** (`isRested: false`)
+  - Energy cards are consumed when playing a card, turning them from active to rested
+  - Only set `isRested: true` if the scenario specifically requires testing with pre-rested energy
+  - Example: A scenario testing "cannot play due to insufficient active energy" might have some rested cards
 
 ## Scenario Path Format
 The scenario path to add to `SCENARIO_PRESET_GROUPS` should match the file path structure:

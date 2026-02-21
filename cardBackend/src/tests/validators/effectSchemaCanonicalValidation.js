@@ -430,6 +430,53 @@ function validateScalingConfig(scaling, jsonPath, context, diagnostics) {
 }
 
 function detectAlwaysOnTextRuleMismatches(fileName, cards, diagnostics) {
+  function walkSteps(steps, visitor) {
+    if (!Array.isArray(steps)) {
+      return;
+    }
+    for (const step of steps) {
+      if (!step || typeof step !== 'object') {
+        continue;
+      }
+      visitor(step);
+      if (Array.isArray(step?.parameters?.steps)) {
+        walkSteps(step.parameters.steps, visitor);
+      }
+      if (Array.isArray(step?.parameters?.then)) {
+        walkSteps(step.parameters.then, visitor);
+      }
+      if (Array.isArray(step?.parameters?.else)) {
+        walkSteps(step.parameters.else, visitor);
+      }
+      if (Array.isArray(step?.parameters?.branches)) {
+        for (const branch of step.parameters.branches) {
+          if (Array.isArray(branch?.steps)) {
+            walkSteps(branch.steps, visitor);
+          }
+        }
+      }
+    }
+  }
+
+  function hasRuleCapability(rules, predicate) {
+    for (const rule of rules) {
+      if (predicate(rule)) {
+        return true;
+      }
+      const steps = rule?.parameters?.steps;
+      let foundInSteps = false;
+      walkSteps(steps, (step) => {
+        if (predicate(step)) {
+          foundInSteps = true;
+        }
+      });
+      if (foundInSteps) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   for (const [cardId, card] of Object.entries(cards)) {
     const descriptions = Array.isArray(card?.effects?.description) ? card.effects.description : [];
     const rules = Array.isArray(card?.effects?.rules) ? card.effects.rules : [];
@@ -437,25 +484,46 @@ function detectAlwaysOnTextRuleMismatches(fileName, cards, diagnostics) {
       continue;
     }
 
-    const text = descriptions.join(' ');
-    const hasRepairText = /<Repair\s*\d+>/i.test(text);
-    const hasBlockerText = /<Blocker>/i.test(text);
-    const hasBreachText = /<Breach\s*\d+>/i.test(text);
+    const hasAlwaysOnRepairText = descriptions.some((line) =>
+      typeof line === 'string' && (
+        /^\s*<Repair\s*\d+>/i.test(line) ||
+        /\b(this Unit|all your .+ Units?)\b.{0,80}\b(gains?|gets?)\s*<Repair\s*\d+>/i.test(line)
+      ) &&
+      !/during this turn/i.test(line)
+    );
+    const hasAlwaysOnBlockerText = descriptions.some((line) =>
+      typeof line === 'string' && (
+        /^\s*<Blocker>/i.test(line) ||
+        /\b(this Unit|all your .+ Units?)\b.{0,80}\b(gains?|gets?)\s*<Blocker>/i.test(line)
+      ) &&
+      !/during this turn/i.test(line)
+    );
+    const hasAlwaysOnBreachText = descriptions.some((line) =>
+      typeof line === 'string' && (
+        /^\s*<Breach\s*\d+>/i.test(line) ||
+        /\b(this Unit|all your .+ Units?)\b.{0,80}\b(gains?|gets?)\s*<Breach\s*\d+>/i.test(line)
+      ) &&
+      !/during this turn/i.test(line)
+    );
 
-    const hasRepairRule = rules.some((rule) =>
-      String(rule?.action || '').toLowerCase() === 'heal' ||
-      (String(rule?.action || '').toLowerCase() === 'grant_keyword' && String(rule?.parameters?.keyword || '').toLowerCase() === 'repair')
-    );
-    const hasBlockerRule = rules.some((rule) =>
-      String(rule?.trigger || '').toUpperCase() === 'ATTACK_REDIRECT' ||
-      (String(rule?.action || '').toLowerCase() === 'grant_keyword' && String(rule?.parameters?.keyword || '').toLowerCase() === 'blocker')
-    );
-    const hasBreachRule = rules.some((rule) =>
-      String(rule?.action || '').toLowerCase() === 'damageshield' ||
-      String(rule?.action || '').toLowerCase() === 'grant_breach'
-    );
+    const hasRepairRule = hasRuleCapability(rules, (rule) => {
+      const action = String(rule?.action || '').toLowerCase();
+      const keyword = String(rule?.parameters?.keyword || '').toLowerCase();
+      return action === 'heal' || (action === 'grant_keyword' && keyword === 'repair');
+    });
+    const hasBlockerRule = hasRuleCapability(rules, (rule) => {
+      const action = String(rule?.action || '').toLowerCase();
+      const keyword = String(rule?.parameters?.keyword || '').toLowerCase();
+      const trigger = String(rule?.trigger || '').toUpperCase();
+      return trigger === 'ATTACK_REDIRECT' || (action === 'grant_keyword' && keyword === 'blocker');
+    });
+    const hasBreachRule = hasRuleCapability(rules, (rule) => {
+      const action = String(rule?.action || '').toLowerCase();
+      const keyword = String(rule?.parameters?.keyword || '').toLowerCase();
+      return action === 'damageshield' || action === 'grant_breach' || (action === 'grant_keyword' && keyword === 'breach');
+    });
 
-    if (hasRepairText && !hasRepairRule) {
+    if (hasAlwaysOnRepairText && !hasRepairRule) {
       diagnostics.push({
         severity: 'warning',
         cardId,
@@ -464,7 +532,7 @@ function detectAlwaysOnTextRuleMismatches(fileName, cards, diagnostics) {
         message: `${fileName}: repair text present but no repair-capable rule found`
       });
     }
-    if (hasBlockerText && !hasBlockerRule) {
+    if (hasAlwaysOnBlockerText && !hasBlockerRule) {
       diagnostics.push({
         severity: 'warning',
         cardId,
@@ -473,7 +541,7 @@ function detectAlwaysOnTextRuleMismatches(fileName, cards, diagnostics) {
         message: `${fileName}: blocker text present but no blocker-capable rule found`
       });
     }
-    if (hasBreachText && !hasBreachRule) {
+    if (hasAlwaysOnBreachText && !hasBreachRule) {
       diagnostics.push({
         severity: 'warning',
         cardId,

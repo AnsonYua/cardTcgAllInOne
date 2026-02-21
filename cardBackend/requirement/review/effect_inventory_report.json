@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-02-21T05:12:54.967Z",
+  "generatedAt": "2026-02-21T05:54:44.962Z",
   "fileCount": 11,
   "cardCount": 538,
   "ruleTypeSummary": {
-    "continuous": 76,
-    "triggered": 414,
+    "continuous": 79,
+    "triggered": 415,
     "activated": 38,
     "keyword": 19,
     "play": 88,
@@ -1020,12 +1020,13 @@
       "cardId": "GD01-087",
       "name": "Sayla Mass",
       "cardType": "pilot",
-      "descriptionCount": 1,
-      "ruleCount": 1,
+      "descriptionCount": 2,
+      "ruleCount": 2,
       "effectIds": [
-        "burst_add_to_hand"
+        "burst_add_to_hand",
+        "continuous_gain_repair_1_if_blue_unit"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd01Card.json",
@@ -1081,12 +1082,13 @@
       "cardId": "GD01-092",
       "name": "M'Quve",
       "cardType": "pilot",
-      "descriptionCount": 1,
-      "ruleCount": 1,
+      "descriptionCount": 2,
+      "ruleCount": 2,
       "effectIds": [
-        "burst_add_to_hand"
+        "burst_add_to_hand",
+        "continuous_gain_breach_1_if_zeon_unit"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd01Card.json",
@@ -1130,12 +1132,13 @@
       "cardId": "GD01-096",
       "name": "Cagalli Yula Athha",
       "cardType": "pilot",
-      "descriptionCount": 1,
-      "ruleCount": 1,
+      "descriptionCount": 2,
+      "ruleCount": 2,
       "effectIds": [
-        "burst_add_to_hand"
+        "burst_add_to_hand",
+        "continuous_gain_blocker_if_white_unit"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd01Card.json",
@@ -2440,7 +2443,7 @@
       "cardId": "GD02-072",
       "name": "Hyaku-Shiki",
       "cardType": "unit",
-      "descriptionCount": 1,
+      "descriptionCount": 2,
       "ruleCount": 2,
       "effectIds": [
         "blocker",
@@ -2617,9 +2620,10 @@
       "name": "Orga, Crot, and Shani",
       "cardType": "pilot",
       "descriptionCount": 2,
-      "ruleCount": 1,
+      "ruleCount": 2,
       "effectIds": [
-        "burst_add_to_hand"
+        "burst_add_to_hand",
+        "linked_rest_enemy_blocker_if_blue_unit"
       ],
       "alwaysOnStatus": "likely-missing-rule"
     },
@@ -3216,7 +3220,7 @@
       "cardId": "GD03-003",
       "name": "Messala",
       "cardType": "unit",
-      "descriptionCount": 1,
+      "descriptionCount": 2,
       "ruleCount": 2,
       "effectIds": [
         "blocker",

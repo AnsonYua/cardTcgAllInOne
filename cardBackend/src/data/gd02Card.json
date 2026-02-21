@@ -4224,6 +4224,37 @@
               "scope": "self"
             },
             "action": "addToHand"
+          },
+          {
+            "effectId": "linked_rest_enemy_blocker_if_blue_unit",
+            "type": "triggered",
+            "trigger": "PAIRING_COMPLETE",
+            "sourceConditions": [
+              {
+                "type": "linked"
+              }
+            ],
+            "conditions": [
+              {
+                "type": "pairedUnitColor",
+                "scope": "source",
+                "value": "Blue"
+              }
+            ],
+            "action": "rest",
+            "target": {
+              "type": "unit",
+              "scope": "opponent",
+              "filters": {
+                "keywords": [
+                  "Blocker"
+                ]
+              },
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
+            }
           }
         ]
       }
