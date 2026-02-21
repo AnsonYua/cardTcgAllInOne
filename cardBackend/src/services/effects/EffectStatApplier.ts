@@ -6,6 +6,7 @@ import { extractNumericValue } from './actions/EffectActionUtils';
 import { SlotHealthService } from '../health/SlotHealthService';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { EffectApReductionPreventionUtils } from './EffectApReductionPreventionUtils';
+import { TriggeredEffectProcessor } from './TriggeredEffectProcessor';
 
 type StatApplicationContext = {
     sourcePlayerId?: string;
@@ -101,7 +102,19 @@ export class EffectStatApplier {
                 error: 'Heal effect requires numeric value'
             };
         }
-        return this.applyCardHealthChange(gameEnv, targetCard, target, value, 'heal');
+        const applyResult = this.applyCardHealthChange(gameEnv, targetCard, target, value, 'heal');
+        if (!applyResult.success) {
+            return applyResult;
+        }
+
+        if ((applyResult as any).healedAmount > 0) {
+            const triggerResult = this.processUnitHealedTriggers(gameEnv, target);
+            if (!triggerResult.success) {
+                return triggerResult;
+            }
+        }
+
+        return { success: true };
     }
 
     static applyDamageToCard(
@@ -126,7 +139,7 @@ export class EffectStatApplier {
         target: TargetReference,
         value: number,
         mode: 'heal' | 'damage'
-    ): { success: boolean; error?: string } {
+    ): { success: boolean; error?: string; healedAmount?: number } {
         if (SlotZoneUtils.isSlotZoneName(target.zone)) {
             return this.applySlotHealthChange(gameEnv, targetCard, target, value, mode);
         }
@@ -139,7 +152,7 @@ export class EffectStatApplier {
         target: TargetReference,
         value: number,
         mode: 'heal' | 'damage'
-    ): { success: boolean; error?: string } {
+    ): { success: boolean; error?: string; healedAmount?: number } {
         const change = mode === 'heal'
             ? SlotHealthService.applyHealToTarget(gameEnv, target, value)
             : SlotHealthService.applyDamageToTarget(gameEnv, target, value);
@@ -166,7 +179,7 @@ export class EffectStatApplier {
                     'heal'
                 );
             }
-            return { success: true };
+            return { success: true, healedAmount: healed };
         }
 
         const appliedDamage = Math.max(0, change.sharedDamage - change.previousDamage);
@@ -188,7 +201,7 @@ export class EffectStatApplier {
         target: TargetReference,
         value: number,
         mode: 'heal' | 'damage'
-    ): { success: boolean; error?: string } {
+    ): { success: boolean; error?: string; healedAmount?: number } {
         const maxHP = targetCard.originalHP ?? targetCard.cardData?.hp ?? 0;
         if (maxHP === 0) {
             return {
@@ -222,7 +235,7 @@ export class EffectStatApplier {
                     'heal'
                 );
             }
-            return { success: true };
+            return { success: true, healedAmount: healed };
         }
 
         console.log(`  💥 ${target.carduid}: damage ${previousDamage} → ${newDamage} (HP ${resultingHP}/${maxHP})`);
@@ -234,6 +247,53 @@ export class EffectStatApplier {
             resultingHP,
             maxHP
         );
+        return { success: true };
+    }
+
+    private static processUnitHealedTriggers(
+        gameEnv: GameEnvironment,
+        target: TargetReference
+    ): { success: boolean; error?: string } {
+        if (!target?.carduid || !target?.playerId) {
+            return { success: true };
+        }
+
+        const slotLookup = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, target.carduid);
+        if (!slotLookup.found || !slotLookup.playerId || !slotLookup.slotName) {
+            return { success: true };
+        }
+
+        const owner = gameEnv.getPlayer(slotLookup.playerId);
+        const slot = owner?.zones ? (owner.zones as any)[slotLookup.slotName] : null;
+        if (!slot) {
+            return { success: true };
+        }
+
+        const sources: any[] = [];
+        if (slot.unit?.carduid) {
+            sources.push(slot.unit);
+        }
+        if (slot.pilot?.carduid) {
+            sources.push(slot.pilot);
+        }
+
+        for (const source of sources) {
+            const triggered = TriggeredEffectProcessor.processForSourceCard(
+                gameEnv,
+                slotLookup.playerId,
+                source,
+                {
+                    trigger: 'UNIT_HEALED',
+                    expectedTriggers: ['UNIT_HEALED'],
+                    fallbackEffectId: 'unit_healed',
+                    defaultTargetScope: 'self'
+                }
+            );
+            if (!triggered.success) {
+                return { success: false, error: triggered.error || 'Failed to process UNIT_HEALED trigger' };
+            }
+        }
+
         return { success: true };
     }
 }

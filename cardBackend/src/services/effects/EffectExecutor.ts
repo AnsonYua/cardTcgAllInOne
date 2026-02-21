@@ -36,6 +36,7 @@ import { HandZoneManager } from '../zones/HandZoneManager';
 import type { AddToHandOptions } from '../zones/HandZoneManager';
 import { EffectDrawTriggerDispatcher } from './EffectDrawTriggerDispatcher';
 import { DrawNotificationPublisher } from './DrawNotificationPublisher';
+import { applyDeployEffect } from './actions/EffectDeployActions';
 
 interface EffectActionContext {
     gameEnv: GameEnvironment;
@@ -62,6 +63,8 @@ export class EffectExecutor {
             applyPreventShieldDamageEffect(gameEnv, sourcePlayerId, sourceCarduid, effect),
         conditionalTokenDeploy: ({ gameEnv, effect, sourcePlayerId, sourceCarduid }) =>
             applyConditionalTokenDeployEffect(gameEnv, sourcePlayerId, sourceCarduid, effect),
+        deploy: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyDeployEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         deploy_from_hand: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyDeployFromHandEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         restrict_attack: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>

@@ -301,6 +301,11 @@
             "effectId": "attack_rest",
             "type": "triggered",
             "trigger": "ATTACK_PHASE",
+            "sourceConditions": [
+              {
+                "type": "linked"
+              }
+            ],
             "target": {
               "type": "unit",
               "scope": "opponent",
@@ -4095,6 +4100,9 @@
             "effectId": "link_effect",
             "type": "continuous",
             "trigger": "continuous",
+            "restrictions": [
+              "once_per_turn"
+            ],
             "sourceConditions": [
               {
                 "type": "linked"
@@ -4156,7 +4164,8 @@
       "hp": 1,
       "effects": {
         "description": [
-          "[Burst]Add this card to your hand. While you have another (Titans) Unit in play, this gets AP+1."
+          "[Burst]Add this card to your hand.", 
+          "While you have another (Titans) Unit in play, this gets AP+1."
         ],
         "rules": [
           {
@@ -4170,25 +4179,26 @@
             "action": "addToHand"
           },
           {
-            "effectId": "pair_draw_then_discard_if_aeug",
-            "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
-            "sourceConditions": [
-              {
-                "type": "linked"
-              }
-            ],
+            "effectId": "ap_plus_1_if_another_titans_unit",
+            "type": "continuous",
+            "trigger": "continuous",
+            "action": "modifyAP",
+            "target": {
+              "type": "unit",
+              "scope": "source_paired_unit",
+              "count": 1
+            },
             "conditions": [
               {
-                "type": "pairedUnitTrait",
-                "scope": "source",
-                "value": "AEUG"
+                "type": "hasAnotherUnitWithTrait",
+                "scope": "self",
+                "traits": [
+                  "Titans"
+                ]
               }
             ],
-            "action": "draw_then_discard",
             "parameters": {
-              "draw": 1,
-              "discard": 1
+              "value": 1
             }
           }
         ]
@@ -4411,7 +4421,8 @@
       "hp": 2,
       "effects": {
         "description": [
-          "[Burst]Add this card to your hand. While you have another Unit with <High-Maneuver> in play, this Unit gets AP+1."
+          "[Burst]Add this card to your hand.",
+          "While you have another Unit with <High-Maneuver> in play, this Unit gets AP+1."
         ],
         "rules": [
           {
@@ -4423,6 +4434,27 @@
               "scope": "self"
             },
             "action": "addToHand"
+          },
+          {
+            "effectId": "ap_plus_1_if_another_high_maneuver_unit",
+            "type": "continuous",
+            "trigger": "continuous",
+            "action": "modifyAP",
+            "target": {
+              "type": "unit",
+              "scope": "source_paired_unit",
+              "count": 1
+            },
+            "conditions": [
+              {
+                "type": "hasAnotherUnitWithKeyword",
+                "scope": "self",
+                "value": "High-Maneuver"
+              }
+            ],
+            "parameters": {
+              "value": 1
+            }
           }
         ]
       }
@@ -4582,7 +4614,8 @@
       "hp": 1,
       "effects": {
         "description": [
-          "[Burst]Add this card to your hand. During your turn, when this Unit destroys an enemy Unit paired with a (Newtype) Pilot with battle damage, draw 1."
+          "[Burst]Add this card to your hand.",
+          "During your turn, when this Unit destroys an enemy Unit paired with a (Newtype) Pilot with battle damage, draw 1."
         ],
         "rules": [
           {
@@ -4594,6 +4627,53 @@
               "scope": "self"
             },
             "action": "addToHand"
+          },
+          {
+            "effectId": "draw_on_battle_destroy_newtype_paired_unit",
+            "type": "continuous",
+            "trigger": "continuous",
+            "action": "sequence",
+            "parameters": {
+              "text": "During your turn, when this Unit destroys an enemy Unit paired with a (Newtype) Pilot with battle damage, draw 1.",
+              "version": 1,
+              "steps": [
+                {
+                  "action": "conditional",
+                  "parameters": {
+                    "if": [
+                      {
+                        "type": "turnPlayer",
+                        "scope": "self"
+                      },
+                      {
+                        "type": "eventType",
+                        "value": "BATTLE_DESTROY"
+                      },
+                      {
+                        "type": "eventAttacker",
+                        "value": "self"
+                      },
+                      {
+                        "type": "eventTargetController",
+                        "value": "opponent"
+                      },
+                      {
+                        "type": "eventTargetPairedPilotTrait",
+                        "value": "Newtype"
+                      }
+                    ],
+                    "then": [
+                      {
+                        "action": "draw",
+                        "parameters": {
+                          "value": 1
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
           }
         ]
       }
@@ -4760,6 +4840,36 @@
               "scope": "self"
             },
             "action": "addToHand"
+          },
+          {
+            "effectId": "linked_deploy_vagan_unit_from_trash",
+            "type": "triggered",
+            "trigger": "PAIRING_COMPLETE",
+            "sourceConditions": [
+              {
+                "type": "linked"
+              }
+            ],
+            "action": "deploy",
+            "target": {
+              "type": "card",
+              "scope": "self_trash",
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              },
+              "filters": {
+                "cardType": "unit",
+                "traitsAny": [
+                  "Vagan"
+                ],
+                "level": "<=2"
+              }
+            },
+            "parameters": {
+              "optional": true,
+              "payCost": true
+            }
           }
         ]
       }
@@ -4781,7 +4891,8 @@
       "hp": 2,
       "effects": {
         "description": [
-          "[Burst]Add this card to your hand. While there is a friendly white Base in play, this Unit gets AP+2."
+          "[Burst]Add this card to your hand.",
+          "While there is a friendly white Base in play, this Unit gets AP+2."
         ],
         "rules": [
           {
@@ -4793,6 +4904,31 @@
               "scope": "self"
             },
             "action": "addToHand"
+          },
+          {
+            "effectId": "ap_plus_2_if_friendly_white_base",
+            "type": "continuous",
+            "trigger": "continuous",
+            "action": "modifyAP",
+            "target": {
+              "type": "unit",
+              "scope": "source_paired_unit",
+              "count": 1
+            },
+            "conditions": [
+              {
+                "type": "cardsInPlayWithFilter",
+                "scope": "self",
+                "filters": {
+                  "cardType": "base",
+                  "color": "White"
+                },
+                "value": ">=1"
+              }
+            ],
+            "parameters": {
+              "value": 2
+            }
           }
         ]
       }
@@ -4828,6 +4964,28 @@
               "scope": "self"
             },
             "action": "addToHand"
+          },
+          {
+            "effectId": "linked_draw_then_discard_if_aeug_unit",
+            "type": "triggered",
+            "trigger": "PAIRING_COMPLETE",
+            "sourceConditions": [
+              {
+                "type": "linked"
+              }
+            ],
+            "conditions": [
+              {
+                "type": "pairedUnitTrait",
+                "scope": "source",
+                "value": "AEUG"
+              }
+            ],
+            "action": "draw_then_discard",
+            "parameters": {
+              "draw": 1,
+              "discard": 1
+            }
           }
         ]
       }

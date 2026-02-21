@@ -212,6 +212,23 @@ export class EventConditionEvaluator {
         return values.some((trait) => traits.includes(trait));
     }
 
+    static eventTargetPairedPilotTrait(gameEnv: GameEnvironment, condition: Record<string, unknown>): boolean {
+        const expected = typeof condition.value === 'string' ? condition.value : '';
+        if (!expected) {
+            return false;
+        }
+
+        const targetCarduid = this.getEventTargetCarduid(gameEnv);
+        if (!targetCarduid) {
+            return false;
+        }
+
+        const slotRef = this.findSlotByCarduid(gameEnv, targetCarduid);
+        const pairedPilot = slotRef?.slot?.pilot;
+        const traits = Array.isArray(pairedPilot?.cardData?.traits) ? pairedPilot.cardData.traits : [];
+        return traits.includes(expected);
+    }
+
     static eventTargetWasRested(gameEnv: GameEnvironment, condition: Record<string, unknown>): boolean {
         const expected = typeof condition.value === 'boolean' ? condition.value : true;
         const latestNotification = this.getLatestNotification(gameEnv) as any;

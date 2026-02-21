@@ -12,6 +12,7 @@ import { ZoneCountConditionEvaluator } from './ZoneCountConditionEvaluator';
 import { CardsInPlayWithFilterConditionEvaluator } from './CardsInPlayWithFilterConditionEvaluator';
 import { EventConditionEvaluator } from './EventConditionEvaluator';
 import { SourceAndSpecialConditionEvaluator } from './SourceAndSpecialConditionEvaluator';
+import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 
 type ZoneCardWithData = {
     carduid: string;
@@ -408,10 +409,21 @@ export class EffectConditionEvaluator {
                         : typeof (typedCondition as any).value === 'string'
                             ? [(typedCondition as any).value]
                             : [];
-                const exclude = typeof (sourceCard as any)?.carduid === 'string'
-                    ? (sourceCard as any).carduid
-                    : undefined;
+                const exclude = EffectConditionEvaluator.resolveAnotherUnitExcludeCarduid(gameEnv, sourceCard);
                 return ConditionEvaluators.hasAnotherUnitWithTrait(gameEnv, cardOwnerPlayerId, traitsAny, exclude);
+            }
+
+            case 'hasAnotherUnitWithKeyword': {
+                if (!cardOwnerPlayerId) {
+                    return false;
+                }
+                const keyword = typeof (typedCondition as any).keyword === 'string'
+                    ? (typedCondition as any).keyword
+                    : typeof (typedCondition as any).value === 'string'
+                        ? (typedCondition as any).value
+                        : '';
+                const exclude = EffectConditionEvaluator.resolveAnotherUnitExcludeCarduid(gameEnv, sourceCard);
+                return ConditionEvaluators.hasAnotherUnitWithKeyword(gameEnv, cardOwnerPlayerId, keyword, exclude);
             }
 
             case 'noPairedPilot': {
@@ -456,6 +468,9 @@ export class EffectConditionEvaluator {
             case 'eventTargetController':
                 return EventConditionEvaluator.eventTargetControllerMatches(gameEnv, cardOwnerPlayerId, typedCondition);
 
+            case 'eventTargetPairedPilotTrait':
+                return EventConditionEvaluator.eventTargetPairedPilotTrait(gameEnv, typedCondition);
+
             case 'eventTargetTraitsAny':
                 return EventConditionEvaluator.eventTargetTraitsAny(gameEnv, typedCondition);
 
@@ -480,6 +495,35 @@ export class EffectConditionEvaluator {
                 console.log(`⚠️ Unknown structured condition: ${type}`);
                 return false;
         }
+    }
+
+    private static resolveAnotherUnitExcludeCarduid(gameEnv: GameEnvironment, sourceCard?: any): string | undefined {
+        const sourceCarduid = typeof sourceCard?.carduid === 'string' ? sourceCard.carduid : '';
+        if (!sourceCarduid) {
+            return undefined;
+        }
+
+        const sourceType = typeof sourceCard?.cardData?.cardType === 'string'
+            ? String(sourceCard.cardData.cardType).toLowerCase()
+            : '';
+        if (sourceType === 'unit') {
+            return sourceCarduid;
+        }
+        if (sourceType !== 'pilot') {
+            return sourceCarduid;
+        }
+
+        for (const player of Object.values(gameEnv.players)) {
+            if (!player?.zones) {
+                continue;
+            }
+            const slotRef = SlotZoneUtils.findSlotByCarduid(player.zones, sourceCarduid);
+            if (slotRef?.slot?.unit?.carduid) {
+                return slotRef.slot.unit.carduid;
+            }
+        }
+
+        return sourceCarduid;
     }
 
 }

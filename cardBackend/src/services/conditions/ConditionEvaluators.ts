@@ -4,6 +4,7 @@ import type { GameEnvironment } from '../../models/GameEnvironment';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 import { LinkUtils } from '../../utils/LinkUtils';
+import { KeywordUtils } from '../../utils/KeywordUtils';
 import { LinkConditionEvaluator } from './LinkConditionEvaluator';
 import { PairedSlotConditionEvaluator } from './PairedSlotConditionEvaluator';
 import { TrashConditionUtils } from './TrashConditionUtils';
@@ -293,6 +294,35 @@ export class ConditionEvaluators {
             const cardTraits = Array.isArray(unit.cardData?.traits) ? unit.cardData.traits : [];
             const hasAny = normalizedTraits.some((trait) => cardTraits.includes(trait));
             if (hasAny) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    static hasAnotherUnitWithKeyword(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        keyword: string,
+        excludeCarduid?: string
+    ): boolean {
+        const normalizedKeyword = typeof keyword === 'string' ? keyword.trim() : '';
+        if (!normalizedKeyword) {
+            return false;
+        }
+
+        const units = SlotZoneUtils.getAllPlayerSlotUnits(gameEnv, playerId);
+        for (const unitResult of units) {
+            const unit = unitResult?.unit;
+            if (!unit?.carduid) {
+                continue;
+            }
+            if (excludeCarduid && unit.carduid === excludeCarduid) {
+                continue;
+            }
+
+            if (KeywordUtils.hasKeyword(unit, normalizedKeyword)) {
                 return true;
             }
         }
