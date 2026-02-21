@@ -24,6 +24,7 @@ import { applyExileFromTrashEffect } from './actions/EffectExileActions';
 import { applyDestroyEffect } from './actions/EffectDestroyActions';
 import { applyGrantKeywordEffect } from './actions/EffectKeywordActions';
 import { applyPreventBattleDamageEffect } from './actions/EffectBattleDamagePreventionActions';
+import { applyPreventEffectDamageEffect } from './actions/EffectEffectDamagePreventionActions';
 import { applyPreventSetActiveNextTurnEffect } from './actions/EffectActivationLockActions';
 import { applyReturnToHandEffect } from './actions/EffectReturnToHandActions';
 import { applyPairFromHandEffect, applyPairFromTrashEffect } from './actions/EffectPairActions';
@@ -87,6 +88,8 @@ export class EffectExecutor {
             applySetActiveThenRestrictAttackEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         prevent_battle_damage: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyPreventBattleDamageEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        prevent_damage: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyPreventEffectDamageEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         prevent_set_active_next_turn: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyPreventSetActiveNextTurnEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         returnToHand: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>

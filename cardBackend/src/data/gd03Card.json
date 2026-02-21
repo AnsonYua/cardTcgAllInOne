@@ -4760,6 +4760,30 @@
                   "parameters": {
                     "keyword": "Repair 2"
                   }
+                },
+                {
+                  "action": "conditional",
+                  "parameters": {
+                    "if": [
+                      {
+                        "type": "previousTargetHasTrait",
+                        "trait": "Jupitris"
+                      }
+                    ],
+                    "then": [
+                      {
+                        "action": "draw",
+                        "target": {
+                          "type": "player",
+                          "scope": "self",
+                          "count": 1
+                        },
+                        "parameters": {
+                          "value": 1
+                        }
+                      }
+                    ]
+                  }
                 }
               ]
             },

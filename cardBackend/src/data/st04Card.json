@@ -731,9 +731,17 @@
                         "target": {
                             "type": "unit",
                             "scope": "self",
+                            "filters": {
+                                "keywords": [
+                                    "Blocker"
+                                ]
+                            },
                             "count": 1
                         },
-                        "action": "setActive"
+                        "action": "setActive_then_restrict_attack",
+                        "parameters": {
+                            "restriction": "cannot_attack"
+                        }
                     }
                 ]
             }

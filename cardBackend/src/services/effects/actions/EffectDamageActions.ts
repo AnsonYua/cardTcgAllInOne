@@ -39,6 +39,31 @@ export function applyDamageEffect(
         }
 
         if (resolvedTarget.kind === 'base') {
+            const prevention = EffectDamagePreventionUtils.isEffectDamagePrevented({
+                targetCard: resolvedTarget.card,
+                target,
+                sourcePlayerId,
+                sourceCarduid
+            });
+
+            if (prevention.prevented) {
+                const notificationManager = new GameNotificationManager(gameEnv);
+                notificationManager.addNotificationEvent(
+                    'EFFECT_DAMAGE_PREVENTED',
+                    {
+                        playerId: target.playerId,
+                        targetCarduid: target.carduid,
+                        sourcePlayerId,
+                        sourceCarduid,
+                        preventedBySourceCarduid: prevention.preventedBySourceCarduid,
+                        effectId: effect.effectId,
+                        timestamp: Date.now()
+                    },
+                    'normal'
+                );
+                continue;
+            }
+
             const baseCard = resolvedTarget.card as BaseCard;
             const currentDamage = baseCard.damageReceived || 0;
             const newDamage = currentDamage + damageValue;

@@ -7141,11 +7141,11 @@
                     "duration": "continuous"
                   },
                   "target": {
-                    "type": "card",
+                    "type": "base",
                     "scope": "self"
                   },
                   "parameters": {
-                    "from": "enemy"
+                    "sourceController": "opponent"
                   }
                 }
               ]

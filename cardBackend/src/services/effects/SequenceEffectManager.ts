@@ -502,6 +502,24 @@ export class SequenceEffectManager {
                 });
             }
 
+            if (type === 'previousTargetHasTrait') {
+                const trait = typeof condition.trait === 'string'
+                    ? condition.trait
+                    : (typeof condition.value === 'string' ? condition.value : '');
+                if (!trait) {
+                    return false;
+                }
+                if (!Array.isArray(ctx.previousTargets) || ctx.previousTargets.length === 0) {
+                    return false;
+                }
+
+                return ctx.previousTargets.some((target) => {
+                    const card = SlotZoneUtils.getCardByUid(gameEnv, target.carduid) as any;
+                    const traits = Array.isArray(card?.cardData?.traits) ? card.cardData.traits : [];
+                    return traits.includes(trait);
+                });
+            }
+
             return EffectConditionEvaluator.validateEffectConditions(
                 ensureEffectDefaults({
                     effectId: 'sequence_conditional_runtime_check',
