@@ -19,10 +19,14 @@ export function applyDamageEffect(
     effect: EffectDefinition,
     selectedTargets: TargetReference[]
 ): { success: boolean; error?: string } {
-    const damageValue = resolveEffectDamageValue(gameEnv, effect, sourceCarduid);
+    const damageValue = resolveEffectDamageValue(gameEnv, sourcePlayerId, effect, sourceCarduid);
     if (damageValue <= 0) {
         return { success: true };
     }
+    const resolvedDamageParameters = {
+        ...(effect.parameters || {}),
+        value: damageValue
+    };
 
     const attackerSlot = sourceCarduid
         ? SlotZoneUtils.findSlotNameByUnitUidForPlayer(gameEnv, sourcePlayerId, sourceCarduid).slotName
@@ -110,7 +114,7 @@ export function applyDamageEffect(
             gameEnv,
             resolvedTarget.card as UnitZoneCard | PilotZoneCard,
             'damage',
-            effect.parameters,
+            resolvedDamageParameters,
             target
         );
         if (!applyResult.success) {

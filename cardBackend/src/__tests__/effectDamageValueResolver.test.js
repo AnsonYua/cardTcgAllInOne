@@ -38,7 +38,7 @@ describe('resolveEffectDamageValue', () => {
         const gameEnv = new GameEnvironment();
         const effect = { effectId: 'test', action: 'damage', parameters: { value: 3 } };
 
-        expect(resolveEffectDamageValue(gameEnv, effect, 'missing_source')).toBe(3);
+        expect(resolveEffectDamageValue(gameEnv, 'playerId_1', effect, 'missing_source')).toBe(3);
     });
 
     test('ap=9 with per=4 and floor resolves to 2', () => {
@@ -58,7 +58,7 @@ describe('resolveEffectDamageValue', () => {
             }
         };
 
-        expect(resolveEffectDamageValue(gameEnv, effect, 'GD03-033_attacker')).toBe(2);
+        expect(resolveEffectDamageValue(gameEnv, 'playerId_1', effect, 'GD03-033_attacker')).toBe(2);
     });
 
     test('ap=12 with per=4 and floor resolves to 3', () => {
@@ -78,7 +78,7 @@ describe('resolveEffectDamageValue', () => {
             }
         };
 
-        expect(resolveEffectDamageValue(gameEnv, effect, 'GD03-033_attacker')).toBe(3);
+        expect(resolveEffectDamageValue(gameEnv, 'playerId_1', effect, 'GD03-033_attacker')).toBe(3);
     });
 
     test('ap=3 with per=4 and floor resolves to 0', () => {
@@ -97,7 +97,7 @@ describe('resolveEffectDamageValue', () => {
             }
         };
 
-        expect(resolveEffectDamageValue(gameEnv, effect, 'GD03-033_attacker')).toBe(0);
+        expect(resolveEffectDamageValue(gameEnv, 'playerId_1', effect, 'GD03-033_attacker')).toBe(0);
     });
 
     test('invalid per and missing source fallback to base value', () => {
@@ -119,8 +119,8 @@ describe('resolveEffectDamageValue', () => {
             }
         };
 
-        expect(resolveEffectDamageValue(gameEnv, effectInvalidPer, 'no_source')).toBe(2);
-        expect(resolveEffectDamageValue(gameEnv, effectMissingSource, undefined)).toBe(2);
+        expect(resolveEffectDamageValue(gameEnv, 'playerId_1', effectInvalidPer, 'no_source')).toBe(2);
+        expect(resolveEffectDamageValue(gameEnv, 'playerId_1', effectMissingSource, undefined)).toBe(2);
     });
 
     test('slot AP includes unit+pilot and AP modifiers', () => {
@@ -146,6 +146,6 @@ describe('resolveEffectDamageValue', () => {
             }
         };
 
-        expect(resolveEffectDamageValue(gameEnv, effect, 'GD03-033_attacker')).toBe(6);
+        expect(resolveEffectDamageValue(gameEnv, 'playerId_1', effect, 'GD03-033_attacker')).toBe(6);
     });
 });

@@ -27,6 +27,7 @@ import { ContinuousRegistryTargetResolver } from './effects/continuous/Continuou
 import { ContinuousScopeUtils } from './effects/continuous/ContinuousScopeUtils';
 import { EffectConditionEvaluator } from './conditions/EffectConditionEvaluator';
 import { EffectSourceConditionEvaluator } from './conditions/EffectSourceConditionEvaluator';
+import { EffectScalingResolver } from './effects/scaling/EffectScalingResolver';
 
 export interface EffectResult {
     success: boolean;
@@ -300,7 +301,18 @@ export class ContinuousEffectManager {
                 }
                 const targets = ContinuousEffectManager.resolveRegistryTargets(typedEntry, gameEnv);
                 
-                const numericValue = typeof typedEntry.value === 'number' ? typedEntry.value : 0;
+                const baseValue = typeof typedEntry.value === 'number' ? typedEntry.value : 0;
+                const scalingConfig = typedEntry.effectData?.parameters?.scaling;
+                const numericValue = EffectScalingResolver.resolveScaledValue(
+                    baseValue,
+                    scalingConfig,
+                    {
+                        gameEnv,
+                        sourcePlayerId: typedEntry.sourcePlayerId,
+                        sourceCarduid: typedEntry.sourceCarduid,
+                        effectId: typedEntry.effectId
+                    }
+                );
                 const action = typedEntry.action;
 
                 if (typeof action !== 'string') {

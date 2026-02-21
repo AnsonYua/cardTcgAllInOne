@@ -141,6 +141,12 @@ export const CANONICAL_TARGET_FILTER_KEYS = new Set<string>([
     'zone'
 ]);
 
+export const CANONICAL_SCALING_TYPES = new Set<string>([
+    'COUNT_UNITS_IN_PLAY',
+    'COUNT_UNIQUE_CARDS_IN_TRASH',
+    'SOURCE_AP_PER'
+]);
+
 const CONDITION_TYPE_ALIASES: Record<string, string> = {
     sourceAP: 'sourceAp',
     sourceHP: 'sourceHp'

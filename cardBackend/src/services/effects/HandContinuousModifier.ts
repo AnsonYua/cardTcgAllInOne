@@ -4,7 +4,7 @@ import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { EffectDefinition } from '../EventQueue/interfaces/GameEvent';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { ConditionEvaluators } from '../conditions/ConditionEvaluators';
-import { EffectScalingUtils } from './EffectScalingUtils';
+import { EffectScalingResolver } from './scaling/EffectScalingResolver';
 
 export class HandContinuousModifier {
     static applyModifiersForHandCardPlay(
@@ -48,12 +48,15 @@ export class HandContinuousModifier {
             const baseValue = typeof normalizedRule.parameters?.value === 'number'
                 ? normalizedRule.parameters.value
                 : 0;
-            const scalingFactor = EffectScalingUtils.resolveScalingFactor(
-                gameEnv,
-                playerId,
-                normalizedRule.parameters?.scaling
+            const delta = EffectScalingResolver.resolveScaledValue(
+                baseValue,
+                normalizedRule.parameters?.scaling,
+                {
+                    gameEnv,
+                    sourcePlayerId: playerId,
+                    effectId: normalizedRule.effectId
+                }
             );
-            const delta = baseValue * scalingFactor;
 
             if (normalizedRule.action === 'modifyCost') {
                 effectiveCost = Math.max(0, effectiveCost + delta);

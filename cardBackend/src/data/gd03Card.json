@@ -5029,7 +5029,8 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Burst】Add this card to your hand. Increase this Unit's AP by an amount equal to the number of (Cyclops Team) Pilot cards/Command cards with unique names in your trash."
+          "【Burst】Add this card to your hand.",
+          "Increase this Unit's AP by an amount equal to the number of (Cyclops Team) Pilot cards/Command cards with unique names in your trash."
         ],
         "rules": [
           {
@@ -5041,6 +5042,38 @@
               "scope": "self"
             },
             "action": "addToHand"
+          },
+          {
+            "effectId": "continuous_ap_plus_unique_cyclops_pilot_or_command_in_trash",
+            "type": "continuous",
+            "trigger": "continuous",
+            "action": "modifyAP",
+            "timing": {
+              "duration": "continuous"
+            },
+            "target": {
+              "type": "unit",
+              "scope": "self",
+              "count": 1
+            },
+            "parameters": {
+              "value": 1,
+              "scaling": {
+                "type": "COUNT_UNIQUE_CARDS_IN_TRASH",
+                "scope": "self",
+                "filters": {
+                  "traitsAny": [
+                    "Cyclops Team"
+                  ],
+                  "cardTypes": [
+                    "pilot",
+                    "command"
+                  ]
+                },
+                "multiplier": 1
+              },
+              "notes": "AP increases by the count of unique-name Cyclops Team Pilot/Command cards in your trash."
+            }
           }
         ]
       }

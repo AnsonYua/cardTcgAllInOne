@@ -5,8 +5,10 @@ import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 export interface TrashCountOptions {
     traitsAny?: string[];
     cardType?: string;
+    cardTypes?: string[];
     nameIncludes?: string;
     excludeCarduid?: string;
+    uniqueNames?: boolean;
 }
 
 export class TrashConditionUtils {
@@ -25,10 +27,15 @@ export class TrashConditionUtils {
             ? options.traitsAny.filter((t): t is string => typeof t === 'string')
             : [];
         const cardType = typeof options.cardType === 'string' ? options.cardType : '';
+        const cardTypes = Array.isArray(options.cardTypes)
+            ? options.cardTypes.filter((t): t is string => typeof t === 'string' && t.length > 0)
+            : [];
         const nameIncludes = typeof options.nameIncludes === 'string'
             ? options.nameIncludes.toLowerCase()
             : '';
         const excludeCarduid = typeof options.excludeCarduid === 'string' ? options.excludeCarduid : '';
+        const uniqueNames = options.uniqueNames === true;
+        const uniqueSet = new Set<string>();
 
         return trash.reduce((total: number, card: any) => {
             if (excludeCarduid && card?.carduid === excludeCarduid) {
@@ -44,6 +51,12 @@ export class TrashConditionUtils {
             if (cardType) {
                 const actualType = typeof cardData.cardType === 'string' ? cardData.cardType : '';
                 if (actualType !== cardType) {
+                    return total;
+                }
+            }
+            if (cardTypes.length > 0) {
+                const actualType = typeof cardData.cardType === 'string' ? cardData.cardType : '';
+                if (!cardTypes.includes(actualType)) {
                     return total;
                 }
             }
@@ -64,6 +77,16 @@ export class TrashConditionUtils {
                 if (!name.toLowerCase().includes(nameIncludes)) {
                     return total;
                 }
+            }
+
+            if (uniqueNames) {
+                const name = typeof cardData.name === 'string'
+                    ? cardData.name.trim().toLowerCase()
+                    : '';
+                if (!name || uniqueSet.has(name)) {
+                    return total;
+                }
+                uniqueSet.add(name);
             }
 
             return total + 1;
