@@ -83,7 +83,42 @@ Rules:
 }
 ```
 
-### 4) Base
+### 4) During Pair Effect Setup
+
+**What is "During Pair"?**
+- A continuous effect that activates **only when the unit is paired** (unit + pilot in the same slot)
+- The effect remains active while the pairing condition is satisfied
+- Effect triggers based on specific conditions (e.g., "When one of your other Units with <Repair> attacks")
+
+**GameEnv Setup Requirements:**
+| Requirement | Env Encoding |
+|-------------|--------------|
+| Unit with "During Pair" effect | Unit + pilot in same slot (paired state) |
+| Effect trigger condition met | Depends on specific effect (e.g., another unit with keyword attacking) |
+| Energy requirement | Based on unit's Level (Level 7 = min 7 energy cards) |
+
+**Example Setup for GD03-002 "During Pair" effect:**
+```json
+"slot1": {
+  "unit": {
+    "carduid": "GD03-002_unit_0001",
+    "cardId": "GD03-002",
+    "level": 7,
+    "isRested": false
+  },
+  "pilot": {
+    "carduid": "GD03-084_pilot_0001",
+    "cardId": "GD03-084",
+    "isRested": false
+  }
+}
+```
+Rules:
+- Any pilot can be used to pair (not necessarily the card's linked pilot)
+- The unit must be paired (unit + pilot in same slot) for the effect to activate
+- Continuous "During Pair" effects check conditions continuously while the unit is paired
+
+### 5) Base
 ```json
 "base": [
   {

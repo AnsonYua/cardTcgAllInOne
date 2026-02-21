@@ -43,6 +43,19 @@ Use this skill when you need to create or review a complete action scenario JSON
   - Only set `isRested: true` if the scenario specifically requires testing with pre-rested energy
   - Example: A scenario testing "cannot play due to insufficient active energy" might have some rested cards
 
+- **"During Pair" Effects** (Common Effect Type)
+  - "During Pair" is a continuous effect that activates **only when the unit is paired** (unit + pilot in same slot)
+  - The effect remains active while the pairing condition is satisfied
+  - Any pilot can be used to pair (not necessarily the card's linked pilot)
+  - **Setup Requirements**:
+    - Unit + pilot in the same slot (paired state)
+    - Additional units/cards to satisfy effect trigger conditions (e.g., "When one of your other Units with <Repair> attacks")
+    - Enemy targets that match the effect's criteria (e.g., Lv. ≤ attacker's Lv.)
+  - **Example**: GD03-002 "The-O" - "【During Pair】When one of your other Units with <Repair> attacks, choose 1 enemy Unit whose Lv. is equal to or lower than that Unit. Rest it."
+    - Setup: GD03-002 + pilot (paired), GD01-001 + pilot (grants Repair, can attack), enemy unit with Lv. ≤ GD01-001's Lv.
+    - Action: Player 1 attacks with GD01-001 (has Repair)
+    - Expect: Effect triggers, player chooses enemy unit to rest
+
 ## Scenario Path Format
 The scenario path to add to `SCENARIO_PRESET_GROUPS` should match the file path structure:
 - Format: `<SET>/<CARD_ID>/<scenario_name>.json`

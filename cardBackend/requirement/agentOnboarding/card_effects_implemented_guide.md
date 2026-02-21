@@ -25,6 +25,7 @@ Current audit reports are also summarized near the end.
 - `Blocker`: this card can block an incoming attack.
 - `Repair`: effect heals damage (HP).
 - `Breach`: gain a breach value first, then on `BATTLE_DESTROY` apply extra defense-area damage (`damageShield`).
+- `Suppression`: on shield-side attack, attacker can target up to first 2 shields in one attack event.
 - `First Strike`: this card deals battle damage first.
 - `High-Maneuver`: this card follows special attack target rules.
 - `Activate` / `Activated`: player chooses when to use this effect.
@@ -89,6 +90,9 @@ Main source: `src/services/effects/EffectExecutor.ts` (`ACTION_HANDLERS`).
 | `prevent_shield_damage` | Prevent shield damage | "Prevent shield damage" | `src/services/effects/actions/EffectShieldActions.ts` |
 | `grant_breach` | Give breach value to target card. Follow-up damage happens later on `BATTLE_DESTROY` (base first, else shield). | "Gain Breach" | `src/services/effects/actions/EffectBreachActions.ts`, `src/services/effects/BattleDestroyEffectManager.ts`, `src/services/effects/actions/EffectShieldActions.ts` |
 | `scry_top_deck` | Look/filter top deck | "Look at top cards" | `src/services/effects/actions/EffectScryActions.ts` |
+
+Special keyword runtime note:
+- `Suppression` shield targeting is applied in battle resolution path: `src/services/BattlePhaseManager.ts` + `src/services/battle/BattleShieldUtils.ts`.
 
 Also routed effect actions (special managers):
 - `choose_one_then_deploy_token` -> `src/services/effects/TokenChoiceManager.ts`

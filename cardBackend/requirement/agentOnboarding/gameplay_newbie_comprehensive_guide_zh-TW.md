@@ -30,7 +30,7 @@
 Start Turn -> Draw -> Main -> Attack/Blocker/Action Step -> End Turn
 
 ## 4) 必懂關鍵字
-`Deploy`, `Pair`, `Linked`, `Attack`, `Burst`, `Continuous`, `Blocker`, `Repair`, `Breach`, `First Strike`, `High-Maneuver`, `Activate`, `Cost`, `Target`, `Optional`, `Once per turn`
+`Deploy`, `Pair`, `Linked`, `Attack`, `Burst`, `Continuous`, `Blocker`, `Repair`, `Breach`, `First Strike`, `High-Maneuver`, `Suppression`, `Activate`, `Cost`, `Target`, `Optional`, `Once per turn`
 
 ## 5) 一個回合怎麼玩
 1. 看手牌與能量
@@ -63,6 +63,8 @@ Start Turn -> Draw -> Main -> Attack/Blocker/Action Step -> End Turn
   規則：先檢查對手 `base`；若沒有 `base`，才處理 shield 側。
 - `First Strike`：在戰鬥順序中，這個單位會先造成戰鬥傷害。
 - `High-Maneuver`：這個單位有特殊攻擊目標規則，通常更不容易被一般防線阻擋。
+- `Suppression`：當這個攻擊者打到 shield 側時，一次攻擊事件可指定前 2 張 shield。
+  補充：若對手還有 `base`，會先走 base 分支。
 - `Repair`：回復傷害（HP）的效果，常見於回合結束或卡文指定時機。
 - `Activate`：玩家主動選擇使用的效果，需符合時機並支付 `cost`。
 
@@ -74,8 +76,17 @@ Start Turn -> Draw -> Main -> Attack/Blocker/Action Step -> End Turn
   這次就不會有 Breach 追加傷害。
 - `First Strike` 例子：兩個單位交戰時，帶有 `First Strike` 的那一方先造成戰鬥傷害。
 - `High-Maneuver` 例子：你的單位用特殊目標規則攻擊，對手較難用一般防線應對。
+- `Suppression` 例子：你的攻擊單位有 `Suppression` 並攻擊 shield 側。
+  若對手有 2 張以上 shield，後端會指定前 2 張 shield。
 - `Repair` 例子：你的單位先前受到 2 點傷害，觸發 `Repair` 後會回復部分 HP。
 - `Activate` 例子：在 `Main` 階段你主動開啟 `Activate` 技能，支付 `cost` 後結算效果。
+
+## 6.1) 當 Unit 槽位全滿時
+- Unit 區有 6 個槽位：`slot1` 到 `slot6`。
+- 若 6 個槽位都有 unit，再打出 `unit` 必須帶 `replaceSlot`。
+- 若沒帶 `replaceSlot`，出牌會被拒絕：`"Board is full. Choose a slot to replace."`
+- 若 `replaceSlot` 合法，舊 unit 先進 `trash`，再放入新 unit。
+- 若場上其實沒滿，卻送了 `replaceSlot`，同樣會被判為無效。
 
 ## 7) Choice 規則
 有 choice 事件時，先解它。

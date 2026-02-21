@@ -50,6 +50,7 @@ Start Turn -> Draw -> Main -> Attack/Blocker/Action Step -> End Turn
 - `Breach`: gives extra defense-area damage after battle destroy.
 - `First Strike`: hits first in battle order.
 - `High-Maneuver`: special attack targeting rule.
+- `Suppression`: when attacking shields, it can hit the first 2 shields.
 - `Activate`: player chooses when to use.
 - `Cost`: what you pay to use effect.
 - `Target`: who/what effect hits.
@@ -88,6 +89,8 @@ Start Turn -> Draw -> Main -> Attack/Blocker/Action Step -> End Turn
   Rule: opponent `base` is checked first; if no `base`, shield side is used.
 - `First Strike`: this unit deals battle damage first in combat order.
 - `High-Maneuver`: this unit follows special attack-targeting rules and is harder to stop in normal lines.
+- `Suppression`: if this attacker is hitting shield side, backend targets up to the first 2 shields in one attack event.
+  Important: if defender still has `base`, base branch is resolved first.
 - `Repair`: this effect heals damage (HP), usually in allowed timing like end-turn or card text timing.
 - `Activate`: this is a player-chosen effect. You decide when to use it if timing and cost are valid.
 
@@ -99,8 +102,17 @@ Start Turn -> Draw -> Main -> Attack/Blocker/Action Step -> End Turn
   Then no breach follow-up damage is applied.
 - `First Strike` example: Two units battle. The one with `First Strike` deals battle damage first.
 - `High-Maneuver` example: Your unit attacks using special targeting rules, so normal defense lines are harder to use.
+- `Suppression` example: Your attacker has `Suppression` and attacks shield side.
+  If opponent has 2+ shields, backend targets the first 2 shields.
 - `Repair` example: Your unit took 2 damage earlier. A `Repair` effect triggers, and that unit recovers HP.
 - `Activate` example: In `Main` phase, you choose to use an `Activate` skill, pay `cost`, then resolve its effect.
+
+## 6.1) If All Unit Slots Are Full
+- Unit board has 6 slots: `slot1` to `slot6`.
+- If all 6 slots already have units, playing another `unit` needs `replaceSlot`.
+- If `replaceSlot` is missing, play is rejected: `"Board is full. Choose a slot to replace."`
+- If `replaceSlot` is valid, old unit in that slot goes to `trash`, then new unit is placed.
+- If board is not full, sending `replaceSlot` is also invalid.
 
 ## 7) Choice Rules (Very Important)
 If a choice event appears, resolve it first.

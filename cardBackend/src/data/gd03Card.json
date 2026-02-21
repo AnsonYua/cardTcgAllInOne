@@ -361,7 +361,13 @@
               "filters": {
                 "hp": "<=3"
               },
-              "count": 1
+              "count": {
+                "min": 1,
+                "max": 2
+              },
+              "selection": {
+                "type": "player_choice"
+              }
             },
             "action": "rest"
           }

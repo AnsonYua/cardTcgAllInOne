@@ -85,6 +85,15 @@
 4. 觸發進場效果
 5. 若形成 `pair/link`，觸發額外效果
 
+Unit 槽位全滿規則：
+- 若 `slot1`~`slot6` 都已有 unit，再打出 `unit` 必須帶 `replaceSlot`。
+- 若缺少 `replaceSlot`，後端會拒絕：`Board is full. Choose a slot to replace.`
+- `replaceSlot` 合法時，該槽原 unit 先進 `trash`，再放新 unit。
+- 若場上沒滿卻送 `replaceSlot`，也會判為無效。
+
+相關檔案補充：
+- `src/services/playCard/UnitReplaceSlotCoordinator.ts`
+
 ## 戰鬥流程
 1. 宣告攻擊（`attackUnit` 或 `attackShieldArea`）
 2. 處理攻擊階段效果
@@ -92,6 +101,10 @@
 4. 沒有 blocker 則進入 `Action Step`
 5. 雙方確認戰鬥
 6. 戰鬥結算
+
+`Suppression` 補充（盾側路徑）：
+- 若攻擊者有 `Suppression`，且結算走到 shield 側，後端會一次指定最多前 2 張 shield。
+- 這段邏輯在 shield 結算分支。若防守方仍有 `base`，會先走 base 分支。
 
 主要檔案：
 - `src/services/BattlePhaseManager.ts`

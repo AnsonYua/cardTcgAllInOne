@@ -112,6 +112,12 @@ When player calls play card API:
 4. Enter-play effects are triggered.
 5. If pair/link is created, extra effects may trigger.
 
+Unit-slot full rule:
+- If `slot1` to `slot6` all have units, playing another `unit` must include `replaceSlot`.
+- If `replaceSlot` is missing, backend rejects play with: `Board is full. Choose a slot to replace.`
+- If `replaceSlot` is valid, backend sends old unit in that slot to `trash`, then places new unit.
+- If board is not full, sending `replaceSlot` is invalid.
+
 Main file:
 - `src/services/CardPlayExecutor.ts`
 
@@ -119,6 +125,7 @@ Related files:
 - `src/services/PlayCardPreparationManager.ts`
 - `src/services/PlayerCardManager.ts`
 - `src/services/CardEnteredPlayManager.ts`
+- `src/services/playCard/UnitReplaceSlotCoordinator.ts`
 
 ## 6) Battle Flow (Attack)
 When player attacks:
@@ -131,6 +138,10 @@ When player attacks:
 6. If no blocker choice, battle enters action step.
 7. Players confirm battle.
 8. Battle resolves.
+
+`Suppression` note (shield attack path):
+- If attacker has keyword `Suppression` and battle resolves to shield side, backend targets up to first 2 shield cards.
+- This logic is in shield resolution branch. If defender still has `base`, base branch is resolved first.
 
 Main file:
 - `src/services/BattlePhaseManager.ts`
