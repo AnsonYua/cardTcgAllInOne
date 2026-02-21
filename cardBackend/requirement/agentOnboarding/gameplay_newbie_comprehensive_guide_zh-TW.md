@@ -8,8 +8,8 @@
 
 重點：
 - `defense area` = `shield area` + `base`
-- 通常先打 `shield`
-- `shield` 清空後，攻擊連到 `base` 側可能直接結束對局
+- 通常先打 `base`
+- `base` 清空後，攻擊連到 `shield` 側可能直接結束對局
 
 ## 2) 卡片與區域
 ### 卡片
@@ -47,6 +47,24 @@ Start Turn -> Draw -> Main -> Attack/Blocker/Action Step -> End Turn
 4. 進入 action step
 5. 雙方確認
 6. 結算
+
+### `Blocker` 概念（新手重點）
+- `Blocker` 是防守方在被攻擊時的攔截手段。
+- 出現 `BLOCKER_CHOICE` 時，代表防守方可以選擇是否攔截。
+- 若使用 `Blocker`，攻擊目標可能改成該 `Blocker` 單位。
+- 若不使用，攻擊照原目標繼續。
+
+### 戰鬥關鍵字概念（新手重點）
+- `Burst`：護盾受擊後可能出現的觸發效果，通常會先進入 burst choice 流程。
+- `Breach`：和戰鬥結果連動的壓制效果，會提高打穿防區的壓力。
+- `First Strike`：在戰鬥順序中，這個單位會先造成戰鬥傷害。
+- `High-Maneuver`：這個單位有特殊攻擊目標規則，通常更不容易被一般防線阻擋。
+
+### 快速例子
+- `Burst` 例子：你的 `shield` 被打到後，跳出 `BURST_EFFECT_CHOICE`，你可以決定是否發動 burst。
+- `Breach` 例子：你的攻擊單位戰鬥獲勝且有 `Breach`，會對對手防區產生額外壓力。
+- `First Strike` 例子：兩個單位交戰時，帶有 `First Strike` 的那一方先造成戰鬥傷害。
+- `High-Maneuver` 例子：你的單位用特殊目標規則攻擊，對手較難用一般防線應對。
 
 ## 7) Choice 規則
 有 choice 事件時，先解它。

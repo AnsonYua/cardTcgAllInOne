@@ -93,14 +93,15 @@ State-based checks file:
 
 ## 4.1) Defense Area, Base, and Shield (Simple)
 - `Defense area` means two zones together: `shield area` + `base`.
-- `Shield area` is the front protection layer. Attacks usually hit shields first.
-- `Base` is the core objective behind shields.
+- `Base` is the first defense target in this game flow.
+- `Shield area` is the follow-up defense side after `base` is cleared.
 - `Slot` is a board position where unit/pilot cards are placed (`slot1` to `slot6`).
 - `Pilot card` is the pilot part of a pair. It usually works with a unit in the same slot.
 - `Command card` is a one-time effect card. You play it to do an effect, then it usually leaves play.
 - `Base card` is your core defense card in base zone, behind shields.
 - `Trash` is the discard zone. Destroyed or used cards usually go there.
-- In short: when people say \"attack defense area,\" it can involve shield first, then base.
+- `Blocker` means defender can redirect an incoming attack to a blocker unit.
+- In short: when people say \"attack defense area,\" it usually means base first, then shield side.
 
 ## 5) Playing a Card
 When player calls play card API:
@@ -167,7 +168,7 @@ Important file:
 
 ## 9) How Game Ends
 One real game-end path is in shield attack resolution:
-- if defender has no shields left and the defense-area attack connects to base side, game ends.
+- if defender base side is cleared and the defense-area attack connects to shield side, game can end.
 
 Files:
 - `src/services/BattlePhaseManager.ts`

@@ -8,8 +8,8 @@ Your goal is to break through your opponent's defense and win.
 
 Important idea:
 - Defense area = `shield area` + `base`.
-- Usually attacks hit shields first.
-- If shields are gone and attack connects to base side, game can end.
+- Usually attacks hit `base` first.
+- If `base` is empty and attack connects to `shield` side, game can end.
 
 ## 2) Card and Zone Basics
 
@@ -72,6 +72,24 @@ Start Turn -> Draw -> Main -> Attack/Blocker/Action Step -> End Turn
 5. Action step opens for both sides.
 6. Both players confirm battle.
 7. Battle resolves, then follow-up effects trigger.
+
+### `Blocker` concept (important)
+- `Blocker` is the defender's intercept tool during an incoming attack.
+- When `BLOCKER_CHOICE` appears, defender can choose to block or skip.
+- If defender blocks, attack target can change to the blocker unit.
+- If defender skips, attack continues on the original target.
+
+### Battle keyword concepts (important)
+- `Burst`: a shield-hit trigger. When burst condition is met, a burst choice/effect can appear.
+- `Breach`: pressure effect tied to battle outcomes. It helps push damage pressure toward defense cards.
+- `First Strike`: this unit deals battle damage first in combat order.
+- `High-Maneuver`: this unit follows special attack-targeting rules and is harder to stop in normal lines.
+
+### Quick examples
+- `Burst` example: Your shield card is damaged. A `BURST_EFFECT_CHOICE` pops up, and you may activate burst text.
+- `Breach` example: Your attacker wins battle and has `Breach`, so extra pressure is applied to opponent defense cards.
+- `First Strike` example: Two units battle. The one with `First Strike` deals battle damage first.
+- `High-Maneuver` example: Your unit attacks using special targeting rules, so normal defense lines are harder to use.
 
 ## 7) Choice Rules (Very Important)
 If a choice event appears, resolve it first.

@@ -66,13 +66,14 @@
 
 ## 防區名詞（Defense Area）
 - `Defense area` = `shield area` + `base`
-- `shield area`：前排保護層
-- `base`：後排核心防區
+- `base`：先被攻擊的防區
+- `shield area`：`base` 清空後的後續防區
 - `slot`：單位/駕駛放置位置（`slot1`~`slot6`）
 - `pilot card`：和 `unit` 在同 slot 形成配對
 - `command card`：一次性效果卡
 - `base card`：基地卡，位於 base 區
 - `trash`：棄牌區
+- `Blocker`：防守方可把原本攻擊目標改成 blocker 單位
 
 ## 出牌流程
 主要在：`src/services/CardPlayExecutor.ts`
@@ -114,7 +115,7 @@
 3. 換下一位玩家
 
 ## 勝負判定（其中一條）
-當對手 `shield` 已空，且攻擊連到 `base` 側，遊戲可結束。
+當對手 `base` 已清空，且攻擊連到 `shield` 側，遊戲可結束。
 
 檔案：
 - `src/services/BattlePhaseManager.ts`
