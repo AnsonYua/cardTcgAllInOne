@@ -741,6 +741,242 @@ function detectSourceExclusionConsistency(inventory) {
   return issues;
 }
 
+function extractDescriptionSegments(card) {
+  const description = Array.isArray(card?.effects?.description) ? card.effects.description : [];
+  return description
+    .filter((line) => typeof line === 'string' && line.trim().length > 0)
+    .map((line, index) => {
+      const tags = (line.match(/(\[[^\]]+\]|【[^】]+】)/g) || [])
+        .map((tag) => tag.replace(/[\[\]【】]/g, '').trim().toLowerCase())
+        .filter(Boolean);
+      return { line, index, tags };
+    });
+}
+
+function segmentFlags(tags) {
+  const has = (needle) => tags.some((tag) => tag.includes(needle));
+  return {
+    burst: has('burst'),
+    deploy: has('deploy'),
+    main: has('main'),
+    action: has('action'),
+    paired: has('paired') || has('when paired') || has('during pair') || has('pair'),
+    linked: has('linked') || has('when linked') || has('during link') || has('link'),
+    destroyed: has('destroyed')
+  };
+}
+
+function hasConditionType(rule, needle) {
+  const conditions = [
+    ...(Array.isArray(rule?.conditions) ? rule.conditions : []),
+    ...(Array.isArray(rule?.sourceConditions) ? rule.sourceConditions : [])
+  ];
+  return conditions.some((condition) =>
+    condition &&
+    typeof condition === 'object' &&
+    typeof condition.type === 'string' &&
+    condition.type.toLowerCase().includes(needle)
+  );
+}
+
+function matchesSegmentByTrigger(rule, flags) {
+  const trigger = typeof rule?.trigger === 'string' ? rule.trigger.toUpperCase() : '';
+  const effectType = typeof rule?.type === 'string' ? rule.type.toLowerCase() : '';
+  const win = normalizeWindows(rule);
+
+  if (flags.burst) {
+    return trigger === 'BURST_CONDITION';
+  }
+  if (flags.deploy) {
+    return trigger === 'ENTERS_PLAY';
+  }
+  if (flags.destroyed) {
+    return trigger === 'DESTROYED';
+  }
+  if (flags.main || flags.action) {
+    if (effectType !== 'play' && effectType !== 'activated') {
+      return false;
+    }
+    const hasMain = win.includes('MAIN_PHASE');
+    const hasAction = win.includes('ACTION_STEP');
+    if (flags.main && flags.action) {
+      return hasMain || hasAction || win.length === 0;
+    }
+    if (flags.main) {
+      return hasMain || win.length === 0;
+    }
+    if (flags.action) {
+      return hasAction;
+    }
+  }
+  if (flags.linked) {
+    return hasConditionType(rule, 'linked') || trigger === 'PAIRING_COMPLETE';
+  }
+  if (flags.paired) {
+    return trigger === 'PAIRING_COMPLETE' || hasConditionType(rule, 'paired');
+  }
+  return true;
+}
+
+function collectSequenceSteps(rule) {
+  const steps = [];
+  if (Array.isArray(rule?.parameters?.steps)) {
+    for (const step of rule.parameters.steps) {
+      steps.push(step);
+      if (step?.parameters?.then && Array.isArray(step.parameters.then)) {
+        steps.push(...step.parameters.then);
+      }
+      if (step?.parameters?.else && Array.isArray(step.parameters.else)) {
+        steps.push(...step.parameters.else);
+      }
+      if (step?.parameters?.branches && Array.isArray(step.parameters.branches)) {
+        for (const branch of step.parameters.branches) {
+          if (Array.isArray(branch?.steps)) {
+            steps.push(...branch.steps);
+          }
+        }
+      }
+    }
+  }
+  return steps;
+}
+
+function resolveTargetCount(rawCount) {
+  if (typeof rawCount === 'number') {
+    return rawCount;
+  }
+  if (rawCount && typeof rawCount === 'object' && typeof rawCount.max === 'number') {
+    return rawCount.max;
+  }
+  return null;
+}
+
+function detectOptionalExileIfYouDoMismatch(baseDir, files) {
+  const issues = [];
+
+  for (const file of files) {
+    const filePath = path.join(baseDir, 'src', 'data', file);
+    const json = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    const cards = json.cards || {};
+
+    for (const [cardId, card] of Object.entries(cards)) {
+      const rules = Array.isArray(card?.effects?.rules) ? card.effects.rules : [];
+      if (rules.length === 0) {
+        continue;
+      }
+
+      for (const segment of extractDescriptionSegments(card)) {
+        const normalizedLine = normalizeText(segment.line);
+        const hasOptionalMarker = /\byou may\b/.test(normalizedLine);
+        const hasTrashMarker = /from your trash/.test(normalizedLine);
+        const hasExileMarker = /exile .*from the game|exile it from the game|exile them from the game/.test(normalizedLine);
+        const hasIfYouDoMarker = /\bif you do\b/.test(normalizedLine);
+        if (!hasOptionalMarker || !hasTrashMarker || !hasExileMarker || !hasIfYouDoMarker) {
+          continue;
+        }
+
+        const flags = segmentFlags(segment.tags);
+        const mappedRules = rules
+          .map((rule, index) => ({ rule, index }))
+          .filter(({ rule }) => matchesSegmentByTrigger(rule, flags));
+        if (mappedRules.length === 0) {
+          continue;
+        }
+
+        const expectedExileCountMatch = normalizedLine.match(/\bchoose\s+(\d+)\b/);
+        const expectedExileCount = expectedExileCountMatch ? Number(expectedExileCountMatch[1]) : null;
+
+        for (const { rule, index } of mappedRules) {
+          const rulePath = `cards.${cardId}.effects.rules[${index}]`;
+          const failures = [];
+          const currentSchema = {};
+
+          const hasRuleOptional = rule?.optional === true;
+          const hasCostExile = Boolean(rule?.cost?.exileFromTrash && typeof rule.cost.exileFromTrash === 'object');
+          const sequenceSteps = collectSequenceSteps(rule);
+          const sequenceExileStep = sequenceSteps.find((step) => step?.action === 'exileFromTrash');
+          const hasSequenceExile = Boolean(sequenceExileStep);
+          const hasExileOperation = hasCostExile || hasSequenceExile;
+
+          const hasIfYouDoDependencyViaSequence = sequenceSteps.some((step) =>
+            step?.action === 'conditional' &&
+            Array.isArray(step?.parameters?.if) &&
+            step.parameters.if.some((cond) => cond?.type === 'stepResolved')
+          );
+          const hasIfYouDoDependency = hasIfYouDoDependencyViaSequence || hasCostExile;
+
+          if (!hasRuleOptional && !hasSequenceExile) {
+            failures.push('missing_optional_gating');
+          }
+          if (!hasExileOperation) {
+            failures.push('missing_exile_from_trash_operation');
+          }
+          if (!hasIfYouDoDependency) {
+            failures.push('missing_if_you_do_dependency');
+          }
+
+          const exileCost = hasCostExile ? rule.cost.exileFromTrash : sequenceExileStep?.target;
+          if (expectedExileCount !== null) {
+            const exileCount = resolveTargetCount(exileCost?.count);
+            if (exileCount !== expectedExileCount) {
+              failures.push('exile_count_mismatch');
+            }
+          }
+
+          const ruleTarget = rule?.target;
+          if (ruleTarget && typeof ruleTarget === 'object') {
+            const effectTargetCount = resolveTargetCount(ruleTarget.count);
+            if (expectedExileCount !== null && effectTargetCount === expectedExileCount && expectedExileCount > 1) {
+              failures.push('cost_effect_target_leakage_count');
+            }
+            const targetScope = typeof ruleTarget.scope === 'string' ? ruleTarget.scope.toLowerCase() : '';
+            const targetTraits = Array.isArray(ruleTarget?.filters?.traits)
+              ? ruleTarget.filters.traits.filter((entry) => typeof entry === 'string')
+              : [];
+            const costTraits = Array.isArray(exileCost?.traitsAny)
+              ? exileCost.traitsAny.filter((entry) => typeof entry === 'string')
+              : [];
+            const sharesCostTrait = targetTraits.some((trait) => costTraits.includes(trait));
+            if (targetScope.startsWith('opponent') && sharesCostTrait) {
+              failures.push('cost_effect_target_leakage_traits');
+            }
+          }
+
+          if (failures.length > 0) {
+            currentSchema.optional = rule?.optional === true;
+            currentSchema.action = rule?.action;
+            currentSchema.cost = rule?.cost || null;
+            currentSchema.target = ruleTarget || null;
+            currentSchema.hasSequenceExile = hasSequenceExile;
+            currentSchema.hasIfYouDoDependencyViaSequence = hasIfYouDoDependencyViaSequence;
+
+            issues.push(issueFactory({
+              issueId: `optional_exile_if_you_do_${file}_${cardId}_${index}_${segment.index}`,
+              severity: 'P1',
+              confidence: 0.93,
+              category: 'optional-exile-if-you-do-mismatch',
+              cardId,
+              file,
+              rulePath,
+              currentSchema,
+              expectedCanonicalSchema: {
+                optional: true,
+                requiresExileFromTrashCostOrStep: true,
+                requiresIfYouDoDependency: true,
+                keepCostAndEffectTargetFieldsSeparated: true
+              },
+              behavioralRisk: 'Optional exile gate and downstream effect can resolve incorrectly when cost semantics are missing or leaked into target config.',
+              recommendedFix: `Model "${segment.line}" with optional exile-from-trash gating (cost or sequence step), ensure If-you-do dependency, and keep effect target independent from cost count/filters.`
+            }));
+          }
+        }
+      }
+    }
+  }
+
+  return issues;
+}
+
 function dedupeIssues(issues) {
   const seen = new Set();
   const result = [];
@@ -777,7 +1013,8 @@ function generateEffectAlignmentReport(baseDir, options = {}) {
     ...detectBranchIncomplete(inventory),
     ...detectDrift(clusters),
     ...detectCanonicalFieldDrift(inventory),
-    ...detectSourceExclusionConsistency(inventory)
+    ...detectSourceExclusionConsistency(inventory),
+    ...detectOptionalExileIfYouDoMismatch(baseDir, files)
   ]);
   const allowlistedIssues = issues.filter((issue) =>
     manifest.intentionalDivergenceAllowlist.some((entry) => issueMatchesAllowlist(issue, entry))

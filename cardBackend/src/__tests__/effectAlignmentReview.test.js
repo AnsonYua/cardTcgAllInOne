@@ -1,4 +1,6 @@
 const path = require('path');
+const fs = require('fs');
+const os = require('os');
 const {
   extractRuleFeatures,
   buildInventory,
@@ -120,5 +122,57 @@ describe('Effect alignment review tooling', () => {
 
     expect(missingConditionCards.has('ST07-009')).toBe(false);
     expect(missingConditionCards.has('ST02-016')).toBe(false);
+  });
+
+  test('optional exile "if you do" detector flags missing cost-gated schema', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'effect-alignment-'));
+    const dataDir = path.join(tempDir, 'src', 'data');
+    fs.mkdirSync(dataDir, { recursive: true });
+
+    const fixture = {
+      cards: {
+        T001: {
+          id: 'T001',
+          name: 'Mismatch Fixture',
+          cardType: 'unit',
+          effects: {
+            description: [
+              '【Deploy】You may choose 2 (Titans) cards from your trash. Exile them from the game. If you do, choose 1 enemy Unit that is Lv.4 or lower. Rest it.'
+            ],
+            rules: [
+              {
+                effectId: 'deploy_rest',
+                type: 'triggered',
+                trigger: 'ENTERS_PLAY',
+                action: 'rest',
+                target: {
+                  type: 'unit',
+                  scope: 'opponent',
+                  filters: { level: '<=4', traits: ['Titans'] },
+                  count: 2
+                }
+              }
+            ]
+          }
+        }
+      }
+    };
+
+    fs.writeFileSync(path.join(dataDir, 'fixtureCard.json'), `${JSON.stringify(fixture, null, 2)}\n`, 'utf8');
+
+    const report = generateEffectAlignmentReport(tempDir, { cardFiles: ['fixtureCard.json'] });
+    const optionalIssues = report.issues.filter((issue) => issue.category === 'optional-exile-if-you-do-mismatch');
+
+    expect(optionalIssues.length).toBeGreaterThan(0);
+    expect(optionalIssues.some((issue) => issue.cardId === 'T001')).toBe(true);
+  });
+
+  test('optional exile "if you do" detector stays clean for fixed GD03-009', () => {
+    const baseDir = path.resolve(__dirname, '..', '..');
+    const report = generateEffectAlignmentReport(baseDir);
+    const optionalIssues = report.issues.filter((issue) => issue.category === 'optional-exile-if-you-do-mismatch');
+    const gd03009Issues = optionalIssues.filter((issue) => issue.cardId === 'GD03-009');
+
+    expect(gd03009Issues).toHaveLength(0);
   });
 });
