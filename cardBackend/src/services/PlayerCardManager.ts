@@ -14,6 +14,7 @@ import { LinkUtils } from '../utils/LinkUtils';
 import { UnitRestrictionUtils } from './restrictions/UnitRestrictionUtils';
 import { UnitSlotDestructionFlow } from './destruction/UnitSlotDestructionFlow';
 import { SlotExitCoordinator } from './zones/SlotExitCoordinator';
+import { resolveUnitPlacementSlot } from './playCard/UnitReplaceSlotCoordinator';
 
 export interface CardPlacementResult {
     success: boolean;
@@ -25,6 +26,7 @@ export interface CardPlacementResult {
 
 export interface CardPlacementOptions {
     targetUnit?: string;
+    replaceSlot?: string;
     [key: string]: any;
 }
 
@@ -59,10 +61,12 @@ export class PlayerCardManager {
             // Use eventData properties directly in method calls to minimize conversions
             switch (eventData.playAs) {
                 case 'unit':
-                    return this.placeUnitCard(player.zones, 
+                    return this.placeUnitCard(gameEnv,
+                                             player.zones, 
                                              fullCardData, 
                                              eventData.carduid, 
-                                             playerId);
+                                             playerId,
+                                             eventData.replaceSlot as string | undefined);
 
                 case 'pilot':
                     return this.placePilotCard(player.zones, 
@@ -136,7 +140,7 @@ export class PlayerCardManager {
 
             switch (cardType) {
                 case 'unit':
-                    return this.placeUnitCard(player.zones, fullCardData, carduid, playerId);
+                    return this.placeUnitCard(gameEnv, player.zones, fullCardData, carduid, playerId, options.replaceSlot);
 
                 case 'pilot':
                     return this.placePilotCard(player.zones, fullCardData, carduid, playerId, options.targetUnit);
@@ -167,20 +171,28 @@ export class PlayerCardManager {
      * Place unit card in first empty slot
      */
     private static placeUnitCard(
+        gameEnv: GameEnvironment,
         playerZones: any,
         cardData: any,
         carduid: string,
-        playerId: string
+        playerId: string,
+        replaceSlot?: string
     ): CardPlacementResult {
-        // Use local utility to find first empty slot
-        const targetZone = PlayerCardManager.findFirstEmptySlot(playerZones);
-
-        if (!targetZone) {
+        const slotResult = resolveUnitPlacementSlot(playerZones, {
+            gameEnv,
+            playerId,
+            replaceSlot,
+            findFirstEmptySlot: PlayerCardManager.findFirstEmptySlot,
+            moveUnitFromSlotToTrash: (env, ownerId, slotName, unitCard) =>
+                PlayerCardManager.moveCardToTrashFromSlot(env, ownerId, slotName, unitCard, 'unit')
+        });
+        if (!slotResult.success) {
             return {
                 success: false,
-                error: `No empty unit slots available in zones slot1-slot6`
+                error: slotResult.error
             };
         }
+        const targetZone = slotResult.targetZone;
 
         // Create unit card using proper UnitZoneCard interface from CardSystem
         const unitCard = createZoneCard(

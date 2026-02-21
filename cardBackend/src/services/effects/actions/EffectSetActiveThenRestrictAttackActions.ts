@@ -7,6 +7,7 @@ import { GameNotificationManager } from '../../GameNotificationManager';
 import { AttackRestrictionService } from '../../statusEffects/AttackRestrictionService';
 import { UnitRestrictionUtils } from '../../restrictions/UnitRestrictionUtils';
 import { RestrictionNotificationEmitter } from '../../restrictions/RestrictionNotificationEmitter';
+import { processUnitSetActiveByEffectTrigger } from './EffectSetActiveTriggerSupport';
 
 export function applySetActiveThenRestrictAttackEffect(
     gameEnv: GameEnvironment,
@@ -47,6 +48,7 @@ export function applySetActiveThenRestrictAttackEffect(
             continue;
         }
 
+        const wasRested = resolvedTarget.card.isRested === true;
         resolvedTarget.card.isRested = false;
         notificationManager.addNotificationEvent('CARD_SET_ACTIVE', {
             playerId: target.playerId,
@@ -54,6 +56,14 @@ export function applySetActiveThenRestrictAttackEffect(
             zone: target.zone,
             timestamp: Date.now()
         });
+
+        const triggerResult = processUnitSetActiveByEffectTrigger(gameEnv, sourcePlayerId, target, {
+            isUnit: resolvedTarget.kind === 'unit',
+            wasRested
+        });
+        if (!triggerResult.success) {
+            return triggerResult;
+        }
 
         AttackRestrictionService.applyAndNotify(gameEnv, {
             playerId: target.playerId,

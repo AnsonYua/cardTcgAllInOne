@@ -15,6 +15,7 @@ import { GameNotificationManager } from './GameNotificationManager';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { UnitRestrictionUtils } from './restrictions/UnitRestrictionUtils';
 import { RestrictionNotificationEmitter } from './restrictions/RestrictionNotificationEmitter';
+import { validateUnitReplaceSlotForPlay } from './playCard/UnitReplaceSlotCoordinator';
 
 export interface PlayCardPreparationFailure {
     success: false;
@@ -117,6 +118,16 @@ export class PlayCardPreparationManager {
                 return {
                     success: false,
                     error: 'Target unit cannot be paired with a pilot'
+                };
+            }
+        }
+
+        if (eventData.playAs === 'unit') {
+            const validation = validateUnitReplaceSlotForPlay(player.zones, eventData.replaceSlot);
+            if (!validation.success) {
+                return {
+                    success: false,
+                    error: validation.error
                 };
             }
         }

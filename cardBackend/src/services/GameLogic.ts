@@ -826,7 +826,8 @@ export class GameLogic {
                 {
                     fromBurst: action.fromBurst,
                     cardId: action.cardId,
-                    slotName: action.slotName
+                    slotName: action.slotName,
+                    replaceSlot: action.replaceSlot
                 }
             );
 

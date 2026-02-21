@@ -77,7 +77,8 @@ export const createEventFromAction = (action: PlayerAction): GameEvent | null =>
                 {
                     fromBurst: action.fromBurst,
                     cardId: action.cardId,
-                    slotName: action.slotName
+                    slotName: action.slotName,
+                    replaceSlot: action.replaceSlot
                 }
             );
 

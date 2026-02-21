@@ -33,7 +33,8 @@ export const CANONICAL_EFFECT_TRIGGERS = new Set<string>([
     'AP_REDUCED_BY_ENEMY_EFFECT',
     'ATTACK_TARGET_REQUIREMENT',
     'DEFENSE_AREA_BATTLE_DAMAGE',
-    'UNIT_RESTED_BY_EFFECT'
+    'UNIT_RESTED_BY_EFFECT',
+    'UNIT_SET_ACTIVE_BY_EFFECT'
 ]);
 
 export const CANONICAL_CONDITION_TYPES = new Set<string>([
@@ -94,7 +95,8 @@ export const CANONICAL_CONDITION_TYPES = new Set<string>([
     'battleDestroyEvent',
     'shieldAreaCardDamagedByBattleDamage',
     'battleDamageToUnitEvent',
-    'unitRestedByEffectEvent'
+    'unitRestedByEffectEvent',
+    'unitStateChangedByEffectEvent'
 ]);
 
 export const SEQUENCE_INTERNAL_CONDITION_TYPES = new Set<string>([

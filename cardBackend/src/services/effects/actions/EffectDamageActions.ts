@@ -8,9 +8,9 @@ import { TargetCardResolver } from '../../targets/TargetCardResolver';
 import { EffectDamagePreventionUtils } from '../EffectDamagePreventionUtils';
 import { EffectStatApplier } from '../EffectStatApplier';
 import { TriggeredEffectProcessor } from '../TriggeredEffectProcessor';
-import { extractNumericValue } from './EffectActionUtils';
 import { SlotHpDestructionChecker } from '../../destruction/SlotHpDestructionChecker';
 import { SlotHealthService } from '../../health/SlotHealthService';
+import { resolveEffectDamageValue } from './EffectDamageValueResolver';
 
 export function applyDamageEffect(
     gameEnv: GameEnvironment,
@@ -19,7 +19,7 @@ export function applyDamageEffect(
     effect: EffectDefinition,
     selectedTargets: TargetReference[]
 ): { success: boolean; error?: string } {
-    const damageValue = extractNumericValue(effect.parameters) ?? 0;
+    const damageValue = resolveEffectDamageValue(gameEnv, effect, sourceCarduid);
     if (damageValue <= 0) {
         return { success: true };
     }

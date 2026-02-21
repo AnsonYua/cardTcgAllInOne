@@ -4,10 +4,11 @@ import { TargetCardResolver } from '../../targets/TargetCardResolver';
 import { GameNotificationManager } from '../../GameNotificationManager';
 import { UnitRestrictionUtils } from '../../restrictions/UnitRestrictionUtils';
 import { RestrictionNotificationEmitter } from '../../restrictions/RestrictionNotificationEmitter';
+import { processUnitSetActiveByEffectTrigger } from './EffectSetActiveTriggerSupport';
 
 export function applySetActiveEffect(
     gameEnv: GameEnvironment,
-    _sourcePlayerId: string,
+    sourcePlayerId: string,
     _effect: EffectDefinition,
     selectedTargets: TargetReference[]
 ): { success: boolean; error?: string } {
@@ -36,6 +37,7 @@ export function applySetActiveEffect(
             continue;
         }
 
+        const wasRested = resolvedTarget.card.isRested === true;
         resolvedTarget.card.isRested = false;
         console.log(`  😌 ${target.carduid}: activated`);
 
@@ -45,6 +47,14 @@ export function applySetActiveEffect(
             zone: target.zone,
             timestamp: Date.now()
         });
+
+        const triggerResult = processUnitSetActiveByEffectTrigger(gameEnv, sourcePlayerId, target, {
+            isUnit: resolvedTarget.kind === 'unit',
+            wasRested
+        });
+        if (!triggerResult.success) {
+            return triggerResult;
+        }
     }
 
     return { success: true };

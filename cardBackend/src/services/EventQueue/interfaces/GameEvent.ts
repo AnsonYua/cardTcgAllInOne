@@ -139,6 +139,7 @@ export interface PlayCardEventData {
     carduid: string;
     playAs: string;
     targetUnit?: string;
+    replaceSlot?: string;
     fromBurst?: boolean;
     slotName?: string;
     cardPlayNotificationId?: string;

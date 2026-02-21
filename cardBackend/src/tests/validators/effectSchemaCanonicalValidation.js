@@ -26,6 +26,9 @@ const CARD_FILES = [
   'st08Card.json'
 ];
 
+const LEVEL_COMPARISON_LITERAL_REGEX = /^(<=|>=|<|>|==|!=)\d+$/;
+const LEVEL_DYNAMIC_PLACEHOLDER_REGEX = /^(<=|>=|<|>|==|!=)\s*(SOURCE_LEVEL|sourceLevel|EVENT_ATTACKER_LEVEL|eventAttackerLevel|RESTED_UNIT_LEVEL|restedUnitLevel)$/;
+
 function loadCardFile(fileName) {
   const filePath = path.join(__dirname, '..', '..', 'data', fileName);
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -92,6 +95,91 @@ function validateConditionEntry(condition, conditionPath, context, diagnostics, 
       jsonPath: `${conditionPath}.type`,
       message: `unknown condition type ${rawType}`
     });
+  }
+
+  if (normalizedType === 'unitRestedByEffectEvent' || normalizedType === 'unitStateChangedByEffectEvent') {
+    if (
+      Object.prototype.hasOwnProperty.call(condition, 'targetCarduid') &&
+      typeof condition.targetCarduid !== 'string'
+    ) {
+      diagnostics.push({
+        severity: 'error',
+        cardId: context.cardId,
+        effectId: context.effectId || 'unknown',
+        jsonPath: `${conditionPath}.targetCarduid`,
+        message: 'targetCarduid must be a string'
+      });
+    }
+
+    const validateController = (value, field) => {
+      if (!Object.prototype.hasOwnProperty.call(condition, field)) {
+        return;
+      }
+      if (typeof value !== 'string') {
+        diagnostics.push({
+          severity: 'error',
+          cardId: context.cardId,
+          effectId: context.effectId || 'unknown',
+          jsonPath: `${conditionPath}.${field}`,
+          message: `${field} must be a string`
+        });
+        return;
+      }
+      const normalized = value.toLowerCase();
+      if (!['self', 'opponent', 'any'].includes(normalized)) {
+        diagnostics.push({
+          severity: 'error',
+          cardId: context.cardId,
+          effectId: context.effectId || 'unknown',
+          jsonPath: `${conditionPath}.${field}`,
+          message: `${field} must be one of self|opponent|any`
+        });
+      }
+    };
+    validateController(condition.sourceController, 'sourceController');
+    validateController(condition.targetController, 'targetController');
+  }
+
+  if (normalizedType === 'unitStateChangedByEffectEvent') {
+    if (!Object.prototype.hasOwnProperty.call(condition, 'toState')) {
+      diagnostics.push({
+        severity: 'error',
+        cardId: context.cardId,
+        effectId: context.effectId || 'unknown',
+        jsonPath: `${conditionPath}.toState`,
+        message: 'unitStateChangedByEffectEvent requires toState'
+      });
+    }
+
+    const validateStateField = (fieldName) => {
+      if (!Object.prototype.hasOwnProperty.call(condition, fieldName)) {
+        return;
+      }
+      const value = condition[fieldName];
+      if (typeof value !== 'string') {
+        diagnostics.push({
+          severity: 'error',
+          cardId: context.cardId,
+          effectId: context.effectId || 'unknown',
+          jsonPath: `${conditionPath}.${fieldName}`,
+          message: `${fieldName} must be a string`
+        });
+        return;
+      }
+      const normalized = value.toLowerCase();
+      if (!['rested', 'active'].includes(normalized)) {
+        diagnostics.push({
+          severity: 'error',
+          cardId: context.cardId,
+          effectId: context.effectId || 'unknown',
+          jsonPath: `${conditionPath}.${fieldName}`,
+          message: `${fieldName} must be one of rested|active`
+        });
+      }
+    };
+
+    validateStateField('toState');
+    validateStateField('fromState');
   }
 
   if (Object.prototype.hasOwnProperty.call(condition, 'excludeSourceCard')) {
@@ -220,6 +308,24 @@ function walkEffects(node, context, diagnostics) {
         });
       }
     }
+
+    const levelFilter = node.target.filters.level;
+    if (typeof levelFilter === 'string') {
+      const containsPlaceholderText = /[A-Za-z_]/.test(levelFilter);
+      const allowed =
+        LEVEL_COMPARISON_LITERAL_REGEX.test(levelFilter) ||
+        LEVEL_DYNAMIC_PLACEHOLDER_REGEX.test(levelFilter);
+
+      if (containsPlaceholderText && !allowed) {
+        diagnostics.push({
+          severity: 'error',
+          cardId: context.cardId,
+          effectId: nextContext.effectId || 'unknown',
+          jsonPath: `${context.jsonPath}.target.filters.level`,
+          message: `unknown dynamic level placeholder ${levelFilter}`
+        });
+      }
+    }
   }
 
   for (const [key, value] of Object.entries(node)) {
@@ -274,5 +380,9 @@ function validateEffectSchemaCanonical() {
 }
 
 module.exports = {
-  validateEffectSchemaCanonical
+  validateEffectSchemaCanonical,
+  __testUtils: {
+    validateConditionEntry,
+    walkEffects
+  }
 };
