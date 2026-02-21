@@ -5,6 +5,13 @@ import { EffectNotifier } from './EffectNotifier';
 import { extractNumericValue } from './actions/EffectActionUtils';
 import { SlotHealthService } from '../health/SlotHealthService';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
+import { EffectApReductionPreventionUtils } from './EffectApReductionPreventionUtils';
+
+type StatApplicationContext = {
+    sourcePlayerId?: string;
+    sourceCarduid?: string;
+    effectId?: string;
+};
 
 export class EffectStatApplier {
     static applyEffectToResolvedCard(
@@ -12,12 +19,13 @@ export class EffectStatApplier {
         targetCard: UnitZoneCard | PilotZoneCard,
         action: string,
         parameters: Record<string, unknown> | undefined,
-        target: TargetReference
+        target: TargetReference,
+        context?: StatApplicationContext
     ): { success: boolean; error?: string } {
         switch (action) {
             case 'modifyAP':
             case 'modifyHP':
-                return this.applyModifyStat(gameEnv, targetCard, action, parameters, target);
+                return this.applyModifyStat(gameEnv, targetCard, action, parameters, target, context);
 
             case 'heal':
                 return this.applyHealToCard(gameEnv, targetCard, parameters, target);
@@ -39,7 +47,8 @@ export class EffectStatApplier {
         targetCard: UnitZoneCard | PilotZoneCard,
         action: 'modifyAP' | 'modifyHP',
         parameters: Record<string, unknown> | undefined,
-        target: TargetReference
+        target: TargetReference,
+        context?: StatApplicationContext
     ): { success: boolean; error?: string } {
         const value = extractNumericValue(parameters);
         if (value === undefined) {
@@ -47,6 +56,20 @@ export class EffectStatApplier {
                 success: false,
                 error: `${action} effect requires numeric value`
             };
+        }
+
+        if (action === 'modifyAP' && value < 0) {
+            const prevention = EffectApReductionPreventionUtils.isApReductionPrevented({
+                targetCard,
+                target,
+                sourcePlayerId: context?.sourcePlayerId
+            });
+            if (prevention.prevented) {
+                console.log(
+                    `  🛡️ ${target.carduid}: AP reduction prevented by ${prevention.preventedBySourceCarduid || 'unknown source'}`
+                );
+                return { success: true };
+            }
         }
 
         const property = action === 'modifyAP' ? 'modifyAP' : 'modifyHP';

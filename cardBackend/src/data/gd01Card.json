@@ -98,6 +98,30 @@
         ],
         "rules": [
           {
+            "effectId": "play_destroy_linked_unicorn_mode_lv5_as_zero",
+            "type": "play",
+            "trigger": "PLAY_CARD",
+            "optional": true,
+            "action": "replace_cost",
+            "parameters": {
+              "replace": {
+                "from": {
+                  "type": "destroy",
+                  "target": "friendly_linked_unit",
+                  "filters": {
+                    "cardType": "unit",
+                    "nameIncludes": "Unicorn Mode",
+                    "level": "=5"
+                  }
+                },
+                "to": {
+                  "level": 0,
+                  "cost": 0
+                }
+              }
+            }
+          },
+          {
             "effectId": "attack_rest",
             "type": "triggered",
             "trigger": "ATTACK_PHASE",
@@ -344,6 +368,29 @@
             "action": "heal",
             "parameters": {
               "value": 1
+            }
+          },
+          {
+            "effectId": "during_link_hp_plus_1",
+            "type": "continuous",
+            "trigger": "continuous",
+            "action": "modifyHP",
+            "sourceConditions": [
+              {
+                "type": "linked"
+              }
+            ],
+            "target": {
+              "type": "unit",
+              "scope": "self",
+              "count": 1
+            },
+            "parameters": {
+              "value": 1
+            },
+            "timing": {
+              "duration": "continuous",
+              "endOnSourceDestroyed": true
             }
           }
         ]
@@ -670,7 +717,12 @@
             "action": "heal",
             "parameters": {
               "value": 1
-            }
+            },
+            "sourceConditions": [
+              {
+                "type": "linked"
+              }
+            ]
           }
         ]
       }
@@ -1514,13 +1566,15 @@
               "type": "unit",
               "scope": "opponent",
               "filters": {
-                "level": "<=2"
+                "level": "<=2",
+                "keywords": [
+                  "Blocker"
+                ]
               },
               "count": 1
             },
             "parameters": {
-              "requiresKeyword": "Blocker",
-              "notes": "Keyword filtering not implemented; requiresKeyword documents intent."
+              "notes": "Implemented: keyword-based target filters are resolved during target selection."
             }
           }
         ]
@@ -1930,11 +1984,11 @@
           "[When Paired-(Cyber-Newtype)/(Newtype) Pilot]Choose 1 to 2 enemy Units. Deal 1 damage to them."
         ],
         "rules": [
-      {
-        "effectId": "pair_damage_1_to_1_or_2",
-        "type": "triggered",
-        "trigger": "PAIRING_COMPLETE",
-        "action": "damage",
+          {
+            "effectId": "pair_damage_1_to_1_or_2",
+            "type": "triggered",
+            "trigger": "PAIRING_COMPLETE",
+            "action": "damage",
             "sourceConditions": [
               {
                 "type": "paired"
@@ -1949,22 +2003,22 @@
                   "Newtype"
                 ]
               }
-        ],
-        "target": {
-          "type": "unit",
-          "scope": "opponent",
-          "count": {
-            "min": 1,
-            "max": 2
-          },
-          "selection": {
-            "type": "player_choice"
+            ],
+            "target": {
+              "type": "unit",
+              "scope": "opponent",
+              "count": {
+                "min": 1,
+                "max": 2
+              },
+              "selection": {
+                "type": "player_choice"
+              }
+            },
+            "parameters": {
+              "value": 1
+            }
           }
-        },
-        "parameters": {
-          "value": 1
-        }
-      }
         ]
       }
     },
@@ -2068,6 +2122,37 @@
               "value": 3,
               "excludeSource": true
             }
+          },
+          {
+            "effectId": "support_ap_up_zaft_set_self_active_once_per_turn",
+            "type": "triggered",
+            "trigger": "SUPPORT_AP_INCREASED",
+            "cost": {
+              "oncePerTurn": true
+            },
+            "restrictions": [
+              "once_per_turn"
+            ],
+            "conditions": [
+              {
+                "type": "sourcePairedWithPilot",
+                "scope": "source",
+                "value": true
+              },
+              {
+                "type": "pairedPilotTraitAny",
+                "scope": "source",
+                "traitsAny": [
+                  "Coordinator"
+                ]
+              }
+            ],
+            "target": {
+              "type": "unit",
+              "scope": "source",
+              "count": 1
+            },
+            "action": "setActive"
           }
         ]
       }
@@ -4031,6 +4116,29 @@
               "scope": "self"
             },
             "action": "addToHand"
+          },
+          {
+            "effectId": "during_link_prevent_enemy_ap_reduction",
+            "type": "continuous",
+            "trigger": "continuous",
+            "sourceConditions": [
+              {
+                "type": "linked"
+              }
+            ],
+            "target": {
+              "type": "unit",
+              "scope": "self",
+              "count": 1
+            },
+            "action": "prevent_ap_reduction",
+            "parameters": {
+              "sourceController": "opponent"
+            },
+            "timing": {
+              "duration": "continuous",
+              "endOnSourceDestroyed": true
+            }
           }
         ]
       }
@@ -4213,6 +4321,36 @@
               "scope": "self"
             },
             "action": "addToHand"
+          },
+          {
+            "effectId": "linked_battle_destroy_draw_once_per_turn",
+            "type": "triggered",
+            "trigger": "BATTLE_DESTROY",
+            "action": "draw",
+            "sourceConditions": [
+              {
+                "type": "linked"
+              }
+            ],
+            "restrictions": [
+              "once_per_turn"
+            ],
+            "timing": {
+              "actionTurn": "YOUR_TURN"
+            },
+            "conditions": [
+              {
+                "type": "eventAttackerController",
+                "value": "self"
+              },
+              {
+                "type": "eventTargetLinkStatus",
+                "value": "linked"
+              }
+            ],
+            "parameters": {
+              "value": 1
+            }
           }
         ]
       }
@@ -4247,6 +4385,60 @@
               "scope": "self"
             },
             "action": "addToHand"
+          },
+          {
+            "effectId": "linked_discard_then_draw",
+            "type": "triggered",
+            "trigger": "PAIRING_COMPLETE",
+            "action": "sequence",
+            "sourceConditions": [
+              {
+                "type": "linked"
+              }
+            ],
+            "parameters": {
+              "text": "Discard 1. If you do, draw 1.",
+              "version": 1,
+              "steps": [
+                {
+                  "action": "conditional",
+                  "parameters": {
+                    "if": [
+                      {
+                        "type": "cardsInZone",
+                        "scope": "self",
+                        "zone": "hand",
+                        "value": ">=1"
+                      }
+                    ],
+                    "then": [
+                      {
+                        "action": "discardFromHand",
+                        "target": {
+                          "type": "card",
+                          "scope": "self_hand",
+                          "count": 1
+                        },
+                        "parameters": {
+                          "value": 1
+                        }
+                      },
+                      {
+                        "action": "draw",
+                        "target": {
+                          "type": "player",
+                          "scope": "self",
+                          "count": 1
+                        },
+                        "parameters": {
+                          "value": 1
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
           }
         ]
       }
@@ -4361,29 +4553,29 @@
             "action": "sequence",
             "parameters": {
               "steps": [
-              {
-                "action": "setActive",
-                "target": {
-                  "type": "unit",
-                  "scope": "source_paired_unit",
-                  "count": 1
-                }
-              },
-              {
-                "action": "restrict_attack",
-                "timing": {
-                  "duration": "UNTIL_END_OF_TURN"
+                {
+                  "action": "setActive",
+                  "target": {
+                    "type": "unit",
+                    "scope": "source_paired_unit",
+                    "count": 1
+                  }
                 },
-                "target": {
-                  "type": "unit",
-                  "scope": "source_paired_unit",
-                  "count": 1
-                },
-                "parameters": {
-                  "disallow": true,
-                  "notes": "Implemented: applies temporary attack restriction to selected targets."
+                {
+                  "action": "restrict_attack",
+                  "timing": {
+                    "duration": "UNTIL_END_OF_TURN"
+                  },
+                  "target": {
+                    "type": "unit",
+                    "scope": "source_paired_unit",
+                    "count": 1
+                  },
+                  "parameters": {
+                    "disallow": true,
+                    "notes": "Implemented: applies temporary attack restriction to selected targets."
+                  }
                 }
-              }
               ]
             }
           }

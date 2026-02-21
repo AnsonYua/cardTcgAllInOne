@@ -35,6 +35,7 @@ import { EffectUsageTracker } from './effects/EffectUsageTracker';
 import { extractNumericValue } from './effects/actions/EffectActionUtils';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { EffectConditionEvaluator } from './conditions/EffectConditionEvaluator';
+import { TriggeredEffectProcessor } from './effects/TriggeredEffectProcessor';
 import type { DeployTargetResult } from './DeployTargetResult';
 
 export type { DeployTargetResult } from './DeployTargetResult';
@@ -205,6 +206,10 @@ export class DeployTargetManager {
                     if (!triggerResult.success) {
                         return { success: false, error: triggerResult.error || 'AP reduced trigger failed' };
                     }
+                    const supportTriggerResult = this.maybeTriggerSupportApIncreased(gameEnv, playerId, sourceCarduid, normalizedEffect, targetsToApply);
+                    if (!supportTriggerResult.success) {
+                        return { success: false, error: supportTriggerResult.error || 'Support AP increase trigger failed' };
+                    }
                 }
                 
                 console.log(`🤖 Auto-applied ${effect.effectId} to ${targetsToApply.length} target(s)`);
@@ -297,6 +302,16 @@ export class DeployTargetManager {
             if (!triggerResult.success) {
                 return { success: false, error: triggerResult.error || 'AP reduced trigger failed' };
             }
+            const supportTriggerResult = this.maybeTriggerSupportApIncreased(
+                gameEnv,
+                event.playerId,
+                eventData.sourceCarduid,
+                normalizedEffect,
+                normalizedTargets
+            );
+            if (!supportTriggerResult.success) {
+                return { success: false, error: supportTriggerResult.error || 'Support AP increase trigger failed' };
+            }
 
             console.log(`✅ Successfully applied ${normalizedEffect.effectId} to ${normalizedSelections.length} selected target(s)`);
             return { success: true };
@@ -376,6 +391,84 @@ export class DeployTargetManager {
         }
 
         return { success: true };
+    }
+
+    private static maybeTriggerSupportApIncreased(
+        gameEnv: GameEnvironment,
+        sourcePlayerId: string,
+        sourceCarduid: string | undefined,
+        effect: EffectDefinition,
+        appliedTargets: TargetReference[]
+    ): { success: boolean; error?: string } {
+        if (!sourceCarduid) {
+            return { success: true };
+        }
+
+        const effectAction = EffectExecutor.getEffectAction(effect);
+        if (effectAction !== 'modifyAP') {
+            return { success: true };
+        }
+
+        const value = extractNumericValue(effect.parameters);
+        if (value === undefined || value <= 0) {
+            return { success: true };
+        }
+
+        if (!this.isSupportLikeApBoost(effect)) {
+            return { success: true };
+        }
+
+        const sourceCard = SlotZoneUtils.getCardByUid(gameEnv, sourceCarduid) as any;
+        if (!sourceCard || sourceCard?.cardData?.cardType !== 'unit') {
+            return { success: true };
+        }
+
+        const sourceOwner = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, sourceCarduid);
+        if (!sourceOwner.found || sourceOwner.playerId !== sourcePlayerId) {
+            return { success: true };
+        }
+
+        const hasZaftTarget = appliedTargets.some(target => {
+            const targetCard = SlotZoneUtils.getCardByUid(gameEnv, target.carduid) as any;
+            const traits = Array.isArray(targetCard?.cardData?.traits) ? targetCard.cardData.traits : [];
+            return traits.includes('ZAFT');
+        });
+        if (!hasZaftTarget) {
+            return { success: true };
+        }
+
+        return TriggeredEffectProcessor.processForSourceCard(gameEnv, sourcePlayerId, sourceCard, {
+            trigger: 'SUPPORT_AP_INCREASED',
+            expectedTriggers: ['SUPPORT_AP_INCREASED'],
+            fallbackEffectId: 'support_ap_increased',
+            defaultTargetScope: 'self'
+        });
+    }
+
+    private static isSupportLikeApBoost(effect: EffectDefinition): boolean {
+        const cost = effect.cost && typeof effect.cost === 'object'
+            ? (effect.cost as Record<string, unknown>)
+            : {};
+        const restsSelf = cost['restSelf'] === true || cost['rest'] === 'self' || cost['tap'] === 'self';
+        if (!restsSelf) {
+            return false;
+        }
+
+        const params = effect.parameters && typeof effect.parameters === 'object'
+            ? (effect.parameters as Record<string, unknown>)
+            : {};
+        if (params['excludeSource'] === true) {
+            return true;
+        }
+
+        const target = effect.target && typeof effect.target === 'object'
+            ? (effect.target as Record<string, unknown>)
+            : {};
+        const filters = target['filters'] && typeof target['filters'] === 'object'
+            ? (target['filters'] as Record<string, unknown>)
+            : {};
+
+        return filters['excludeSelf'] === true;
     }
 
 }

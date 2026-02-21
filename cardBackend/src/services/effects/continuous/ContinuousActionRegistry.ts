@@ -7,6 +7,7 @@ import { ContinuousKeywordGrantManager } from './ContinuousKeywordGrantManager';
 import { ContinuousBattleDamagePreventionManager } from './ContinuousBattleDamagePreventionManager';
 import { ContinuousEffectDamagePreventionManager } from './ContinuousEffectDamagePreventionManager';
 import { ContinuousBreachGrantManager } from './ContinuousBreachGrantManager';
+import { ContinuousApReductionPreventionManager } from './ContinuousApReductionPreventionManager';
 
 export type ContinuousEffectEntry = {
     sourceCarduid: string;
@@ -30,6 +31,8 @@ export class ContinuousActionRegistry {
                 return ContinuousBattleDamagePreventionManager.applyToTargets(gameEnv, entry, targets);
             case 'prevent_damage':
                 return ContinuousEffectDamagePreventionManager.applyToTargets(gameEnv, entry, targets);
+            case 'prevent_ap_reduction':
+                return ContinuousApReductionPreventionManager.applyToTargets(gameEnv, entry, targets);
             default:
                 return null;
         }

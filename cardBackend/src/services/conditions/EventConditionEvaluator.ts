@@ -3,6 +3,7 @@ import { GamePhase } from '../../models/GameEnums';
 import { SLOT_ZONES } from '../../config/gameConstants';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { KeywordUtils } from '../../utils/KeywordUtils';
+import { SlotCardStateUtils } from './SlotCardStateUtils';
 
 export class EventConditionEvaluator {
     static eventTypeMatches(gameEnv: GameEnvironment, condition: Record<string, unknown>): boolean {
@@ -225,6 +226,27 @@ export class EventConditionEvaluator {
         const card = SlotZoneUtils.getCardByUid(gameEnv, carduid) as any;
         const wasRested = Boolean(card?.isRested);
         return wasRested === expected;
+    }
+
+    static eventTargetLinkStatus(gameEnv: GameEnvironment, condition: Record<string, unknown>): boolean {
+        const expected = typeof condition.value === 'string' ? condition.value.toLowerCase() : '';
+        if (!expected) {
+            return false;
+        }
+
+        const targetCarduid = this.getEventTargetCarduid(gameEnv);
+        if (!targetCarduid) {
+            return false;
+        }
+
+        const linked = SlotCardStateUtils.isCardLinked(gameEnv, targetCarduid);
+        if (expected === 'linked') {
+            return linked;
+        }
+        if (expected === 'unlinked') {
+            return !linked;
+        }
+        return false;
     }
 
     private static getLatestNotification(gameEnv: GameEnvironment): Record<string, unknown> | null {

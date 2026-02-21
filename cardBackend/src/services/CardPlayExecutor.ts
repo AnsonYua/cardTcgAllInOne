@@ -39,7 +39,7 @@ export class CardPlayExecutor {
                 };
             }
 
-            const { tappedEnergy, rollback } = preparationResult as PlayCardPreparationSuccess;
+            const { tappedEnergy, rollback, finalizeAfterPlacement } = preparationResult as PlayCardPreparationSuccess;
             const placementResult = PlayerCardManager.placeCardWithEventData(gameEnv, playerId, eventData);
 
             if (!placementResult.success) {
@@ -48,6 +48,17 @@ export class CardPlayExecutor {
                     success: false,
                     error: placementResult.error
                 };
+            }
+
+            if (typeof finalizeAfterPlacement === 'function') {
+                const finalizeResult = finalizeAfterPlacement();
+                if (!finalizeResult.success) {
+                    rollback();
+                    return {
+                        success: false,
+                        error: finalizeResult.error || 'Failed to finalize play cost replacement'
+                    };
+                }
             }
 
             const placedCardData = CardDatabaseManager.getCardDetailsFromCarduid(eventData.carduid);

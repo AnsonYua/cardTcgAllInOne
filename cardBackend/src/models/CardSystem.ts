@@ -32,6 +32,9 @@ export interface TemporaryEffect {
         sourceCardType?: string;
         sourceController?: string;
     };
+    preventApReduction?: {
+        sourceController?: string;
+    };
     duration: string;                   // Effect duration
     appliedTurn: number;                // Which turn this was applied
     appliedBy: string;                  // Which player applied it

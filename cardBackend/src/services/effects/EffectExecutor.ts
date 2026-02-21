@@ -164,7 +164,12 @@ export class EffectExecutor {
                     resolvedTarget.card as UnitZoneCard | PilotZoneCard,
                     action,
                     parameters,
-                    target
+                    target,
+                    {
+                        sourcePlayerId,
+                        sourceCarduid,
+                        effectId: effect.effectId
+                    }
                 );
 
                 if (!applyResult.success) {

@@ -99,6 +99,21 @@ export class TemporaryEffectFactory {
         };
     }
 
+    static createApReductionPrevention(
+        gameEnv: GameEnvironment,
+        sourcePlayerId: string,
+        sourceCarduid: string,
+        effect: EffectDefinition,
+        prevention: { sourceController?: string }
+    ): TemporaryEffect {
+        return {
+            ...this.createBase(gameEnv, sourcePlayerId, sourceCarduid, effect),
+            preventApReduction: {
+                sourceController: prevention.sourceController
+            }
+        };
+    }
+
     static createAllowAttackTarget(
         gameEnv: GameEnvironment,
         sourcePlayerId: string,

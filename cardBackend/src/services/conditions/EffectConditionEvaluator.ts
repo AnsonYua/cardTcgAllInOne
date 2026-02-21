@@ -462,6 +462,9 @@ export class EffectConditionEvaluator {
             case 'eventTargetWasRested':
                 return EventConditionEvaluator.eventTargetWasRested(gameEnv, typedCondition);
 
+            case 'eventTargetLinkStatus':
+                return EventConditionEvaluator.eventTargetLinkStatus(gameEnv, typedCondition);
+
             default:
                 const specialConditionResult = SourceAndSpecialConditionEvaluator.evaluate({
                     gameEnv,

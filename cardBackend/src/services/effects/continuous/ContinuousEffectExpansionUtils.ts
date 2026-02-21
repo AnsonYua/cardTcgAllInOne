@@ -5,7 +5,11 @@ export function isSupportedContinuousAction(action: string): boolean {
     if (action === 'modifyAP' || action === 'modifyHP') {
         return true;
     }
-    return action === 'grant_keyword' || action === 'grant_breach' || action === 'prevent_battle_damage' || action === 'prevent_damage';
+    return action === 'grant_keyword'
+        || action === 'grant_breach'
+        || action === 'prevent_battle_damage'
+        || action === 'prevent_damage'
+        || action === 'prevent_ap_reduction';
 }
 
 export function normalizeContinuousStep(step: any): any {
@@ -32,4 +36,3 @@ export function normalizeContinuousStep(step: any): any {
         }
     };
 }
-

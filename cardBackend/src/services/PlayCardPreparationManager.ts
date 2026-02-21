@@ -16,6 +16,9 @@ import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { UnitRestrictionUtils } from './restrictions/UnitRestrictionUtils';
 import { RestrictionNotificationEmitter } from './restrictions/RestrictionNotificationEmitter';
 import { validateUnitReplaceSlotForPlay } from './playCard/UnitReplaceSlotCoordinator';
+import { SLOT_ZONES } from '../config/gameConstants';
+import { SlotCardStateUtils } from './conditions/SlotCardStateUtils';
+import { validateComparisonFilter } from '../utils/EffectNormalizationUtils';
 
 export interface PlayCardPreparationFailure {
     success: false;
@@ -29,6 +32,7 @@ export interface PlayCardPreparationSuccess {
     cardData: any;
     tappedEnergy: EnergyZoneCard[];
     fromBurst: boolean;
+    finalizeAfterPlacement?: () => { success: boolean; error?: string };
     rollback: () => void;
 }
 
@@ -132,11 +136,26 @@ export class PlayCardPreparationManager {
             }
         }
 
-        const cardDataForEnergy = HandContinuousModifier.applyModifiersForHandCardPlay(
+        let cardDataForEnergy = HandContinuousModifier.applyModifiersForHandCardPlay(
             gameEnv,
             playerId,
             cardData
         );
+
+        const replacementChoice = this.resolveDestroyLinkedUnitPlayReplacement(
+            gameEnv,
+            playerId,
+            eventData,
+            cardData,
+            cardDataForEnergy
+        );
+        if (replacementChoice.applyReplacement) {
+            cardDataForEnergy = {
+                ...cardDataForEnergy,
+                level: replacementChoice.replacementLevel,
+                cost: replacementChoice.replacementCost
+            };
+        }
 
         if (cardDataForEnergy && (cardDataForEnergy.cost !== cardData.cost || cardDataForEnergy.level !== cardData.level)) {
             const notificationManager = new GameNotificationManager(gameEnv);
@@ -207,8 +226,181 @@ export class PlayCardPreparationManager {
             cardData,
             tappedEnergy: energyResult.tapped,
             fromBurst,
+            ...(replacementChoice.finalizeAfterPlacement ? { finalizeAfterPlacement: replacementChoice.finalizeAfterPlacement } : {}),
             rollback
         };
+    }
+
+    private static resolveDestroyLinkedUnitPlayReplacement(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        eventData: PlayCardEventData,
+        cardData: any,
+        effectiveCardData: any
+    ): {
+        applyReplacement: boolean;
+        replacementCost: number;
+        replacementLevel: number;
+        finalizeAfterPlacement?: () => { success: boolean; error?: string };
+    } {
+        const rules = Array.isArray(cardData?.effects?.rules) ? cardData.effects.rules : [];
+        const replacementRule = rules.find((rule: any) => this.isDestroyLinkedUnitCostReplacementRule(rule));
+        if (!replacementRule) {
+            return { applyReplacement: false, replacementCost: effectiveCardData?.cost || cardData?.cost || 0, replacementLevel: effectiveCardData?.level || cardData?.level || 0 };
+        }
+
+        const requestedByEvent = (eventData as any).useCostReplacement === true;
+        const availableEnergy = EnergyManager.getAvailableEnergy(gameEnv, playerId);
+        const requiredCost = typeof effectiveCardData?.cost === 'number' ? effectiveCardData.cost : Number(effectiveCardData?.cost || 0);
+        const shouldAttempt = requestedByEvent || availableEnergy < requiredCost;
+        if (!shouldAttempt) {
+            return { applyReplacement: false, replacementCost: requiredCost, replacementLevel: effectiveCardData?.level || cardData?.level || 0 };
+        }
+
+        const eligible = this.findEligibleLinkedUnitsForCostReplacement(gameEnv, playerId, replacementRule);
+        if (eligible.length === 0) {
+            return { applyReplacement: false, replacementCost: requiredCost, replacementLevel: effectiveCardData?.level || cardData?.level || 0 };
+        }
+
+        const requestedTarget = typeof (eventData as any).costReplacementTargetCarduid === 'string'
+            ? String((eventData as any).costReplacementTargetCarduid)
+            : '';
+        const selected = eligible.find(entry => entry.unit.carduid === requestedTarget) || eligible[0];
+
+        const replacement = replacementRule?.parameters?.replace?.to || {};
+        const replacementCost = typeof replacement.cost === 'number' ? replacement.cost : 0;
+        const replacementLevel = typeof replacement.level === 'number' ? replacement.level : 0;
+
+        return {
+            applyReplacement: true,
+            replacementCost,
+            replacementLevel,
+            finalizeAfterPlacement: () => {
+                const player = gameEnv.getPlayer(playerId);
+                if (!player?.zones) {
+                    return { success: false, error: `Player ${playerId} zones not found for cost replacement` };
+                }
+
+                const slotLookup = SlotZoneUtils.getSlotZone(player.zones, selected.slotName);
+                const currentUnit = slotLookup.isValid ? slotLookup.slot?.unit : null;
+                if (!currentUnit || currentUnit.carduid !== selected.unit.carduid) {
+                    return { success: false, error: `Cost replacement unit ${selected.unit.carduid} no longer available` };
+                }
+
+                const destroyed = PlayerCardManager.destroyUnitInSlot(
+                    gameEnv,
+                    playerId,
+                    selected.slotName,
+                    currentUnit as any
+                );
+                if (!destroyed) {
+                    return { success: false, error: `Failed to destroy cost replacement unit ${selected.unit.carduid}` };
+                }
+
+                return { success: true };
+            }
+        };
+    }
+
+    private static isDestroyLinkedUnitCostReplacementRule(rule: any): boolean {
+        if (!rule || typeof rule !== 'object') {
+            return false;
+        }
+        if (rule.action !== 'replace_cost') {
+            return false;
+        }
+
+        const replace = rule?.parameters?.replace;
+        if (!replace || typeof replace !== 'object') {
+            return false;
+        }
+
+        const from = replace.from;
+        const to = replace.to;
+        if (!from || typeof from !== 'object' || !to || typeof to !== 'object') {
+            return false;
+        }
+
+        return from.type === 'destroy' && from.target === 'friendly_linked_unit';
+    }
+
+    private static findEligibleLinkedUnitsForCostReplacement(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        replacementRule: any
+    ): Array<{ slotName: string; unit: any }> {
+        const player = gameEnv.getPlayer(playerId);
+        if (!player?.zones) {
+            return [];
+        }
+
+        const from = replacementRule?.parameters?.replace?.from || {};
+        const filters = from.filters && typeof from.filters === 'object'
+            ? (from.filters as Record<string, unknown>)
+            : {};
+        const requiredNameIncludes = typeof filters.nameIncludes === 'string'
+            ? String(filters.nameIncludes).toLowerCase()
+            : '';
+        const requiredLevel = filters.level;
+        const requiredCardType = typeof filters.cardType === 'string'
+            ? String(filters.cardType).toLowerCase()
+            : '';
+
+        const eligible: Array<{ slotName: string; unit: any }> = [];
+
+        for (const slotName of SLOT_ZONES) {
+            const slotResult = SlotZoneUtils.getSlotZone(player.zones, slotName);
+            const unit = slotResult.isValid ? slotResult.slot?.unit : null;
+            if (!unit?.carduid || !unit?.cardData) {
+                continue;
+            }
+
+            if (!SlotCardStateUtils.isCardLinked(gameEnv, unit.carduid)) {
+                continue;
+            }
+
+            const cardType = typeof unit.cardData.cardType === 'string'
+                ? String(unit.cardData.cardType).toLowerCase()
+                : '';
+            if (requiredCardType && cardType !== requiredCardType) {
+                continue;
+            }
+
+            const name = typeof unit.cardData.name === 'string'
+                ? String(unit.cardData.name).toLowerCase()
+                : '';
+            if (requiredNameIncludes && !name.includes(requiredNameIncludes)) {
+                continue;
+            }
+
+            const level = typeof unit.cardData.level === 'number' ? unit.cardData.level : 0;
+            if (!this.matchesNumericFilter(level, requiredLevel)) {
+                continue;
+            }
+
+            eligible.push({ slotName, unit });
+        }
+
+        return eligible;
+    }
+
+    private static matchesNumericFilter(value: number, filter: unknown): boolean {
+        if (typeof filter === 'number') {
+            return value === filter;
+        }
+        if (typeof filter !== 'string' || !filter) {
+            return true;
+        }
+
+        const normalized = filter.trim();
+        if (/^\d+$/.test(normalized)) {
+            return value === Number(normalized);
+        }
+        if (/^=\d+$/.test(normalized)) {
+            return value === Number(normalized.slice(1));
+        }
+
+        return validateComparisonFilter(value, normalized);
     }
 
     private static rollbackEnergy(
