@@ -28,6 +28,8 @@ import { ContinuousScopeUtils } from './effects/continuous/ContinuousScopeUtils'
 import { EffectConditionEvaluator } from './conditions/EffectConditionEvaluator';
 import { EffectSourceConditionEvaluator } from './conditions/EffectSourceConditionEvaluator';
 import { EffectScalingResolver } from './effects/scaling/EffectScalingResolver';
+import { EffectCompiler } from './effects/canonical/EffectCompiler';
+import { EffectOperationRegistry } from './effects/canonical/EffectOperationRegistry';
 
 export interface EffectResult {
     success: boolean;
@@ -242,12 +244,14 @@ export class ContinuousEffectManager {
         const effectAction = EffectExecutor.getEffectAction(effectRule) || 'modifyAP';
         const parameters = effectRule.parameters || {};
         const value = ContinuousEffectManager.getEffectValue(effectAction, parameters);
+        const compiledEffect = EffectCompiler.compile(effectRule);
         
         return {
             effectId: effectRule.effectId,
             sourceCarduid: sourceCard.carduid,
             sourcePlayerId: sourcePlayerId,
             effectData: effectRule,
+            compiledEffect,
             scope: effectRule.target?.scope || 'self_all_unit',
             action: effectAction,
             value: value,
@@ -317,6 +321,16 @@ export class ContinuousEffectManager {
 
                 if (typeof action !== 'string') {
                     console.log('⚠️ Registry effect missing action, skipping');
+                    continue;
+                }
+
+                const canonicalApplied = EffectOperationRegistry.applyContinuous(gameEnv, typedEntry, targets);
+                if (typeof canonicalApplied === 'number') {
+                    playerAppliedCount += canonicalApplied;
+                    totalAppliedCount += canonicalApplied;
+                    if (targets.length > 0) {
+                        console.log(`  ⚡ Applied ${typedEntry.effectId} via canonical operations to ${targets.length} targets`);
+                    }
                     continue;
                 }
 

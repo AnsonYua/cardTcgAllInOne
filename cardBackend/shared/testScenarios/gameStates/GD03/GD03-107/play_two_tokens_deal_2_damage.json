@@ -11,12 +11,12 @@
     "tokens"
   ],
   "notes": [
-    "Setup: Player 1 has GD03-107 in hand, 4 energy cards (required for Level 4), T-007 (Zaku II Token) in slot1, and T-006 (Char's Zaku II Token) in slot2. Player 2 has rested enemy unit (Level 2, <=5) in slot1.",
+    "Setup: Player 1 has GD03-107 in hand, 4 energy cards (required for Level 4), T-007 in slot1, and T-006 in slot2. Player 2 has rested enemy unit (Level 2, <=5) in slot1.",
     "Action: Player 1 plays GD03-107 from hand.",
     "Expect: Command effect activates. Target selection dialog appears for enemy Unit Level <=5.",
     "Action: Player 1 selects Player 2's unit in slot1 as target.",
     "Expect: GD03-107's effect resolves.",
-    "Expect: Enemy unit receives 2 damage (2 friendly tokens in play)."
+    "Expect: Enemy unit receives 2 damage (2 friendly tokens in play: T-007 + T-006)."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -144,7 +144,7 @@
               "cardId": "energy_basic",
               "carduid": "energy_basic_auto_gd03-107_play_two_tokens_playerId_1_0003",
               "isExtraEnergy": false,
-              "isRested": true,
+              "isRested": false,
               "placedAt": 0,
               "placedBy": "playerId_1"
             }
@@ -217,7 +217,7 @@
               "cardId": "energy_basic",
               "carduid": "energy_basic_auto_gd03-107_play_two_tokens_playerId_2_0004",
               "isExtraEnergy": false,
-              "isRested": false,
+              "isRested": true,
               "placedAt": 0,
               "placedBy": "playerId_2"
             }

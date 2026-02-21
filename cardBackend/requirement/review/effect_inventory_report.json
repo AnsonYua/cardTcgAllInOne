@@ -1,0 +1,6516 @@
+{
+  "generatedAt": "2026-02-21T05:12:54.967Z",
+  "fileCount": 11,
+  "cardCount": 538,
+  "ruleTypeSummary": {
+    "continuous": 76,
+    "triggered": 414,
+    "activated": 38,
+    "keyword": 19,
+    "play": 88,
+    "special": 40
+  },
+  "cards": [
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-001",
+      "name": "Gundam",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "grant_repair_1",
+        "pair_draw"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-002",
+      "name": "Unicorn Gundam (Destroy Mode)",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_rest"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-003",
+      "name": "Unicorn Gundam 02 Banshee (Destroy Mode)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-004",
+      "name": "Guncannon",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "repair_1",
+        "pair_rest"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-005",
+      "name": "Unicorn Gundam (Unicorn Mode)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "during_link_destroyed_return_paired_pilot_then_discard"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-006",
+      "name": "Delta Plus",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 1,
+      "effectIds": [
+        "repair_1"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-007",
+      "name": "Noin's Aries",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "destroyed_conditional_draw"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-008",
+      "name": "Guntank",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_damage_1"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-009",
+      "name": "G-Fighter",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_grant_high_maneuver"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-010",
+      "name": "Unicorn Gundam 02 Banshee (Unicorn Mode)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "pair_rest"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-011",
+      "name": "Loto",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-012",
+      "name": "Zechs' Leo",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "pair_rest"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-013",
+      "name": "Gundam",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-014",
+      "name": "G-Sky Easy",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_heal"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-015",
+      "name": "Ball",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-016",
+      "name": "Jegan",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "hand_cost_reduction_1"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-017",
+      "name": "Stark Jegan",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "repair_1"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-018",
+      "name": "ReZEL",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-019",
+      "name": "Byarlant Custom",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "gain_blocker_if_enemy_units_ge_4"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-020",
+      "name": "Anksha",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_damage_1"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-021",
+      "name": "Pisces",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-022",
+      "name": "Cancer",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-023",
+      "name": "Char's Gelgoog",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-024",
+      "name": "Wing Gundam Zero",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "high_maneuver",
+        "deploy_damage_all_3"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-025",
+      "name": "Gundam Deathscythe",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 2,
+      "effectIds": [
+        "pair_place_rested_resource",
+        "pair_grant_first_strike"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-026",
+      "name": "Char's Zaku Ⅱ",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "destroyed_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-027",
+      "name": "Big Zam",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "breach_4",
+        "deploy_damage_all_4"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-028",
+      "name": "Gundam Sandrock",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-029",
+      "name": "Shenlong Gundam",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "breach_4",
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-030",
+      "name": "Rick Dom",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "breach_2"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-031",
+      "name": "Gelgoog",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-032",
+      "name": "Gyan",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "pair_destroy_blocker_low_level"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-033",
+      "name": "Gundam Deathscythe",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "repair_1"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-034",
+      "name": "Gundam Heavyarms",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "breach_3"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-035",
+      "name": "Zaku Ⅱ",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-036",
+      "name": "Gouf",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-037",
+      "name": "Gogg",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-038",
+      "name": "Adzam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_damage_1"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-039",
+      "name": "Dopp",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_scry_top_1"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-040",
+      "name": "Wing Gundam",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-041",
+      "name": "Shenlong Gundam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "breach_3"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-042",
+      "name": "Duo's Leo",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_active_low_level_2"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-043",
+      "name": "Rasid's Maganac",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_allow_attack_target_active_enemy_ap_le_4"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-044",
+      "name": "Kshatriya",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "pair_damage_1_to_1_or_2"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-045",
+      "name": "Duel Gundam (Assault Shroud)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "pair_look_top_3_deploy_zaft_unit_le_4"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-046",
+      "name": "Buster Gundam",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_support_3"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-047",
+      "name": "Shamblo",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-048",
+      "name": "Zaku I Sniper Type",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "activate_support_1",
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-049",
+      "name": "Blitz Gundam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_grant_first_strike_to_zaft_ap_ge_5"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-050",
+      "name": "LaGOWE",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-051",
+      "name": "Kshatriya",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-052",
+      "name": "Geara Zulu (Guards Type)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_damage_1"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-053",
+      "name": "Geara Doga (Heavy Armed Type)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-054",
+      "name": "Duel Gundam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "gain_breach_3_if_ap_ge_5"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-055",
+      "name": "BuCUE",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_support_2"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-056",
+      "name": "Geara Doga (Sleeves)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "destroyed_damage_enemy_ap_le_5"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-057",
+      "name": "Dreissen (Sleeves)",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-058",
+      "name": "Galluss-K",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-059",
+      "name": "Zee Zulu",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_ap_boost"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-060",
+      "name": "Zaku Mariner",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-061",
+      "name": "ZuOOT",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_support_1"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-062",
+      "name": "GOOhN",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-063",
+      "name": "ZnO",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "first_strike_vs_low_level_during_your_turn"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-064",
+      "name": "DINN",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-065",
+      "name": "Freedom Gundam",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "blocker",
+        "paired_on_pilot_pairing_reduce_enemy_ap_2"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-066",
+      "name": "Justice Gundam",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "deploy_effect",
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-067",
+      "name": "Gundam Aerial Rebuild",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "pair_add_command_from_trash_le_5"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-068",
+      "name": "Perfect Strike Gundam",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "blocker",
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-069",
+      "name": "Strike Rouge",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_effect"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-070",
+      "name": "Gundam Aerial",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "hand_cost_reduction_2_if_trash_commands_ge_4"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-071",
+      "name": "Gundam Pharact",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-072",
+      "name": "Launcher Strike Gundam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "blocker"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-073",
+      "name": "Sword Strike Gundam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-074",
+      "name": "Chuchu's Demi Trainer",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-075",
+      "name": "Darilbalde",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-076",
+      "name": "Michaelis",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 2,
+      "effectIds": [
+        "ap_boost_if_trash_commands_ge_4",
+        "hp_boost_if_trash_commands_ge_4"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-077",
+      "name": "Strike Gundam",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-078",
+      "name": "Mistral",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-079",
+      "name": "Skygrasper",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-080",
+      "name": "Cagalli's Skygrasper",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "destroyed_bounce_enemy_le_2"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-081",
+      "name": "M1 Astray",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 2,
+      "effectIds": [
+        "ap_boost_if_another_tsa_unit",
+        "gain_blocker_if_another_tsa_unit"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-082",
+      "name": "Gundam Aerial (Mirasoul Flight Unit)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-083",
+      "name": "Guel's Dilanza",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-084",
+      "name": "Beguir-Pente",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-085",
+      "name": "Demi Garrison",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-086",
+      "name": "Gundam Lfrith",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "blocker"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-087",
+      "name": "Sayla Mass",
+      "cardType": "pilot",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "burst_add_to_hand"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-088",
+      "name": "Banagher Links",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "pair_draw_1_when_linked"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-089",
+      "name": "Riddhe Marcenas",
+      "cardType": "pilot",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "burst_add_to_hand"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-090",
+      "name": "Duo Maxwell",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 1,
+      "effectIds": [
+        "burst_add_to_hand"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-091",
+      "name": "Chang Wufei",
+      "cardType": "pilot",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "burst_add_to_hand"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-092",
+      "name": "M'Quve",
+      "cardType": "pilot",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "burst_add_to_hand"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-093",
+      "name": "Marida Cruz",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-094",
+      "name": "Yzak Jule",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 1,
+      "effectIds": [
+        "burst_add_to_hand"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-095",
+      "name": "Dearka Elthman",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 1,
+      "effectIds": [
+        "burst_add_to_hand"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-096",
+      "name": "Cagalli Yula Athha",
+      "cardType": "pilot",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "burst_add_to_hand"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-097",
+      "name": "Guel Jeturk",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "activate_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-098",
+      "name": "Elan Ceres (Enhanced Person Number 4)",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "activate_heal"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-099",
+      "name": "Intercept Orders",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_rest",
+        "rest"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-100",
+      "name": "A Show of Resolve",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "draw"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-101",
+      "name": "Deep Devotion",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "heal",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-102",
+      "name": "Securing the Supply Line",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "heal_friendly_units_le_4"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-103",
+      "name": "The Stubborn Cog",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "rest",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-104",
+      "name": "Signs of a Revolution",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_draw_1",
+        "main_damage_rested_enemy_2"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-105",
+      "name": "Citizens, Take a Stand!",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "main_all_friendly_units_ap_plus_2"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-106",
+      "name": "Fortress Defense",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "play_effect",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-107",
+      "name": "First Contact",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_place_ex_resource",
+        "main_place_rested_resource"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-108",
+      "name": "Strategic Arms",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "main_damage_all_blockers_2"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-109",
+      "name": "The Path to Victory or Defeat",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-110",
+      "name": "Rasid's Orders",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "allow_attack_target_active_enemy_ap_le_6_for_unit_ge_4",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-111",
+      "name": "Battle of Aces",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_damage_enemy_2",
+        "main_damage_damaged_enemy_3"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-112",
+      "name": "Extreme Hatred",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "rest",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-113",
+      "name": "The Desert Tiger",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "modify_ap",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-114",
+      "name": "Assault on Torrington Base",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "boost_ap",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-115",
+      "name": "Zeon Remnant Forces",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "main_damage_enemy_1"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-116",
+      "name": "Stealth Stratagem",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "main_damage_enemy_ap_le_2_for_2",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-117",
+      "name": "The Witch and the Bride",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_resolve_main",
+        "main_action"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-118",
+      "name": "Overflowing Affection",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "draw"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-119",
+      "name": "Iron-Fisted Discipline",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "modify_ap",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-120",
+      "name": "Naval Bombardment",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_enemy_ap_minus_3",
+        "modify_ap"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-121",
+      "name": "Midair Modifications",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_resolve_main",
+        "main_action"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-122",
+      "name": "Covert Operative",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "main_bounce_enemy_hp_le_2_or_4_if_link_unit_in_play",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-123",
+      "name": "Nahel Argama",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_rest"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-124",
+      "name": "Side 7",
+      "cardType": "base",
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_effect",
+        "activate_heal"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-125",
+      "name": "Zanzibar",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_shield_to_hand_then_optional_deploy_zeon_unit_le_4_if_your_turn"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-126",
+      "name": "Underground Desert Base",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-127",
+      "name": "Gamow",
+      "cardType": "base",
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_effect",
+        "activate_effect"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-128",
+      "name": "Mining Asteroid Palau",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-129",
+      "name": "Kusanagi",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_shield_to_hand_then_bounce_enemy_hp_le_3"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-130",
+      "name": "13th Tactical Testing Sector",
+      "cardType": "base",
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_effect",
+        "activate_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "T-006",
+      "name": "Char’s Zaku II",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "T-007",
+      "name": "Zaku II",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "T-011",
+      "name": "Fatum-00",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "blocker"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-001",
+      "name": "Psycho Gundam",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "breach_3",
+        "paired_titans_shield_damage_heal_2"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-002",
+      "name": "Gundam Epyon",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "link_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-003",
+      "name": "Gundam Mk-II (Titans)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "destroyed_return_paired_to_hand_with_discard"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-004",
+      "name": "Byarlant",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "pair_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-005",
+      "name": "Tallgeese",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_rest"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-006",
+      "name": "Forbidden Gundam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 2,
+      "effectIds": [
+        "blocker",
+        "during_your_turn_prevent_battle_damage_from_enemy_le_2"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-007",
+      "name": "Psycho Gundam (MA Mode)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "repair_2"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-008",
+      "name": "Gabthley",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "linked_damage_rested_enemy_1"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-009",
+      "name": "Calamity Gundam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "retaliate_when_ap_reduced"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-010",
+      "name": "Raider Gundam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "draw_when_effect_damage_received"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-011",
+      "name": "Moebius (Peacemaker Team)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-012",
+      "name": "Core Booster",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-013",
+      "name": "Hizack",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-014",
+      "name": "Galbaldy Beta",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-015",
+      "name": "Marasai",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-016",
+      "name": "Barzam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-017",
+      "name": "Delta Plus (Waverider Mode)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "repair_2"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-018",
+      "name": "Taurus",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "restrict_attack_player"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-019",
+      "name": "Raider Gundam (MA Mode)",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-020",
+      "name": "Elmeth",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "deploy_tutor_green_zeon_pilot_from_top_5",
+        "link_ap_boost"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-021",
+      "name": "Gundam AGE-1 Normal",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-022",
+      "name": "G-Exes",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "gain_breach_2_on_ex_resource"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-023",
+      "name": "Gundam AGE-1 Spallow",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "link_effect"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-024",
+      "name": "Red Gundam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "link_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-025",
+      "name": "Gundam Heavyarms",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-026",
+      "name": "Genoace Custom",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-027",
+      "name": "Gundam AGE-1 Titus",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "breach_3"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-028",
+      "name": "Abdul's Maganac",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-029",
+      "name": "Gundam AGE-1 Normal",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-030",
+      "name": "Genoace",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-031",
+      "name": "Gundam AGE-1 Titus",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "ap_boost_if_level_ge_7"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-032",
+      "name": "White Gundam",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-033",
+      "name": "Kikeroga (MA Mode) (GQ)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "gain_breach_5_if_another_zeon_link"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-034",
+      "name": "GQuuuuuuX",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "pair_ap_boost_if_red_pilot"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-035",
+      "name": "Police Zaku (Armored RRU Type)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "restrict_attack_player"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-036",
+      "name": "Qubeley",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "linked_grant_suppression",
+        "pair_attack_damage_damaged_enemy_2"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-037",
+      "name": "Gundam Virsago",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "breach_1",
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-038",
+      "name": "GQuuuuuuX (Omega Psycommu)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_scry"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-039",
+      "name": "Haman Karn's Gaza C",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "pair_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-040",
+      "name": "Gundam Ashtaron",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "activate_effect",
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-041",
+      "name": "Sugai's Gelgoog (GQ)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-042",
+      "name": "Gundam Ashtaron (MA Mode)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-043",
+      "name": "Daughtress Weapon",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-044",
+      "name": "Daughtress Command",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "destroyed_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-045",
+      "name": "GINN Long-Range Reconnaissance Type",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-046",
+      "name": "Sayla's Light-Type Guncannon",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-047",
+      "name": "Gaza C",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_damage"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-048",
+      "name": "Zaku Ⅲ (Sleeves)",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-049",
+      "name": "Daughtress",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-050",
+      "name": "Ga-Zowmn (Sleeves)",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-051",
+      "name": "01 Gundam",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-052",
+      "name": "Guncannon (GQ)",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-053",
+      "name": "Gundam X",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 1,
+      "effectIds": [
+        "link_effect"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-054",
+      "name": "Gundam Barbatos 1st Form",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-055",
+      "name": "Gundam Gusion Rebake",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "blocker",
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-056",
+      "name": "Gundam X",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "destroyed_add_vulture_unit_from_trash"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-057",
+      "name": "Zedas",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-058",
+      "name": "Ryusei-Go (Graze Custom Ⅱ)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-059",
+      "name": "Gundam Airmaster",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "blocker"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-060",
+      "name": "Gundam Leopard",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-061",
+      "name": "Hyakuri",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "pair_rest_low_ap_if_trash_traits"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-062",
+      "name": "Amida's Hyakuren",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-063",
+      "name": "Gundam Airmaster (Fighter Mode)",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-064",
+      "name": "Gundam Leopard",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "prevent_effect_damage_from_commands"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-065",
+      "name": "Jenice Custom",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-066",
+      "name": "Gafran",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "restrict_attack_player"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-067",
+      "name": "Baqto",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-068",
+      "name": "Gundam Barbatos 3rd Form",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-069",
+      "name": "Zeta Gundam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-070",
+      "name": "Gundam Kimaris",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-071",
+      "name": "Gundam Mk-II (AEUG)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-072",
+      "name": "Hyaku-Shiki",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 2,
+      "effectIds": [
+        "blocker",
+        "repair_1_if_friendly_white_base"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-073",
+      "name": "Carta's Graze Ritter (Ground Type)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "grant_first_strike_to_battling_enemy"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-074",
+      "name": "Gundam Aerial Rebuild",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "high_maneuver",
+        "during_pair_effect"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-075",
+      "name": "Rick Dias (Red)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_rest"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-076",
+      "name": "Buster Gundam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "gain_blocker_if_ap_ge_5"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-077",
+      "name": "Ein's Schwalbe Graze",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-078",
+      "name": "Gundam Pharact",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-079",
+      "name": "Rick Dias",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "blocker"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-080",
+      "name": "Nemo",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-081",
+      "name": "Methuss",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-082",
+      "name": "Gaelio's Schwalbe Graze",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "gain_blocker_if_another_gjallarhorn_unit"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-083",
+      "name": "Graze Ritter (Ground Type)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "destroyed_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-084",
+      "name": "Lauda's Dilanza",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-085",
+      "name": "Four Murasame",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "link_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-086",
+      "name": "Jerid Messa",
+      "cardType": "pilot",
+      "descriptionCount": 1,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "pair_draw_then_discard_if_aeug"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-087",
+      "name": "Orga, Crot, and Shani",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 1,
+      "effectIds": [
+        "burst_add_to_hand"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-088",
+      "name": "Flit Asuno",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "linked_tutor_from_top_3"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-089",
+      "name": "Lalah Sune",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "pair_effect"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-090",
+      "name": "Challia Bull (GQ)",
+      "cardType": "pilot",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "burst_add_to_hand"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-091",
+      "name": "Haman Karn",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "pair_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-092",
+      "name": "Shagia Frost",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-093",
+      "name": "Olba Frost",
+      "cardType": "pilot",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "burst_add_to_hand"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-094",
+      "name": "Garrod Ran & Tiffa Adill",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "pair_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-095",
+      "name": "Lafter Frankland",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-096",
+      "name": "Desil Galette",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 1,
+      "effectIds": [
+        "burst_add_to_hand"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-097",
+      "name": "Kamille Bidan",
+      "cardType": "pilot",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "burst_add_to_hand"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-098",
+      "name": "Quattro Bajeena",
+      "cardType": "pilot",
+      "descriptionCount": 3,
+      "ruleCount": 1,
+      "effectIds": [
+        "burst_add_to_hand"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-099",
+      "name": "Gaelio Bauduin",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "pair_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-100",
+      "name": "Dramatic Turnabout",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_effect",
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-101",
+      "name": "Beneath the Mask",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-102",
+      "name": "Mouar’s Determination",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "modify_ap",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-103",
+      "name": "AGE Device",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_effect",
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-104",
+      "name": "Turning Point of History",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-105",
+      "name": "Valedictorian",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "play_effect",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-106",
+      "name": "White Wolf",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "play_effect",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-107",
+      "name": "All-Range Attack",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_effect",
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-108",
+      "name": "That One Looks A Lot Stronger?",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-109",
+      "name": "Undying Persistence",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "damage",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-110",
+      "name": "Awakened Power",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-111",
+      "name": "Decisive Last Resort",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_effect",
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-112",
+      "name": "Momentary Respite",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_effect",
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-113",
+      "name": "Sisterly Care",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "play_effect",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-114",
+      "name": "It's Name is Ryusei-Go",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "modify_ap",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-115",
+      "name": "Familial Devotion",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "modify_ap",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-116",
+      "name": "Comrades Come First",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "play_effect",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-117",
+      "name": "A New Sign",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_effect",
+        "draw"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-118",
+      "name": "Heart Set on Revenge",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "bounce",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-119",
+      "name": "Persistent and Fortudinous",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "modify_ap",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-120",
+      "name": "Aspiring Pilot",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "play_effect",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-121",
+      "name": "Dominion",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-122",
+      "name": "Alexandria",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-123",
+      "name": "Sodon",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_shield_then_allow_token_attack_target"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-124",
+      "name": "Diva",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-125",
+      "name": "Gwadan",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-126",
+      "name": "Shuji's Hideout",
+      "cardType": "base",
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_effect",
+        "destroyed_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-127",
+      "name": "Freeden",
+      "cardType": "base",
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_effect",
+        "destroyed_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-128",
+      "name": "Hammerhead",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-129",
+      "name": "Argama",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-130",
+      "name": "Sleipnir",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "T-012",
+      "name": "Daughtress",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-001",
+      "name": "Gundam NT-1",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "repair_2",
+        "pair_effect"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-002",
+      "name": "The-O",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "repair_3",
+        "during_pair_effect"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-003",
+      "name": "Messala",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 2,
+      "effectIds": [
+        "blocker",
+        "repair_1"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-004",
+      "name": "Hambrabi",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_rest"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-005",
+      "name": "Kshatriya Besserung",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "repair_1",
+        "deploy_draw"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-006",
+      "name": "Penelope (Middle Form)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_rest"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-007",
+      "name": "Gundam NT-1 Full Armor",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "destroyed_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-008",
+      "name": "Bolinoak Sammahn",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "during_pair_effect"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-009",
+      "name": "Palace Athene",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_rest"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-010",
+      "name": "Full Armor Unicorn Gundam (Destroy Mode)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "repair_3"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-011",
+      "name": "GM Sniper II",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-012",
+      "name": "Messala (MA Mode)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "repair_1"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-013",
+      "name": "Hizack",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 2,
+      "effectIds": [
+        "conditional_ap_plus_1_if_jupitris_ge_2",
+        "conditional_repair_1_if_jupitris_ge_2"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-014",
+      "name": "Hizack Custom",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "hand_cost_reduction_1_if_titans_ge_2"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-015",
+      "name": "Baund Doc",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_effect"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-016",
+      "name": "Full Armor Unicorn Gundam (Unicorn Mode)",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-017",
+      "name": "Kämpfer",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 1,
+      "effectIds": [
+        "burst_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-018",
+      "name": "Altron Gundam",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "breach_5",
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-019",
+      "name": "Gundam AGE-2 Normal",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "during_pair_effect",
+        "linked_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-020",
+      "name": "Zaku Ⅱ FZ",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 2,
+      "effectIds": [
+        "pair_deploy_2_ad_balloon_tokens_if_cyclops_trash_ge_4",
+        "prevent_enemy_unit_battle_damage_while_ad_balloon_in_play"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-021",
+      "name": "Gundam Deathscythe Hell",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-022",
+      "name": "Gundam Kyrios",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "during_link_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-023",
+      "name": "G-Bouncer",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "grant_high_maneuver_on_ex_resource"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-024",
+      "name": "Hy-Gogg",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "linked_deploy_hy_gogg_token_if_cyclops_ge_2"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-025",
+      "name": "Gundam Sandrock Custom",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "force_enemy_attack_target_rested_maganac_corps"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-026",
+      "name": "Gundam Dynames",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "breach_3"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-027",
+      "name": "Z’Gok E",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-028",
+      "name": "Auda's Maganac",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-029",
+      "name": "Gundam Heavyarms Custom",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "battle_destroy_damage_2_to_all_enemy_blockers"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-030",
+      "name": "Gundam Kyrios (Tail Unit Flight Mode)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "hand_cost_reduction_1_if_cb_link_unit_in_play"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-031",
+      "name": "Gundam AGE-1 Flat",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-032",
+      "name": "Zaku (Four Snake Eyes') [YETI] (GQ)",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-033",
+      "name": "Providence Gundam",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "during_pair_zaft_units_ap_plus_2",
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-034",
+      "name": "GQuuuuuuX (Omega Psycommu)",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-035",
+      "name": "GFreD",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "activate_effect",
+        "linked_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-036",
+      "name": "Ξ Gundam (Flight Form)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "linked_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-037",
+      "name": "Bertigo",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "during_link_effect",
+        "destroyed_effect"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-038",
+      "name": "GuAIZ (Commander Type)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 2,
+      "effectIds": [
+        "activate_effect",
+        "unit_rested_by_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-039",
+      "name": "Red Gundam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_rest"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-040",
+      "name": "Gundam Virsago & Gundam Ashtaron",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "during_link_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-041",
+      "name": "Patulia",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-042",
+      "name": "Duel Gundam (Assault Shroud)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "allow_attack_target_active_enemy_low_level_if_ap_ge_5"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-043",
+      "name": "Messer Type-F02",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "pair_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-044",
+      "name": "Daughtress Flyer",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-045",
+      "name": "Balient",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "ap_plus_1_if_any_token_in_play"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-046",
+      "name": "CGUE",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-047",
+      "name": "DINN (Commander Type)",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-048",
+      "name": "GFreD",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "burst_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-049",
+      "name": "Gundam Exia (Trans-Am)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 2,
+      "effectIds": [
+        "suppression_2",
+        "shield_destroyed_destroy_lowest_hp_if_cb_trash_ge_10"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-050",
+      "name": "Gundam Barbatos Lupus",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-051",
+      "name": "Gundam X Divider",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "linked_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-052",
+      "name": "Gundam Virtue",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-053",
+      "name": "Gundam Gusion Rebake Full City",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "blocker",
+        "during_pair_effect"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-054",
+      "name": "Zeydra",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "high_maneuver",
+        "pair_exile_4_vagan_then_destroy_low_level"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-055",
+      "name": "Gundam Hajiroboshi (2nd Form)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "pair_destroy_low_level_if_purple_pilot"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-056",
+      "name": "Gundam Barbatos Adapt",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-057",
+      "name": "GN Armor (Type-E)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "blocker"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-058",
+      "name": "Farsia",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "trash_cost_reduction_1"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-059",
+      "name": "Zedas R",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-060",
+      "name": "CGS Mobile Worker (Commander Type)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-061",
+      "name": "Gundam Barbatos 6th Form",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "repair_3_if_hp_eq_1"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-062",
+      "name": "GX-Bit",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-063",
+      "name": "0 Gundam",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-064",
+      "name": "Defurse",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-065",
+      "name": "Zedas M",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-066",
+      "name": "Gundam Barbatos 5th Form (Ground Type)",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-067",
+      "name": "Rouei",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-068",
+      "name": "Gundam Hajiroboshi",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "blocker_if_friendly_base_in_play"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-069",
+      "name": "Graham's Union Flag Custom",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 1,
+      "effectIds": [
+        "during_link_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-070",
+      "name": "Freedom Gundam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "prevent_shields_battle_damage_from_enemy_units_while_rested"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-071",
+      "name": "Z Gundam (Biosensor)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-072",
+      "name": "Aile Strike Gundam",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "blocker",
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-073",
+      "name": "Graze Ein",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "blocker",
+        "activate_effect"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-074",
+      "name": "Tieren Taozi",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "during_pair_effect"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-075",
+      "name": "Super Gundam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-076",
+      "name": "Freedom Gundam (METEOR)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-077",
+      "name": "Justice Gundam (METEOR)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "linked_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-078",
+      "name": "Tieren High Mobility Type",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "during_link_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-079",
+      "name": "G-Defenser",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "replace_rest_base_with_rest_this_unit"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-080",
+      "name": "Gundam Kimaris Trooper (Trooper Mode)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "linked_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-081",
+      "name": "AEU Enact Demonstration Color",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "restrict_attack_unless_friendly_sb_or_un_deployed_this_turn"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-082",
+      "name": "Union Flag",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "hand_cost_reduction_1_if_sb_or_un_ge_2"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-083",
+      "name": "AEU Hellion",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "blocker"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-084",
+      "name": "Paptimus Scirocco",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "linked_effect"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-085",
+      "name": "Christina Mackenzie",
+      "cardType": "pilot",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "burst_add_to_hand"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-086",
+      "name": "Yazan Gable",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-087",
+      "name": "Sarah Zabiarov",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "linked_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-088",
+      "name": "Asemu Asuno",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "during_link_effect"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-089",
+      "name": "Bernard Wiseman",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "continuous_ap_plus_unique_cyclops_pilot_or_command_in_trash"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-090",
+      "name": "Mikhail Kaminsky",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-091",
+      "name": "Rau Le Creuset",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "linked_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-092",
+      "name": "Nyaan",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "linked_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-093",
+      "name": "Carris Nautilus",
+      "cardType": "pilot",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "burst_add_to_hand"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-094",
+      "name": "Zeheart Galette",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "pair_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-095",
+      "name": "Azee Gurumin",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-096",
+      "name": "Jamil Neate",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "attack_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-097",
+      "name": "Wistario Afam",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "during_link_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-098",
+      "name": "Graham Aker",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "during_link_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-099",
+      "name": "Emma Sheen",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "during_link_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-100",
+      "name": "Soma Peries",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "destroyed_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-101",
+      "name": "A Healthy Curiosity",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-102",
+      "name": "Privileged Position",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_effect",
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-103",
+      "name": "Field Directive",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_effect",
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-104",
+      "name": "Reccoa's Shadow",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "play_effect",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-105",
+      "name": "Bridge Crew",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-106",
+      "name": "M.A.V. Tactics",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-107",
+      "name": "Over the River and Through the Woods",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "play_effect",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-108",
+      "name": "How Many Miles to the Battlefield?",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "play_effect",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-109",
+      "name": "Improved Technique",
+      "cardType": "command",
+      "descriptionCount": 3,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_effect",
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-110",
+      "name": "Eliminate Target",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-111",
+      "name": "Infiltrator Present",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "play_effect",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-112",
+      "name": "Warped Intent",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-113",
+      "name": "Human Karma",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-114",
+      "name": "Look of Determination",
+      "cardType": "command",
+      "descriptionCount": 3,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_effect",
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-115",
+      "name": "Distant Reunion",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "play_effect",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-116",
+      "name": "Towards Destiny",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-117",
+      "name": "Orga's Order",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-118",
+      "name": "Awakened Potential",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "play_effect"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-119",
+      "name": "Awkward Approach",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "play_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-120",
+      "name": "Immortal Colasour",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "play_effect",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-121",
+      "name": "Unheralded Attack",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "play_effect",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-122",
+      "name": "Veteran Tactics",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "play_effect",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-123",
+      "name": "Jupitris",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_effect",
+        "deploy_rest"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-124",
+      "name": "Ribo Colony",
+      "cardType": "base",
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_effect",
+        "deploy_effect",
+        "effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-125",
+      "name": "Peacemillion",
+      "cardType": "base",
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_effect",
+        "deploy_effect",
+        "effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-126",
+      "name": "Cyclops Team",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_effect",
+        "deploy_shield_to_hand",
+        "opponent_turn_tokens_ap_plus_1"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-127",
+      "name": "Jachin Due",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_effect",
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-128",
+      "name": "Doritea",
+      "cardType": "base",
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_effect",
+        "deploy_effect",
+        "effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-129",
+      "name": "Hotarubi",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_effect",
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-130",
+      "name": "Downes",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_effect",
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-131",
+      "name": "Eternal",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_effect",
+        "deploy_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-132",
+      "name": "Radish",
+      "cardType": "base",
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_effect",
+        "deploy_effect",
+        "destroyed_effect"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "T-012",
+      "name": "Daughtress",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "T-015",
+      "name": "CGS Mobile Worker",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "T-016",
+      "name": "Graze Custom",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "T-017",
+      "name": "Gundam Barbatos 4th Form",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "T-018",
+      "name": "Red Gundam",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "T-019",
+      "name": "GQuuuuuuX (Omega Psycommu)",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "T-020",
+      "name": "GFreD",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "T-014",
+      "name": "Ad Balloon",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 2,
+      "effectIds": [
+        "cannot_be_set_active",
+        "cannot_be_paired_with_pilot"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "T-022",
+      "name": "Hy-Gogg",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-001",
+      "name": "Gundam",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "repair_2",
+        "pair_ap_boost_all"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-002",
+      "name": "Gundam(MA Form)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "paired_white_base_draw"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-003",
+      "name": "Guncannon",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-004",
+      "name": "Guntank",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_rest_low_hp"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-005",
+      "name": "GM",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-006",
+      "name": "Gundam Aerial (Permet Score Six)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "paired_ap_reduction"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-007",
+      "name": "Gundam Aerial (Bit on Form)",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-008",
+      "name": "Demi Trainer",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "blocker"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-009",
+      "name": "Zowort",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "blocker",
+        "attack_restriction"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-010",
+      "name": "Amuro Ray",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "paired_rest_medium_hp"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-011",
+      "name": "Suletta Mercury",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "attack_activate_resource"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-012",
+      "name": "Thoroughly Damaged",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "main_damage_rested",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-013",
+      "name": "Kai's Resolve",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "main_heal_friendly",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-014",
+      "name": "Unforeseen Incident",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_activate_main",
+        "main_action_ap_reduction"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-015",
+      "name": "White Base",
+      "cardType": "base",
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_shield_to_hand",
+        "activate_conditional_token_deploy"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-016",
+      "name": "Asticassia School of Technology, Earth House",
+      "cardType": "base",
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_shield_to_hand",
+        "activate_boost_link_units"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "T-001",
+      "name": "Gundam",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "T-002",
+      "name": "Guncannon",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "T-003",
+      "name": "GunTank",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-001",
+      "name": "Wing Gundam",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "breach_5",
+        "attack_active_low_level"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-002",
+      "name": "Wing Gundam (Bird Mode)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_place_ex_resource"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-003",
+      "name": "Gundam Heavyarms",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "paired_battle_damage_splash"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-004",
+      "name": "Gundam Sandrock",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-005",
+      "name": "Maganac",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-006",
+      "name": "Tallgeese",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_set_active"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-007",
+      "name": "Leo",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-008",
+      "name": "Aries",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "blocker"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-009",
+      "name": "Tragos",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "blocker"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-010",
+      "name": "Heero Yuy",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_add_to_hand",
+        "link_ap_boost",
+        "link_hp_boost"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-011",
+      "name": "Zechs Merquise",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "link_battle_draw"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-012",
+      "name": "Simultaneous Fire",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "main_grant_breach",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-013",
+      "name": "Peaceful Timbre",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "action_prevent_shield_damage",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-014",
+      "name": "Siege Ploy",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_activate_main",
+        "main_action_rest_low_hp"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-015",
+      "name": "Saint Gabriel Institute",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_shield_then_scry_two"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-016",
+      "name": "Corsica Base",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_shield_then_conditional_token"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "T-004",
+      "name": "Leo",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "T-005",
+      "name": "Tallgeese",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-001",
+      "name": "Sinanju",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "pair_grant_high_maneuver",
+        "shield_destroy_damage_2"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-002",
+      "name": "Angelo’s Geara Zulu",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_support_2"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-003",
+      "name": "Geara Zulu",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-004",
+      "name": "Gaza D (Sleeves)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_support_2"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-005",
+      "name": "Dra-C (Sleeves)",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-006",
+      "name": "Char’s Zaku II",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "destroyed_tutor_zeon_unit_from_top_3"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-007",
+      "name": "Zaku I",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-008",
+      "name": "Zaku II",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_ap_boost"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-009",
+      "name": "Gouf",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_zaku_ii_token"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-010",
+      "name": "Full Frontal",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "pair_deploy_unit_from_hand"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-011",
+      "name": "Char Aznable",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_add_to_hand",
+        "attack_ap_boost",
+        "attack_grant_high_maneuver_if_linked"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-012",
+      "name": "Indignation",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "main_action_ap_boost",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-013",
+      "name": "Close Combat",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_activate_main",
+        "main_action_damage"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-014",
+      "name": "The Blue Giant",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "action_prevent_battle_damage_low_ap",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-015",
+      "name": "Rewloola",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_shield_then_damage_low_ap"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-016",
+      "name": "Falmel",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_shield_then_char_zaku_ii_token"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "T-006",
+      "name": "Char’s Zaku II",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "T-007",
+      "name": "Zaku II",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-001",
+      "name": "Aile Strike Gundam",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "blocker",
+        "pair_bounce_low_hp_if_pilot_ge_4"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-002",
+      "name": "Strike Gundam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_draw_then_discard"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-003",
+      "name": "Moebius Zero",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-004",
+      "name": "Moebius",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "blocker"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-005",
+      "name": "Strike Dagger",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-006",
+      "name": "Aegis Gundam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_damage_3_if_ap_ge_5"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-007",
+      "name": "Aegis Gundam (MA Mode)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "breach_3"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-008",
+      "name": "Ginn",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-009",
+      "name": "Miguel’s Ginn",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "pair_draw_if_another_link_unit",
+        "destroyed_draw_if_another_link_unit"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-010",
+      "name": "Kira Yamato",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "attack_reduce_enemy_ap"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-011",
+      "name": "Athrun Zala",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "attack_active_low_level_5"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-012",
+      "name": "Striker Pack",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_deploy_aile_strike_token_if_none",
+        "main_deploy_strike_tokens_if_none"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-013",
+      "name": "Hawk of Endymion",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "main_action_bounce_low_hp",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-014",
+      "name": "The Magic Bullet of Dusk",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "main_action_grant_first_strike",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-015",
+      "name": "Archangel",
+      "cardType": "base",
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_shield_to_hand",
+        "activate_set_active"
+      ],
+      "alwaysOnStatus": "likely-missing-rule"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-016",
+      "name": "Vesalius",
+      "cardType": "base",
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_shield_to_hand",
+        "activate_boost_unit"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "T-008",
+      "name": "Aile Strike Gundam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "blocker"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "T-009",
+      "name": "Launcher Strike Gundam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "blocker"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "T-010",
+      "name": "Sword Strike Gundam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "blocker"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-001",
+      "name": "Gundam Barbatos 4th Form",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "deploy_damage_1_then_ap_plus_1",
+        "gain_suppression_while_damaged"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-002",
+      "name": "Gundam Barbatos 2nd Form",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "ap_plus_2_while_damaged"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-003",
+      "name": "CGS Mobile Worker",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_damage_1_then_ap_plus_1"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-004",
+      "name": "Graze Custom",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-005",
+      "name": "Gundam Gusion Rebake",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "destroyed_rest_enemy_ap_le_4"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-006",
+      "name": "Hyakuren",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-007",
+      "name": "McGillis’ Schwalbe Graze",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "blocker",
+        "pair_enemy_ap_minus_2_low_level"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-008",
+      "name": "Graze Commander Type",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "blocker"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-009",
+      "name": "Graze",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-010",
+      "name": "Mikazuki Augus",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "pair_damage_each_1"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-011",
+      "name": "Akihiro Altland",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "linked_battle_destroy_add_tekkadan_unit_le_2_from_trash"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-012",
+      "name": "McGillis Fareed",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "pair_rest_enemy_hp_le_3_if_gh_or_tekkadan_ge_3"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-013",
+      "name": "With Iron and Blood",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "main_or_action_damage_1_then_ap_plus_3"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-014",
+      "name": "Fatal Strike",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_damage_enemy_1",
+        "main_destroy_enemy_le_3"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-015",
+      "name": "Isaribi",
+      "cardType": "base",
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_shield_to_hand",
+        "activate_ap_plus_2_to_damaged_unit"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-001",
+      "name": "GQuuuuuuX (Omega Psycommu)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "linked_grant_first_strike_if_clan_ge_2"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-002",
+      "name": "GQuuuuuuX (Omega Psycommu)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_damage_enemy_1_if_clan_ge_2"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-003",
+      "name": "Gaia’s Rick Dom (GQ)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "activate_support_1"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-004",
+      "name": "Gelgoog (GQ)",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-005",
+      "name": "Red Gundam",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "breach_1",
+        "attack_ap_plus_2_to_1_or_2_clan_units"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-007",
+      "name": "Ortega’s Rick Dom (GQ)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_allow_attack_target_active_enemy_ap_le_3"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-008",
+      "name": "Sugai’s Gelgoog (GQ)",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-009",
+      "name": "Amate Yuzuriha (Machu)",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "linked_top_1_clan_to_hand_else_bottom"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-010",
+      "name": "Shuji Itō",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "linked_attack_scry_top_1_if_clan_unit_in_play"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-011",
+      "name": "Ruthless Tactics",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "main_or_action_ap_plus_2_to_1_or_2_clan_units",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-012",
+      "name": "Schoolgirl and Smuggler",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "main_tutor_top_3_clan_unit_or_pilot"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-013",
+      "name": "Fierce Unity",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "action_prevent_battle_damage_from_enemy_units_le_2_for_clan",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-014",
+      "name": "Clan Battle",
+      "cardType": "base",
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_shield_to_hand",
+        "activate_ap_plus_2_if_clan_link_unit_in_play"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-015",
+      "name": "Kaneban Co., Ltd.",
+      "cardType": "base",
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_shield_to_hand",
+        "once_per_turn_grant_breach_3_to_just_linked_clan_unit"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-001",
+      "name": "Gundam Exia",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "end_of_turn_set_active_resource_if_cb_trash_ge_7",
+        "pair_mill_2_then_draw_if_cb_milled"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-002",
+      "name": "Gundam Exia",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-003",
+      "name": "Gundam Virtue",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-004",
+      "name": "Gundam Virtue",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "blocker_if_cb_pilot_in_play"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-005",
+      "name": "Gundam Dynames",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "battle_destroy_heal_2_on_your_turn",
+        "during_link_ap_plus_2"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-006",
+      "name": "Gundam Dynames",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-007",
+      "name": "Gundam Kyrios",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "ap_plus_2_on_your_turn_if_cb_pilot_in_play"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-008",
+      "name": "Gundam Kyrios (Flight Mode)",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-009",
+      "name": "Setsuna F. Seiei",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "attack_ap_plus_1_branch_cb_trash_ge_7"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-010",
+      "name": "Tieria Erde",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "destroyed_draw_1_on_opponent_turn_if_cb_unit"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-011",
+      "name": "Lockon Stratos (Neil)",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "pair_allow_attack_target_active_enemy_le_source"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-012",
+      "name": "Allelujah Haptism",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "prevent_battle_damage_from_enemy_ap_le_3_if_cb_link_unit_in_play"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-013",
+      "name": "Armed Intervention",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_draw_1",
+        "action_redirect_attack_to_rested_cb_unit"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-014",
+      "name": "Tactical Visionary",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "main_tutor_top_3_cb_unit_or_pilot"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-015",
+      "name": "Ptolemaios",
+      "cardType": "base",
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_shield_to_hand",
+        "prevent_damage_from_enemy_units_le_3_if_rested_cb_unit_in_play"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-001",
+      "name": "Ξ Gundam",
+      "cardType": "unit",
+      "descriptionCount": 2,
+      "ruleCount": 3,
+      "effectIds": [
+        "hand_cost_minus_1_per_enemy_unit_if_no_friendly_ge_6",
+        "hand_level_minus_1_per_enemy_unit_if_no_friendly_ge_6",
+        "pair_damage_highest_level_enemy_3"
+      ],
+      "alwaysOnStatus": "complete"
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-002",
+      "name": "Ξ Gundam",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_damage_enemy_1"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-003",
+      "name": "Messer (Type-F Naked) (Commander Type)",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-004",
+      "name": "Messer Type-F01",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "attack_damage_enemy_1_if_attacking_unit"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-005",
+      "name": "Messer Type-F02 Minelayer",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-006",
+      "name": "Penelope",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "pair_attack_reveal_ef_unit_bottom_then_draw_2"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-007",
+      "name": "Penelope",
+      "cardType": "unit",
+      "descriptionCount": 0,
+      "ruleCount": 0,
+      "effectIds": [],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-008",
+      "name": "Gustav Karl Type-00",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "blocker_if_enemy_units_ge_3"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-009",
+      "name": "Jegan Ground Type-A (Man Hunter)",
+      "cardType": "unit",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "deploy_prevent_set_active_next_turn_for_rested_enemy_le_2"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-010",
+      "name": "Hathaway Noa",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "pair_allow_attack_target_damaged_active_enemy_if_mafty_unit"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-011",
+      "name": "Lane Aim",
+      "cardType": "pilot",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_add_to_hand",
+        "grant_high_maneuver_on_effect_draw_if_blue_unit"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-012",
+      "name": "Words for Hathaway",
+      "cardType": "command",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "main_grant_breach_1_to_friendly_link_unit",
+        "pilot_designation"
+      ],
+      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-013",
+      "name": "Lady Luck",
+      "cardType": "command",
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "effectIds": [
+        "main_or_action_damage_1_or_2_if_mafty_link_unit_in_play"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-014",
+      "name": "Valiant",
+      "cardType": "base",
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_shield_to_hand_then_ap_plus_2"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-015",
+      "name": "Davao",
+      "cardType": "base",
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "effectIds": [
+        "burst_deploy",
+        "deploy_shield_to_hand",
+        "activate_heal_2_once_per_turn"
+      ],
+      "alwaysOnStatus": "no-passive-text"
+    }
+  ]
+}

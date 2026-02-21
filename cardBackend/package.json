@@ -24,6 +24,7 @@
     "review:unresolved": "node scripts/generateUnresolvedEffectCatalog.cjs",
     "review:unresolved:check": "node scripts/checkUnresolvedEffectBaseline.cjs",
     "review:effects:apply": "node scripts/applyEffectCanonicalization.cjs",
+    "validate:effects:canonical": "node scripts/validateEffectsCanonical.cjs",
     "run-test": "node test.cjs",
     "run-testcase1": "node test_case1.cjs",
     "type-check": "tsc --noEmit"

@@ -1,0 +1,151 @@
+const fs = require('fs');
+const path = require('path');
+
+const CARD_FILES = [
+  'gd01Card.json',
+  'gd02Card.json',
+  'gd03Card.json',
+  'st01Card.json',
+  'st02Card.json',
+  'st03Card.json',
+  'st04Card.json',
+  'st05Card.json',
+  'st06Card.json',
+  'st07Card.json',
+  'st08Card.json'
+];
+
+function loadCardFile(baseDir, fileName) {
+  const filePath = path.join(baseDir, 'src', 'data', fileName);
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+function classifyAlwaysOnCompleteness(card) {
+  const descriptions = Array.isArray(card?.effects?.description) ? card.effects.description : [];
+  const rules = Array.isArray(card?.effects?.rules) ? card.effects.rules : [];
+  const text = descriptions.join(' ');
+
+  const hasRepairText = /<Repair\s*\d+>/i.test(text);
+  const hasBlockerText = /<Blocker>/i.test(text);
+  const hasBreachText = /<Breach\s*\d+>/i.test(text);
+  const hasPassiveText = hasRepairText || hasBlockerText || hasBreachText || /\bWhile\b/i.test(text);
+
+  const hasContinuous = rules.some((rule) =>
+    String(rule?.type || '').toLowerCase() === 'continuous' ||
+    String(rule?.trigger || '').toLowerCase() === 'continuous' ||
+    String(rule?.timing?.duration || '').toLowerCase() === 'continuous'
+  );
+
+  const hasRepairRule = rules.some((rule) =>
+    String(rule?.action || '').toLowerCase() === 'heal' ||
+    (String(rule?.action || '').toLowerCase() === 'grant_keyword' && String(rule?.parameters?.keyword || '').toLowerCase() === 'repair')
+  );
+  const hasBlockerRule = rules.some((rule) =>
+    String(rule?.trigger || '').toUpperCase() === 'ATTACK_REDIRECT' ||
+    (String(rule?.action || '').toLowerCase() === 'grant_keyword' && String(rule?.parameters?.keyword || '').toLowerCase() === 'blocker')
+  );
+  const hasBreachRule = rules.some((rule) =>
+    String(rule?.action || '').toLowerCase() === 'damageshield' ||
+    String(rule?.action || '').toLowerCase() === 'grant_breach'
+  );
+
+  if (
+    (hasRepairText && !hasRepairRule) ||
+    (hasBlockerText && !hasBlockerRule) ||
+    (hasBreachText && !hasBreachRule)
+  ) {
+    return 'likely-missing-rule';
+  }
+
+  if (!hasPassiveText) {
+    return 'no-passive-text';
+  }
+
+  if (hasContinuous) {
+    return 'complete';
+  }
+
+  if (hasRepairRule || hasBlockerRule || hasBreachRule) {
+    return 'legacy-encoding-but-behaviorally-complete';
+  }
+
+  return 'complete';
+}
+
+function generateEffectInventoryReport(baseDir) {
+  const cards = [];
+  const ruleTypeSummary = {};
+
+  for (const fileName of CARD_FILES) {
+    const fileJson = loadCardFile(baseDir, fileName);
+    const fileCards = fileJson.cards || {};
+
+    for (const [cardId, card] of Object.entries(fileCards)) {
+      const rules = Array.isArray(card?.effects?.rules) ? card.effects.rules : [];
+      const descriptions = Array.isArray(card?.effects?.description) ? card.effects.description : [];
+      for (const rule of rules) {
+        const type = typeof rule?.type === 'string' ? rule.type : 'unknown';
+        ruleTypeSummary[type] = (ruleTypeSummary[type] || 0) + 1;
+      }
+
+      cards.push({
+        file: fileName,
+        cardId,
+        name: card?.name || '',
+        cardType: card?.cardType || '',
+        descriptionCount: descriptions.length,
+        ruleCount: rules.length,
+        effectIds: rules.map((rule) => rule.effectId || 'unknown'),
+        alwaysOnStatus: classifyAlwaysOnCompleteness(card)
+      });
+    }
+  }
+
+  return {
+    generatedAt: new Date().toISOString(),
+    fileCount: CARD_FILES.length,
+    cardCount: cards.length,
+    ruleTypeSummary,
+    cards
+  };
+}
+
+function generateAlwaysOnCompletenessReport(baseDir) {
+  const entries = [];
+
+  for (const fileName of CARD_FILES) {
+    const fileJson = loadCardFile(baseDir, fileName);
+    const fileCards = fileJson.cards || {};
+
+    for (const [cardId, card] of Object.entries(fileCards)) {
+      const status = classifyAlwaysOnCompleteness(card);
+      if (status === 'no-passive-text') {
+        continue;
+      }
+      entries.push({
+        file: fileName,
+        cardId,
+        name: card?.name || '',
+        status
+      });
+    }
+  }
+
+  const summary = entries.reduce((acc, entry) => {
+    acc[entry.status] = (acc[entry.status] || 0) + 1;
+    return acc;
+  }, {});
+
+  return {
+    generatedAt: new Date().toISOString(),
+    entryCount: entries.length,
+    summary,
+    entries
+  };
+}
+
+module.exports = {
+  CARD_FILES,
+  generateEffectInventoryReport,
+  generateAlwaysOnCompletenessReport
+};

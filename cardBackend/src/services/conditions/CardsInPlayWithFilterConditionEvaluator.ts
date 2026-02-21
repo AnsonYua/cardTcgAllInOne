@@ -47,6 +47,15 @@ export class CardsInPlayWithFilterConditionEvaluator {
             }
         }
 
+        if (cardTypeFilter === '' || cardTypeFilter === 'base') {
+            const bases = Array.isArray((player.zones as any).base) ? (player.zones as any).base : [];
+            for (const baseCard of bases) {
+                if (this.matchesBaseCardFilter(baseCard, filters)) {
+                    count += 1;
+                }
+            }
+        }
+
         if (typeof condition.value === 'number') {
             return count === condition.value;
         }
@@ -127,6 +136,39 @@ export class CardsInPlayWithFilterConditionEvaluator {
                 battle && (battle.attackerCarduid === card.carduid || battle.targetCarduid === card.carduid)
             );
             if (battling !== filters.isBattling) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static matchesBaseCardFilter(baseCard: any, filters: Record<string, unknown>): boolean {
+        const baseData = baseCard?.cardData || {};
+        const cardType = typeof baseData.cardType === 'string' ? baseData.cardType.toLowerCase() : '';
+        if (cardType !== 'base') {
+            return false;
+        }
+
+        if (typeof filters.color === 'string') {
+            const color = typeof baseData.color === 'string' ? baseData.color.toLowerCase() : '';
+            if (color !== String(filters.color).toLowerCase()) {
+                return false;
+            }
+        }
+
+        if (Array.isArray(filters.traits) && filters.traits.length > 0) {
+            const traits = Array.isArray(baseData.traits) ? baseData.traits : [];
+            const hasAny = (filters.traits as unknown[]).some((trait) => typeof trait === 'string' && traits.includes(trait));
+            if (!hasAny) {
+                return false;
+            }
+        }
+
+        if (Array.isArray(filters.traitsAny) && filters.traitsAny.length > 0) {
+            const traits = Array.isArray(baseData.traits) ? baseData.traits : [];
+            const hasAny = (filters.traitsAny as unknown[]).some((trait) => typeof trait === 'string' && traits.includes(trait));
+            if (!hasAny) {
                 return false;
             }
         }

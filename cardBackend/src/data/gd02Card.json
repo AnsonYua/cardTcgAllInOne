@@ -3501,7 +3501,8 @@
       "hp": 4,
       "effects": {
         "description": [
-          "<Blocker> (Rest this Unit to change the attack target to it.) While a friendly white Base is in play, this Unit gains <Repair 1>. (At the end of your turn, this Unit recovers the specified number of HP.)"
+          "<Blocker> (Rest this Unit to change the attack target to it.)",
+          "While a friendly white Base is in play, this Unit gains <Repair 1>. (At the end of your turn, this Unit recovers the specified number of HP.)"
         ],
         "rules": [
           {
@@ -3515,6 +3516,31 @@
             "action": "redirect_attack",
             "parameters": {
               "cost": "rest_self"
+            }
+          },
+          {
+            "effectId": "repair_1_if_friendly_white_base",
+            "type": "triggered",
+            "trigger": "END_OF_TURN",
+            "conditions": [
+              {
+                "type": "cardsInPlayWithFilter",
+                "scope": "self",
+                "filters": {
+                  "cardType": "base",
+                  "color": "White"
+                },
+                "value": ">=1"
+              }
+            ],
+            "target": {
+              "type": "unit",
+              "scope": "source",
+              "count": 1
+            },
+            "action": "heal",
+            "parameters": {
+              "value": 1
             }
           }
         ]

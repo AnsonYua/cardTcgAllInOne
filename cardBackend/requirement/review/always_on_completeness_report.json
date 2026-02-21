@@ -1,0 +1,773 @@
+{
+  "generatedAt": "2026-02-21T05:12:54.973Z",
+  "entryCount": 127,
+  "summary": {
+    "complete": 51,
+    "legacy-encoding-but-behaviorally-complete": 55,
+    "likely-missing-rule": 21
+  },
+  "entries": [
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-001",
+      "name": "Gundam",
+      "status": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-003",
+      "name": "Unicorn Gundam 02 Banshee (Destroy Mode)",
+      "status": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-004",
+      "name": "Guncannon",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-006",
+      "name": "Delta Plus",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-016",
+      "name": "Jegan",
+      "status": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-017",
+      "name": "Stark Jegan",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-019",
+      "name": "Byarlant Custom",
+      "status": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-025",
+      "name": "Gundam Deathscythe",
+      "status": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-027",
+      "name": "Big Zam",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-029",
+      "name": "Shenlong Gundam",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-030",
+      "name": "Rick Dom",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-032",
+      "name": "Gyan",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-033",
+      "name": "Gundam Deathscythe",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-034",
+      "name": "Gundam Heavyarms",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-041",
+      "name": "Shenlong Gundam",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-049",
+      "name": "Blitz Gundam",
+      "status": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-054",
+      "name": "Duel Gundam",
+      "status": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-063",
+      "name": "ZnO",
+      "status": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-065",
+      "name": "Freedom Gundam",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-066",
+      "name": "Justice Gundam",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-068",
+      "name": "Perfect Strike Gundam",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-069",
+      "name": "Strike Rouge",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-070",
+      "name": "Gundam Aerial",
+      "status": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-072",
+      "name": "Launcher Strike Gundam",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-076",
+      "name": "Michaelis",
+      "status": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-081",
+      "name": "M1 Astray",
+      "status": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-086",
+      "name": "Gundam Lfrith",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-087",
+      "name": "Sayla Mass",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-089",
+      "name": "Riddhe Marcenas",
+      "status": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-091",
+      "name": "Chang Wufei",
+      "status": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-092",
+      "name": "M'Quve",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-094",
+      "name": "Yzak Jule",
+      "status": "complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-096",
+      "name": "Cagalli Yula Athha",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-108",
+      "name": "Strategic Arms",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-120",
+      "name": "Naval Bombardment",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-121",
+      "name": "Midair Modifications",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "GD01-127",
+      "name": "Gamow",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd01Card.json",
+      "cardId": "T-011",
+      "name": "Fatum-00",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-001",
+      "name": "Psycho Gundam",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-006",
+      "name": "Forbidden Gundam",
+      "status": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-007",
+      "name": "Psycho Gundam (MA Mode)",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-017",
+      "name": "Delta Plus (Waverider Mode)",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-022",
+      "name": "G-Exes",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-023",
+      "name": "Gundam AGE-1 Spallow",
+      "status": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-027",
+      "name": "Gundam AGE-1 Titus",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-031",
+      "name": "Gundam AGE-1 Titus",
+      "status": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-033",
+      "name": "Kikeroga (MA Mode) (GQ)",
+      "status": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-037",
+      "name": "Gundam Virsago",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-053",
+      "name": "Gundam X",
+      "status": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-055",
+      "name": "Gundam Gusion Rebake",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-059",
+      "name": "Gundam Airmaster",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-064",
+      "name": "Gundam Leopard",
+      "status": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-072",
+      "name": "Hyaku-Shiki",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-073",
+      "name": "Carta's Graze Ritter (Ground Type)",
+      "status": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-074",
+      "name": "Gundam Aerial Rebuild",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-076",
+      "name": "Buster Gundam",
+      "status": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-079",
+      "name": "Rick Dias",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-082",
+      "name": "Gaelio's Schwalbe Graze",
+      "status": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-086",
+      "name": "Jerid Messa",
+      "status": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-087",
+      "name": "Orga, Crot, and Shani",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-089",
+      "name": "Lalah Sune",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-090",
+      "name": "Challia Bull (GQ)",
+      "status": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-097",
+      "name": "Kamille Bidan",
+      "status": "complete"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-118",
+      "name": "Heart Set on Revenge",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "gd02Card.json",
+      "cardId": "GD02-124",
+      "name": "Diva",
+      "status": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-001",
+      "name": "Gundam NT-1",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-002",
+      "name": "The-O",
+      "status": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-003",
+      "name": "Messala",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-005",
+      "name": "Kshatriya Besserung",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-008",
+      "name": "Bolinoak Sammahn",
+      "status": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-010",
+      "name": "Full Armor Unicorn Gundam (Destroy Mode)",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-012",
+      "name": "Messala (MA Mode)",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-013",
+      "name": "Hizack",
+      "status": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-014",
+      "name": "Hizack Custom",
+      "status": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-015",
+      "name": "Baund Doc",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-018",
+      "name": "Altron Gundam",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-020",
+      "name": "Zaku Ⅱ FZ",
+      "status": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-026",
+      "name": "Gundam Dynames",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-029",
+      "name": "Gundam Heavyarms Custom",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-030",
+      "name": "Gundam Kyrios (Tail Unit Flight Mode)",
+      "status": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-037",
+      "name": "Bertigo",
+      "status": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-042",
+      "name": "Duel Gundam (Assault Shroud)",
+      "status": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-045",
+      "name": "Balient",
+      "status": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-053",
+      "name": "Gundam Gusion Rebake Full City",
+      "status": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-057",
+      "name": "GN Armor (Type-E)",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-061",
+      "name": "Gundam Barbatos 6th Form",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-068",
+      "name": "Gundam Hajiroboshi",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-070",
+      "name": "Freedom Gundam",
+      "status": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-072",
+      "name": "Aile Strike Gundam",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-073",
+      "name": "Graze Ein",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-074",
+      "name": "Tieren Taozi",
+      "status": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-082",
+      "name": "Union Flag",
+      "status": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-083",
+      "name": "AEU Hellion",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-084",
+      "name": "Paptimus Scirocco",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-088",
+      "name": "Asemu Asuno",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-090",
+      "name": "Mikhail Kaminsky",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-093",
+      "name": "Carris Nautilus",
+      "status": "complete"
+    },
+    {
+      "file": "gd03Card.json",
+      "cardId": "GD03-118",
+      "name": "Awakened Potential",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-001",
+      "name": "Gundam",
+      "status": "complete"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-008",
+      "name": "Demi Trainer",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-009",
+      "name": "Zowort",
+      "status": "complete"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-001",
+      "name": "Wing Gundam",
+      "status": "complete"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-008",
+      "name": "Aries",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-009",
+      "name": "Tragos",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-012",
+      "name": "Simultaneous Fire",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-001",
+      "name": "Aile Strike Gundam",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-004",
+      "name": "Moebius",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-007",
+      "name": "Aegis Gundam (MA Mode)",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-012",
+      "name": "Striker Pack",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-015",
+      "name": "Archangel",
+      "status": "likely-missing-rule"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "T-008",
+      "name": "Aile Strike Gundam",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "T-009",
+      "name": "Launcher Strike Gundam",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "T-010",
+      "name": "Sword Strike Gundam",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-001",
+      "name": "Gundam Barbatos 4th Form",
+      "status": "complete"
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-002",
+      "name": "Gundam Barbatos 2nd Form",
+      "status": "complete"
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-007",
+      "name": "McGillis’ Schwalbe Graze",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-008",
+      "name": "Graze Commander Type",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-001",
+      "name": "GQuuuuuuX (Omega Psycommu)",
+      "status": "complete"
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-005",
+      "name": "Red Gundam",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-015",
+      "name": "Kaneban Co., Ltd.",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-004",
+      "name": "Gundam Virtue",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-007",
+      "name": "Gundam Kyrios",
+      "status": "complete"
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-012",
+      "name": "Allelujah Haptism",
+      "status": "complete"
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-015",
+      "name": "Ptolemaios",
+      "status": "complete"
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-001",
+      "name": "Ξ Gundam",
+      "status": "complete"
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-008",
+      "name": "Gustav Karl Type-00",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-012",
+      "name": "Words for Hathaway",
+      "status": "legacy-encoding-but-behaviorally-complete"
+    }
+  ]
+}

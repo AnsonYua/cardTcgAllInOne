@@ -174,7 +174,7 @@
               "cardId": "energy_basic",
               "carduid": "energy_basic_auto_gd03-033_attack_ap9_playerId_1_0006",
               "isExtraEnergy": false,
-              "isRested": true,
+              "isRested": false,
               "placedAt": 0,
               "placedBy": "playerId_1"
             },
@@ -182,7 +182,7 @@
               "cardId": "energy_basic",
               "carduid": "energy_basic_auto_gd03-033_attack_ap9_playerId_1_0007",
               "isExtraEnergy": false,
-              "isRested": true,
+              "isRested": false,
               "placedAt": 0,
               "placedBy": "playerId_1"
             }

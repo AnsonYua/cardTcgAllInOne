@@ -1,6 +1,6 @@
 {
-  "description": "GD03-089 paired with unit and three unique Cyclops Team cards (GD03-090 + GD03-107 + duplicate) in trash grants AP+3",
-  "gameId": "gd03-089_pair_three_cyclops_trash_ap_plus_3",
+  "description": "GD03-089 paired with unit and two unique Cyclops Team cards (GD03-090 + GD03-107 + duplicate) in trash grants AP+2",
+  "gameId": "gd03-089_pair_two_unique_with_duplicate_ap_plus_2",
   "testType": "action",
   "category": "ActionCase",
   "tags": [
@@ -112,7 +112,7 @@
               "cardId": "energy_basic",
               "carduid": "energy_basic_auto_gd03-089_pair_three_cyclops_playerId_1_0001",
               "isExtraEnergy": false,
-              "isRested": true,
+              "isRested": false,
               "placedAt": 0,
               "placedBy": "playerId_1"
             }

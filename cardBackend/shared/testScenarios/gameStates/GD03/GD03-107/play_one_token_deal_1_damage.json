@@ -131,7 +131,7 @@
               "cardId": "energy_basic",
               "carduid": "energy_basic_auto_gd03-107_play_one_token_playerId_1_0003",
               "isExtraEnergy": false,
-              "isRested": true,
+              "isRested": false,
               "placedAt": 0,
               "placedBy": "playerId_1"
             }

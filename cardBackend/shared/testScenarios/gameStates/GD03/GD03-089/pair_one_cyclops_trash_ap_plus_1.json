@@ -112,7 +112,7 @@
               "cardId": "energy_basic",
               "carduid": "energy_basic_auto_gd03-089_pair_one_cyclops_playerId_1_0001",
               "isExtraEnergy": false,
-              "isRested": true,
+              "isRested": false,
               "placedAt": 0,
               "placedBy": "playerId_1"
             }

@@ -7,6 +7,7 @@ const {
   CANONICAL_CONDITION_TYPES,
   CANONICAL_SELECTION_TYPES,
   CANONICAL_TARGET_FILTER_KEYS,
+  CANONICAL_SCALING_TYPES,
   SEQUENCE_INTERNAL_CONDITION_TYPES,
   normalizeConditionTypeAlias,
   normalizeSelectionTypeAlias
@@ -328,8 +329,159 @@ function walkEffects(node, context, diagnostics) {
     }
   }
 
+  if (node.parameters && typeof node.parameters === 'object') {
+    const scaling = node.parameters.scaling;
+    if (scaling !== undefined) {
+      validateScalingConfig(
+        scaling,
+        `${context.jsonPath}.parameters.scaling`,
+        { cardId: context.cardId, effectId: nextContext.effectId || 'unknown' },
+        diagnostics
+      );
+    }
+  }
+
   for (const [key, value] of Object.entries(node)) {
     walkEffects(value, { ...nextContext, jsonPath: `${context.jsonPath}.${key}` }, diagnostics);
+  }
+}
+
+function validateScalingConfig(scaling, jsonPath, context, diagnostics) {
+  if (!scaling || typeof scaling !== 'object') {
+    diagnostics.push({
+      severity: 'error',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath,
+      message: 'scaling must be an object'
+    });
+    return;
+  }
+
+  const hasType = typeof scaling.type === 'string' && scaling.type.length > 0;
+  const isSourceApLegacyShape =
+    String(scaling.stat || '').toLowerCase() === 'ap' &&
+    String(scaling.scope || '').toLowerCase() === 'source' &&
+    typeof scaling.per === 'number' &&
+    scaling.per > 0;
+
+  if (hasType) {
+    const normalizedType = String(scaling.type).toUpperCase();
+    if (!CANONICAL_SCALING_TYPES.has(normalizedType)) {
+      diagnostics.push({
+        severity: 'error',
+        cardId: context.cardId,
+        effectId: context.effectId || 'unknown',
+        jsonPath: `${jsonPath}.type`,
+        message: `unknown scaling type ${scaling.type}`
+      });
+      return;
+    }
+
+    if (normalizedType === 'COUNT_UNITS_IN_PLAY') {
+      if (scaling.multiplier !== undefined && typeof scaling.multiplier !== 'number') {
+        diagnostics.push({
+          severity: 'error',
+          cardId: context.cardId,
+          effectId: context.effectId || 'unknown',
+          jsonPath: `${jsonPath}.multiplier`,
+          message: 'COUNT_UNITS_IN_PLAY multiplier must be numeric'
+        });
+      }
+      return;
+    }
+
+    if (normalizedType === 'COUNT_UNIQUE_CARDS_IN_TRASH') {
+      if (scaling.multiplier !== undefined && typeof scaling.multiplier !== 'number') {
+        diagnostics.push({
+          severity: 'error',
+          cardId: context.cardId,
+          effectId: context.effectId || 'unknown',
+          jsonPath: `${jsonPath}.multiplier`,
+          message: 'COUNT_UNIQUE_CARDS_IN_TRASH multiplier must be numeric'
+        });
+      }
+      return;
+    }
+
+    if (normalizedType === 'SOURCE_AP_PER') {
+      if (!(typeof scaling.per === 'number' && scaling.per > 0)) {
+        diagnostics.push({
+          severity: 'error',
+          cardId: context.cardId,
+          effectId: context.effectId || 'unknown',
+          jsonPath: `${jsonPath}.per`,
+          message: 'SOURCE_AP_PER requires per > 0'
+        });
+      }
+      return;
+    }
+  }
+
+  if (!isSourceApLegacyShape) {
+    diagnostics.push({
+      severity: 'error',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath,
+      message: 'scaling uses unsupported shape'
+    });
+  }
+}
+
+function detectAlwaysOnTextRuleMismatches(fileName, cards, diagnostics) {
+  for (const [cardId, card] of Object.entries(cards)) {
+    const descriptions = Array.isArray(card?.effects?.description) ? card.effects.description : [];
+    const rules = Array.isArray(card?.effects?.rules) ? card.effects.rules : [];
+    if (descriptions.length === 0) {
+      continue;
+    }
+
+    const text = descriptions.join(' ');
+    const hasRepairText = /<Repair\s*\d+>/i.test(text);
+    const hasBlockerText = /<Blocker>/i.test(text);
+    const hasBreachText = /<Breach\s*\d+>/i.test(text);
+
+    const hasRepairRule = rules.some((rule) =>
+      String(rule?.action || '').toLowerCase() === 'heal' ||
+      (String(rule?.action || '').toLowerCase() === 'grant_keyword' && String(rule?.parameters?.keyword || '').toLowerCase() === 'repair')
+    );
+    const hasBlockerRule = rules.some((rule) =>
+      String(rule?.trigger || '').toUpperCase() === 'ATTACK_REDIRECT' ||
+      (String(rule?.action || '').toLowerCase() === 'grant_keyword' && String(rule?.parameters?.keyword || '').toLowerCase() === 'blocker')
+    );
+    const hasBreachRule = rules.some((rule) =>
+      String(rule?.action || '').toLowerCase() === 'damageshield' ||
+      String(rule?.action || '').toLowerCase() === 'grant_breach'
+    );
+
+    if (hasRepairText && !hasRepairRule) {
+      diagnostics.push({
+        severity: 'warning',
+        cardId,
+        effectId: 'effects.description',
+        jsonPath: `cards.${cardId}.effects.description`,
+        message: `${fileName}: repair text present but no repair-capable rule found`
+      });
+    }
+    if (hasBlockerText && !hasBlockerRule) {
+      diagnostics.push({
+        severity: 'warning',
+        cardId,
+        effectId: 'effects.description',
+        jsonPath: `cards.${cardId}.effects.description`,
+        message: `${fileName}: blocker text present but no blocker-capable rule found`
+      });
+    }
+    if (hasBreachText && !hasBreachRule) {
+      diagnostics.push({
+        severity: 'warning',
+        cardId,
+        effectId: 'effects.description',
+        jsonPath: `cards.${cardId}.effects.description`,
+        message: `${fileName}: breach text present but no breach-capable rule found`
+      });
+    }
   }
 }
 
@@ -362,6 +514,7 @@ function validateEffectSchemaCanonical() {
     const json = loadCardFile(fileName);
     const cards = json.cards || {};
     validateCardLinks(fileName, cards, diagnostics);
+    detectAlwaysOnTextRuleMismatches(fileName, cards, diagnostics);
 
     for (const [cardId, card] of Object.entries(cards)) {
       const rules = card && card.effects && Array.isArray(card.effects.rules) ? card.effects.rules : [];
@@ -369,8 +522,18 @@ function validateEffectSchemaCanonical() {
     }
   }
 
-  if (diagnostics.length > 0) {
-    const lines = diagnostics.map((d) =>
+  const errors = diagnostics.filter((d) => d.severity === 'error');
+  const warnings = diagnostics.filter((d) => d.severity === 'warning');
+
+  if (warnings.length > 0) {
+    const lines = warnings.map((d) =>
+      `[warning] ${d.cardId}:${d.effectId} ${d.jsonPath} - ${d.message}`
+    );
+    console.warn(lines.join('\n'));
+  }
+
+  if (errors.length > 0) {
+    const lines = errors.map((d) =>
       `[${d.severity}] ${d.cardId}:${d.effectId} ${d.jsonPath} - ${d.message}`
     );
     throw new Error(lines.join('\n'));
@@ -383,6 +546,8 @@ module.exports = {
   validateEffectSchemaCanonical,
   __testUtils: {
     validateConditionEntry,
-    walkEffects
+    walkEffects,
+    validateScalingConfig,
+    detectAlwaysOnTextRuleMismatches
   }
 };
