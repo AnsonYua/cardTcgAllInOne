@@ -79,17 +79,21 @@ Start Turn -> Draw -> Main -> Attack/Blocker/Action Step -> End Turn
 - If defender blocks, attack target can change to the blocker unit.
 - If defender skips, attack continues on the original target.
 
-### Battle keyword concepts (important)
+### Keyword concepts (important)
 - `Burst`: a shield-hit trigger. When burst condition is met, a burst choice/effect can appear.
 - `Breach`: pressure effect tied to battle outcomes. It helps push damage pressure toward defense cards.
 - `First Strike`: this unit deals battle damage first in combat order.
 - `High-Maneuver`: this unit follows special attack-targeting rules and is harder to stop in normal lines.
+- `Repair`: this effect heals damage (HP), usually in allowed timing like end-turn or card text timing.
+- `Activate`: this is a player-chosen effect. You decide when to use it if timing and cost are valid.
 
 ### Quick examples
 - `Burst` example: Your shield card is damaged. A `BURST_EFFECT_CHOICE` pops up, and you may activate burst text.
 - `Breach` example: Your attacker wins battle and has `Breach`, so extra pressure is applied to opponent defense cards.
 - `First Strike` example: Two units battle. The one with `First Strike` deals battle damage first.
 - `High-Maneuver` example: Your unit attacks using special targeting rules, so normal defense lines are harder to use.
+- `Repair` example: Your unit took 2 damage earlier. A `Repair` effect triggers, and that unit recovers HP.
+- `Activate` example: In `Main` phase, you choose to use an `Activate` skill, pay `cost`, then resolve its effect.
 
 ## 7) Choice Rules (Very Important)
 If a choice event appears, resolve it first.

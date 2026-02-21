@@ -54,17 +54,21 @@ Start Turn -> Draw -> Main -> Attack/Blocker/Action Step -> End Turn
 - 若使用 `Blocker`，攻擊目標可能改成該 `Blocker` 單位。
 - 若不使用，攻擊照原目標繼續。
 
-### 戰鬥關鍵字概念（新手重點）
+### 關鍵字概念（新手重點）
 - `Burst`：護盾受擊後可能出現的觸發效果，通常會先進入 burst choice 流程。
 - `Breach`：和戰鬥結果連動的壓制效果，會提高打穿防區的壓力。
 - `First Strike`：在戰鬥順序中，這個單位會先造成戰鬥傷害。
 - `High-Maneuver`：這個單位有特殊攻擊目標規則，通常更不容易被一般防線阻擋。
+- `Repair`：回復傷害（HP）的效果，常見於回合結束或卡文指定時機。
+- `Activate`：玩家主動選擇使用的效果，需符合時機並支付 `cost`。
 
 ### 快速例子
 - `Burst` 例子：你的 `shield` 被打到後，跳出 `BURST_EFFECT_CHOICE`，你可以決定是否發動 burst。
 - `Breach` 例子：你的攻擊單位戰鬥獲勝且有 `Breach`，會對對手防區產生額外壓力。
 - `First Strike` 例子：兩個單位交戰時，帶有 `First Strike` 的那一方先造成戰鬥傷害。
 - `High-Maneuver` 例子：你的單位用特殊目標規則攻擊，對手較難用一般防線應對。
+- `Repair` 例子：你的單位先前受到 2 點傷害，觸發 `Repair` 後會回復部分 HP。
+- `Activate` 例子：在 `Main` 階段你主動開啟 `Activate` 技能，支付 `cost` 後結算效果。
 
 ## 7) Choice 規則
 有 choice 事件時，先解它。
