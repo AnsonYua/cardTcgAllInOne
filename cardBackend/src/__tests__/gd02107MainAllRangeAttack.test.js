@@ -1,37 +1,7 @@
 const { GameEnvironment } = require('../models/GameEnvironment');
 const { DeployTargetManager } = require('../services/DeployTargetManager');
 const gd02 = require('../data/gd02Card.json');
-
-function createUnit(carduid, cardId, hp = 3, ap = 2) {
-    return {
-        carduid,
-        cardId,
-        placedAt: 0,
-        placedBy: 'playerId_2',
-        isRested: false,
-        damageReceived: 0,
-        modifyAP: 0,
-        modifyHP: 0,
-        continueModifyAP: 0,
-        continueModifyHP: 0,
-        originalAP: ap,
-        originalHP: hp,
-        playedThisTurn: false,
-        canAttackOnPlayTurn: false,
-        canAttackThisTurn: true,
-        isFirstPlay: false,
-        temporaryEffects: [],
-        effectUsage: {},
-        cardData: {
-            id: cardId,
-            name: cardId,
-            cardType: 'unit',
-            ap,
-            hp,
-            effects: { description: [], rules: [] }
-        }
-    };
-}
+const { createPilotZoneCard, createUnitZoneCard } = require('./helpers/zoneCardFactory');
 
 describe('GD02-107 main effect', () => {
     test('deals 1 to all enemy non-link units without target choice', () => {
@@ -43,24 +13,27 @@ describe('GD02-107 main effect', () => {
         const p2 = gameEnv.addPlayer('playerId_2', 'P2');
 
         // Opponent slot1/slot2 are non-link units (no pilot paired)
-        p2.zones.slot1.unit = createUnit('enemy_nonlink_1', 'ENEMY-1');
-        p2.zones.slot2.unit = createUnit('enemy_nonlink_2', 'ENEMY-2');
-
-        // Opponent slot3 is a link unit (has paired pilot) and should be excluded by filter.
-        p2.zones.slot3.unit = createUnit('enemy_link_1', 'ENEMY-3');
-        p2.zones.slot3.pilot = {
-            carduid: 'enemy_pilot_1',
-            cardId: 'PILOT-1',
+        const zoneExtras = {
             placedAt: 0,
             placedBy: 'playerId_2',
-            isRested: false,
-            isFirstPlay: false,
-            originalAP: 1,
-            originalHP: 1,
-            temporaryEffects: [],
-            effectUsage: {},
-            cardData: { id: 'PILOT-1', name: 'Pilot', cardType: 'pilot' }
+            playedThisTurn: false,
+            canAttackOnPlayTurn: false,
+            canAttackThisTurn: true,
+            isFirstPlay: false
         };
+        p2.zones.slot1.unit = createUnitZoneCard({ carduid: 'enemy_nonlink_1', cardId: 'ENEMY-1', ap: 2, hp: 3, zoneExtras });
+        p2.zones.slot2.unit = createUnitZoneCard({ carduid: 'enemy_nonlink_2', cardId: 'ENEMY-2', ap: 2, hp: 3, zoneExtras });
+
+        // Opponent slot3 is a link unit (has paired pilot) and should be excluded by filter.
+        p2.zones.slot3.unit = createUnitZoneCard({ carduid: 'enemy_link_1', cardId: 'ENEMY-3', ap: 2, hp: 3, zoneExtras });
+        p2.zones.slot3.pilot = createPilotZoneCard({
+            carduid: 'enemy_pilot_1',
+            cardId: 'PILOT-1',
+            name: 'Pilot',
+            ap: 1,
+            hp: 1,
+            zoneExtras: { placedAt: 0, placedBy: 'playerId_2', isFirstPlay: false }
+        });
 
         const result = DeployTargetManager.processEffectWithTargetChoice(
             gameEnv,

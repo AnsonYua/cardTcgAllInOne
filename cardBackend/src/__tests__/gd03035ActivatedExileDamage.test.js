@@ -2,37 +2,7 @@ const { GameEnvironment } = require('../models/GameEnvironment');
 const { BaseAbilityManager } = require('../services/effects/BaseAbilityManager');
 const { EnergyManager } = require('../services/EnergyManager');
 const gd03 = require('../data/gd03Card.json');
-
-function createUnit(carduid, cardId, hp = 3, ap = 2) {
-    return {
-        carduid,
-        cardId,
-        placedAt: 0,
-        placedBy: 'playerId_1',
-        isRested: false,
-        damageReceived: 0,
-        modifyAP: 0,
-        modifyHP: 0,
-        continueModifyAP: 0,
-        continueModifyHP: 0,
-        originalAP: ap,
-        originalHP: hp,
-        playedThisTurn: false,
-        canAttackOnPlayTurn: false,
-        canAttackThisTurn: true,
-        isFirstPlay: false,
-        temporaryEffects: [],
-        effectUsage: {},
-        cardData: {
-            id: cardId,
-            name: cardId,
-            cardType: 'unit',
-            ap,
-            hp,
-            effects: { description: [], rules: [] }
-        }
-    };
-}
+const { createUnitZoneCard } = require('./helpers/zoneCardFactory');
 
 describe('GD03-035 activated effect', () => {
     test('when multiple pilot cards exist in trash, player must choose which pilot to exile', () => {
@@ -49,20 +19,22 @@ describe('GD03-035 activated effect', () => {
         const activateEffect = gd03.cards['GD03-035'].effects.rules.find((r) => r.effectId === 'activate_effect');
         expect(activateEffect).toBeTruthy();
 
-        p1.zones.slot1.unit = {
-            ...createUnit('GD03-035_unit_0001', 'GD03-035', 5, 4),
-            cardData: {
-                id: 'GD03-035',
-                name: 'GFreD',
-                cardType: 'unit',
-                ap: 4,
-                hp: 5,
-                effects: {
-                    description: [],
-                    rules: [activateEffect]
-                }
+        p1.zones.slot1.unit = createUnitZoneCard({
+            carduid: 'GD03-035_unit_0001',
+            cardId: 'GD03-035',
+            name: 'GFreD',
+            ap: 4,
+            hp: 5,
+            effectsRules: [activateEffect],
+            zoneExtras: {
+                placedAt: 0,
+                placedBy: 'playerId_1',
+                playedThisTurn: false,
+                canAttackOnPlayTurn: false,
+                canAttackThisTurn: true,
+                isFirstPlay: false
             }
-        };
+        });
 
         p1.zones.trashArea = [
             {
@@ -123,20 +95,22 @@ describe('GD03-035 activated effect', () => {
         const activateEffect = gd03.cards['GD03-035'].effects.rules.find((r) => r.effectId === 'activate_effect');
         expect(activateEffect).toBeTruthy();
 
-        p1.zones.slot1.unit = {
-            ...createUnit('GD03-035_unit_0001', 'GD03-035', 5, 4),
-            cardData: {
-                id: 'GD03-035',
-                name: 'GFreD',
-                cardType: 'unit',
-                ap: 4,
-                hp: 5,
-                effects: {
-                    description: [],
-                    rules: [activateEffect]
-                }
+        p1.zones.slot1.unit = createUnitZoneCard({
+            carduid: 'GD03-035_unit_0001',
+            cardId: 'GD03-035',
+            name: 'GFreD',
+            ap: 4,
+            hp: 5,
+            effectsRules: [activateEffect],
+            zoneExtras: {
+                placedAt: 0,
+                placedBy: 'playerId_1',
+                playedThisTurn: false,
+                canAttackOnPlayTurn: false,
+                canAttackThisTurn: true,
+                isFirstPlay: false
             }
-        };
+        });
 
         p1.zones.trashArea = [
             {
@@ -146,8 +120,34 @@ describe('GD03-035 activated effect', () => {
             }
         ];
 
-        p2.zones.slot1.unit = createUnit('enemy_unit_0001', 'ENEMY-1');
-        p2.zones.slot2.unit = createUnit('enemy_unit_0002', 'ENEMY-2');
+        p2.zones.slot1.unit = createUnitZoneCard({
+            carduid: 'enemy_unit_0001',
+            cardId: 'ENEMY-1',
+            ap: 2,
+            hp: 3,
+            zoneExtras: {
+                placedAt: 0,
+                placedBy: 'playerId_1',
+                playedThisTurn: false,
+                canAttackOnPlayTurn: false,
+                canAttackThisTurn: true,
+                isFirstPlay: false
+            }
+        });
+        p2.zones.slot2.unit = createUnitZoneCard({
+            carduid: 'enemy_unit_0002',
+            cardId: 'ENEMY-2',
+            ap: 2,
+            hp: 3,
+            zoneExtras: {
+                placedAt: 0,
+                placedBy: 'playerId_1',
+                playedThisTurn: false,
+                canAttackOnPlayTurn: false,
+                canAttackThisTurn: true,
+                isFirstPlay: false
+            }
+        });
 
         const result = BaseAbilityManager.executeBaseAbility(gameEnv, {
             id: 'player_action_1',

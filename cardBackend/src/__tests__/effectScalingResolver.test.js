@@ -1,45 +1,20 @@
 const { GameEnvironment } = require('../models/GameEnvironment');
 const { EffectScalingResolver } = require('../services/effects/scaling/EffectScalingResolver');
-
-function createUnit(carduid, ap, hp, color = 'Red') {
-    return {
-        carduid,
-        cardId: carduid.split('_')[0],
-        cardData: { id: carduid.split('_')[0], name: carduid, cardType: 'unit', ap, hp, color, traits: [] },
-        originalAP: ap,
-        originalHP: hp,
-        modifyAP: 0,
-        modifyHP: 0,
-        continueModifyAP: 0,
-        continueModifyHP: 0,
-        damageReceived: 0,
-        isRested: false
-    };
-}
-
-function createPilot(carduid, ap, hp) {
-    return {
-        carduid,
-        cardId: carduid.split('_')[0],
-        cardData: { id: carduid.split('_')[0], name: carduid, cardType: 'pilot', ap, hp },
-        originalAP: ap,
-        originalHP: hp,
-        modifyAP: 0,
-        modifyHP: 0,
-        continueModifyAP: 0,
-        continueModifyHP: 0,
-        damageReceived: 0,
-        isRested: false
-    };
-}
+const { createPilotZoneCard, createUnitZoneCard } = require('./helpers/zoneCardFactory');
 
 describe('EffectScalingResolver', () => {
     test('source AP scaling with floor handles 9/12/3 AP cases', () => {
         const gameEnv = new GameEnvironment();
         const p1 = gameEnv.addPlayer('playerId_1', 'P1');
         gameEnv.addPlayer('playerId_2', 'P2');
-        p1.zones.slot1.unit = createUnit('GD03-033_unit', 5, 5);
-        p1.zones.slot1.pilot = createPilot('GD03-089_pilot', 4, 1);
+        p1.zones.slot1.unit = createUnitZoneCard({
+            carduid: 'GD03-033_unit',
+            cardId: 'GD03-033',
+            ap: 5,
+            hp: 5,
+            cardDataExtras: { color: 'Red', traits: [] }
+        });
+        p1.zones.slot1.pilot = createPilotZoneCard({ carduid: 'GD03-089_pilot', cardId: 'GD03-089', ap: 4, hp: 1 });
 
         const scaling = { stat: 'ap', scope: 'source', per: 4, rounding: 'floor' };
         expect(EffectScalingResolver.resolveScaledValue(1, scaling, {
@@ -69,9 +44,9 @@ describe('EffectScalingResolver', () => {
         const p1 = gameEnv.addPlayer('playerId_1', 'P1');
         gameEnv.addPlayer('playerId_2', 'P2');
 
-        p1.zones.slot1.unit = createUnit('token_1', 2, 1, 'Token');
-        p1.zones.slot2.unit = createUnit('token_2', 2, 1, 'Token');
-        p1.zones.slot3.unit = createUnit('normal_1', 4, 4, 'Red');
+        p1.zones.slot1.unit = createUnitZoneCard({ carduid: 'token_1', cardId: 'token', ap: 2, hp: 1, cardDataExtras: { color: 'Token', traits: [] } });
+        p1.zones.slot2.unit = createUnitZoneCard({ carduid: 'token_2', cardId: 'token', ap: 2, hp: 1, cardDataExtras: { color: 'Token', traits: [] } });
+        p1.zones.slot3.unit = createUnitZoneCard({ carduid: 'normal_1', cardId: 'normal', ap: 4, hp: 4, cardDataExtras: { color: 'Red', traits: [] } });
 
         const scaling = {
             type: 'COUNT_UNITS_IN_PLAY',

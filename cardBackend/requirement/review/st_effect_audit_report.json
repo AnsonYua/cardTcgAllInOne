@@ -1,0 +1,6732 @@
+{
+  "generatedAt": "2026-02-21T08:36:25.388Z",
+  "files": [
+    "st01Card.json",
+    "st02Card.json",
+    "st03Card.json",
+    "st04Card.json",
+    "st05Card.json",
+    "st06Card.json",
+    "st07Card.json",
+    "st08Card.json"
+  ],
+  "frontendDir": "/Users/hello/Desktop/card/unity/cardGameFrontend",
+  "summary": {
+    "totalRows": 176,
+    "pass": 176,
+    "warn": 0,
+    "fail": 0
+  },
+  "cardSummary": [
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-001",
+      "cardName": "Gundam",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-002",
+      "cardName": "Gundam(MA Form)",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-004",
+      "cardName": "Guntank",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-006",
+      "cardName": "Gundam Aerial (Permet Score Six)",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-008",
+      "cardName": "Demi Trainer",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-009",
+      "cardName": "Zowort",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-010",
+      "cardName": "Amuro Ray",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-011",
+      "cardName": "Suletta Mercury",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-012",
+      "cardName": "Thoroughly Damaged",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-013",
+      "cardName": "Kai's Resolve",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-014",
+      "cardName": "Unforeseen Incident",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-015",
+      "cardName": "White Base",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-016",
+      "cardName": "Asticassia School of Technology, Earth House",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-001",
+      "cardName": "Wing Gundam",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-002",
+      "cardName": "Wing Gundam (Bird Mode)",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-003",
+      "cardName": "Gundam Heavyarms",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-006",
+      "cardName": "Tallgeese",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-008",
+      "cardName": "Aries",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-009",
+      "cardName": "Tragos",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-010",
+      "cardName": "Heero Yuy",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-011",
+      "cardName": "Zechs Merquise",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-012",
+      "cardName": "Simultaneous Fire",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-013",
+      "cardName": "Peaceful Timbre",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-014",
+      "cardName": "Siege Ploy",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-015",
+      "cardName": "Saint Gabriel Institute",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-016",
+      "cardName": "Corsica Base",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-001",
+      "cardName": "Sinanju",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-002",
+      "cardName": "Angelo’s Geara Zulu",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-004",
+      "cardName": "Gaza D (Sleeves)",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-006",
+      "cardName": "Char’s Zaku II",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-008",
+      "cardName": "Zaku II",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-009",
+      "cardName": "Gouf",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-010",
+      "cardName": "Full Frontal",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-011",
+      "cardName": "Char Aznable",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-012",
+      "cardName": "Indignation",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-013",
+      "cardName": "Close Combat",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-014",
+      "cardName": "The Blue Giant",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-015",
+      "cardName": "Rewloola",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-016",
+      "cardName": "Falmel",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-001",
+      "cardName": "Aile Strike Gundam",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-002",
+      "cardName": "Strike Gundam",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-004",
+      "cardName": "Moebius",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-006",
+      "cardName": "Aegis Gundam",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-007",
+      "cardName": "Aegis Gundam (MA Mode)",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-009",
+      "cardName": "Miguel’s Ginn",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-010",
+      "cardName": "Kira Yamato",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-011",
+      "cardName": "Athrun Zala",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-012",
+      "cardName": "Striker Pack",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-013",
+      "cardName": "Hawk of Endymion",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-014",
+      "cardName": "The Magic Bullet of Dusk",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-015",
+      "cardName": "Archangel",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-016",
+      "cardName": "Vesalius",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "T-008",
+      "cardName": "Aile Strike Gundam",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "T-009",
+      "cardName": "Launcher Strike Gundam",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "T-010",
+      "cardName": "Sword Strike Gundam",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-001",
+      "cardName": "Gundam Barbatos 4th Form",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-002",
+      "cardName": "Gundam Barbatos 2nd Form",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-003",
+      "cardName": "CGS Mobile Worker",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-005",
+      "cardName": "Gundam Gusion Rebake",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-007",
+      "cardName": "McGillis’ Schwalbe Graze",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-008",
+      "cardName": "Graze Commander Type",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-010",
+      "cardName": "Mikazuki Augus",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-011",
+      "cardName": "Akihiro Altland",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-012",
+      "cardName": "McGillis Fareed",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-013",
+      "cardName": "With Iron and Blood",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-014",
+      "cardName": "Fatal Strike",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-015",
+      "cardName": "Isaribi",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-001",
+      "cardName": "GQuuuuuuX (Omega Psycommu)",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-002",
+      "cardName": "GQuuuuuuX (Omega Psycommu)",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-003",
+      "cardName": "Gaia’s Rick Dom (GQ)",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-005",
+      "cardName": "Red Gundam",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-007",
+      "cardName": "Ortega’s Rick Dom (GQ)",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-009",
+      "cardName": "Amate Yuzuriha (Machu)",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-010",
+      "cardName": "Shuji Itō",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-011",
+      "cardName": "Ruthless Tactics",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-012",
+      "cardName": "Schoolgirl and Smuggler",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-013",
+      "cardName": "Fierce Unity",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-014",
+      "cardName": "Clan Battle",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-015",
+      "cardName": "Kaneban Co., Ltd.",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-001",
+      "cardName": "Gundam Exia",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-004",
+      "cardName": "Gundam Virtue",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-005",
+      "cardName": "Gundam Dynames",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-007",
+      "cardName": "Gundam Kyrios",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-009",
+      "cardName": "Setsuna F. Seiei",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-010",
+      "cardName": "Tieria Erde",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-011",
+      "cardName": "Lockon Stratos (Neil)",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-012",
+      "cardName": "Allelujah Haptism",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-013",
+      "cardName": "Armed Intervention",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-014",
+      "cardName": "Tactical Visionary",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-015",
+      "cardName": "Ptolemaios",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-001",
+      "cardName": "Ξ Gundam",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-002",
+      "cardName": "Ξ Gundam",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-004",
+      "cardName": "Messer Type-F01",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-006",
+      "cardName": "Penelope",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-008",
+      "cardName": "Gustav Karl Type-00",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-009",
+      "cardName": "Jegan Ground Type-A (Man Hunter)",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-010",
+      "cardName": "Hathaway Noa",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-011",
+      "cardName": "Lane Aim",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-012",
+      "cardName": "Words for Hathaway",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-013",
+      "cardName": "Lady Luck",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-014",
+      "cardName": "Valiant",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-015",
+      "cardName": "Davao",
+      "status": "PASS",
+      "findingCount": 0,
+      "findings": []
+    }
+  ],
+  "rows": [
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-001",
+      "cardName": "Gundam",
+      "ruleIndex": 0,
+      "effectId": "repair_2",
+      "trigger": "END_OF_TURN",
+      "action": "heal",
+      "type": "triggered",
+      "description": "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "source",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "duration": "instant"
+      },
+      "parameters": {
+        "value": 2
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-001",
+      "cardName": "Gundam",
+      "ruleIndex": 1,
+      "effectId": "pair_ap_boost_all",
+      "trigger": "continuous",
+      "action": "modifyAP",
+      "type": "continuous",
+      "description": "[During Pair]During your turn, all your Units get AP+1.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "self_all_unit"
+      },
+      "conditions": [],
+      "sourceConditions": [
+        {
+          "type": "paired"
+        }
+      ],
+      "timing": {
+        "duration": "continuous",
+        "actionTurn": "YOUR_TURN"
+      },
+      "parameters": {
+        "value": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-002",
+      "cardName": "Gundam(MA Form)",
+      "ruleIndex": 0,
+      "effectId": "paired_white_base_draw",
+      "trigger": "PAIRING_COMPLETE",
+      "action": "draw",
+      "type": "triggered",
+      "description": "[When Paired (White Base Team) pilot]Draw 1.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "scope": "self"
+      },
+      "conditions": [
+        {
+          "type": "traitMatch",
+          "target": "pilot",
+          "traits": [
+            "White Base Team"
+          ]
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-004",
+      "cardName": "Guntank",
+      "ruleIndex": 0,
+      "effectId": "deploy_rest_low_hp",
+      "trigger": "ENTERS_PLAY",
+      "action": "rest",
+      "type": "triggered",
+      "description": "[Deploy]Choose 1 enemy Unit with 2 or less HP. Rest it.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "filters": {
+          "hp": "<=2"
+        },
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-006",
+      "cardName": "Gundam Aerial (Permet Score Six)",
+      "ruleIndex": 0,
+      "effectId": "paired_ap_reduction",
+      "trigger": "PAIRING_COMPLETE",
+      "action": "modifyAP",
+      "type": "triggered",
+      "description": "[When Paired]Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "filters": {
+          "level": "<=5"
+        },
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "value": -3
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-008",
+      "cardName": "Demi Trainer",
+      "ruleIndex": 0,
+      "effectId": "blocker",
+      "trigger": "ATTACK_REDIRECT",
+      "action": "redirect_attack",
+      "type": "triggered",
+      "description": "<Blocker> (Rest this Unit to change the attack target to it.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "cost": "rest_self"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-009",
+      "cardName": "Zowort",
+      "ruleIndex": 0,
+      "effectId": "blocker",
+      "trigger": "ATTACK_REDIRECT",
+      "action": "redirect_attack",
+      "type": "triggered",
+      "description": "<Blocker> (Rest this Unit to change the attack target to it.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "cost": "rest_self"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-009",
+      "cardName": "Zowort",
+      "ruleIndex": 1,
+      "effectId": "attack_restriction",
+      "trigger": "continuous",
+      "action": "restrict_attack",
+      "type": "continuous",
+      "description": "This Unit can't choose the enemy player as its attack target.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "restriction": "cannot_attack_player"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-010",
+      "cardName": "Amuro Ray",
+      "ruleIndex": 0,
+      "effectId": "burst_add_to_hand",
+      "trigger": "BURST_CONDITION",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Burst]Add this card to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-010",
+      "cardName": "Amuro Ray",
+      "ruleIndex": 1,
+      "effectId": "paired_rest_medium_hp",
+      "trigger": "PAIRING_COMPLETE",
+      "action": "rest",
+      "type": "triggered",
+      "description": "[When Paired]Choose 1 enemy Unit with 5 or less HP. Rest it.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "filters": {
+          "hp": "<=5"
+        },
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-011",
+      "cardName": "Suletta Mercury",
+      "ruleIndex": 0,
+      "effectId": "burst_add_to_hand",
+      "trigger": "BURST_CONDITION",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Burst]Add this card to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-011",
+      "cardName": "Suletta Mercury",
+      "ruleIndex": 1,
+      "effectId": "attack_activate_resource",
+      "trigger": "ATTACK_PHASE",
+      "action": "setActive",
+      "type": "triggered",
+      "description": "[Attack][Once per Turn]Choose 1 of your Resources. Set it as active.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [
+        {
+          "type": "controller",
+          "value": "self"
+        },
+        {
+          "type": "paired"
+        }
+      ],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-012",
+      "cardName": "Thoroughly Damaged",
+      "ruleIndex": 0,
+      "effectId": "main_damage_rested",
+      "trigger": "",
+      "action": "damage",
+      "type": "play",
+      "description": "[Main]Choose 1 rested enemy Unit. Deal 1 damage to it.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "filters": {
+          "status": "rested"
+        },
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE"
+        ]
+      },
+      "parameters": {
+        "value": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-012",
+      "cardName": "Thoroughly Damaged",
+      "ruleIndex": 1,
+      "effectId": "pilot_designation",
+      "trigger": "",
+      "action": "designate_pilot",
+      "type": "special",
+      "description": "[Pilot][Hayato Kobayashi]",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "pilotName": "Hayato Kobayashi",
+        "AP": 0,
+        "HP": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-013",
+      "cardName": "Kai's Resolve",
+      "ruleIndex": 0,
+      "effectId": "main_heal_friendly",
+      "trigger": "",
+      "action": "heal",
+      "type": "play",
+      "description": "[Main]Choose 1 friendly Unit. It recovers 3 HP.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "self",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE"
+        ]
+      },
+      "parameters": {
+        "value": 3
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-013",
+      "cardName": "Kai's Resolve",
+      "ruleIndex": 1,
+      "effectId": "pilot_designation",
+      "trigger": "",
+      "action": "designate_pilot",
+      "type": "special",
+      "description": "[Pilot][Kai Shiden]",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "pilotName": "Kai Shiden",
+        "AP": 1,
+        "HP": 0
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-014",
+      "cardName": "Unforeseen Incident",
+      "ruleIndex": 0,
+      "effectId": "burst_activate_main",
+      "trigger": "BURST_CONDITION",
+      "action": "activate_ability",
+      "type": "triggered",
+      "description": "[Burst]Activate this card's [Main].",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "abilityType": "main"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-014",
+      "cardName": "Unforeseen Incident",
+      "ruleIndex": 1,
+      "effectId": "main_action_ap_reduction",
+      "trigger": "",
+      "action": "modifyAP",
+      "type": "play",
+      "description": "[Main]/[Action]Choose 1 enemy Unit. It gets AP-3 during this turn.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE",
+          "ACTION_STEP"
+        ],
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "value": -3
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-015",
+      "cardName": "White Base",
+      "ruleIndex": 0,
+      "effectId": "burst_deploy",
+      "trigger": "BURST_CONDITION",
+      "action": "deploy",
+      "type": "triggered",
+      "description": "[Burst]Deploy this card.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-015",
+      "cardName": "White Base",
+      "ruleIndex": 1,
+      "effectId": "deploy_shield_to_hand",
+      "trigger": "ENTERS_PLAY",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Deploy]Add 1 of your Shields to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self_shield"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 1,
+        "from": "shield"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-015",
+      "cardName": "White Base",
+      "ruleIndex": 2,
+      "effectId": "activate_conditional_token_deploy",
+      "trigger": "",
+      "action": "conditionalTokenDeploy",
+      "type": "activated",
+      "description": "[Activate/Main][Once per Turn](2):Deploy 1 [Gundam]((White Base Team)-AP3-HP3) Unit token if you have no Units in play, deploy 1 [Guncannon]((White Base Team)-AP2-HP2) Unit token if you have only 1 Unit in play, or deploy 1 [Guntank]((White Base Team)-AP1-HP1) Unit token if you have 2 or more Units in play.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE"
+        ]
+      },
+      "parameters": {
+        "condition1": {
+          "unitsInPlay": 0,
+          "token": {
+            "cardId": "T-001"
+          }
+        },
+        "condition2": {
+          "unitsInPlay": 1,
+          "token": {
+            "cardId": "T-002"
+          }
+        },
+        "condition3": {
+          "unitsInPlay": ">=2",
+          "token": {
+            "cardId": "T-003"
+          }
+        }
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-016",
+      "cardName": "Asticassia School of Technology, Earth House",
+      "ruleIndex": 0,
+      "effectId": "burst_deploy",
+      "trigger": "BURST_CONDITION",
+      "action": "deploy",
+      "type": "triggered",
+      "description": "[Burst]Deploy this card.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-016",
+      "cardName": "Asticassia School of Technology, Earth House",
+      "ruleIndex": 1,
+      "effectId": "deploy_shield_to_hand",
+      "trigger": "ENTERS_PLAY",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Deploy]Add 1 of your Shields to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self_shield"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 1,
+        "from": "shield"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st01Card.json",
+      "cardId": "ST01-016",
+      "cardName": "Asticassia School of Technology, Earth House",
+      "ruleIndex": 2,
+      "effectId": "activate_boost_link_units",
+      "trigger": "",
+      "action": "modifyAP",
+      "type": "activated",
+      "description": "[Activate/Main]Rest this Base:All friendly Link Units get AP+1 during this turn.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "unit",
+        "scope": "self_all_unit",
+        "filters": {
+          "linkStatus": "linked"
+        },
+        "count": 6
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE"
+        ],
+        "duration": "UNTIL_END_OF_TURN",
+        "endOnSourceDestroyed": true
+      },
+      "parameters": {
+        "value": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-001",
+      "cardName": "Wing Gundam",
+      "ruleIndex": 0,
+      "effectId": "breach_5",
+      "trigger": "BATTLE_DESTROY",
+      "action": "damageShield",
+      "type": "triggered",
+      "description": "<Breach 5> (When this Unit's attack destroys an enemy Unit, deal 5 damage to the first card in that opponent's shield area.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "opponent_shield",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 5
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-001",
+      "cardName": "Wing Gundam",
+      "ruleIndex": 1,
+      "effectId": "attack_active_low_level",
+      "trigger": "continuous",
+      "action": "allow_attack_target",
+      "type": "continuous",
+      "description": "This Unit may choose an active enemy Unit that is Lv.4 or lower as its attack target.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "status": "active",
+        "level": "<=4"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-002",
+      "cardName": "Wing Gundam (Bird Mode)",
+      "ruleIndex": 0,
+      "effectId": "deploy_place_ex_resource",
+      "trigger": "ENTERS_PLAY",
+      "action": "addExtraEnergy",
+      "type": "triggered",
+      "description": "[Deploy]Place 1 EX Resource.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-003",
+      "cardName": "Gundam Heavyarms",
+      "ruleIndex": 0,
+      "effectId": "paired_battle_damage_splash",
+      "trigger": "BATTLE_DESTROY",
+      "action": "damage",
+      "type": "triggered",
+      "description": "[During Pair]During your turn, when this Unit destroys an enemy Unit with battle damage, deal 1 damage to all enemy Units that are Lv.3 or lower.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "opponent_all_unit",
+        "count": 99,
+        "filters": {
+          "level": "<=3"
+        }
+      },
+      "conditions": [],
+      "sourceConditions": [
+        {
+          "type": "paired"
+        }
+      ],
+      "timing": {
+        "actionTurn": "YOUR_TURN"
+      },
+      "parameters": {
+        "value": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-006",
+      "cardName": "Tallgeese",
+      "ruleIndex": 0,
+      "effectId": "activate_set_active",
+      "trigger": "",
+      "action": "setActive",
+      "type": "activated",
+      "description": "[Activate/Main][Once per Turn](4):Set this Unit as active.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "self",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE"
+        ]
+      },
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-008",
+      "cardName": "Aries",
+      "ruleIndex": 0,
+      "effectId": "blocker",
+      "trigger": "ATTACK_REDIRECT",
+      "action": "redirect_attack",
+      "type": "triggered",
+      "description": "<Blocker> (Rest this Unit to change the attack target to it.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "cost": "rest_self"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-009",
+      "cardName": "Tragos",
+      "ruleIndex": 0,
+      "effectId": "blocker",
+      "trigger": "ATTACK_REDIRECT",
+      "action": "redirect_attack",
+      "type": "triggered",
+      "description": "<Blocker> (Rest this Unit to change the attack target to it.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "cost": "rest_self"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-010",
+      "cardName": "Heero Yuy",
+      "ruleIndex": 0,
+      "effectId": "burst_add_to_hand",
+      "trigger": "BURST_CONDITION",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Burst]Add this card to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-010",
+      "cardName": "Heero Yuy",
+      "ruleIndex": 1,
+      "effectId": "link_ap_boost",
+      "trigger": "continuous",
+      "action": "modifyAP",
+      "type": "continuous",
+      "description": "[During Link]This Unit gets AP+1.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "unit",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [
+        {
+          "type": "linked"
+        }
+      ],
+      "timing": {
+        "duration": "continuous"
+      },
+      "parameters": {
+        "value": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-010",
+      "cardName": "Heero Yuy",
+      "ruleIndex": 2,
+      "effectId": "link_hp_boost",
+      "trigger": "continuous",
+      "action": "modifyHP",
+      "type": "continuous",
+      "description": "[During Link]This Unit gets HP+1.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "unit",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [
+        {
+          "type": "linked"
+        }
+      ],
+      "timing": {
+        "duration": "continuous"
+      },
+      "parameters": {
+        "value": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-011",
+      "cardName": "Zechs Merquise",
+      "ruleIndex": 0,
+      "effectId": "burst_add_to_hand",
+      "trigger": "BURST_CONDITION",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Burst]Add this card to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-011",
+      "cardName": "Zechs Merquise",
+      "ruleIndex": 1,
+      "effectId": "link_battle_draw",
+      "trigger": "BATTLE_DESTROY",
+      "action": "draw",
+      "type": "triggered",
+      "description": "[During Link]During your turn, when this Unit destroys an enemy Unit with battle damage, draw 1.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "player",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [
+        {
+          "type": "paired"
+        }
+      ],
+      "timing": {
+        "actionTurn": "YOUR_TURN"
+      },
+      "parameters": {
+        "value": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-012",
+      "cardName": "Simultaneous Fire",
+      "ruleIndex": 0,
+      "effectId": "main_grant_breach",
+      "trigger": "",
+      "action": "grant_breach",
+      "type": "play",
+      "description": "[Main]Choose 1 of your Units; it gains <Breach 3> during this turn.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "self",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE"
+        ],
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "value": 3
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-012",
+      "cardName": "Simultaneous Fire",
+      "ruleIndex": 1,
+      "effectId": "pilot_designation",
+      "trigger": "",
+      "action": "designate_pilot",
+      "type": "special",
+      "description": "[Pilot][Trowa Barton]",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "pilotName": "Trowa Barton",
+        "AP": 1,
+        "HP": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-013",
+      "cardName": "Peaceful Timbre",
+      "ruleIndex": 0,
+      "effectId": "action_prevent_shield_damage",
+      "trigger": "",
+      "action": "prevent_shield_damage",
+      "type": "play",
+      "description": "[Action]During this battle, your shield-area cards can't receive damage from enemy Units that are Lv.4 or lower.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "shield",
+        "scope": "self_shield"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "ACTION_STEP"
+        ],
+        "duration": "UNTIL_END_OF_BATTLE"
+      },
+      "parameters": {
+        "maxEnemyLevel": 4
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-013",
+      "cardName": "Peaceful Timbre",
+      "ruleIndex": 1,
+      "effectId": "pilot_designation",
+      "trigger": "",
+      "action": "designate_pilot",
+      "type": "special",
+      "description": "[Pilot][Quatre Raberba Winner]",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "pilotName": "Quatre Raberba Winner",
+        "AP": 1,
+        "HP": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-014",
+      "cardName": "Siege Ploy",
+      "ruleIndex": 0,
+      "effectId": "burst_activate_main",
+      "trigger": "BURST_CONDITION",
+      "action": "activate_ability",
+      "type": "triggered",
+      "description": "[Burst]Activate this card's [Main].",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "abilityType": "main"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-014",
+      "cardName": "Siege Ploy",
+      "ruleIndex": 1,
+      "effectId": "main_action_rest_low_hp",
+      "trigger": "",
+      "action": "rest",
+      "type": "play",
+      "description": "[Main]/[Action]Choose 1 enemy Unit with 5 or less HP and rest it.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "filters": {
+          "hp": "<=5"
+        },
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE",
+          "ACTION_STEP"
+        ]
+      },
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-015",
+      "cardName": "Saint Gabriel Institute",
+      "ruleIndex": 0,
+      "effectId": "burst_deploy",
+      "trigger": "BURST_CONDITION",
+      "action": "deploy",
+      "type": "triggered",
+      "description": "[Burst]Deploy this card.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-015",
+      "cardName": "Saint Gabriel Institute",
+      "ruleIndex": 1,
+      "effectId": "deploy_shield_then_scry_two",
+      "trigger": "ENTERS_PLAY",
+      "action": "sequence",
+      "type": "triggered",
+      "description": "[Deploy]Add 1 of your Shields to your hand. Then, look at the top 2 cards of your deck and return 1 to the top and 1 to the bottom.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "text": "Add 1 of your Shields to your hand. Then look at the top 2 cards of your deck and return 1 to the top and 1 to the bottom.",
+        "version": 1,
+        "steps": [
+          {
+            "action": "addToHand",
+            "target": {
+              "type": "card",
+              "scope": "self_shield"
+            },
+            "parameters": {
+              "value": 1,
+              "from": "shield"
+            }
+          },
+          {
+            "action": "scry_top_deck",
+            "parameters": {
+              "count": 2,
+              "keep": 1,
+              "bottom": 1
+            }
+          }
+        ]
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-016",
+      "cardName": "Corsica Base",
+      "ruleIndex": 0,
+      "effectId": "burst_deploy",
+      "trigger": "BURST_CONDITION",
+      "action": "deploy",
+      "type": "triggered",
+      "description": "[Burst]Deploy this card.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st02Card.json",
+      "cardId": "ST02-016",
+      "cardName": "Corsica Base",
+      "ruleIndex": 1,
+      "effectId": "deploy_shield_then_conditional_token",
+      "trigger": "ENTERS_PLAY",
+      "action": "sequence",
+      "type": "triggered",
+      "description": "[Deploy]Add 1 of your Shields to your hand. Then, if it's your turn, deploy 1 Tallgeese (OZ/AP4/HP2) Unit token. If a \"Corsica Base\" is in your trash, deploy 2 Leo (OZ/AP1/HP1) Unit tokens instead.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "text": "Add 1 of your Shields to your hand. Then, if it's your turn, deploy 1 Tallgeese (OZ/AP4/HP2) Unit token. If a \"Corsica Base\" is in your trash, deploy 2 Leo (OZ/AP1/HP1) Unit tokens instead.",
+        "version": 1,
+        "steps": [
+          {
+            "action": "addToHand",
+            "target": {
+              "type": "card",
+              "scope": "self_shield"
+            },
+            "parameters": {
+              "value": 1,
+              "from": "shield"
+            }
+          },
+          {
+            "action": "conditionalTokenDeploy",
+            "parameters": {
+              "condition1": {
+                "selfTurn": true,
+                "token": {
+                  "cardId": "T-005"
+                },
+                "count": 1
+              },
+              "condition2": {
+                "cardInTrash": "ST02-016",
+                "token": {
+                  "cardId": "T-004"
+                },
+                "count": 2,
+                "selfTurn": true
+              }
+            }
+          }
+        ]
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-001",
+      "cardName": "Sinanju",
+      "ruleIndex": 0,
+      "effectId": "pair_grant_high_maneuver",
+      "trigger": "continuous",
+      "action": "grant_keyword",
+      "type": "continuous",
+      "description": "[During Pair]This Unit gains <High-Maneuver> (This Unit can’t be blocked).",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "self",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [
+        {
+          "type": "paired"
+        }
+      ],
+      "timing": {
+        "duration": "continuous"
+      },
+      "parameters": {
+        "keyword": "High-Maneuver",
+        "notes": "Implemented: High-Maneuver keyword grants unblockable behavior."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-001",
+      "cardName": "Sinanju",
+      "ruleIndex": 1,
+      "effectId": "shield_destroy_damage_2",
+      "trigger": "DEFENSE_AREA_BATTLE_DAMAGE",
+      "action": "damage",
+      "type": "triggered",
+      "description": "During your turn, when this Unit destroys an enemy shield-area card with battle damage, choose 1 enemy Unit. Deal 2 damage to it.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "actionTurn": "YOUR_TURN"
+      },
+      "parameters": {
+        "value": 2,
+        "source": "battle_damage",
+        "defenseAreas": [
+          "shield",
+          "base"
+        ],
+        "notes": "Implemented: triggers when this Unit deals battle damage to an opponent defense area (shield or base), matching accepted ST03-001 rules."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-002",
+      "cardName": "Angelo’s Geara Zulu",
+      "ruleIndex": 0,
+      "effectId": "activate_support_2",
+      "trigger": "",
+      "action": "modifyAP",
+      "type": "activated",
+      "description": "[Activate/Main]<Support 2> (Rest this Unit. One other friendly Unit gets AP+2 during this turn.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "self",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE"
+        ],
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "value": 2,
+        "excludeSource": true,
+        "label": "Support 2"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-004",
+      "cardName": "Gaza D (Sleeves)",
+      "ruleIndex": 0,
+      "effectId": "activate_support_2",
+      "trigger": "",
+      "action": "modifyAP",
+      "type": "activated",
+      "description": "[Activate/Main]<Support 2> (Rest this Unit. One other friendly Unit gets AP+2 during this turn.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "self",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE"
+        ],
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "value": 2,
+        "excludeSource": true,
+        "label": "Support 2"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-006",
+      "cardName": "Char’s Zaku II",
+      "ruleIndex": 0,
+      "effectId": "destroyed_tutor_zeon_unit_from_top_3",
+      "trigger": "DESTROYED",
+      "action": "tutor_top_deck",
+      "type": "triggered",
+      "description": "[Destroyed]Look at the top 3 cards of your deck. You may reveal 1 Zeon/Neo Zeon Unit card among them and add it to your hand. Return the rest to the bottom of your deck in random order.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "count": 3,
+        "select": {
+          "count": 1,
+          "optional": true,
+          "toZone": "hand",
+          "reveal": true,
+          "filters": {
+            "cardType": "unit",
+            "traitsAny": [
+              "Zeon",
+              "Neo Zeon"
+            ]
+          }
+        },
+        "rest": {
+          "toZone": "deck_bottom",
+          "order": "random"
+        },
+        "notes": "Implemented: DESTROYED-triggered tutor_top_deck flows are supported."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-008",
+      "cardName": "Zaku II",
+      "ruleIndex": 0,
+      "effectId": "attack_ap_boost",
+      "trigger": "ATTACK_PHASE",
+      "action": "modifyAP",
+      "type": "triggered",
+      "description": "[Attack]This Unit gets AP+2 during this turn.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "source",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "value": 2
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-009",
+      "cardName": "Gouf",
+      "ruleIndex": 0,
+      "effectId": "deploy_zaku_ii_token",
+      "trigger": "ENTERS_PLAY",
+      "action": "conditionalTokenDeploy",
+      "type": "triggered",
+      "description": "[Deploy]Deploy 1 rested Zaku II (Zeon: AP 1 · HP 1) Unit token.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "condition1": {
+          "token": {
+            "cardId": "T-007"
+          },
+          "count": 1
+        }
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-010",
+      "cardName": "Full Frontal",
+      "ruleIndex": 0,
+      "effectId": "burst_add_to_hand",
+      "trigger": "BURST_CONDITION",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Burst]Add this card to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-010",
+      "cardName": "Full Frontal",
+      "ruleIndex": 1,
+      "effectId": "pair_deploy_unit_from_hand",
+      "trigger": "PAIRING_COMPLETE",
+      "action": "deploy_from_hand",
+      "type": "triggered",
+      "description": "[When Paired]You may deploy 1 Neo Zeon/Zeon Unit card that is Lv.4 or lower from your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "self_hand",
+        "filters": {
+          "level": "<=4",
+          "traits": [
+            "Neo Zeon",
+            "Zeon"
+          ]
+        },
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "maxLevel": 4,
+        "allowedTraitsAny": [
+          "Neo Zeon",
+          "Zeon"
+        ]
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-011",
+      "cardName": "Char Aznable",
+      "ruleIndex": 0,
+      "effectId": "burst_add_to_hand",
+      "trigger": "BURST_CONDITION",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Burst]Add this card to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-011",
+      "cardName": "Char Aznable",
+      "ruleIndex": 1,
+      "effectId": "attack_ap_boost",
+      "trigger": "ATTACK_PHASE",
+      "action": "modifyAP",
+      "type": "triggered",
+      "description": "[Attack]During this turn, this Unit gets AP+1.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "unit",
+        "scope": "source_paired_unit",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "value": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-011",
+      "cardName": "Char Aznable",
+      "ruleIndex": 2,
+      "effectId": "attack_grant_high_maneuver_if_linked",
+      "trigger": "ATTACK_PHASE",
+      "action": "grant_keyword",
+      "type": "triggered",
+      "description": "[Attack]If this Unit is a Link Unit, it gains <High-Maneuver> during this turn (can’t be blocked).",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "unit",
+        "scope": "source_paired_unit",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [
+        {
+          "type": "linked"
+        }
+      ],
+      "timing": {
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "keyword": "High-Maneuver",
+        "notes": "Implemented: High-Maneuver keyword grants unblockable behavior."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-012",
+      "cardName": "Indignation",
+      "ruleIndex": 0,
+      "effectId": "main_action_ap_boost",
+      "trigger": "",
+      "action": "modifyAP",
+      "type": "play",
+      "description": "[Main]/[Action]Choose 1 friendly Unit; it gets AP+2 during this turn.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "self",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE",
+          "ACTION_STEP"
+        ],
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "value": 2
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-012",
+      "cardName": "Indignation",
+      "ruleIndex": 1,
+      "effectId": "pilot_designation",
+      "trigger": "",
+      "action": "designate_pilot",
+      "type": "special",
+      "description": "[Pilot][Angelo Sauper]",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "pilotName": "Angelo Sauper",
+        "AP": 1,
+        "HP": 0
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-013",
+      "cardName": "Close Combat",
+      "ruleIndex": 0,
+      "effectId": "burst_activate_main",
+      "trigger": "BURST_CONDITION",
+      "action": "activate_ability",
+      "type": "triggered",
+      "description": "[Burst]Activate this card’s [Main].",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "abilityType": "main"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-013",
+      "cardName": "Close Combat",
+      "ruleIndex": 1,
+      "effectId": "main_action_damage",
+      "trigger": "",
+      "action": "damage",
+      "type": "play",
+      "description": "[Main]/[Action]Choose 1 enemy Unit. Deal 2 damage to it.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE",
+          "ACTION_STEP"
+        ]
+      },
+      "parameters": {
+        "value": 2
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-014",
+      "cardName": "The Blue Giant",
+      "ruleIndex": 0,
+      "effectId": "action_prevent_battle_damage_low_ap",
+      "trigger": "",
+      "action": "prevent_battle_damage",
+      "type": "play",
+      "description": "[Action]Choose 1 friendly Unit. It can’t receive battle damage from enemy Units with 2 or less AP during this battle.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "self",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "ACTION_STEP"
+        ],
+        "duration": "UNTIL_END_OF_BATTLE"
+      },
+      "parameters": {
+        "maxEnemyAp": 2,
+        "notes": "Implemented: prevent_battle_damage supports maxEnemyAp filters."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-014",
+      "cardName": "The Blue Giant",
+      "ruleIndex": 1,
+      "effectId": "pilot_designation",
+      "trigger": "",
+      "action": "designate_pilot",
+      "type": "special",
+      "description": "[Pilot][Ramba Ral]",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "pilotName": "Ramba Ral",
+        "AP": 1,
+        "HP": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-015",
+      "cardName": "Rewloola",
+      "ruleIndex": 0,
+      "effectId": "burst_deploy",
+      "trigger": "BURST_CONDITION",
+      "action": "deploy",
+      "type": "triggered",
+      "description": "[Burst]Deploy this card.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-015",
+      "cardName": "Rewloola",
+      "ruleIndex": 1,
+      "effectId": "deploy_shield_then_damage_low_ap",
+      "trigger": "ENTERS_PLAY",
+      "action": "sequence",
+      "type": "triggered",
+      "description": "[Deploy]Add 1 of your Shields to your hand. Then choose 1 enemy Unit with ≤5 AP and deal 1 damage to it.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "text": "Add 1 of your Shields to your hand. Then choose 1 enemy Unit with ≤5 AP and deal 1 damage to it.",
+        "version": 1,
+        "steps": [
+          {
+            "action": "addToHand",
+            "target": {
+              "type": "card",
+              "scope": "self_shield"
+            },
+            "parameters": {
+              "value": 1,
+              "from": "shield"
+            }
+          },
+          {
+            "action": "damage",
+            "target": {
+              "type": "unit",
+              "scope": "opponent",
+              "filters": {
+                "ap": "<=5"
+              },
+              "count": 1
+            },
+            "parameters": {
+              "value": 1
+            }
+          }
+        ]
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-016",
+      "cardName": "Falmel",
+      "ruleIndex": 0,
+      "effectId": "burst_deploy",
+      "trigger": "BURST_CONDITION",
+      "action": "deploy",
+      "type": "triggered",
+      "description": "[Burst]Deploy this card.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st03Card.json",
+      "cardId": "ST03-016",
+      "cardName": "Falmel",
+      "ruleIndex": 1,
+      "effectId": "deploy_shield_then_char_zaku_ii_token",
+      "trigger": "ENTERS_PLAY",
+      "action": "sequence",
+      "type": "triggered",
+      "description": "[Deploy]Add 1 of your Shields to your hand. Then, if it is your turn, deploy 1 rested Char’s Zaku II (Zeon: AP 3 · HP 1) Unit token.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "text": "Add 1 of your Shields to your hand. Then, if it is your turn, deploy 1 rested Char’s Zaku II (Zeon: AP 3 · HP 1) Unit token.",
+        "version": 1,
+        "steps": [
+          {
+            "action": "addToHand",
+            "target": {
+              "type": "card",
+              "scope": "self_shield"
+            },
+            "parameters": {
+              "value": 1,
+              "from": "shield"
+            }
+          },
+          {
+            "action": "conditionalTokenDeploy",
+            "parameters": {
+              "condition1": {
+                "selfTurn": true,
+                "token": {
+                  "cardId": "T-006"
+                },
+                "count": 1
+              }
+            }
+          }
+        ]
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-001",
+      "cardName": "Aile Strike Gundam",
+      "ruleIndex": 0,
+      "effectId": "blocker",
+      "trigger": "ATTACK_REDIRECT",
+      "action": "redirect_attack",
+      "type": "triggered",
+      "description": "<Blocker> (Rest this Unit to change the attack target to it.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "cost": "rest_self"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-001",
+      "cardName": "Aile Strike Gundam",
+      "ruleIndex": 1,
+      "effectId": "pair_bounce_low_hp_if_pilot_ge_4",
+      "trigger": "PAIRING_COMPLETE",
+      "action": "returnToHand",
+      "type": "triggered",
+      "description": "[When Paired]If paired with a Lv.4 or higher Pilot, choose 1 enemy Unit with 4 or less HP and return it to its owner’s hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "filters": {
+          "hp": "<=4"
+        },
+        "count": 1
+      },
+      "conditions": [
+        {
+          "type": "pairedPilotLevel",
+          "scope": "source",
+          "value": ">=4"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "pilotMinLevel": 4,
+        "notes": "Implemented: returnToHand with pairedPilotLevel condition is supported."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-002",
+      "cardName": "Strike Gundam",
+      "ruleIndex": 0,
+      "effectId": "deploy_draw_then_discard",
+      "trigger": "ENTERS_PLAY",
+      "action": "draw_then_discard",
+      "type": "triggered",
+      "description": "[Deploy]Draw 1 card, then discard 1.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "draw": 1,
+        "discard": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-004",
+      "cardName": "Moebius",
+      "ruleIndex": 0,
+      "effectId": "blocker",
+      "trigger": "ATTACK_REDIRECT",
+      "action": "redirect_attack",
+      "type": "triggered",
+      "description": "<Blocker> (Rest this Unit to change the attack target to it.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "cost": "rest_self"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-006",
+      "cardName": "Aegis Gundam",
+      "ruleIndex": 0,
+      "effectId": "attack_damage_3_if_ap_ge_5",
+      "trigger": "ATTACK_PHASE",
+      "action": "damage",
+      "type": "triggered",
+      "description": "[Attack]If this Unit has 5 or more AP, choose 1 enemy Unit that is Lv.5 or higher; deal 3 damage to it.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "filters": {
+          "level": ">=5"
+        },
+        "count": 1
+      },
+      "conditions": [
+        {
+          "type": "sourceAp",
+          "scope": "source",
+          "value": ">=5"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 3,
+        "notes": "Implemented: sourceAp-based attack conditions are supported."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-007",
+      "cardName": "Aegis Gundam (MA Mode)",
+      "ruleIndex": 0,
+      "effectId": "breach_3",
+      "trigger": "BATTLE_DESTROY",
+      "action": "damageShield",
+      "type": "triggered",
+      "description": "<Breach 3> (When this Unit's attack destroys an enemy Unit, deal 3 damage to the first card in that opponent's shield area.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "card",
+        "scope": "opponent_shield",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 3
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-009",
+      "cardName": "Miguel’s Ginn",
+      "ruleIndex": 0,
+      "effectId": "pair_draw_if_another_link_unit",
+      "trigger": "PAIRING_COMPLETE",
+      "action": "draw",
+      "type": "triggered",
+      "description": "[When Paired]If you have another Link Unit in play, draw 1.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [
+        {
+          "type": "hasAnotherLinkedUnit",
+          "scope": "self"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 1,
+        "notes": "Needs explicit 'another link unit in play' check."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-009",
+      "cardName": "Miguel’s Ginn",
+      "ruleIndex": 1,
+      "effectId": "destroyed_draw_if_another_link_unit",
+      "trigger": "DESTROYED",
+      "action": "draw",
+      "type": "triggered",
+      "description": "[During Pair][Destroyed]If you have another Link Unit in play, draw 1.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [
+        {
+          "type": "isPaired",
+          "scope": "source"
+        },
+        {
+          "type": "hasAnotherLinkedUnit",
+          "scope": "self"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 1,
+        "notes": "Implemented: DESTROYED-triggered effects are processed in runtime."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-010",
+      "cardName": "Kira Yamato",
+      "ruleIndex": 0,
+      "effectId": "burst_add_to_hand",
+      "trigger": "BURST_CONDITION",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Burst]Add this card to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-010",
+      "cardName": "Kira Yamato",
+      "ruleIndex": 1,
+      "effectId": "attack_reduce_enemy_ap",
+      "trigger": "ATTACK_PHASE",
+      "action": "modifyAP",
+      "type": "triggered",
+      "description": "[Attack]Choose 1 enemy Unit; it gets AP–2 during this battle.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "duration": "UNTIL_END_OF_BATTLE"
+      },
+      "parameters": {
+        "value": -2
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-011",
+      "cardName": "Athrun Zala",
+      "ruleIndex": 0,
+      "effectId": "burst_add_to_hand",
+      "trigger": "BURST_CONDITION",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Burst]Add this card to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-011",
+      "cardName": "Athrun Zala",
+      "ruleIndex": 1,
+      "effectId": "attack_active_low_level_5",
+      "trigger": "PAIRING_COMPLETE",
+      "action": "allow_attack_target",
+      "type": "triggered",
+      "description": "[When Linked]During this turn, this Unit may choose an active enemy Unit that is Lv.5 or lower as its attack target.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "source_paired_unit",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [
+        {
+          "type": "linked"
+        }
+      ],
+      "timing": {
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "status": "active",
+        "level": "<=5",
+        "notes": "Implemented: PAIRING_COMPLETE-linked targeting permissions are applied as modeled."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-012",
+      "cardName": "Striker Pack",
+      "ruleIndex": 0,
+      "effectId": "burst_deploy_aile_strike_token_if_none",
+      "trigger": "BURST_CONDITION",
+      "action": "conditionalTokenDeploy",
+      "type": "triggered",
+      "description": "[Burst]If you have no (Earth Alliance) Unit tokens in play, deploy 1 Aile Strike Gundam Unit token (AP 3 / HP 3, <Blocker>).",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [
+        {
+          "type": "noUnitTokenWithTrait",
+          "scope": "self",
+          "value": "Earth Alliance"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "condition1": {
+          "token": {
+            "cardId": "T-008"
+          },
+          "count": 1
+        }
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-012",
+      "cardName": "Striker Pack",
+      "ruleIndex": 1,
+      "effectId": "main_deploy_strike_tokens_if_none",
+      "trigger": "",
+      "action": "choose_one_then_deploy_token",
+      "type": "play",
+      "description": "[Main]If you have no (Earth Alliance) Unit tokens in play, deploy 1 Sword Strike Gundam Unit token (AP 4 / HP 2, <Blocker>) or 1 Launcher Strike Gundam Unit token (AP 2 / HP 4, <Blocker>).",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [
+        {
+          "type": "noUnitTokenWithTrait",
+          "scope": "self",
+          "value": "Earth Alliance"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE"
+        ]
+      },
+      "parameters": {
+        "choices": [
+          {
+            "token": {
+              "cardId": "T-010"
+            },
+            "count": 1
+          },
+          {
+            "token": {
+              "cardId": "T-009"
+            },
+            "count": 1
+          }
+        ]
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-013",
+      "cardName": "Hawk of Endymion",
+      "ruleIndex": 0,
+      "effectId": "main_action_bounce_low_hp",
+      "trigger": "",
+      "action": "returnToHand",
+      "type": "play",
+      "description": "[Main]/[Action]Choose 1 enemy Unit with 3 or less HP; return it to its owner’s hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "filters": {
+          "hp": "<=3"
+        },
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE",
+          "ACTION_STEP"
+        ]
+      },
+      "parameters": {
+        "notes": "Implemented: returnToHand action is supported."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-013",
+      "cardName": "Hawk of Endymion",
+      "ruleIndex": 1,
+      "effectId": "pilot_designation",
+      "trigger": "",
+      "action": "designate_pilot",
+      "type": "special",
+      "description": "[Pilot][Mu La Flaga]",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "pilotName": "Mu La Flaga",
+        "AP": 1,
+        "HP": 0
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-014",
+      "cardName": "The Magic Bullet of Dusk",
+      "ruleIndex": 0,
+      "effectId": "main_action_grant_first_strike",
+      "trigger": "",
+      "action": "grant_keyword",
+      "type": "play",
+      "description": "[Main]/[Action]Choose 1 friendly Unit that is Lv.2 or lower; it gains <First Strike> during this turn (it deals damage before the enemy Unit).",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "self",
+        "filters": {
+          "level": "<=2"
+        },
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE",
+          "ACTION_STEP"
+        ],
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "keyword": "First Strike",
+        "notes": "Implemented: First Strike keyword grants priority battle damage timing."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-014",
+      "cardName": "The Magic Bullet of Dusk",
+      "ruleIndex": 1,
+      "effectId": "pilot_designation",
+      "trigger": "",
+      "action": "designate_pilot",
+      "type": "special",
+      "description": "[Pilot][Miguel Ayman]",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "pilotName": "Miguel Ayman",
+        "AP": 0,
+        "HP": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-015",
+      "cardName": "Archangel",
+      "ruleIndex": 0,
+      "effectId": "burst_deploy",
+      "trigger": "BURST_CONDITION",
+      "action": "deploy",
+      "type": "triggered",
+      "description": "[Burst]Deploy this card.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-015",
+      "cardName": "Archangel",
+      "ruleIndex": 1,
+      "effectId": "deploy_shield_to_hand",
+      "trigger": "ENTERS_PLAY",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Deploy]Add 1 of your Shields to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self_shield"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 1,
+        "from": "shield"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-015",
+      "cardName": "Archangel",
+      "ruleIndex": 2,
+      "effectId": "activate_set_active",
+      "trigger": "",
+      "action": "setActive_then_restrict_attack",
+      "type": "activated",
+      "description": "[Activate/Main][Once per Turn](2):Choose 1 friendly Unit with <Blocker>; set it as active (it cannot attack this turn).",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "unit",
+        "scope": "self",
+        "filters": {
+          "keywords": [
+            "Blocker"
+          ]
+        },
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE"
+        ]
+      },
+      "parameters": {
+        "restriction": "cannot_attack"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-016",
+      "cardName": "Vesalius",
+      "ruleIndex": 0,
+      "effectId": "burst_deploy",
+      "trigger": "BURST_CONDITION",
+      "action": "deploy",
+      "type": "triggered",
+      "description": "[Burst]Deploy this card.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-016",
+      "cardName": "Vesalius",
+      "ruleIndex": 1,
+      "effectId": "deploy_shield_to_hand",
+      "trigger": "ENTERS_PLAY",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Deploy]Add 1 of your Shields to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self_shield"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 1,
+        "from": "shield"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "ST04-016",
+      "cardName": "Vesalius",
+      "ruleIndex": 2,
+      "effectId": "activate_boost_unit",
+      "trigger": "",
+      "action": "modifyAP",
+      "type": "activated",
+      "description": "[Activate/Main]Rest this Base; choose 1 friendly Unit; it gets AP+1 during this turn.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "unit",
+        "scope": "self",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE"
+        ],
+        "duration": "UNTIL_END_OF_TURN",
+        "endOnSourceDestroyed": true
+      },
+      "parameters": {
+        "value": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "T-008",
+      "cardName": "Aile Strike Gundam",
+      "ruleIndex": 0,
+      "effectId": "blocker",
+      "trigger": "ATTACK_REDIRECT",
+      "action": "redirect_attack",
+      "type": "triggered",
+      "description": "<Blocker> (Rest this Unit to change the attack target to it.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "cost": "rest_self"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "T-009",
+      "cardName": "Launcher Strike Gundam",
+      "ruleIndex": 0,
+      "effectId": "blocker",
+      "trigger": "ATTACK_REDIRECT",
+      "action": "redirect_attack",
+      "type": "triggered",
+      "description": "<Blocker> (Rest this Unit to change the attack target to it.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "cost": "rest_self"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st04Card.json",
+      "cardId": "T-010",
+      "cardName": "Sword Strike Gundam",
+      "ruleIndex": 0,
+      "effectId": "blocker",
+      "trigger": "ATTACK_REDIRECT",
+      "action": "redirect_attack",
+      "type": "triggered",
+      "description": "<Blocker> (Rest this Unit to change the attack target to it.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "cost": "rest_self"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-001",
+      "cardName": "Gundam Barbatos 4th Form",
+      "ruleIndex": 0,
+      "effectId": "deploy_damage_1_then_ap_plus_1",
+      "trigger": "ENTERS_PLAY",
+      "action": "sequence",
+      "type": "triggered",
+      "description": "[Deploy]Choose 1 of your other Units. Deal 1 damage to it. If you do, it gets AP+1 during this turn.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "steps": [
+          {
+            "action": "damage",
+            "target": {
+              "type": "unit",
+              "scope": "self_all_unit",
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
+            },
+            "parameters": {
+              "value": 1,
+              "excludeSource": true
+            }
+          },
+          {
+            "action": "modifyAP",
+            "timing": {
+              "duration": "UNTIL_END_OF_TURN"
+            },
+            "target": {
+              "type": "unit",
+              "scope": "previous_target",
+              "count": 1
+            },
+            "parameters": {
+              "value": 1
+            }
+          }
+        ]
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-001",
+      "cardName": "Gundam Barbatos 4th Form",
+      "ruleIndex": 1,
+      "effectId": "gain_suppression_while_damaged",
+      "trigger": "continuous",
+      "action": "grant_keyword",
+      "type": "continuous",
+      "description": "While this Unit is damaged, it gains <Suppression>. (Damage to Shields by an attack is dealt to the first 2 cards simultaneously.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "self",
+        "count": 1
+      },
+      "conditions": [
+        {
+          "type": "sourceDamaged",
+          "scope": "source",
+          "value": true
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {
+        "duration": "continuous",
+        "endOnSourceDestroyed": true
+      },
+      "parameters": {
+        "keyword": "Suppression"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-002",
+      "cardName": "Gundam Barbatos 2nd Form",
+      "ruleIndex": 0,
+      "effectId": "ap_plus_2_while_damaged",
+      "trigger": "continuous",
+      "action": "modifyAP",
+      "type": "continuous",
+      "description": "While this Unit is damaged, it gets AP+2.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "self",
+        "count": 1
+      },
+      "conditions": [
+        {
+          "type": "sourceDamaged",
+          "scope": "source",
+          "value": true
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {
+        "duration": "continuous"
+      },
+      "parameters": {
+        "value": 2
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-003",
+      "cardName": "CGS Mobile Worker",
+      "ruleIndex": 0,
+      "effectId": "activate_damage_1_then_ap_plus_1",
+      "trigger": "",
+      "action": "sequence",
+      "type": "activated",
+      "description": "[Activate/Main]Rest this Unit: Choose 1 of your Units. Deal 1 damage to it. It gets AP+1 during this turn.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE"
+        ]
+      },
+      "parameters": {
+        "steps": [
+          {
+            "action": "damage",
+            "target": {
+              "type": "unit",
+              "scope": "self_all_unit",
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
+            },
+            "parameters": {
+              "value": 1
+            }
+          },
+          {
+            "action": "modifyAP",
+            "timing": {
+              "duration": "UNTIL_END_OF_TURN"
+            },
+            "target": {
+              "type": "unit",
+              "scope": "previous_target",
+              "count": 1
+            },
+            "parameters": {
+              "value": 1
+            }
+          }
+        ],
+        "notes": "Implemented: restSelf/rest='self' activation costs are supported."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-005",
+      "cardName": "Gundam Gusion Rebake",
+      "ruleIndex": 0,
+      "effectId": "destroyed_rest_enemy_ap_le_4",
+      "trigger": "DESTROYED",
+      "action": "rest",
+      "type": "triggered",
+      "description": "[Destroyed]Choose 1 enemy Unit with 4 or less AP. Rest it.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "filters": {
+          "ap": "<=4"
+        },
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-007",
+      "cardName": "McGillis’ Schwalbe Graze",
+      "ruleIndex": 0,
+      "effectId": "blocker",
+      "trigger": "ATTACK_REDIRECT",
+      "action": "redirect_attack",
+      "type": "triggered",
+      "description": "<Blocker> (Rest this Unit to change the attack target to it.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "cost": "rest_self"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-007",
+      "cardName": "McGillis’ Schwalbe Graze",
+      "ruleIndex": 1,
+      "effectId": "pair_enemy_ap_minus_2_low_level",
+      "trigger": "PAIRING_COMPLETE",
+      "action": "modifyAP",
+      "type": "triggered",
+      "description": "[When Paired]Choose 1 enemy Unit that is Lv.3 or lower. It gets AP-2 during this turn.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "filters": {
+          "level": "<=3"
+        },
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "value": -2
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-008",
+      "cardName": "Graze Commander Type",
+      "ruleIndex": 0,
+      "effectId": "blocker",
+      "trigger": "ATTACK_REDIRECT",
+      "action": "redirect_attack",
+      "type": "triggered",
+      "description": "<Blocker> (Rest this Unit to change the attack target to it.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "cost": "rest_self"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-010",
+      "cardName": "Mikazuki Augus",
+      "ruleIndex": 0,
+      "effectId": "burst_add_to_hand",
+      "trigger": "BURST_CONDITION",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Burst]Add this card to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-010",
+      "cardName": "Mikazuki Augus",
+      "ruleIndex": 1,
+      "effectId": "pair_damage_each_1",
+      "trigger": "PAIRING_COMPLETE",
+      "action": "sequence",
+      "type": "triggered",
+      "description": "[When Paired]Choose 1 of your Units and 1 enemy Unit. Deal 1 damage to each.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "steps": [
+          {
+            "action": "damage",
+            "target": {
+              "type": "unit",
+              "scope": "self_all_unit",
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
+            },
+            "parameters": {
+              "value": 1
+            }
+          },
+          {
+            "action": "damage",
+            "target": {
+              "type": "unit",
+              "scope": "opponent",
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
+            },
+            "parameters": {
+              "value": 1
+            }
+          }
+        ],
+        "notes": "Implemented: sequence steps support independent multi-target selections."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-011",
+      "cardName": "Akihiro Altland",
+      "ruleIndex": 0,
+      "effectId": "burst_add_to_hand",
+      "trigger": "BURST_CONDITION",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Burst]Add this card to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-011",
+      "cardName": "Akihiro Altland",
+      "ruleIndex": 1,
+      "effectId": "linked_battle_destroy_add_tekkadan_unit_le_2_from_trash",
+      "trigger": "BATTLE_DESTROY",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[During Link]During your turn, when this Unit destroys an enemy Unit with battle damage, choose 1 (Tekkadan) Unit card that is Lv.2 or lower from your trash. Add it to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self_trash",
+        "filters": {
+          "cardType": "unit",
+          "traitsAny": [
+            "Tekkadan"
+          ],
+          "level": "<=2"
+        },
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [
+        {
+          "type": "linked"
+        }
+      ],
+      "timing": {
+        "actionTurn": "YOUR_TURN"
+      },
+      "parameters": {
+        "value": 1,
+        "from": "trash",
+        "notes": "Implemented: addToHand supports selecting and transferring specific trash cards to hand."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-012",
+      "cardName": "McGillis Fareed",
+      "ruleIndex": 0,
+      "effectId": "burst_add_to_hand",
+      "trigger": "BURST_CONDITION",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Burst]Add this card to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-012",
+      "cardName": "McGillis Fareed",
+      "ruleIndex": 1,
+      "effectId": "pair_rest_enemy_hp_le_3_if_gh_or_tekkadan_ge_3",
+      "trigger": "PAIRING_COMPLETE",
+      "action": "rest",
+      "type": "triggered",
+      "description": "[When Paired]If you have 2 or more other (Gjallarhorn)/(Tekkadan) Units, choose 1 enemy Unit with 3 or less HP. Rest it.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "filters": {
+          "hp": "<=3"
+        },
+        "count": 1
+      },
+      "conditions": [
+        {
+          "type": "unitsInPlayWithTrait",
+          "scope": "self",
+          "traits": [
+            "Gjallarhorn",
+            "Tekkadan"
+          ],
+          "value": ">=3"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "notes": "Represents '2 or more other Units' as having 3+ total matching Units in play."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-013",
+      "cardName": "With Iron and Blood",
+      "ruleIndex": 0,
+      "effectId": "main_or_action_damage_1_then_ap_plus_3",
+      "trigger": "",
+      "action": "sequence",
+      "type": "play",
+      "description": "[Main][Action]Choose 1 of your Units. Deal 1 damage to it. It gets AP+3 during this turn.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE",
+          "ACTION_STEP"
+        ]
+      },
+      "parameters": {
+        "steps": [
+          {
+            "action": "damage",
+            "target": {
+              "type": "unit",
+              "scope": "self_all_unit",
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
+            },
+            "parameters": {
+              "value": 1
+            }
+          },
+          {
+            "action": "modifyAP",
+            "timing": {
+              "duration": "UNTIL_END_OF_TURN"
+            },
+            "target": {
+              "type": "unit",
+              "scope": "previous_target",
+              "count": 1
+            },
+            "parameters": {
+              "value": 3
+            }
+          }
+        ],
+        "notes": "Implemented: sequence-based multi-step command resolution is supported."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-014",
+      "cardName": "Fatal Strike",
+      "ruleIndex": 0,
+      "effectId": "burst_damage_enemy_1",
+      "trigger": "BURST_CONDITION",
+      "action": "damage",
+      "type": "triggered",
+      "description": "[Burst]Choose 1 enemy Unit. Deal 1 damage to it.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-014",
+      "cardName": "Fatal Strike",
+      "ruleIndex": 1,
+      "effectId": "main_destroy_enemy_le_3",
+      "trigger": "",
+      "action": "destroy",
+      "type": "play",
+      "description": "[Main]Choose 1 enemy Unit that is Lv.3 or lower. Destroy it.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "filters": {
+          "level": "<=3"
+        },
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE"
+        ]
+      },
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-015",
+      "cardName": "Isaribi",
+      "ruleIndex": 0,
+      "effectId": "burst_deploy",
+      "trigger": "BURST_CONDITION",
+      "action": "deploy",
+      "type": "triggered",
+      "description": "[Burst]Deploy this card.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-015",
+      "cardName": "Isaribi",
+      "ruleIndex": 1,
+      "effectId": "deploy_shield_to_hand",
+      "trigger": "ENTERS_PLAY",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Deploy]Add 1 of your Shields to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self_shield"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 1,
+        "from": "shield"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st05Card.json",
+      "cardId": "ST05-015",
+      "cardName": "Isaribi",
+      "ruleIndex": 2,
+      "effectId": "activate_ap_plus_2_to_damaged_unit",
+      "trigger": "",
+      "action": "modifyAP",
+      "type": "activated",
+      "description": "[Activate/Main]Rest this Base: Choose 1 of your damaged Units. It gets AP+2 during this turn.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "unit",
+        "scope": "self_all_unit",
+        "filters": {
+          "damaged": true
+        },
+        "count": 1,
+        "selection": {
+          "type": "player_choice"
+        }
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE"
+        ],
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "value": 2,
+        "notes": "Implemented: damaged target filters are supported."
+      },
+      "status": "PASS",
+      "requiresChoice": true,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-001",
+      "cardName": "GQuuuuuuX (Omega Psycommu)",
+      "ruleIndex": 0,
+      "effectId": "linked_grant_first_strike_if_clan_ge_2",
+      "trigger": "PAIRING_COMPLETE",
+      "action": "grant_keyword",
+      "type": "triggered",
+      "description": "[When Linked]If you have another (Clan) Unit in play, this Unit gains <First Strike> during this turn. (While this Unit is attacking, it deals damage before the enemy Unit.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "self",
+        "count": 1
+      },
+      "conditions": [
+        {
+          "type": "unitsInPlayWithTrait",
+          "scope": "self",
+          "traits": [
+            "Clan"
+          ],
+          "value": ">=2"
+        }
+      ],
+      "sourceConditions": [
+        {
+          "type": "linked"
+        }
+      ],
+      "timing": {
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "keyword": "First Strike",
+        "notes": "Engine: implemented via grant_keyword + First Strike battle ordering."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-002",
+      "cardName": "GQuuuuuuX (Omega Psycommu)",
+      "ruleIndex": 0,
+      "effectId": "deploy_damage_enemy_1_if_clan_ge_2",
+      "trigger": "ENTERS_PLAY",
+      "action": "damage",
+      "type": "triggered",
+      "description": "[Deploy]If you have another (Clan) Unit in play, choose 1 enemy Unit. Deal 1 damage to it.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "count": 1
+      },
+      "conditions": [
+        {
+          "type": "unitsInPlayWithTrait",
+          "scope": "self",
+          "traits": [
+            "Clan"
+          ],
+          "value": ">=2"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-003",
+      "cardName": "Gaia’s Rick Dom (GQ)",
+      "ruleIndex": 0,
+      "effectId": "activate_support_1",
+      "trigger": "",
+      "action": "modifyAP",
+      "type": "activated",
+      "description": "[Activate/Main]<Support 1> (Rest this Unit. 1 other friendly Unit gets AP+1 during this turn.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "self_all_unit",
+        "selection": {
+          "type": "player_choice"
+        },
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE"
+        ],
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "value": 1,
+        "excludeSource": true,
+        "notes": "Support targeting should exclude the source Unit."
+      },
+      "status": "PASS",
+      "requiresChoice": true,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-005",
+      "cardName": "Red Gundam",
+      "ruleIndex": 0,
+      "effectId": "breach_1",
+      "trigger": "BATTLE_DESTROY",
+      "action": "damageShield",
+      "type": "triggered",
+      "description": "<Breach 1> (When this Unit's attack destroys an enemy Unit, deal 1 damage to the first card in that opponent's shield area.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "opponent_shield",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-005",
+      "cardName": "Red Gundam",
+      "ruleIndex": 1,
+      "effectId": "attack_ap_plus_2_to_1_or_2_clan_units",
+      "trigger": "ATTACK_PHASE",
+      "action": "modifyAP",
+      "type": "triggered",
+      "description": "[Attack]Choose 1 to 2 friendly (Clan) Units. They get AP+2 during this turn.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "self_all_unit",
+        "filters": {
+          "traits": [
+            "Clan"
+          ]
+        },
+        "selection": {
+          "type": "player_choice"
+        },
+        "count": {
+          "min": 1,
+          "max": 2
+        }
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "value": 2
+      },
+      "status": "PASS",
+      "requiresChoice": true,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-007",
+      "cardName": "Ortega’s Rick Dom (GQ)",
+      "ruleIndex": 0,
+      "effectId": "deploy_allow_attack_target_active_enemy_ap_le_3",
+      "trigger": "ENTERS_PLAY",
+      "action": "allow_attack_target",
+      "type": "triggered",
+      "description": "[Deploy]Choose 1 of your other (Clan) Units. During this turn, that Unit may choose an active enemy Unit with 3 or less AP as its attack target.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "self_all_unit",
+        "filters": {
+          "traits": [
+            "Clan"
+          ]
+        },
+        "count": 1,
+        "selection": {
+          "type": "player_choice"
+        }
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "status": "active",
+        "ap": "<=3",
+        "excludeSource": true,
+        "notes": "Implemented: excludes the source card so only another (Clan) Unit can be chosen."
+      },
+      "status": "PASS",
+      "requiresChoice": true,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-009",
+      "cardName": "Amate Yuzuriha (Machu)",
+      "ruleIndex": 0,
+      "effectId": "burst_add_to_hand",
+      "trigger": "BURST_CONDITION",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Burst]Add this card to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-009",
+      "cardName": "Amate Yuzuriha (Machu)",
+      "ruleIndex": 1,
+      "effectId": "linked_top_1_clan_to_hand_else_bottom",
+      "trigger": "PAIRING_COMPLETE",
+      "action": "tutor_top_deck",
+      "type": "triggered",
+      "description": "[When Linked]Look at the top card of your deck. If it is a (Clan) card, you may reveal it and add it to your hand. Otherwise, put that card on the bottom of your deck.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [
+        {
+          "type": "linked"
+        }
+      ],
+      "timing": {},
+      "parameters": {
+        "count": 1,
+        "select": {
+          "count": 1,
+          "optional": true,
+          "toZone": "hand",
+          "reveal": true,
+          "filters": {
+            "traitsAny": [
+              "Clan"
+            ]
+          }
+        },
+        "rest": {
+          "toZone": "deck_bottom",
+          "order": "preserve"
+        },
+        "notes": "Implemented: tutor_top_deck supports optional top-deck reveal/selection."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-010",
+      "cardName": "Shuji Itō",
+      "ruleIndex": 0,
+      "effectId": "burst_add_to_hand",
+      "trigger": "BURST_CONDITION",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Burst]Add this card to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-010",
+      "cardName": "Shuji Itō",
+      "ruleIndex": 1,
+      "effectId": "linked_attack_scry_top_1_if_clan_unit_in_play",
+      "trigger": "ATTACK_PHASE",
+      "action": "scry_top_deck",
+      "type": "triggered",
+      "description": "[During Link][Attack]If you have a (Clan) Unit in play, look at the top card of your deck and return it to the top or bottom of your deck.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [
+        {
+          "type": "unitsInPlayWithTrait",
+          "scope": "self",
+          "traits": [
+            "Clan"
+          ],
+          "value": ">=1"
+        }
+      ],
+      "sourceConditions": [
+        {
+          "type": "linked"
+        }
+      ],
+      "timing": {},
+      "parameters": {
+        "lookCount": 1,
+        "choices": [
+          "top",
+          "bottom"
+        ],
+        "notes": "Implemented: scry supports top/bottom deck placement.",
+        "count": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-011",
+      "cardName": "Ruthless Tactics",
+      "ruleIndex": 0,
+      "effectId": "main_or_action_ap_plus_2_to_1_or_2_clan_units",
+      "trigger": "",
+      "action": "modifyAP",
+      "type": "play",
+      "description": "[Main][Action]Choose 1 to 2 friendly (Clan) Units. They get AP+2 during this turn.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "self_all_unit",
+        "filters": {
+          "traits": [
+            "Clan"
+          ]
+        },
+        "selection": {
+          "type": "player_choice"
+        },
+        "count": {
+          "min": 1,
+          "max": 2
+        }
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE",
+          "ACTION_STEP"
+        ],
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "value": 2,
+        "notes": "Represents 'choose 1 to 2' as selecting up to 2; engine should allow fewer targets."
+      },
+      "status": "PASS",
+      "requiresChoice": true,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-011",
+      "cardName": "Ruthless Tactics",
+      "ruleIndex": 1,
+      "effectId": "pilot_designation",
+      "trigger": "",
+      "action": "designate_pilot",
+      "type": "special",
+      "description": "[Pilot][Gaia (GQ)]",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "pilotName": "Gaia (GQ)",
+        "AP": 1,
+        "HP": 0
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-012",
+      "cardName": "Schoolgirl and Smuggler",
+      "ruleIndex": 0,
+      "effectId": "main_tutor_top_3_clan_unit_or_pilot",
+      "trigger": "",
+      "action": "tutor_top_deck",
+      "type": "play",
+      "description": "[Main]Look at the top 3 cards of your deck. You may reveal 1 (Clan) Unit card or Pilot card among them and add it to your hand. Return the rest to the bottom of your deck in random order.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE"
+        ]
+      },
+      "parameters": {
+        "count": 3,
+        "select": {
+          "count": 1,
+          "optional": true,
+          "toZone": "hand",
+          "reveal": true,
+          "filters": {
+            "cardTypeAny": [
+              "unit",
+              "pilot"
+            ],
+            "traitsAny": [
+              "Clan"
+            ]
+          }
+        },
+        "rest": {
+          "toZone": "deck_bottom",
+          "order": "random"
+        },
+        "notes": "Implemented: tutor supports reveal/select from top and random bottom placement."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-013",
+      "cardName": "Fierce Unity",
+      "ruleIndex": 0,
+      "effectId": "action_prevent_battle_damage_from_enemy_units_le_2_for_clan",
+      "trigger": "",
+      "action": "prevent_battle_damage",
+      "type": "play",
+      "description": "[Action]Choose 1 to 2 friendly (Clan) Units. During this turn, they can't receive battle damage from enemy Units that are Lv.2 or lower.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "self_all_unit",
+        "filters": {
+          "traits": [
+            "Clan"
+          ]
+        },
+        "selection": {
+          "type": "player_choice"
+        },
+        "count": {
+          "min": 1,
+          "max": 2
+        }
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "ACTION_STEP"
+        ],
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "from": "enemy_units",
+        "enemyLevel": "<=2",
+        "notes": "Engine: implemented via prevent_battle_damage temporary effect and battle-resolution checks."
+      },
+      "status": "PASS",
+      "requiresChoice": true,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-013",
+      "cardName": "Fierce Unity",
+      "ruleIndex": 1,
+      "effectId": "pilot_designation",
+      "trigger": "",
+      "action": "designate_pilot",
+      "type": "special",
+      "description": "[Pilot][Ortega (GQ)]",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "pilotName": "Ortega (GQ)",
+        "AP": 1,
+        "HP": 0
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-014",
+      "cardName": "Clan Battle",
+      "ruleIndex": 0,
+      "effectId": "burst_deploy",
+      "trigger": "BURST_CONDITION",
+      "action": "deploy",
+      "type": "triggered",
+      "description": "[Burst]Deploy this card.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-014",
+      "cardName": "Clan Battle",
+      "ruleIndex": 1,
+      "effectId": "deploy_shield_to_hand",
+      "trigger": "ENTERS_PLAY",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Deploy]Add 1 of your Shields to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self_shield"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 1,
+        "from": "shield"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-014",
+      "cardName": "Clan Battle",
+      "ruleIndex": 2,
+      "effectId": "activate_ap_plus_2_if_clan_link_unit_in_play",
+      "trigger": "",
+      "action": "modifyAP",
+      "type": "activated",
+      "description": "[Activate/Main]Rest this Base: If a friendly (Clan) Link Unit is in play, choose 1 friendly Unit. It gets AP+2 during this turn.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "unit",
+        "scope": "self_all_unit",
+        "count": 1,
+        "selection": {
+          "type": "player_choice"
+        }
+      },
+      "conditions": [
+        {
+          "type": "unitsInPlayWithFilter",
+          "scope": "self",
+          "filters": {
+            "traits": [
+              "Clan"
+            ],
+            "isLinkUnit": true
+          },
+          "value": ">=1"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE"
+        ],
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "value": 2,
+        "notes": "Implemented: isLinkUnit filters are evaluated for in-play units."
+      },
+      "status": "PASS",
+      "requiresChoice": true,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-015",
+      "cardName": "Kaneban Co., Ltd.",
+      "ruleIndex": 0,
+      "effectId": "burst_deploy",
+      "trigger": "BURST_CONDITION",
+      "action": "deploy",
+      "type": "triggered",
+      "description": "[Burst]Deploy this card.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-015",
+      "cardName": "Kaneban Co., Ltd.",
+      "ruleIndex": 1,
+      "effectId": "deploy_shield_to_hand",
+      "trigger": "ENTERS_PLAY",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Deploy]Add 1 of your Shields to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self_shield"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 1,
+        "from": "shield"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st06Card.json",
+      "cardId": "ST06-015",
+      "cardName": "Kaneban Co., Ltd.",
+      "ruleIndex": 2,
+      "effectId": "once_per_turn_grant_breach_3_to_just_linked_clan_unit",
+      "trigger": "PAIRING_COMPLETE",
+      "action": "grant_breach",
+      "type": "triggered",
+      "description": "[Once per Turn]When a friendly (Clan) Unit links, it gains <Breach 3> during this turn. (When this Unit's attack destroys an enemy Unit, deal 3 damage to the first card in that opponent's shield area.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "unit",
+        "scope": "self_all_unit",
+        "filters": {
+          "traits": [
+            "Clan"
+          ],
+          "linkStatus": "linked"
+        },
+        "count": 1,
+        "selection": {
+          "type": "JUST_LINKED"
+        }
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "value": 3,
+        "notes": "Implemented: JUST_LINKED selection with temporary Breach grant is supported."
+      },
+      "status": "PASS",
+      "requiresChoice": true,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-001",
+      "cardName": "Gundam Exia",
+      "ruleIndex": 0,
+      "effectId": "end_of_turn_set_active_resource_if_cb_trash_ge_7",
+      "trigger": "END_OF_TURN",
+      "action": "setActive",
+      "type": "triggered",
+      "description": "At the end of your turn, if there are 7 or more (CB) cards in your trash, choose 1 of your Resources. Set it as active.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "energy",
+        "scope": "self_resource",
+        "count": 1,
+        "filters": {
+          "status": "rested",
+          "isExtraEnergy": false
+        }
+      },
+      "conditions": [
+        {
+          "type": "cardsInTrash",
+          "scope": "self",
+          "traitsAny": [
+            "CB"
+          ],
+          "value": ">=7"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {
+        "actionTurn": "YOUR_TURN"
+      },
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-001",
+      "cardName": "Gundam Exia",
+      "ruleIndex": 1,
+      "effectId": "pair_mill_2_then_draw_if_cb_milled",
+      "trigger": "PAIRING_COMPLETE",
+      "action": "sequence",
+      "type": "triggered",
+      "description": "[When Paired]Place the top 2 cards of your deck into your trash. If you placed a (CB) card with this effect, draw 1.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "steps": [
+          {
+            "action": "moveTopDeckToTrash",
+            "parameters": {
+              "count": 2,
+              "reveal": false
+            }
+          },
+          {
+            "action": "draw_if_moved_cards_match_traits",
+            "parameters": {
+              "value": 1,
+              "traitsAny": [
+                "CB"
+              ],
+              "notes": "Conditional follow-up based on cards moved by the previous step."
+            }
+          }
+        ]
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-004",
+      "cardName": "Gundam Virtue",
+      "ruleIndex": 0,
+      "effectId": "blocker_if_cb_pilot_in_play",
+      "trigger": "ATTACK_REDIRECT",
+      "action": "redirect_attack",
+      "type": "triggered",
+      "description": "While you have a (CB) Pilot in play, this Unit gains <Blocker>. (Rest this Unit to change the attack target to it.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "self"
+      },
+      "conditions": [
+        {
+          "type": "cardsInPlay",
+          "scope": "self",
+          "cardType": "pilot",
+          "traitsAny": [
+            "CB"
+          ],
+          "value": ">=1"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "cost": "rest_self",
+        "notes": "Implemented: blocker redirect rules support conditional checks on cards in play."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-005",
+      "cardName": "Gundam Dynames",
+      "ruleIndex": 0,
+      "effectId": "battle_destroy_heal_2_on_your_turn",
+      "trigger": "BATTLE_DESTROY",
+      "action": "heal",
+      "type": "triggered",
+      "description": "During your turn, when this Unit destroys an enemy Unit with battle damage, it recovers 2 HP.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "source",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "actionTurn": "YOUR_TURN"
+      },
+      "parameters": {
+        "value": 2
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-005",
+      "cardName": "Gundam Dynames",
+      "ruleIndex": 1,
+      "effectId": "during_link_ap_plus_2",
+      "trigger": "continuous",
+      "action": "modifyAP",
+      "type": "continuous",
+      "description": "[During Link]This Unit gets AP+2.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "self",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [
+        {
+          "type": "linked"
+        }
+      ],
+      "timing": {
+        "duration": "continuous"
+      },
+      "parameters": {
+        "value": 2
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-007",
+      "cardName": "Gundam Kyrios",
+      "ruleIndex": 0,
+      "effectId": "ap_plus_2_on_your_turn_if_cb_pilot_in_play",
+      "trigger": "continuous",
+      "action": "modifyAP",
+      "type": "continuous",
+      "description": "During your turn, while you have a (CB) Pilot in play, this Unit gets AP+2.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "self",
+        "count": 1
+      },
+      "conditions": [
+        {
+          "type": "cardsInPlay",
+          "scope": "self",
+          "cardType": "pilot",
+          "traitsAny": [
+            "CB"
+          ],
+          "value": ">=1"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {
+        "duration": "continuous",
+        "actionTurn": "YOUR_TURN"
+      },
+      "parameters": {
+        "value": 2
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-009",
+      "cardName": "Setsuna F. Seiei",
+      "ruleIndex": 0,
+      "effectId": "burst_add_to_hand",
+      "trigger": "BURST_CONDITION",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Burst]Add this card to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-009",
+      "cardName": "Setsuna F. Seiei",
+      "ruleIndex": 1,
+      "effectId": "attack_ap_plus_1_branch_cb_trash_ge_7",
+      "trigger": "ATTACK_PHASE",
+      "action": "conditional",
+      "type": "triggered",
+      "description": "[Attack]This Unit gets AP+1 during this turn. If there are 7 or more (CB) cards in your trash, all your (CB) Units get AP+1 instead.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [
+        {
+          "type": "paired"
+        }
+      ],
+      "timing": {},
+      "parameters": {
+        "branches": [
+          {
+            "conditions": [
+              {
+                "type": "cardsInTrash",
+                "scope": "self",
+                "traitsAny": [
+                  "CB"
+                ],
+                "value": ">=7"
+              }
+            ],
+            "steps": [
+              {
+                "action": "modifyAP",
+                "timing": {
+                  "duration": "UNTIL_END_OF_TURN"
+                },
+                "target": {
+                  "type": "unit",
+                  "scope": "self_all_unit",
+                  "filters": {
+                    "traits": [
+                      "CB"
+                    ]
+                  }
+                },
+                "parameters": {
+                  "value": 1
+                }
+              }
+            ]
+          },
+          {
+            "conditions": [],
+            "steps": [
+              {
+                "action": "modifyAP",
+                "timing": {
+                  "duration": "UNTIL_END_OF_TURN"
+                },
+                "target": {
+                  "type": "unit",
+                  "scope": "source_paired_unit",
+                  "count": 1
+                },
+                "parameters": {
+                  "value": 1,
+                  "notes": "Implemented: source_paired_unit target scope resolves correctly."
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-010",
+      "cardName": "Tieria Erde",
+      "ruleIndex": 0,
+      "effectId": "burst_add_to_hand",
+      "trigger": "BURST_CONDITION",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Burst]Add this card to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-010",
+      "cardName": "Tieria Erde",
+      "ruleIndex": 1,
+      "effectId": "destroyed_draw_1_on_opponent_turn_if_cb_unit",
+      "trigger": "DESTROYED",
+      "action": "draw",
+      "type": "triggered",
+      "description": "[Destroyed]If it is your opponent's turn and this is a (CB) Unit, draw 1.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [
+        {
+          "type": "pairedUnitTrait",
+          "scope": "source",
+          "value": "CB"
+        }
+      ],
+      "sourceConditions": [
+        {
+          "type": "paired"
+        }
+      ],
+      "timing": {
+        "actionTurn": "OPPONENT_TURN"
+      },
+      "parameters": {
+        "value": 1,
+        "notes": "Implemented: pairedUnitTrait conditions are evaluated at runtime."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-011",
+      "cardName": "Lockon Stratos (Neil)",
+      "ruleIndex": 0,
+      "effectId": "burst_add_to_hand",
+      "trigger": "BURST_CONDITION",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Burst]Add this card to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-011",
+      "cardName": "Lockon Stratos (Neil)",
+      "ruleIndex": 1,
+      "effectId": "pair_allow_attack_target_active_enemy_le_source",
+      "trigger": "PAIRING_COMPLETE",
+      "action": "allow_attack_target",
+      "type": "triggered",
+      "description": "[When Paired]If this is a (CB) Unit, it may choose an active enemy Unit whose Lv. is equal to or lower than this Unit as its attack target during this turn.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "source_paired_unit",
+        "count": 1
+      },
+      "conditions": [
+        {
+          "type": "pairedUnitTrait",
+          "scope": "source",
+          "value": "CB"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "status": "active",
+        "level": "<=SOURCE_LEVEL",
+        "notes": "Implemented: dynamic level comparisons resolve SOURCE_LEVEL at runtime."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-012",
+      "cardName": "Allelujah Haptism",
+      "ruleIndex": 0,
+      "effectId": "burst_add_to_hand",
+      "trigger": "BURST_CONDITION",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Burst]Add this card to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-012",
+      "cardName": "Allelujah Haptism",
+      "ruleIndex": 1,
+      "effectId": "prevent_battle_damage_from_enemy_ap_le_3_if_cb_link_unit_in_play",
+      "trigger": "continuous",
+      "action": "prevent_battle_damage",
+      "type": "continuous",
+      "description": "During your turn, while you have a (CB) Link Unit in play, this Unit can't receive battle damage from enemy Units with 3 or less AP.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "source_paired_unit",
+        "count": 1
+      },
+      "conditions": [
+        {
+          "type": "unitsInPlayWithFilter",
+          "scope": "self",
+          "filters": {
+            "traits": [
+              "CB"
+            ],
+            "isLinkUnit": true
+          },
+          "value": ">=1"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {
+        "duration": "continuous",
+        "actionTurn": "YOUR_TURN"
+      },
+      "parameters": {
+        "from": "enemy_units",
+        "maxEnemyAp": 3,
+        "notes": "Implemented: source_paired_unit targeting with maxEnemyAp battle-damage prevention is supported."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-013",
+      "cardName": "Armed Intervention",
+      "ruleIndex": 0,
+      "effectId": "burst_draw_1",
+      "trigger": "BURST_CONDITION",
+      "action": "draw",
+      "type": "triggered",
+      "description": "[Burst]Draw 1.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-013",
+      "cardName": "Armed Intervention",
+      "ruleIndex": 1,
+      "effectId": "action_redirect_attack_to_rested_cb_unit",
+      "trigger": "",
+      "action": "redirect_attack",
+      "type": "play",
+      "description": "[Action]Choose 1 rested friendly (CB) Unit. Change the attack target of the battling enemy Unit to it.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "self_all_unit",
+        "filters": {
+          "traits": [
+            "CB"
+          ],
+          "status": "rested"
+        },
+        "count": 1,
+        "selection": {
+          "type": "player_choice"
+        }
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "ACTION_STEP"
+        ]
+      },
+      "parameters": {
+        "notes": "Implemented: redirect_attack supports action-step attack target redirection."
+      },
+      "status": "PASS",
+      "requiresChoice": true,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-014",
+      "cardName": "Tactical Visionary",
+      "ruleIndex": 0,
+      "effectId": "main_tutor_top_3_cb_unit_or_pilot",
+      "trigger": "",
+      "action": "tutor_top_deck",
+      "type": "play",
+      "description": "[Main]Look at the top 3 cards of your deck. You may reveal 1 (CB) Unit card or Pilot card among them and add it to your hand. Return the rest to the bottom of your deck in random order.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE"
+        ]
+      },
+      "parameters": {
+        "count": 3,
+        "select": {
+          "count": 1,
+          "optional": true,
+          "toZone": "hand",
+          "reveal": true,
+          "filters": {
+            "cardTypeAny": [
+              "unit",
+              "pilot"
+            ],
+            "traitsAny": [
+              "CB"
+            ]
+          }
+        },
+        "rest": {
+          "toZone": "deck_bottom",
+          "order": "random"
+        },
+        "notes": "Implemented: tutor supports reveal/select from top and random bottom placement."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-015",
+      "cardName": "Ptolemaios",
+      "ruleIndex": 0,
+      "effectId": "burst_deploy",
+      "trigger": "BURST_CONDITION",
+      "action": "deploy",
+      "type": "triggered",
+      "description": "[Burst]Deploy this card.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-015",
+      "cardName": "Ptolemaios",
+      "ruleIndex": 1,
+      "effectId": "deploy_shield_to_hand",
+      "trigger": "ENTERS_PLAY",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Deploy]Add 1 of your Shields to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self_shield"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 1,
+        "from": "shield"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st07Card.json",
+      "cardId": "ST07-015",
+      "cardName": "Ptolemaios",
+      "ruleIndex": 2,
+      "effectId": "prevent_damage_from_enemy_units_le_3_if_rested_cb_unit_in_play",
+      "trigger": "continuous",
+      "action": "prevent_damage",
+      "type": "continuous",
+      "description": "While a rested friendly (CB) Unit is in play, this Base can't receive damage from enemy Units that are Lv.3 or lower, other than Unit tokens.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self",
+        "count": 1
+      },
+      "conditions": [
+        {
+          "type": "unitsInPlayWithFilter",
+          "scope": "self",
+          "filters": {
+            "traits": [
+              "CB"
+            ],
+            "status": "rested",
+            "cardType": "unit",
+            "colorNot": "Token"
+          },
+          "value": ">=1"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "from": "enemy_units",
+        "enemyLevel": "<=3",
+        "notes": "Engine: implemented during base attack resolution; prevents base damage from non-token enemy units with level <=3 while condition holds."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-001",
+      "cardName": "Ξ Gundam",
+      "ruleIndex": 0,
+      "effectId": "hand_cost_minus_1_per_enemy_unit_if_no_friendly_ge_6",
+      "trigger": "continuous",
+      "action": "modifyCost",
+      "type": "continuous",
+      "description": "While you have no Units that are Lv.6 or higher in play, this card in your hand gets cost -1 for each enemy Unit in play.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self_hand",
+        "count": 1
+      },
+      "conditions": [
+        {
+          "type": "unitsInPlayWithFilter",
+          "scope": "self",
+          "filters": {
+            "level": ">=6"
+          },
+          "value": "==0"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": -1,
+        "scaling": {
+          "type": "COUNT_UNITS_IN_PLAY",
+          "scope": "opponent_all_unit"
+        },
+        "notes": "Implemented: cost decreases by 1 per enemy Unit in play while you control no Lv.6+ units."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-001",
+      "cardName": "Ξ Gundam",
+      "ruleIndex": 1,
+      "effectId": "hand_level_minus_1_per_enemy_unit_if_no_friendly_ge_6",
+      "trigger": "continuous",
+      "action": "modifyLevel",
+      "type": "continuous",
+      "description": "While you have no Units that are Lv.6 or higher in play, this card in your hand gets Lv.-1 for each enemy Unit in play.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self_hand",
+        "count": 1
+      },
+      "conditions": [
+        {
+          "type": "unitsInPlayWithFilter",
+          "scope": "self",
+          "filters": {
+            "level": ">=6"
+          },
+          "value": "==0"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": -1,
+        "scaling": {
+          "type": "COUNT_UNITS_IN_PLAY",
+          "scope": "opponent_all_unit"
+        },
+        "notes": "Implemented: level decreases by 1 per enemy Unit in play while you control no Lv.6+ units."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-001",
+      "cardName": "Ξ Gundam",
+      "ruleIndex": 2,
+      "effectId": "pair_damage_highest_level_enemy_3",
+      "trigger": "PAIRING_COMPLETE",
+      "action": "damage",
+      "type": "triggered",
+      "description": "[When Paired]Choose 1 enemy Unit with the highest Lv. Deal 3 damage to it.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "unit",
+        "scope": "opponent_all_unit",
+        "selection": {
+          "type": "HIGHEST_LEVEL",
+          "tieBreaker": "CONTROLLER_CHOICE"
+        },
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 3
+      },
+      "status": "PASS",
+      "requiresChoice": true,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-002",
+      "cardName": "Ξ Gundam",
+      "ruleIndex": 0,
+      "effectId": "deploy_damage_enemy_1",
+      "trigger": "ENTERS_PLAY",
+      "action": "damage",
+      "type": "triggered",
+      "description": "[Deploy]Choose 1 enemy Unit. Deal 1 damage to it.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 1
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-004",
+      "cardName": "Messer Type-F01",
+      "ruleIndex": 0,
+      "effectId": "attack_damage_enemy_1_if_attacking_unit",
+      "trigger": "ATTACK_PHASE",
+      "action": "damage",
+      "type": "triggered",
+      "description": "[Attack]If this Unit is attacking an enemy Unit, choose 1 enemy Unit. Deal 1 damage to it.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "count": 1
+      },
+      "conditions": [
+        {
+          "type": "attackTargetCardType",
+          "scope": "event",
+          "value": "unit"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 1,
+        "notes": "Implemented: attackTargetCardType conditions are evaluated during ATTACK_PHASE."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-006",
+      "cardName": "Penelope",
+      "ruleIndex": 0,
+      "effectId": "pair_attack_reveal_ef_unit_bottom_then_draw_2",
+      "trigger": "ATTACK_PHASE",
+      "action": "draw",
+      "type": "triggered",
+      "description": "[During Pair][Attack][Once per Turn]If this Unit is attacking the enemy player, reveal 1 (Earth Federation) Unit card from your hand. Return it to the bottom of your deck. If you do, draw 2.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": null,
+      "conditions": [
+        {
+          "type": "attackTargetCardType",
+          "scope": "event",
+          "value": "player"
+        }
+      ],
+      "sourceConditions": [
+        {
+          "type": "paired"
+        }
+      ],
+      "timing": {},
+      "parameters": {
+        "value": 2,
+        "notes": "Implemented: moveFromHandToDeckBottom costs and attack-target type checks are supported."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-008",
+      "cardName": "Gustav Karl Type-00",
+      "ruleIndex": 0,
+      "effectId": "blocker_if_enemy_units_ge_3",
+      "trigger": "ATTACK_REDIRECT",
+      "action": "redirect_attack",
+      "type": "triggered",
+      "description": "While 3 or more enemy Units are in play, this Unit gains <Blocker>. (Rest this Unit to change the attack target to it.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "self"
+      },
+      "conditions": [
+        {
+          "type": "unitsInPlayWithFilter",
+          "scope": "opponent",
+          "filters": {
+            "cardType": "unit"
+          },
+          "value": ">=3"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "cost": "rest_self",
+        "notes": "Implemented: blocker redirect rules support opponent unit-count conditions."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-009",
+      "cardName": "Jegan Ground Type-A (Man Hunter)",
+      "ruleIndex": 0,
+      "effectId": "deploy_prevent_set_active_next_turn_for_rested_enemy_le_2",
+      "trigger": "ENTERS_PLAY",
+      "action": "prevent_set_active_next_turn",
+      "type": "triggered",
+      "description": "[Deploy]Choose 1 rested enemy Unit that is Lv.2 or lower. It won't be set as active during the start phase of your opponent's next turn.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": {
+        "type": "unit",
+        "scope": "opponent",
+        "filters": {
+          "status": "rested",
+          "level": "<=2"
+        },
+        "count": 1
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "statusEffect": {
+          "type": "activation_lock",
+          "restriction": "prevent_set_active",
+          "duration": {
+            "kind": "until",
+            "phase": "START_PHASE",
+            "player": "opponent",
+            "count": 1
+          },
+          "consumption": {
+            "kind": "auto_expire",
+            "when": "OPPONENT_START_PHASE_END"
+          }
+        },
+        "notes": "Implemented: applies activation lock so the unit cannot be set active on the opponent's next start phase."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-010",
+      "cardName": "Hathaway Noa",
+      "ruleIndex": 0,
+      "effectId": "burst_add_to_hand",
+      "trigger": "BURST_CONDITION",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Burst]Add this card to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-010",
+      "cardName": "Hathaway Noa",
+      "ruleIndex": 1,
+      "effectId": "pair_allow_attack_target_damaged_active_enemy_if_mafty_unit",
+      "trigger": "PAIRING_COMPLETE",
+      "action": "allow_attack_target",
+      "type": "triggered",
+      "description": "[When Paired]If this is a (Mafty) Unit, choose 1 of your (Mafty) Units. During this turn, it may choose a damaged active enemy Unit as its attack target.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "self_all_unit",
+        "filters": {
+          "traits": [
+            "Mafty"
+          ]
+        },
+        "count": 1,
+        "selection": {
+          "type": "player_choice"
+        }
+      },
+      "conditions": [
+        {
+          "type": "pairedUnitTrait",
+          "scope": "source",
+          "value": "Mafty"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "status": "active",
+        "damaged": true,
+        "notes": "Implemented: attack-target permission supports damaged-target filtering."
+      },
+      "status": "PASS",
+      "requiresChoice": true,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-011",
+      "cardName": "Lane Aim",
+      "ruleIndex": 0,
+      "effectId": "burst_add_to_hand",
+      "trigger": "BURST_CONDITION",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Burst]Add this card to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-011",
+      "cardName": "Lane Aim",
+      "ruleIndex": 1,
+      "effectId": "grant_high_maneuver_on_effect_draw_if_blue_unit",
+      "trigger": "EFFECT_DRAW",
+      "action": "grant_keyword",
+      "type": "triggered",
+      "description": "When you draw with an effect, if this is a blue Unit, it gains <High-Maneuver> during this turn. (This Unit can't be blocked.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "source_paired_unit",
+        "count": 1
+      },
+      "conditions": [
+        {
+          "type": "pairedUnitColor",
+          "scope": "source",
+          "value": "Blue"
+        }
+      ],
+      "sourceConditions": [],
+      "timing": {
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "keyword": "High-Maneuver",
+        "notes": "Implemented: EFFECT_DRAW trigger dispatch and source_paired_unit targeting are supported."
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-012",
+      "cardName": "Words for Hathaway",
+      "ruleIndex": 0,
+      "effectId": "main_grant_breach_1_to_friendly_link_unit",
+      "trigger": "",
+      "action": "grant_breach",
+      "type": "play",
+      "description": "[Main]Choose 1 friendly Link Unit. It gains <Breach 1> during this turn. (When this Unit's attack destroys an enemy Unit, deal 1 damage to the first card in that opponent's shield area.)",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "unit",
+        "scope": "self_all_unit",
+        "filters": {
+          "isLinkUnit": true
+        },
+        "count": 1,
+        "selection": {
+          "type": "player_choice"
+        }
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "duration": "UNTIL_END_OF_TURN"
+      },
+      "parameters": {
+        "value": 1,
+        "notes": "Implemented: grants Breach for the configured duration."
+      },
+      "status": "PASS",
+      "requiresChoice": true,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-012",
+      "cardName": "Words for Hathaway",
+      "ruleIndex": 1,
+      "effectId": "pilot_designation",
+      "trigger": "",
+      "action": "designate_pilot",
+      "type": "special",
+      "description": "[Pilot][Gawman Nobile]",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "pilotName": "Gawman Nobile",
+        "AP": 1,
+        "HP": 0
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-013",
+      "cardName": "Lady Luck",
+      "ruleIndex": 0,
+      "effectId": "main_or_action_damage_1_or_2_if_mafty_link_unit_in_play",
+      "trigger": "",
+      "action": "conditional",
+      "type": "play",
+      "description": "[Main][Action]Choose 1 enemy Unit. Deal 1 damage to it. If a friendly (Mafty) Link Unit is in play, deal 2 damage instead.",
+      "hasMappedDescription": true,
+      "descriptionCount": 1,
+      "ruleCount": 1,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE",
+          "ACTION_STEP"
+        ]
+      },
+      "parameters": {
+        "branches": [
+          {
+            "conditions": [
+              {
+                "type": "unitsInPlayWithFilter",
+                "scope": "self",
+                "filters": {
+                  "traits": [
+                    "Mafty"
+                  ],
+                  "isLinkUnit": true
+                },
+                "value": ">=1"
+              }
+            ],
+            "steps": [
+              {
+                "action": "damage",
+                "target": {
+                  "type": "unit",
+                  "scope": "opponent",
+                  "count": 1
+                },
+                "parameters": {
+                  "value": 2
+                }
+              }
+            ]
+          },
+          {
+            "conditions": [],
+            "steps": [
+              {
+                "action": "damage",
+                "target": {
+                  "type": "unit",
+                  "scope": "opponent",
+                  "count": 1
+                },
+                "parameters": {
+                  "value": 1
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-014",
+      "cardName": "Valiant",
+      "ruleIndex": 0,
+      "effectId": "burst_deploy",
+      "trigger": "BURST_CONDITION",
+      "action": "deploy",
+      "type": "triggered",
+      "description": "[Burst]Deploy this card.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-014",
+      "cardName": "Valiant",
+      "ruleIndex": 1,
+      "effectId": "deploy_shield_to_hand_then_ap_plus_2",
+      "trigger": "ENTERS_PLAY",
+      "action": "sequence",
+      "type": "triggered",
+      "description": "[Deploy]Add 1 of your Shields to your hand. Then, choose 1 of your Units. It gets AP+2 during this turn.",
+      "hasMappedDescription": true,
+      "descriptionCount": 2,
+      "ruleCount": 2,
+      "target": null,
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "steps": [
+          {
+            "action": "addToHand",
+            "target": {
+              "type": "card",
+              "scope": "self_shield"
+            },
+            "parameters": {
+              "value": 1,
+              "from": "shield"
+            }
+          },
+          {
+            "action": "modifyAP",
+            "timing": {
+              "duration": "UNTIL_END_OF_TURN"
+            },
+            "target": {
+              "type": "unit",
+              "scope": "self_all_unit",
+              "count": 1
+            },
+            "parameters": {
+              "value": 2
+            }
+          }
+        ]
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-015",
+      "cardName": "Davao",
+      "ruleIndex": 0,
+      "effectId": "burst_deploy",
+      "trigger": "BURST_CONDITION",
+      "action": "deploy",
+      "type": "triggered",
+      "description": "[Burst]Deploy this card.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {},
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-015",
+      "cardName": "Davao",
+      "ruleIndex": 1,
+      "effectId": "deploy_shield_to_hand",
+      "trigger": "ENTERS_PLAY",
+      "action": "addToHand",
+      "type": "triggered",
+      "description": "[Deploy]Add 1 of your Shields to your hand.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "card",
+        "scope": "self_shield"
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {},
+      "parameters": {
+        "value": 1,
+        "from": "shield"
+      },
+      "status": "PASS",
+      "requiresChoice": false,
+      "findings": []
+    },
+    {
+      "file": "st08Card.json",
+      "cardId": "ST08-015",
+      "cardName": "Davao",
+      "ruleIndex": 2,
+      "effectId": "activate_heal_2_once_per_turn",
+      "trigger": "",
+      "action": "heal",
+      "type": "activated",
+      "description": "[Activate/Main][Once per Turn](2):Choose 1 of your Units. It recovers 2 HP.",
+      "hasMappedDescription": true,
+      "descriptionCount": 3,
+      "ruleCount": 3,
+      "target": {
+        "type": "unit",
+        "scope": "self_all_unit",
+        "count": 1,
+        "selection": {
+          "type": "player_choice"
+        }
+      },
+      "conditions": [],
+      "sourceConditions": [],
+      "timing": {
+        "windows": [
+          "MAIN_PHASE"
+        ]
+      },
+      "parameters": {
+        "value": 2
+      },
+      "status": "PASS",
+      "requiresChoice": true,
+      "findings": []
+    }
+  ]
+}

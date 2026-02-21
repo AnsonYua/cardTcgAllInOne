@@ -4,17 +4,7 @@ const { PlayerCardManager } = require('../services/PlayerCardManager');
 const { PairingEffectManager } = require('../services/PairingEffectManager');
 const { AllowAttackTargetPermissionResolver } = require('../services/attack/AllowAttackTargetPermissionResolver');
 const { BaseAbilityManager } = require('../services/effects/BaseAbilityManager');
-
-function findUnit(gameEnv, playerId, carduid) {
-    const player = gameEnv.getPlayer(playerId);
-    for (let i = 1; i <= 6; i++) {
-        const slot = player?.zones?.[`slot${i}`];
-        if (slot?.unit?.carduid === carduid) {
-            return slot.unit;
-        }
-    }
-    return null;
-}
+const { createUnitZoneCard, createPilotZoneCard, findUnit } = require('./helpers/zoneCardFactory');
 
 describe('GD03 full-set audit fixes', () => {
     test('card data contains fixed rules for GD03-017/053/073/097', () => {
@@ -104,42 +94,24 @@ describe('GD03 full-set audit fixes', () => {
         const activateEffect = gd03.cards['GD03-073'].effects.rules.find((rule) => rule.effectId === 'activate_effect');
         expect(activateEffect).toBeTruthy();
 
-        p1.zones.slot1.unit = {
+        p1.zones.slot1.unit = createUnitZoneCard({
             carduid: 'GD03-073_source_0001',
             cardId: 'GD03-073',
-            isRested: false,
-            damageReceived: 0,
-            modifyAP: 0,
-            modifyHP: 0,
-            continueModifyAP: 0,
-            continueModifyHP: 0,
-            temporaryEffects: [],
-            effectUsage: {},
-            cardData: {
-                id: 'GD03-073',
-                name: 'Graze Ein',
-                cardType: 'unit',
-                traits: ['Gjallarhorn'],
-                link: ['Ein Dalton'],
-                ap: 6,
-                hp: 4,
-                effects: { description: [], rules: [activateEffect] }
-            }
-        };
+            name: 'Graze Ein',
+            ap: 6,
+            hp: 4,
+            traits: ['Gjallarhorn'],
+            link: ['Ein Dalton'],
+            effectsRules: [activateEffect]
+        });
 
-        p2.zones.slot1.unit = {
+        p2.zones.slot1.unit = createUnitZoneCard({
             carduid: 'enemy_battle_unit_0001',
             cardId: 'ST01-001',
-            isRested: false,
-            damageReceived: 0,
-            modifyAP: 0,
-            modifyHP: 0,
-            continueModifyAP: 0,
-            continueModifyHP: 0,
-            temporaryEffects: [],
-            effectUsage: {},
-            cardData: { id: 'ST01-001', name: 'Enemy', cardType: 'unit', ap: 3, hp: 3, effects: { description: [], rules: [] } }
-        };
+            name: 'Enemy',
+            ap: 3,
+            hp: 3
+        });
 
         for (let i = 0; i < 6; i++) {
             p1.zones.trashArea.push({
@@ -171,28 +143,11 @@ describe('GD03 full-set audit fixes', () => {
         });
         expect(unlinkedResult.success).toBe(false);
 
-        p1.zones.slot1.pilot = {
+        p1.zones.slot1.pilot = createPilotZoneCard({
             carduid: 'pilot_ein_dalton_0001',
             cardId: 'custom-ein-dalton',
-            playedAs: 'pilot',
-            isRested: false,
-            damageReceived: 0,
-            modifyAP: 0,
-            modifyHP: 0,
-            continueModifyAP: 0,
-            continueModifyHP: 0,
-            temporaryEffects: [],
-            effectUsage: {},
-            cardData: {
-                id: 'custom-ein-dalton',
-                name: 'Ein Dalton',
-                cardType: 'pilot',
-                traits: [],
-                ap: 1,
-                hp: 1,
-                effects: { description: [], rules: [] }
-            }
-        };
+            name: 'Ein Dalton'
+        });
 
         const linkedResult = BaseAbilityManager.executeBaseAbility(gameEnv, {
             id: 'ability_linked_1',

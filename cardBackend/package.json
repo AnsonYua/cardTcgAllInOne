@@ -21,6 +21,7 @@
     "test:simple": "node src/tests/simpleTest.js",
     "test:dynamic": "node src/tests/dynamicTest.js",
     "review:effects": "node scripts/generateEffectAlignmentReview.cjs",
+    "review:effects:st": "node scripts/generateStEffectAudit.cjs",
     "review:unresolved": "node scripts/generateUnresolvedEffectCatalog.cjs",
     "review:unresolved:check": "node scripts/checkUnresolvedEffectBaseline.cjs",
     "review:effects:apply": "node scripts/applyEffectCanonicalization.cjs",

@@ -91,6 +91,17 @@ Turn helper file:
 State-based checks file:
 - `src/services/EventQueue/StateBasedActionEngine.ts`
 
+## 4.1) Defense Area, Base, and Shield (Simple)
+- `Defense area` means two zones together: `shield area` + `base`.
+- `Shield area` is the front protection layer. Attacks usually hit shields first.
+- `Base` is the core objective behind shields.
+- `Slot` is a board position where unit/pilot cards are placed (`slot1` to `slot6`).
+- `Pilot card` is the pilot part of a pair. It usually works with a unit in the same slot.
+- `Command card` is a one-time effect card. You play it to do an effect, then it usually leaves play.
+- `Base card` is your core defense card in base zone, behind shields.
+- `Trash` is the discard zone. Destroyed or used cards usually go there.
+- In short: when people say \"attack defense area,\" it can involve shield first, then base.
+
 ## 5) Playing a Card
 When player calls play card API:
 
@@ -112,12 +123,13 @@ Related files:
 When player attacks:
 
 1. Attack is declared (`attackUnit` or `attackShieldArea`).
-2. Attack-phase effects run.
-3. Defender may get blocker choice.
-4. If blocker choice appears, game pauses for that choice.
-5. If no blocker choice, battle enters action step.
-6. Players confirm battle.
-7. Battle resolves.
+2. `attackShieldArea` means attacking the defender's defense area (shield/base side).
+3. Attack-phase effects run.
+4. Defender may get blocker choice.
+5. If blocker choice appears, game pauses for that choice.
+6. If no blocker choice, battle enters action step.
+7. Players confirm battle.
+8. Battle resolves.
 
 Main file:
 - `src/services/BattlePhaseManager.ts`
@@ -155,7 +167,7 @@ Important file:
 
 ## 9) How Game Ends
 One real game-end path is in shield attack resolution:
-- if defender has no shields left and attack connects, game ends.
+- if defender has no shields left and the defense-area attack connects to base side, game ends.
 
 Files:
 - `src/services/BattlePhaseManager.ts`

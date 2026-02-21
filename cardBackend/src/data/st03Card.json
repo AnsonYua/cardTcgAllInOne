@@ -73,7 +73,7 @@
                 "shield",
                 "base"
               ],
-              "notes": "Triggers when this Unit deals battle damage to a card in the opponent's shield area or to an enemy Base (Base does not need to be destroyed). Engine trigger not implemented yet."
+              "notes": "Implemented: triggers when this Unit deals battle damage to an opponent defense area (shield or base), matching accepted ST03-001 rules."
             }
           }
         ]
@@ -458,7 +458,8 @@
       "effects": {
         "description": [
           "[Burst]Add this card to your hand.",
-          "[Attack]During this turn, this Unit gets AP+1 and, if it is a Link Unit, gains <High-Maneuver> (can’t be blocked)."
+          "[Attack]During this turn, this Unit gets AP+1.",
+          "[Attack]If this Unit is a Link Unit, it gains <High-Maneuver> during this turn (can’t be blocked)."
         ],
         "rules": [
           {

@@ -1,37 +1,6 @@
 const { GameEnvironment } = require('../models/GameEnvironment');
 const { resolveEffectDamageValue } = require('../services/effects/actions/EffectDamageValueResolver');
-
-function createUnitCard(carduid, ap = 0, hp = 1) {
-    return {
-        carduid,
-        cardId: carduid.split('_')[0],
-        cardData: { id: carduid.split('_')[0], name: carduid, cardType: 'unit', ap, hp },
-        originalAP: ap,
-        originalHP: hp,
-        modifyAP: 0,
-        modifyHP: 0,
-        continueModifyAP: 0,
-        continueModifyHP: 0,
-        damageReceived: 0,
-        isRested: false
-    };
-}
-
-function createPilotCard(carduid, ap = 0, hp = 1) {
-    return {
-        carduid,
-        cardId: carduid.split('_')[0],
-        cardData: { id: carduid.split('_')[0], name: carduid, cardType: 'pilot', ap, hp },
-        originalAP: ap,
-        originalHP: hp,
-        modifyAP: 0,
-        modifyHP: 0,
-        continueModifyAP: 0,
-        continueModifyHP: 0,
-        damageReceived: 0,
-        isRested: false
-    };
-}
+const { createPilotZoneCard, createUnitZoneCard } = require('./helpers/zoneCardFactory');
 
 describe('resolveEffectDamageValue', () => {
     test('returns base value when scaling is absent', () => {
@@ -46,8 +15,8 @@ describe('resolveEffectDamageValue', () => {
         const p1 = gameEnv.addPlayer('playerId_1', 'P1');
         gameEnv.addPlayer('playerId_2', 'P2');
 
-        p1.zones.slot1.unit = createUnitCard('GD03-033_attacker', 5, 5);
-        p1.zones.slot1.pilot = createPilotCard('TEST-PILOT_floor', 4, 2);
+        p1.zones.slot1.unit = createUnitZoneCard({ carduid: 'GD03-033_attacker', cardId: 'GD03-033', ap: 5, hp: 5 });
+        p1.zones.slot1.pilot = createPilotZoneCard({ carduid: 'TEST-PILOT_floor', cardId: 'TEST-PILOT', ap: 4, hp: 2 });
 
         const effect = {
             effectId: 'test',
@@ -66,8 +35,8 @@ describe('resolveEffectDamageValue', () => {
         const p1 = gameEnv.addPlayer('playerId_1', 'P1');
         gameEnv.addPlayer('playerId_2', 'P2');
 
-        p1.zones.slot1.unit = createUnitCard('GD03-033_attacker', 5, 5);
-        p1.zones.slot1.pilot = createPilotCard('TEST-PILOT_floor', 7, 2);
+        p1.zones.slot1.unit = createUnitZoneCard({ carduid: 'GD03-033_attacker', cardId: 'GD03-033', ap: 5, hp: 5 });
+        p1.zones.slot1.pilot = createPilotZoneCard({ carduid: 'TEST-PILOT_floor', cardId: 'TEST-PILOT', ap: 7, hp: 2 });
 
         const effect = {
             effectId: 'test',
@@ -86,7 +55,7 @@ describe('resolveEffectDamageValue', () => {
         const p1 = gameEnv.addPlayer('playerId_1', 'P1');
         gameEnv.addPlayer('playerId_2', 'P2');
 
-        p1.zones.slot1.unit = createUnitCard('GD03-033_attacker', 3, 5);
+        p1.zones.slot1.unit = createUnitZoneCard({ carduid: 'GD03-033_attacker', cardId: 'GD03-033', ap: 3, hp: 5 });
 
         const effect = {
             effectId: 'test',
@@ -128,11 +97,11 @@ describe('resolveEffectDamageValue', () => {
         const p1 = gameEnv.addPlayer('playerId_1', 'P1');
         gameEnv.addPlayer('playerId_2', 'P2');
 
-        p1.zones.slot1.unit = createUnitCard('GD03-033_attacker', 5, 5);
+        p1.zones.slot1.unit = createUnitZoneCard({ carduid: 'GD03-033_attacker', cardId: 'GD03-033', ap: 5, hp: 5 });
         p1.zones.slot1.unit.continueModifyAP = 2;
         p1.zones.slot1.unit.modifyAP = 1;
 
-        p1.zones.slot1.pilot = createPilotCard('TEST-PILOT_mod', 2, 2);
+        p1.zones.slot1.pilot = createPilotZoneCard({ carduid: 'TEST-PILOT_mod', cardId: 'TEST-PILOT', ap: 2, hp: 2 });
         p1.zones.slot1.pilot.continueModifyAP = 1;
         p1.zones.slot1.pilot.modifyAP = 1;
 

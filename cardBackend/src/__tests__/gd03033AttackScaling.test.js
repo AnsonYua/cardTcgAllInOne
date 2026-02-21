@@ -1,63 +1,7 @@
 const { GameEnvironment } = require('../models/GameEnvironment');
 const { PlayerCardManager } = require('../services/PlayerCardManager');
 const { AttackPhaseEffectManager } = require('../services/effects/AttackPhaseEffectManager');
-
-function findUnit(gameEnv, playerId, carduid) {
-    const player = gameEnv.getPlayer(playerId);
-    expect(player).toBeTruthy();
-    for (let i = 1; i <= 6; i++) {
-        const slot = player.zones[`slot${i}`];
-        if (slot && slot.unit && slot.unit.carduid === carduid) {
-            return slot.unit;
-        }
-    }
-    return null;
-}
-
-function findSlotByUnit(gameEnv, playerId, carduid) {
-    const player = gameEnv.getPlayer(playerId);
-    expect(player).toBeTruthy();
-    for (let i = 1; i <= 6; i++) {
-        const slotName = `slot${i}`;
-        const slot = player.zones[slotName];
-        if (slot && slot.unit && slot.unit.carduid === carduid) {
-            return slot;
-        }
-    }
-    return null;
-}
-
-function createPilot(carduid, ap, hp = 1) {
-    return {
-        carduid,
-        cardId: carduid.split('_')[0],
-        cardData: { id: carduid.split('_')[0], name: carduid, cardType: 'pilot', ap, hp },
-        originalAP: ap,
-        originalHP: hp,
-        modifyAP: 0,
-        modifyHP: 0,
-        continueModifyAP: 0,
-        continueModifyHP: 0,
-        damageReceived: 0,
-        isRested: false
-    };
-}
-
-function createEnemyUnit(carduid) {
-    return {
-        carduid,
-        cardId: carduid.split('_')[0],
-        cardData: { id: carduid.split('_')[0], name: 'Enemy', cardType: 'unit', ap: 3, hp: 20 },
-        originalAP: 3,
-        originalHP: 20,
-        modifyAP: 0,
-        modifyHP: 0,
-        continueModifyAP: 0,
-        continueModifyHP: 0,
-        damageReceived: 0,
-        isRested: false
-    };
-}
+const { createPilotZoneCard, createUnitZoneCard, findUnit, findSlotByUnit } = require('./helpers/zoneCardFactory');
 
 function runAttack(gameEnv, attackerCarduid) {
     return AttackPhaseEffectManager.processAttackPhaseEffects(gameEnv, {
@@ -85,9 +29,9 @@ describe('GD03-033 attack scaling', () => {
 
         const sourceSlot = findSlotByUnit(gameEnv, 'playerId_1', attackerCarduid);
         expect(sourceSlot).toBeTruthy();
-        sourceSlot.pilot = createPilot('TEST-PILOT_0001', 4, 2); // 5 + 4 = 9
+        sourceSlot.pilot = createPilotZoneCard({ carduid: 'TEST-PILOT_0001', cardId: 'TEST-PILOT', ap: 4, hp: 2 }); // 5 + 4 = 9
 
-        p2.zones.slot1.unit = createEnemyUnit('GD01-001_enemy_0001');
+        p2.zones.slot1.unit = createUnitZoneCard({ carduid: 'GD01-001_enemy_0001', cardId: 'GD01-001', name: 'Enemy', ap: 3, hp: 20 });
         const enemy = findUnit(gameEnv, 'playerId_2', 'GD01-001_enemy_0001');
         expect(enemy).toBeTruthy();
 
@@ -109,9 +53,9 @@ describe('GD03-033 attack scaling', () => {
 
         const sourceSlot = findSlotByUnit(gameEnv, 'playerId_1', attackerCarduid);
         expect(sourceSlot).toBeTruthy();
-        sourceSlot.pilot = createPilot('TEST-PILOT_0002', 7, 2); // 5 + 7 = 12
+        sourceSlot.pilot = createPilotZoneCard({ carduid: 'TEST-PILOT_0002', cardId: 'TEST-PILOT', ap: 7, hp: 2 }); // 5 + 7 = 12
 
-        p2.zones.slot1.unit = createEnemyUnit('GD01-001_enemy_0002');
+        p2.zones.slot1.unit = createUnitZoneCard({ carduid: 'GD01-001_enemy_0002', cardId: 'GD01-001', name: 'Enemy', ap: 3, hp: 20 });
         const enemy = findUnit(gameEnv, 'playerId_2', 'GD01-001_enemy_0002');
         expect(enemy).toBeTruthy();
 
@@ -135,7 +79,7 @@ describe('GD03-033 attack scaling', () => {
         expect(attacker).toBeTruthy();
         attacker.continueModifyAP = -2; // 5 + (-2) = 3
 
-        p2.zones.slot1.unit = createEnemyUnit('GD01-001_enemy_0003');
+        p2.zones.slot1.unit = createUnitZoneCard({ carduid: 'GD01-001_enemy_0003', cardId: 'GD01-001', name: 'Enemy', ap: 3, hp: 20 });
         const enemy = findUnit(gameEnv, 'playerId_2', 'GD01-001_enemy_0003');
         expect(enemy).toBeTruthy();
 

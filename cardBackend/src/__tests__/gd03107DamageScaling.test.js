@@ -2,22 +2,7 @@ const { GameEnvironment } = require('../models/GameEnvironment');
 const { DeployTargetManager } = require('../services/DeployTargetManager');
 
 const gd03Data = require('../data/gd03Card.json');
-
-function createUnit(carduid, level, hp, color = 'Red') {
-    return {
-        carduid,
-        cardId: carduid.split('_')[0],
-        cardData: { id: carduid.split('_')[0], name: carduid, cardType: 'unit', level, ap: 3, hp, color, traits: [] },
-        originalAP: 3,
-        originalHP: hp,
-        modifyAP: 0,
-        modifyHP: 0,
-        continueModifyAP: 0,
-        continueModifyHP: 0,
-        damageReceived: 0,
-        isRested: false
-    };
-}
+const { createUnitZoneCard } = require('./helpers/zoneCardFactory');
 
 function getGd03107PlayEffect() {
     const card = gd03Data.cards['GD03-107'];
@@ -32,7 +17,13 @@ describe('GD03-107 damage scaling', () => {
         const gameEnv = new GameEnvironment();
         gameEnv.addPlayer('playerId_1', 'P1');
         const p2 = gameEnv.addPlayer('playerId_2', 'P2');
-        p2.zones.slot1.unit = createUnit('enemy_unit_0001', 5, 10, 'Blue');
+        p2.zones.slot1.unit = createUnitZoneCard({
+            carduid: 'enemy_unit_0001',
+            cardId: 'enemy_unit',
+            ap: 3,
+            hp: 10,
+            cardDataExtras: { level: 5, color: 'Blue', traits: [] }
+        });
 
         const result = DeployTargetManager.processEffectWithTargetChoice(
             gameEnv,
@@ -50,9 +41,27 @@ describe('GD03-107 damage scaling', () => {
         const p1 = gameEnv.addPlayer('playerId_1', 'P1');
         const p2 = gameEnv.addPlayer('playerId_2', 'P2');
 
-        p1.zones.slot1.unit = createUnit('token_unit_0001', 1, 1, 'Token');
-        p1.zones.slot2.unit = createUnit('token_unit_0002', 1, 1, 'Token');
-        p2.zones.slot1.unit = createUnit('enemy_unit_0002', 5, 10, 'Blue');
+        p1.zones.slot1.unit = createUnitZoneCard({
+            carduid: 'token_unit_0001',
+            cardId: 'token_unit',
+            ap: 3,
+            hp: 1,
+            cardDataExtras: { level: 1, color: 'Token', traits: [] }
+        });
+        p1.zones.slot2.unit = createUnitZoneCard({
+            carduid: 'token_unit_0002',
+            cardId: 'token_unit',
+            ap: 3,
+            hp: 1,
+            cardDataExtras: { level: 1, color: 'Token', traits: [] }
+        });
+        p2.zones.slot1.unit = createUnitZoneCard({
+            carduid: 'enemy_unit_0002',
+            cardId: 'enemy_unit',
+            ap: 3,
+            hp: 10,
+            cardDataExtras: { level: 5, color: 'Blue', traits: [] }
+        });
 
         const result = DeployTargetManager.processEffectWithTargetChoice(
             gameEnv,
@@ -70,10 +79,34 @@ describe('GD03-107 damage scaling', () => {
         const p1 = gameEnv.addPlayer('playerId_1', 'P1');
         const p2 = gameEnv.addPlayer('playerId_2', 'P2');
 
-        p1.zones.slot1.unit = createUnit('token_unit_0003', 1, 1, 'Token');
-        p1.zones.slot2.unit = createUnit('normal_unit_0001', 4, 4, 'Red');
-        p1.zones.slot3.unit = createUnit('normal_unit_0002', 4, 4, 'Blue');
-        p2.zones.slot1.unit = createUnit('enemy_unit_0003', 5, 10, 'Blue');
+        p1.zones.slot1.unit = createUnitZoneCard({
+            carduid: 'token_unit_0003',
+            cardId: 'token_unit',
+            ap: 3,
+            hp: 1,
+            cardDataExtras: { level: 1, color: 'Token', traits: [] }
+        });
+        p1.zones.slot2.unit = createUnitZoneCard({
+            carduid: 'normal_unit_0001',
+            cardId: 'normal_unit',
+            ap: 3,
+            hp: 4,
+            cardDataExtras: { level: 4, color: 'Red', traits: [] }
+        });
+        p1.zones.slot3.unit = createUnitZoneCard({
+            carduid: 'normal_unit_0002',
+            cardId: 'normal_unit',
+            ap: 3,
+            hp: 4,
+            cardDataExtras: { level: 4, color: 'Blue', traits: [] }
+        });
+        p2.zones.slot1.unit = createUnitZoneCard({
+            carduid: 'enemy_unit_0003',
+            cardId: 'enemy_unit',
+            ap: 3,
+            hp: 10,
+            cardDataExtras: { level: 5, color: 'Blue', traits: [] }
+        });
 
         const result = DeployTargetManager.processEffectWithTargetChoice(
             gameEnv,

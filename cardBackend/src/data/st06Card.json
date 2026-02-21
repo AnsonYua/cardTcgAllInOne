@@ -308,7 +308,8 @@
                         "parameters": {
                             "status": "active",
                             "ap": "<=3",
-                            "notes": "Choose 'one of your other (Clan) Units' is not enforced yet; engine should prevent selecting the source."
+                            "excludeSource": true,
+                            "notes": "Implemented: excludes the source card so only another (Clan) Unit can be chosen."
                         }
                     }
                 ]

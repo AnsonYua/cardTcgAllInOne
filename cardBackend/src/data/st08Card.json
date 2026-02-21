@@ -26,7 +26,8 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "While you have no Units that are Lv.6 or higher in play, this card in your hand gets Lv.-1 and cost -1 for each enemy Unit in play.",
+                    "While you have no Units that are Lv.6 or higher in play, this card in your hand gets cost -1 for each enemy Unit in play.",
+                    "While you have no Units that are Lv.6 or higher in play, this card in your hand gets Lv.-1 for each enemy Unit in play.",
                     "[When Paired]Choose 1 enemy Unit with the highest Lv. Deal 3 damage to it."
                 ],
                 "rules": [
