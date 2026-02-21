@@ -1,12 +1,11 @@
 {
-  "generatedAt": "2026-02-21T05:54:44.962Z",
+  "generatedAt": "2026-02-21T06:14:21.878Z",
   "fileCount": 11,
   "cardCount": 538,
   "ruleTypeSummary": {
     "continuous": 79,
-    "triggered": 415,
+    "triggered": 434,
     "activated": 38,
-    "keyword": 19,
     "play": 88,
     "special": 40
   },
@@ -59,7 +58,7 @@
         "repair_1",
         "pair_rest"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd01Card.json",
@@ -83,7 +82,7 @@
       "effectIds": [
         "repair_1"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd01Card.json",
@@ -211,7 +210,7 @@
       "effectIds": [
         "repair_1"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd01Card.json",
@@ -328,7 +327,7 @@
         "breach_4",
         "deploy_damage_all_4"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd01Card.json",
@@ -353,7 +352,7 @@
         "breach_4",
         "attack_effect"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd01Card.json",
@@ -365,7 +364,7 @@
       "effectIds": [
         "breach_2"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd01Card.json",
@@ -387,7 +386,7 @@
       "effectIds": [
         "pair_destroy_blocker_low_level"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "gd01Card.json",
@@ -399,7 +398,7 @@
       "effectIds": [
         "repair_1"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd01Card.json",
@@ -411,7 +410,7 @@
       "effectIds": [
         "breach_3"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd01Card.json",
@@ -487,7 +486,7 @@
       "effectIds": [
         "breach_3"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd01Card.json",
@@ -767,7 +766,7 @@
         "blocker",
         "paired_on_pilot_pairing_reduce_enemy_ap_2"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd01Card.json",
@@ -780,7 +779,7 @@
         "deploy_effect",
         "attack_effect"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "gd01Card.json",
@@ -805,7 +804,7 @@
         "blocker",
         "deploy_effect"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd01Card.json",
@@ -817,7 +816,7 @@
       "effectIds": [
         "activate_effect"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "gd01Card.json",
@@ -853,7 +852,7 @@
       "effectIds": [
         "blocker"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd01Card.json",
@@ -1013,7 +1012,7 @@
       "effectIds": [
         "blocker"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd01Card.json",
@@ -1291,7 +1290,7 @@
       "effectIds": [
         "main_damage_all_blockers_2"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "gd01Card.json",
@@ -1444,7 +1443,7 @@
         "burst_enemy_ap_minus_3",
         "modify_ap"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "gd01Card.json",
@@ -1457,7 +1456,7 @@
         "burst_resolve_main",
         "main_action"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "gd01Card.json",
@@ -1537,7 +1536,7 @@
         "deploy_effect",
         "activate_effect"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd01Card.json",
@@ -1609,7 +1608,7 @@
       "effectIds": [
         "blocker"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd02Card.json",
@@ -1622,7 +1621,7 @@
         "breach_3",
         "paired_titans_shield_damage_heal_2"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd02Card.json",
@@ -1695,7 +1694,7 @@
       "effectIds": [
         "repair_2"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd02Card.json",
@@ -1809,7 +1808,7 @@
       "effectIds": [
         "repair_2"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd02Card.json",
@@ -1868,7 +1867,7 @@
       "effectIds": [
         "gain_breach_2_on_ex_resource"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "gd02Card.json",
@@ -1928,7 +1927,7 @@
       "effectIds": [
         "breach_3"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd02Card.json",
@@ -2042,7 +2041,7 @@
         "breach_1",
         "deploy_effect"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd02Card.json",
@@ -2252,7 +2251,7 @@
         "blocker",
         "deploy_effect"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd02Card.json",
@@ -2300,7 +2299,7 @@
       "effectIds": [
         "blocker"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd02Card.json",
@@ -2449,7 +2448,7 @@
         "blocker",
         "repair_1_if_friendly_white_base"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd02Card.json",
@@ -2474,7 +2473,7 @@
         "high_maneuver",
         "during_pair_effect"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd02Card.json",
@@ -2530,7 +2529,7 @@
       "effectIds": [
         "blocker"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd02Card.json",
@@ -2625,7 +2624,7 @@
         "burst_add_to_hand",
         "linked_rest_enemy_blocker_if_blue_unit"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "gd02Card.json",
@@ -2651,7 +2650,7 @@
         "burst_add_to_hand",
         "pair_effect"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "gd02Card.json",
@@ -3019,7 +3018,7 @@
         "bounce",
         "pilot_designation"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "gd02Card.json",
@@ -3200,7 +3199,7 @@
         "repair_2",
         "pair_effect"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd03Card.json",
@@ -3226,7 +3225,7 @@
         "blocker",
         "repair_1"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd03Card.json",
@@ -3251,7 +3250,7 @@
         "repair_1",
         "deploy_draw"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd03Card.json",
@@ -3311,7 +3310,7 @@
       "effectIds": [
         "repair_3"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd03Card.json",
@@ -3333,7 +3332,7 @@
       "effectIds": [
         "repair_1"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd03Card.json",
@@ -3370,7 +3369,7 @@
       "effectIds": [
         "activate_effect"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "gd03Card.json",
@@ -3405,7 +3404,7 @@
         "breach_5",
         "attack_effect"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd03Card.json",
@@ -3503,7 +3502,7 @@
       "effectIds": [
         "breach_3"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd03Card.json",
@@ -3537,7 +3536,7 @@
       "effectIds": [
         "battle_destroy_damage_2_to_all_enemy_blockers"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "gd03Card.json",
@@ -3872,7 +3871,7 @@
       "effectIds": [
         "blocker"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd03Card.json",
@@ -3920,7 +3919,7 @@
       "effectIds": [
         "repair_3_if_hp_eq_1"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd03Card.json",
@@ -3998,7 +3997,7 @@
       "effectIds": [
         "blocker_if_friendly_base_in_play"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd03Card.json",
@@ -4047,7 +4046,7 @@
         "blocker",
         "deploy_effect"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd03Card.json",
@@ -4060,7 +4059,7 @@
         "blocker",
         "activate_effect"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd03Card.json",
@@ -4180,7 +4179,7 @@
       "effectIds": [
         "blocker"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "gd03Card.json",
@@ -4193,7 +4192,7 @@
         "burst_add_to_hand",
         "linked_effect"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "gd03Card.json",
@@ -4244,7 +4243,7 @@
         "burst_add_to_hand",
         "during_link_effect"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "gd03Card.json",
@@ -4270,7 +4269,7 @@
         "burst_add_to_hand",
         "attack_effect"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "gd03Card.json",
@@ -4627,7 +4626,7 @@
         "burst_add_to_hand",
         "play_effect"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "gd03Card.json",
@@ -4997,7 +4996,7 @@
       "effectIds": [
         "blocker"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "st01Card.json",
@@ -5224,7 +5223,7 @@
       "effectIds": [
         "blocker"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "st02Card.json",
@@ -5236,7 +5235,7 @@
       "effectIds": [
         "blocker"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "st02Card.json",
@@ -5276,7 +5275,7 @@
         "main_grant_breach",
         "pilot_designation"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "st02Card.json",
@@ -5576,7 +5575,7 @@
         "blocker",
         "pair_bounce_low_hp_if_pilot_ge_4"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "st04Card.json",
@@ -5610,7 +5609,7 @@
       "effectIds": [
         "blocker"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "st04Card.json",
@@ -5644,7 +5643,7 @@
       "effectIds": [
         "breach_3"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "st04Card.json",
@@ -5706,7 +5705,7 @@
         "burst_deploy_aile_strike_token_if_none",
         "main_deploy_strike_tokens_if_none"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "st04Card.json",
@@ -5746,7 +5745,7 @@
         "deploy_shield_to_hand",
         "activate_set_active"
       ],
-      "alwaysOnStatus": "likely-missing-rule"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "st04Card.json",
@@ -5772,7 +5771,7 @@
       "effectIds": [
         "blocker"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "st04Card.json",
@@ -5784,7 +5783,7 @@
       "effectIds": [
         "blocker"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "st04Card.json",
@@ -5796,7 +5795,7 @@
       "effectIds": [
         "blocker"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "st05Card.json",
@@ -5878,7 +5877,7 @@
         "blocker",
         "pair_enemy_ap_minus_2_low_level"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "st05Card.json",
@@ -5890,7 +5889,7 @@
       "effectIds": [
         "blocker"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "st05Card.json",
@@ -6037,7 +6036,7 @@
         "breach_1",
         "attack_ap_plus_2_to_1_or_2_clan_units"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "st06Card.json",
@@ -6151,7 +6150,7 @@
         "deploy_shield_to_hand",
         "once_per_turn_grant_breach_3_to_just_linked_clan_unit"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "st07Card.json",
@@ -6196,7 +6195,7 @@
       "effectIds": [
         "blocker_if_cb_pilot_in_play"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "st07Card.json",
@@ -6424,7 +6423,7 @@
       "effectIds": [
         "blocker_if_enemy_units_ge_3"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "complete"
     },
     {
       "file": "st08Card.json",
@@ -6475,7 +6474,7 @@
         "main_grant_breach_1_to_friendly_link_unit",
         "pilot_designation"
       ],
-      "alwaysOnStatus": "legacy-encoding-but-behaviorally-complete"
+      "alwaysOnStatus": "no-passive-text"
     },
     {
       "file": "st08Card.json",

@@ -97,4 +97,20 @@ describe('GD03 alignment migration', () => {
             }
         }
     });
+
+    test('GD03 no longer uses legacy keyword rule type', () => {
+        const cards = loadCards('gd03Card.json');
+        const keywordTypeRules = [];
+
+        for (const [cardId, card] of Object.entries(cards)) {
+            const rules = Array.isArray(card?.effects?.rules) ? card.effects.rules : [];
+            for (const rule of rules) {
+                if (String(rule?.type || '').toLowerCase() === 'keyword') {
+                    keywordTypeRules.push(`${cardId}:${rule.effectId || 'unknown'}`);
+                }
+            }
+        }
+
+        expect(keywordTypeRules).toEqual([]);
+    });
 });

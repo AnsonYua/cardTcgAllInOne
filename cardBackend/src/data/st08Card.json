@@ -356,7 +356,7 @@
                 "rules": [
                     {
                         "effectId": "blocker_if_enemy_units_ge_3",
-                        "type": "keyword",
+                        "type": "triggered",
                         "trigger": "ATTACK_REDIRECT",
                         "conditions": [
                             {

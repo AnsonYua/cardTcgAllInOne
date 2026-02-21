@@ -1239,7 +1239,7 @@
         "rules": [
           {
             "effectId": "breach_4",
-            "type": "keyword",
+            "type": "triggered",
             "trigger": "BATTLE_DESTROY",
             "target": {
               "type": "card",
@@ -1372,7 +1372,7 @@
         "rules": [
           {
             "effectId": "breach_4",
-            "type": "keyword",
+            "type": "triggered",
             "trigger": "BATTLE_DESTROY",
             "target": {
               "type": "card",
@@ -1430,7 +1430,7 @@
         "rules": [
           {
             "effectId": "breach_2",
-            "type": "keyword",
+            "type": "triggered",
             "trigger": "BATTLE_DESTROY",
             "target": {
               "type": "card",
@@ -1591,7 +1591,7 @@
         "rules": [
           {
             "effectId": "breach_3",
-            "type": "keyword",
+            "type": "triggered",
             "trigger": "BATTLE_DESTROY",
             "action": "damageShield",
             "sourceConditions": [
@@ -1803,7 +1803,7 @@
         "rules": [
           {
             "effectId": "breach_3",
-            "type": "keyword",
+            "type": "triggered",
             "trigger": "BATTLE_DESTROY",
             "target": {
               "type": "card",

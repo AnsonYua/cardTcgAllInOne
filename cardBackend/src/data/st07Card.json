@@ -167,7 +167,7 @@
                 "rules": [
                     {
                         "effectId": "blocker_if_cb_pilot_in_play",
-                        "type": "keyword",
+                        "type": "triggered",
                         "trigger": "ATTACK_REDIRECT",
                         "conditions": [
                             {

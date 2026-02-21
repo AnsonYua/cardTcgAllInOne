@@ -1,5 +1,12 @@
 const fs = require('fs');
 const path = require('path');
+const {
+  hasAlwaysOnKeywordText,
+  hasRepairRule,
+  hasBlockerRule,
+  hasBreachRule,
+  hasLegacyEncoding
+} = require('../validators/alwaysOnEffectUtils');
 
 const CARD_FILES = [
   'gd01Card.json',
@@ -23,36 +30,24 @@ function loadCardFile(baseDir, fileName) {
 function classifyAlwaysOnCompleteness(card) {
   const descriptions = Array.isArray(card?.effects?.description) ? card.effects.description : [];
   const rules = Array.isArray(card?.effects?.rules) ? card.effects.rules : [];
-  const text = descriptions.join(' ');
+  const text = descriptions
+    .filter((line) => typeof line === 'string')
+    .join(' ');
 
-  const hasRepairText = /<Repair\s*\d+>/i.test(text);
-  const hasBlockerText = /<Blocker>/i.test(text);
-  const hasBreachText = /<Breach\s*\d+>/i.test(text);
+  const hasRepairText = hasAlwaysOnKeywordText(descriptions, 'repair');
+  const hasBlockerText = hasAlwaysOnKeywordText(descriptions, 'blocker');
+  const hasBreachText = hasAlwaysOnKeywordText(descriptions, 'breach');
   const hasPassiveText = hasRepairText || hasBlockerText || hasBreachText || /\bWhile\b/i.test(text);
 
-  const hasContinuous = rules.some((rule) =>
-    String(rule?.type || '').toLowerCase() === 'continuous' ||
-    String(rule?.trigger || '').toLowerCase() === 'continuous' ||
-    String(rule?.timing?.duration || '').toLowerCase() === 'continuous'
-  );
-
-  const hasRepairRule = rules.some((rule) =>
-    String(rule?.action || '').toLowerCase() === 'heal' ||
-    (String(rule?.action || '').toLowerCase() === 'grant_keyword' && String(rule?.parameters?.keyword || '').toLowerCase() === 'repair')
-  );
-  const hasBlockerRule = rules.some((rule) =>
-    String(rule?.trigger || '').toUpperCase() === 'ATTACK_REDIRECT' ||
-    (String(rule?.action || '').toLowerCase() === 'grant_keyword' && String(rule?.parameters?.keyword || '').toLowerCase() === 'blocker')
-  );
-  const hasBreachRule = rules.some((rule) =>
-    String(rule?.action || '').toLowerCase() === 'damageshield' ||
-    String(rule?.action || '').toLowerCase() === 'grant_breach'
-  );
+  const hasRepairRuleCapability = hasRepairRule(rules);
+  const hasBlockerRuleCapability = hasBlockerRule(rules);
+  const hasBreachRuleCapability = hasBreachRule(rules);
+  const usesLegacyEncoding = hasLegacyEncoding(rules);
 
   if (
-    (hasRepairText && !hasRepairRule) ||
-    (hasBlockerText && !hasBlockerRule) ||
-    (hasBreachText && !hasBreachRule)
+    (hasRepairText && !hasRepairRuleCapability) ||
+    (hasBlockerText && !hasBlockerRuleCapability) ||
+    (hasBreachText && !hasBreachRuleCapability)
   ) {
     return 'likely-missing-rule';
   }
@@ -61,12 +56,8 @@ function classifyAlwaysOnCompleteness(card) {
     return 'no-passive-text';
   }
 
-  if (hasContinuous) {
-    return 'complete';
-  }
-
-  if (hasRepairRule || hasBlockerRule || hasBreachRule) {
-    return 'legacy-encoding-but-behaviorally-complete';
+  if (hasRepairRuleCapability || hasBlockerRuleCapability || hasBreachRuleCapability) {
+    return usesLegacyEncoding ? 'legacy-encoding-but-behaviorally-complete' : 'complete';
   }
 
   return 'complete';
@@ -147,5 +138,8 @@ function generateAlwaysOnCompletenessReport(baseDir) {
 module.exports = {
   CARD_FILES,
   generateEffectInventoryReport,
-  generateAlwaysOnCompletenessReport
+  generateAlwaysOnCompletenessReport,
+  __testUtils: {
+    classifyAlwaysOnCompleteness
+  }
 };

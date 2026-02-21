@@ -269,7 +269,7 @@
                 "rules": [
                     {
                         "effectId": "breach_3",
-                        "type": "keyword",
+                        "type": "triggered",
                         "trigger": "BATTLE_DESTROY",
                         "target": {
                             "type": "card",

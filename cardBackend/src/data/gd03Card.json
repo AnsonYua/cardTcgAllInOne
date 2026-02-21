@@ -676,7 +676,7 @@
           },
           {
             "effectId": "conditional_repair_1_if_jupitris_ge_2",
-            "type": "keyword",
+            "type": "triggered",
             "trigger": "END_OF_TURN",
             "action": "heal",
             "target": {
@@ -919,7 +919,7 @@
         "rules": [
           {
             "effectId": "breach_5",
-            "type": "keyword",
+            "type": "triggered",
             "trigger": "BATTLE_DESTROY",
             "target": {
               "type": "card",
@@ -1450,7 +1450,7 @@
         "rules": [
           {
             "effectId": "breach_3",
-            "type": "keyword",
+            "type": "triggered",
             "trigger": "BATTLE_DESTROY",
             "target": {
               "type": "card",
@@ -3462,7 +3462,7 @@
         "rules": [
           {
             "effectId": "repair_3_if_hp_eq_1",
-            "type": "keyword",
+            "type": "triggered",
             "trigger": "END_OF_TURN",
             "action": "heal",
             "target": {
@@ -3782,7 +3782,7 @@
         "rules": [
           {
             "effectId": "blocker_if_friendly_base_in_play",
-            "type": "keyword",
+            "type": "triggered",
             "trigger": "ATTACK_REDIRECT",
             "target": {
               "type": "unit",

@@ -33,7 +33,7 @@
                 "rules": [
                     {
                         "effectId": "repair_2",
-                        "type": "keyword",
+                        "type": "triggered",
                         "trigger": "END_OF_TURN",
                         "action": "heal",
                         "parameters": {

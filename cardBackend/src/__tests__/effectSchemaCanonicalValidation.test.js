@@ -56,4 +56,48 @@ describe('effectSchemaCanonicalValidation utilities', () => {
 
         expect(diagnostics.some((d) => d.severity === 'warning')).toBe(true);
     });
+
+    test('does not warn when breach keyword text is backed by keyword-style damageShield rule', () => {
+        const diagnostics = [];
+        detectAlwaysOnTextRuleMismatches('mock.json', {
+            'MOCK-002': {
+                effects: {
+                    description: ['<Breach 4> (When this Unit destroys an enemy Unit by attack, deal 4 damage to shield.)'],
+                    rules: [
+                        {
+                            effectId: 'breach_4',
+                            type: 'keyword',
+                            trigger: 'BATTLE_DESTROY',
+                            action: 'damageShield',
+                            parameters: { value: 4 }
+                        }
+                    ]
+                }
+            }
+        }, diagnostics);
+
+        expect(diagnostics.some((d) => d.severity === 'warning')).toBe(false);
+    });
+
+    test('does not treat targeting text with <Blocker> as always-on blocker grant text', () => {
+        const diagnostics = [];
+        detectAlwaysOnTextRuleMismatches('mock.json', {
+            'MOCK-003': {
+                effects: {
+                    description: ['[Attack]Choose 1 enemy Unit with <Blocker> that is Lv.3 or lower. Destroy it.'],
+                    rules: [
+                        {
+                            effectId: 'attack_effect',
+                            type: 'triggered',
+                            trigger: 'ATTACK_DECLARED',
+                            action: 'destroy',
+                            target: { type: 'unit', scope: 'opponent', filters: { keywords: ['Blocker'] } }
+                        }
+                    ]
+                }
+            }
+        }, diagnostics);
+
+        expect(diagnostics.some((d) => d.severity === 'warning')).toBe(false);
+    });
 });

@@ -1,4 +1,13 @@
 {
+  "allowlistSchema": {
+    "description": "Optional strict-gate exceptions. One row per status override.",
+    "fields": [
+      "file",
+      "cardId",
+      "status",
+      "reason"
+    ]
+  },
   "canonicalizationRules": [
     {
       "ruleId": "rule-wave1-gd03-106-single-play",

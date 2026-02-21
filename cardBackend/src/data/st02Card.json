@@ -32,7 +32,7 @@
         "rules": [
           {
             "effectId": "breach_5",
-            "type": "keyword",
+            "type": "triggered",
             "trigger": "BATTLE_DESTROY",
             "target": {
               "type": "card",
