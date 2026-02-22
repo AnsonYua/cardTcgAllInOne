@@ -76,6 +76,9 @@ export function normalizeEffectRule(
 
     const type = typeof raw['type'] === 'string' ? raw['type'] : undefined;
     const optional = typeof raw['optional'] === 'boolean' ? raw['optional'] : undefined;
+    const restrictions = Array.isArray(raw['restrictions'])
+        ? raw['restrictions'].filter((value): value is string => typeof value === 'string')
+        : undefined;
 
     const normalized: EffectDefinition = {
         effectId,
@@ -87,6 +90,7 @@ export function normalizeEffectRule(
         cost,
         parameters,
         timing,
+        restrictions,
         conditions,
         description,
         sourceConditions

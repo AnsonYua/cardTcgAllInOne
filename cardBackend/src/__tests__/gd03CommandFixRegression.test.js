@@ -15,6 +15,8 @@ function findConditionalConditionByType(effectRule, conditionType) {
 describe('GD03 command duplicate-play fixes', () => {
     test('GD03-109 has a single play rule and excludes source card in name-in-trash checks', () => {
         const card = gd03.cards['GD03-109'];
+        expect(card.effects.description).toHaveLength(2);
+        expect(card.effects.rules).toHaveLength(2);
         const playRules = getPlayRules(card);
         expect(playRules).toHaveLength(1);
 
@@ -28,6 +30,8 @@ describe('GD03 command duplicate-play fixes', () => {
 
     test('GD03-114 has a single play rule and excludes source card in cardsInTrash checks', () => {
         const card = gd03.cards['GD03-114'];
+        expect(card.effects.description).toHaveLength(2);
+        expect(card.effects.rules).toHaveLength(2);
         const playRules = getPlayRules(card);
         expect(playRules).toHaveLength(1);
 

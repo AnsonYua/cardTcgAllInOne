@@ -100,4 +100,64 @@ describe('effectSchemaCanonicalValidation utilities', () => {
 
         expect(diagnostics.some((d) => d.severity === 'warning')).toBe(false);
     });
+
+    test('warns when burst + play-from-hand pairing text has no pair_target_unit replace_cost rule', () => {
+        const diagnostics = [];
+        detectAlwaysOnTextRuleMismatches('mock.json', {
+            'MOCK-004': {
+                effects: {
+                    description: [
+                        '【Burst】Add this card to your hand.',
+                        'When playing this card from your hand and pairing it with a Unit with "Gundam NT-1" in its card name, play this card as if it has 0 cost.'
+                    ],
+                    rules: [
+                        {
+                            effectId: 'burst_add_to_hand',
+                            type: 'triggered',
+                            trigger: 'BURST_CONDITION',
+                            action: 'addToHand'
+                        }
+                    ]
+                }
+            }
+        }, diagnostics);
+
+        expect(diagnostics.some((d) => d.severity === 'warning' && /pair_target_unit replace_cost/.test(d.message))).toBe(true);
+    });
+
+    test('does not warn when burst + play-from-hand pairing text is backed by pair_target_unit replace_cost rule', () => {
+        const diagnostics = [];
+        detectAlwaysOnTextRuleMismatches('mock.json', {
+            'MOCK-005': {
+                effects: {
+                    description: [
+                        '【Burst】Add this card to your hand.',
+                        'When playing this card from your hand and pairing it with a Unit with "Gundam NT-1" in its card name, play this card as if it has 0 cost.'
+                    ],
+                    rules: [
+                        {
+                            effectId: 'burst_add_to_hand',
+                            type: 'triggered',
+                            trigger: 'BURST_CONDITION',
+                            action: 'addToHand'
+                        },
+                        {
+                            effectId: 'play_pair_nt1_as_zero_cost',
+                            type: 'play',
+                            trigger: 'PLAY_CARD',
+                            action: 'replace_cost',
+                            parameters: {
+                                replace: {
+                                    from: { type: 'pair_target_unit', filters: { nameIncludes: 'Gundam NT-1' } },
+                                    to: { cost: 0 }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }, diagnostics);
+
+        expect(diagnostics.some((d) => /pair_target_unit replace_cost/.test(d.message))).toBe(false);
+    });
 });

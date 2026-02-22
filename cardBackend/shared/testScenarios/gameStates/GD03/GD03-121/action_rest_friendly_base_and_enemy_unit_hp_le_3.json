@@ -1,0 +1,217 @@
+{
+  "description": "gd03-121_action_rest_friendly_base_and_enemy_unit_hp_le_3",
+  "gameId": "gd03-121_action_rest_friendly_base_and_enemy_unit_hp_le_3",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD03-121",
+    "ACTION_STEP",
+    "rest",
+    "base",
+    "enemy_hp_le_3"
+  ],
+  "notes": [
+    "Action: Load scenario via getTestScenario and inject via injectGameState.",
+    "Expect: Player 1 is in ACTION_STEP with GD03-121 in hand and 1 active energy card.",
+    "Action: Player 1 plays GD03-121 during ACTION_STEP.",
+    "Expect: First choice prompts for 1 friendly Base; select the active base in Player 1 base zone.",
+    "Action: Resolve second choice for enemy Unit target.",
+    "Expect: Only enemy Units with HP <= 3 are selectable (enemy slot2 valid HP3; enemy slot1 invalid HP4).",
+    "Action: Select enemy slot2 unit as target.",
+    "Expect: Selected friendly Base and selected enemy Unit are both rested."
+  ],
+  "initialGameEnv": {
+    "phase": "ACTION_STEP_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed_gd03121_action",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_GD03121_ACTION",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": {
+      "actionType": "attackUnit",
+      "attackingPlayerId": "playerId_1",
+      "defendingPlayerId": "playerId_2",
+      "attackerCarduid": "GD03-068_attacker_0001",
+      "targetCarduid": "GD03-031_battle_target_0001",
+      "targetPlayerId": "playerId_2",
+      "status": "ACTION_STEP",
+      "fromBurst": false,
+      "openedAt": 1768362880422
+    },
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "GD03-121_hand_0001",
+              "cardId": "GD03-121"
+            }
+          ],
+          "handUids": [
+            "GD03-121_hand_0001"
+          ],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD03-068_attacker_0001",
+              "cardId": "GD03-068",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [
+            {
+              "carduid": "GD03-132_base_active_0001",
+              "cardId": "GD03-132",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "originalHP": 5,
+              "damageReceived": 0
+            }
+          ],
+          "shieldArea": [
+            {
+              "carduid": "GD03-044_shield_p1_0001",
+              "cardId": "GD03-044"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd03121_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD03-031_battle_target_0001",
+              "cardId": "GD03-031",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 4
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "GD03-068_valid_target_0002",
+              "cardId": "GD03-068",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 3
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "GD03-045_shield_p2_0001",
+              "cardId": "GD03-045"
+            }
+          ],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

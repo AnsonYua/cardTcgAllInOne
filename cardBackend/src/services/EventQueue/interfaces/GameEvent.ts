@@ -231,6 +231,7 @@ export interface EffectDefinition {
     effectId: string;
     type?: string;
     trigger?: string;
+    restrictions?: string[];
     optional?: boolean;
     target?: EffectTargetConfig;
     action?: string;

@@ -142,12 +142,13 @@ export class PlayCardPreparationManager {
             cardData
         );
 
-        const replacementChoice = this.resolveDestroyLinkedUnitPlayReplacement(
+        const replacementChoice = this.resolvePlayCostReplacement(
             gameEnv,
             playerId,
             eventData,
             cardData,
-            cardDataForEnergy
+            cardDataForEnergy,
+            fromBurst
         );
         if (replacementChoice.applyReplacement) {
             cardDataForEnergy = {
@@ -231,35 +232,117 @@ export class PlayCardPreparationManager {
         };
     }
 
-    private static resolveDestroyLinkedUnitPlayReplacement(
+    private static resolvePlayCostReplacement(
         gameEnv: GameEnvironment,
         playerId: string,
         eventData: PlayCardEventData,
         cardData: any,
-        effectiveCardData: any
+        effectiveCardData: any,
+        fromBurst: boolean
     ): {
         applyReplacement: boolean;
         replacementCost: number;
         replacementLevel: number;
         finalizeAfterPlacement?: () => { success: boolean; error?: string };
     } {
-        const rules = Array.isArray(cardData?.effects?.rules) ? cardData.effects.rules : [];
-        const replacementRule = rules.find((rule: any) => this.isDestroyLinkedUnitCostReplacementRule(rule));
-        if (!replacementRule) {
-            return { applyReplacement: false, replacementCost: effectiveCardData?.cost || cardData?.cost || 0, replacementLevel: effectiveCardData?.level || cardData?.level || 0 };
+        if (fromBurst) {
+            return {
+                applyReplacement: false,
+                replacementCost: effectiveCardData?.cost || cardData?.cost || 0,
+                replacementLevel: effectiveCardData?.level || cardData?.level || 0
+            };
         }
 
+        const rules = Array.isArray(cardData?.effects?.rules) ? cardData.effects.rules : [];
+        const baseReplacementCost = typeof effectiveCardData?.cost === 'number' ? effectiveCardData.cost : Number(effectiveCardData?.cost || 0);
+        const baseReplacementLevel = typeof effectiveCardData?.level === 'number' ? effectiveCardData.level : Number(effectiveCardData?.level || 0);
+
+        for (const rule of rules) {
+            if (!rule || typeof rule !== 'object' || rule.action !== 'replace_cost') {
+                continue;
+            }
+
+            const replacementResult = this.resolveReplacementRuleResult(
+                gameEnv,
+                playerId,
+                eventData,
+                rule,
+                baseReplacementCost,
+                baseReplacementLevel
+            );
+            if (replacementResult) {
+                return replacementResult;
+            }
+        }
+
+        return {
+            applyReplacement: false,
+            replacementCost: baseReplacementCost,
+            replacementLevel: baseReplacementLevel
+        };
+    }
+
+    private static resolveReplacementRuleResult(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        eventData: PlayCardEventData,
+        replacementRule: any,
+        currentCost: number,
+        currentLevel: number
+    ): {
+        applyReplacement: boolean;
+        replacementCost: number;
+        replacementLevel: number;
+        finalizeAfterPlacement?: () => { success: boolean; error?: string };
+    } | null {
+        if (this.isDestroyLinkedUnitCostReplacementRule(replacementRule)) {
+            return this.resolveDestroyLinkedUnitCostReplacement(
+                gameEnv,
+                playerId,
+                eventData,
+                replacementRule,
+                currentCost,
+                currentLevel
+            );
+        }
+
+        if (this.isPairTargetUnitCostReplacementRule(replacementRule)) {
+            return this.resolvePairTargetUnitCostReplacement(
+                gameEnv,
+                playerId,
+                eventData,
+                replacementRule,
+                currentCost,
+                currentLevel
+            );
+        }
+
+        return null;
+    }
+
+    private static resolveDestroyLinkedUnitCostReplacement(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        eventData: PlayCardEventData,
+        replacementRule: any,
+        currentCost: number,
+        currentLevel: number
+    ): {
+        applyReplacement: boolean;
+        replacementCost: number;
+        replacementLevel: number;
+        finalizeAfterPlacement?: () => { success: boolean; error?: string };
+    } | null {
         const requestedByEvent = (eventData as any).useCostReplacement === true;
         const availableEnergy = EnergyManager.getAvailableEnergy(gameEnv, playerId);
-        const requiredCost = typeof effectiveCardData?.cost === 'number' ? effectiveCardData.cost : Number(effectiveCardData?.cost || 0);
-        const shouldAttempt = requestedByEvent || availableEnergy < requiredCost;
+        const shouldAttempt = requestedByEvent || availableEnergy < currentCost;
         if (!shouldAttempt) {
-            return { applyReplacement: false, replacementCost: requiredCost, replacementLevel: effectiveCardData?.level || cardData?.level || 0 };
+            return null;
         }
 
         const eligible = this.findEligibleLinkedUnitsForCostReplacement(gameEnv, playerId, replacementRule);
         if (eligible.length === 0) {
-            return { applyReplacement: false, replacementCost: requiredCost, replacementLevel: effectiveCardData?.level || cardData?.level || 0 };
+            return null;
         }
 
         const requestedTarget = typeof (eventData as any).costReplacementTargetCarduid === 'string'
@@ -322,6 +405,89 @@ export class PlayCardPreparationManager {
         }
 
         return from.type === 'destroy' && from.target === 'friendly_linked_unit';
+    }
+
+    private static isPairTargetUnitCostReplacementRule(rule: any): boolean {
+        if (!rule || typeof rule !== 'object') {
+            return false;
+        }
+        if (rule.action !== 'replace_cost') {
+            return false;
+        }
+
+        const replace = rule?.parameters?.replace;
+        if (!replace || typeof replace !== 'object') {
+            return false;
+        }
+
+        const from = replace.from;
+        const to = replace.to;
+        if (!from || typeof from !== 'object' || !to || typeof to !== 'object') {
+            return false;
+        }
+
+        return from.type === 'pair_target_unit';
+    }
+
+    private static resolvePairTargetUnitCostReplacement(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        eventData: PlayCardEventData,
+        replacementRule: any,
+        currentCost: number,
+        currentLevel: number
+    ): {
+        applyReplacement: boolean;
+        replacementCost: number;
+        replacementLevel: number;
+    } | null {
+        if (eventData.playAs !== 'pilot') {
+            return null;
+        }
+
+        const targetUnitUid = typeof eventData.targetUnit === 'string' ? eventData.targetUnit : '';
+        if (!targetUnitUid) {
+            return null;
+        }
+
+        const player = gameEnv.getPlayer(playerId);
+        if (!player?.zones) {
+            return null;
+        }
+
+        const slotResult = SlotZoneUtils.findSlotByCarduid(player.zones, targetUnitUid);
+        const targetUnit = slotResult?.unit;
+        if (!targetUnit || targetUnit.carduid !== targetUnitUid) {
+            return null;
+        }
+
+        const from = replacementRule?.parameters?.replace?.from || {};
+        const filters = from.filters && typeof from.filters === 'object'
+            ? (from.filters as Record<string, unknown>)
+            : {};
+        const requiredNameIncludes = typeof filters.nameIncludes === 'string'
+            ? String(filters.nameIncludes).toLowerCase()
+            : '';
+        if (!requiredNameIncludes) {
+            return null;
+        }
+
+        const targetUnitName = typeof targetUnit?.cardData?.name === 'string'
+            ? String(targetUnit.cardData.name).toLowerCase()
+            : '';
+        if (!targetUnitName.includes(requiredNameIncludes)) {
+            return null;
+        }
+
+        const replacement = replacementRule?.parameters?.replace?.to || {};
+        const replacementCost = typeof replacement.cost === 'number' ? replacement.cost : currentCost;
+        const replacementLevel = typeof replacement.level === 'number' ? replacement.level : currentLevel;
+
+        return {
+            applyReplacement: true,
+            replacementCost,
+            replacementLevel
+        };
     }
 
     private static findEligibleLinkedUnitsForCostReplacement(

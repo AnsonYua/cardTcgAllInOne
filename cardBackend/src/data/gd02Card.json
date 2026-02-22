@@ -2513,6 +2513,24 @@
         ],
         "rules": [
           {
+            "effectId": "suppression_2",
+            "type": "continuous",
+            "trigger": "continuous",
+            "action": "grant_keyword",
+            "timing": {
+              "duration": "continuous"
+            },
+            "target": {
+              "type": "unit",
+              "scope": "self",
+              "count": 1
+            },
+            "parameters": {
+              "keyword": "Suppression",
+              "value": 2
+            }
+          },
+          {
             "effectId": "link_effect",
             "type": "continuous",
             "trigger": "continuous",

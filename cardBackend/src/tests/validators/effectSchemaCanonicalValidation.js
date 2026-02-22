@@ -478,6 +478,27 @@ function detectAlwaysOnTextRuleMismatches(fileName, cards, diagnostics) {
         message: `${fileName}: breach text present but no breach-capable rule found`
       });
     }
+
+    const hasBurstLine = descriptions.some((line) => typeof line === 'string' && /^(?:\[Burst\]|【Burst】)/i.test(line.trim()));
+    const hasPlayFromHandPairingLine = descriptions.some(
+      (line) => typeof line === 'string' && /^When playing this card from your hand\b/i.test(line.trim())
+    );
+    const hasPairTargetReplacementRule = rules.some((rule) => {
+      if (!rule || typeof rule !== 'object') return false;
+      if (rule.action !== 'replace_cost') return false;
+      const fromType = rule?.parameters?.replace?.from?.type;
+      return fromType === 'pair_target_unit';
+    });
+
+    if (hasBurstLine && hasPlayFromHandPairingLine && !hasPairTargetReplacementRule) {
+      diagnostics.push({
+        severity: 'warning',
+        cardId,
+        effectId: 'effects.description',
+        jsonPath: `cards.${cardId}.effects.description`,
+        message: `${fileName}: play-from-hand pairing cost text present but no pair_target_unit replace_cost rule found`
+      });
+    }
   }
 }
 

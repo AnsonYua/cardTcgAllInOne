@@ -4071,7 +4071,8 @@
       "hp": 1,
       "effects": {
         "description": [
-          "[Burst]Add this card to your hand. While this Unit has <Repair>, it gets AP+1."
+          "[Burst]Add this card to your hand.",
+          "While this Unit has <Repair>, it gets AP+1."
         ],
         "rules": [
           {
@@ -4083,6 +4084,25 @@
               "scope": "self"
             },
             "action": "addToHand"
+          },
+          {
+            "effectId": "continuous_ap_plus_1_if_unit_has_repair",
+            "type": "continuous",
+            "trigger": "continuous",
+            "action": "modifyAP",
+            "target": {
+              "type": "unit",
+              "scope": "self",
+              "count": 1,
+              "filters": {
+                "keywords": [
+                  "Repair"
+                ]
+              }
+            },
+            "parameters": {
+              "value": 1
+            }
           }
         ]
       }
@@ -4159,7 +4179,8 @@
       "hp": 1,
       "effects": {
         "description": [
-          "[Burst]Add this card to your hand. During your turn, while this Unit has <Breach>, it can't receive battle damage from enemy Units with 3 or less AP."
+          "[Burst]Add this card to your hand.",
+          "During your turn, while this Unit has <Breach>, it can't receive battle damage from enemy Units with 3 or less AP."
         ],
         "rules": [
           {
@@ -4171,6 +4192,36 @@
               "scope": "self"
             },
             "action": "addToHand"
+          },
+          {
+            "effectId": "continuous_prevent_battle_damage_if_unit_has_breach_during_your_turn",
+            "type": "continuous",
+            "trigger": "continuous",
+            "action": "prevent_battle_damage",
+            "target": {
+              "type": "unit",
+              "scope": "self",
+              "count": 1,
+              "filters": {
+                "keywords": [
+                  "Breach"
+                ]
+              }
+            },
+            "conditions": [
+              {
+                "type": "turnPlayer",
+                "scope": "self"
+              }
+            ],
+            "parameters": {
+              "from": "enemy_units",
+              "maxEnemyAp": 3
+            },
+            "timing": {
+              "duration": "continuous",
+              "endOnSourceDestroyed": true
+            }
           }
         ]
       }

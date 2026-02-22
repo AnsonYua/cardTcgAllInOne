@@ -23,8 +23,7 @@ import { ContinuousConditionalEffectExpander } from './effects/continuous/Contin
 import { ContinuousStatChangeNotifier } from './effects/continuous/ContinuousStatChangeNotifier';
 import { ContinuousSequenceEffectExpander } from './effects/continuous/ContinuousSequenceEffectExpander';
 import { SourceTraitConditionEvaluator } from './conditions/SourceTraitConditionEvaluator';
-import { ContinuousRegistryTargetResolver } from './effects/continuous/ContinuousRegistryTargetResolver';
-import { ContinuousScopeUtils } from './effects/continuous/ContinuousScopeUtils';
+import { ContinuousRegistryScopeResolver } from './effects/continuous/ContinuousRegistryScopeResolver';
 import { EffectConditionEvaluator } from './conditions/EffectConditionEvaluator';
 import { EffectSourceConditionEvaluator } from './conditions/EffectSourceConditionEvaluator';
 import { EffectScalingResolver } from './effects/scaling/EffectScalingResolver';
@@ -165,6 +164,14 @@ export class ContinuousEffectManager {
                     ContinuousEffectManager.updateRegistryFromCard(slot.pilot as ZoneCardWithData, playerId, gameEnv);
                 }
             }
+
+            // Scan base zone cards as potential continuous effect sources
+            const baseCards = Array.isArray((player.zones as any)?.base) ? (player.zones as any).base : [];
+            for (const baseCard of baseCards) {
+                if (baseCard?.carduid) {
+                    ContinuousEffectManager.updateRegistryFromCard(baseCard as ZoneCardWithData, playerId, gameEnv);
+                }
+            }
             
             // Cleanup invalid effects for this player
             ContinuousEffectManager.cleanupPlayerRegistryEffects(player, playerId, gameEnv);
@@ -280,7 +287,11 @@ export class ContinuousEffectManager {
                 const typedEntry = effectEntry as any; // Type assertion for effectRegistry entries
                 if (!typedEntry.active) continue;
                 
-                const sourceCard = SlotZoneUtils.getCardByUid(gameEnv, typedEntry.sourceCarduid) as ZoneCardWithData | null;
+                const sourceCard = ContinuousEffectManager.getSourceCardByUid(
+                    gameEnv,
+                    typedEntry.sourceCarduid,
+                    typedEntry.sourcePlayerId
+                );
                 if (!sourceCard) {
                     continue;
                 }
@@ -372,121 +383,11 @@ export class ContinuousEffectManager {
      * Resolve targets for a registry effect
      */
     static resolveRegistryTargets(effectEntry: any, gameEnv: GameEnvironment): any[] {
-        const scope = ContinuousScopeUtils.normalizeScope(effectEntry.scope);
-        const sourcePlayerId = effectEntry.sourcePlayerId;
-        
-        switch (scope) {
-            case 'self_all_unit': {
-                const units = ContinuousEffectManager.getAllPlayerUnitsInSlot(sourcePlayerId, gameEnv);
-                return ContinuousEffectManager.applyTargetFilters(units, effectEntry.effectData?.target, effectEntry.sourceCarduid);
-            }
-            case 'self_all_shield': {
-                const player = gameEnv.players[sourcePlayerId];
-                const shields = Array.isArray(player?.zones?.shieldArea) ? player.zones.shieldArea : [];
-                return shields.map((card: any) => ({
-                    ...card,
-                    zone: 'shield',
-                    playerId: sourcePlayerId
-                }));
-            }
-            case 'opponent_all':
-                const opponentId = ContinuousEffectManager.getOpponentId(sourcePlayerId, gameEnv);
-                return ContinuousEffectManager.applyTargetFilters(
-                    ContinuousEffectManager.getAllPlayerUnitsInSlot(opponentId, gameEnv),
-                    effectEntry.effectData?.target,
-                    effectEntry.sourceCarduid
-                );
-            case 'self':
-                return ContinuousRegistryTargetResolver.resolveSelf(effectEntry, gameEnv);
-            case 'battle_opponent': {
-                const targets = ContinuousRegistryTargetResolver.resolveBattleOpponent(effectEntry, gameEnv);
-                return ContinuousEffectManager.applyTargetFilters(targets, effectEntry.effectData?.target, effectEntry.sourceCarduid);
-            }
-            default:
-                console.log(`⚠️ Unknown scope: ${scope}`);
-                return [];
-        }
-    }
-
-    private static applyTargetFilters(targets: any[], targetConfig: any, sourceCarduid?: string): any[] {
-        if (!Array.isArray(targets) || targets.length === 0) {
-            return [];
-        }
-
-        const filters = targetConfig?.filters && typeof targetConfig.filters === 'object' ? targetConfig.filters : null;
-        if (!filters) {
-            return targets;
-        }
-
-        return targets.filter(card => {
-            if (filters.excludeSelf === true && sourceCarduid && card?.carduid === sourceCarduid) {
-                return false;
-            }
-
-            const cardData = card?.cardData || {};
-            const traits = Array.isArray(cardData?.traits) ? cardData.traits : [];
-
-            const cardTypeFilter = typeof filters.cardType === 'string' ? filters.cardType.toLowerCase() : '';
-            if (cardTypeFilter) {
-                const actualType = typeof cardData?.cardType === 'string' ? String(cardData.cardType).toLowerCase() : '';
-                if (actualType !== cardTypeFilter) {
-                    return false;
-                }
-            }
-
-            if (typeof filters.color === 'string') {
-                const expectedColor = String(filters.color).toLowerCase();
-                const actualColor = typeof cardData?.color === 'string' ? String(cardData.color).toLowerCase() : '';
-                if (actualColor !== expectedColor) {
-                    return false;
-                }
-            }
-
-            if (typeof filters.colorNot === 'string') {
-                const blockedColor = String(filters.colorNot).toLowerCase();
-                const actualColor = typeof cardData?.color === 'string' ? String(cardData.color).toLowerCase() : '';
-                if (actualColor === blockedColor) {
-                    return false;
-                }
-            }
-
-            if (typeof filters.status === 'string') {
-                const expectedStatus = String(filters.status).toLowerCase();
-                const actualStatus = card?.isRested ? 'rested' : 'active';
-                if (actualStatus !== expectedStatus) {
-                    return false;
-                }
-            }
-
-            if (typeof (filters as any).isRested === 'boolean') {
-                if ((card?.isRested === true) !== ((filters as any).isRested === true)) {
-                    return false;
-                }
-            }
-
-            const traitsFilter = Array.isArray(filters.traits)
-                ? filters.traits.filter((t: unknown) => typeof t === 'string')
-                : [];
-            if (traitsFilter.length > 0 && !traitsFilter.every((trait: string) => traits.includes(trait))) {
-                return false;
-            }
-
-            const traitsAll = Array.isArray((filters as any).traitsAll)
-                ? (filters as any).traitsAll.filter((t: unknown) => typeof t === 'string')
-                : [];
-            if (traitsAll.length > 0 && !traitsAll.every((trait: string) => traits.includes(trait))) {
-                return false;
-            }
-
-            const traitsAny = Array.isArray((filters as any).traitsAny)
-                ? (filters as any).traitsAny.filter((t: unknown) => typeof t === 'string')
-                : [];
-            if (traitsAny.length > 0 && !traitsAny.some((trait: string) => traits.includes(trait))) {
-                return false;
-            }
-
-            return true;
-        });
+        return ContinuousRegistryScopeResolver.resolve(
+            effectEntry,
+            gameEnv,
+            ContinuousEffectManager.getAllPlayerUnitsInSlot
+        );
     }
 
     /**
@@ -499,7 +400,11 @@ export class ContinuousEffectManager {
         for (const [effectKey, effectEntry] of Object.entries(player.effectRegistry)) {
             const typedEntry = effectEntry as any; // Type assertion for effectRegistry entries
             // Check if source card still exists
-            const sourceCard = SlotZoneUtils.getCardByUid(gameEnv, typedEntry.sourceCarduid) as ZoneCardWithData | null;
+            const sourceCard = ContinuousEffectManager.getSourceCardByUid(
+                gameEnv,
+                typedEntry.sourceCarduid,
+                typedEntry.sourcePlayerId
+            );
 
             if (!sourceCard) {
                 effectsToRemove.push(effectKey);
@@ -615,11 +520,38 @@ export class ContinuousEffectManager {
         console.log(`✅ All card modifications reset to 0`);
     }
 
-    /**
-     * Get opponent player ID
-     */
-    private static getOpponentId(playerId: string, gameEnv: GameEnvironment): string {
-        const playerIds = Object.keys(gameEnv.players);
-        return playerIds.find((id) => id !== playerId) || '';
+    private static getSourceCardByUid(
+        gameEnv: GameEnvironment,
+        carduid: string,
+        sourcePlayerId?: string
+    ): ZoneCardWithData | null {
+        const slotCard = SlotZoneUtils.getCardByUid(gameEnv, carduid) as ZoneCardWithData | null;
+        if (slotCard) {
+            return slotCard;
+        }
+
+        const tryFindInBases = (playerId: string): ZoneCardWithData | null => {
+            const player = gameEnv.players[playerId];
+            const baseCards = Array.isArray(player?.zones?.base) ? player.zones.base : [];
+            const found = baseCards.find((base: any) => base?.carduid === carduid);
+            return (found as ZoneCardWithData) || null;
+        };
+
+        if (typeof sourcePlayerId === 'string' && sourcePlayerId.length > 0) {
+            const ownedBase = tryFindInBases(sourcePlayerId);
+            if (ownedBase) {
+                return ownedBase;
+            }
+        }
+
+        for (const playerId of Object.keys(gameEnv.players)) {
+            const base = tryFindInBases(playerId);
+            if (base) {
+                return base;
+            }
+        }
+
+        return null;
     }
+
 }

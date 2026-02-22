@@ -1863,6 +1863,24 @@
         ],
         "rules": [
           {
+            "effectId": "suppression_2",
+            "type": "continuous",
+            "trigger": "continuous",
+            "action": "grant_keyword",
+            "timing": {
+              "duration": "continuous"
+            },
+            "target": {
+              "type": "unit",
+              "scope": "self",
+              "count": 1
+            },
+            "parameters": {
+              "keyword": "Suppression",
+              "value": 2
+            }
+          },
+          {
             "effectId": "deploy_effect",
             "type": "triggered",
             "trigger": "ENTERS_PLAY",
@@ -3905,6 +3923,23 @@
         ],
         "rules": [
           {
+            "effectId": "high_maneuver",
+            "type": "continuous",
+            "trigger": "continuous",
+            "action": "grant_keyword",
+            "timing": {
+              "duration": "continuous"
+            },
+            "target": {
+              "type": "unit",
+              "scope": "self",
+              "count": 1
+            },
+            "parameters": {
+              "keyword": "High-Maneuver"
+            }
+          },
+          {
             "effectId": "during_link_effect",
             "type": "continuous",
             "trigger": "continuous",
@@ -4891,7 +4926,8 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Burst】Add this card to your hand. When playing this card from your hand and pairing it with a Unit with \"Gundam NT-1\" in its card name, play this card as if it has 0 cost."
+          "【Burst】Add this card to your hand.", 
+          "When playing this card from your hand and pairing it with a Unit with \"Gundam NT-1\" in its card name, play this card as if it has 0 cost."
         ],
         "rules": [
           {
@@ -4903,6 +4939,25 @@
               "scope": "self"
             },
             "action": "addToHand"
+          },
+          {
+            "effectId": "play_pair_nt1_as_zero_cost",
+            "type": "play",
+            "trigger": "PLAY_CARD",
+            "action": "replace_cost",
+            "parameters": {
+              "replace": {
+                "from": {
+                  "type": "pair_target_unit",
+                  "filters": {
+                    "nameIncludes": "Gundam NT-1"
+                  }
+                },
+                "to": {
+                  "cost": 0
+                }
+              }
+            }
           }
         ]
       }
@@ -5439,7 +5494,8 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Burst】Add this card to your hand. While no enemy Base is in play, this Unit gets AP+1."
+          "【Burst】Add this card to your hand.",
+          "While no enemy Base is in play, this Unit gets AP+1."
         ],
         "rules": [
           {
@@ -5451,6 +5507,30 @@
               "scope": "self"
             },
             "action": "addToHand"
+          },
+          {
+            "effectId": "ap_plus_1_if_no_enemy_base",
+            "type": "continuous",
+            "trigger": "continuous",
+            "action": "modifyAP",
+            "target": {
+              "type": "unit",
+              "scope": "self",
+              "count": 1
+            },
+            "conditions": [
+              {
+                "type": "cardsInPlayWithFilter",
+                "scope": "opponent",
+                "filters": {
+                  "cardType": "base"
+                },
+                "value": 0
+              }
+            ],
+            "parameters": {
+              "value": 1
+            }
           }
         ]
       }
@@ -8041,7 +8121,8 @@
       "effects": {
         "description": [
           "【Burst】Deploy this card.",
-          "【Deploy】Add 1 of your Shields to your hand. All friendly Unit tokens get AP+1 during your opponent's turn."
+          "【Deploy】Add 1 of your Shields to your hand.",
+          "All friendly Unit tokens get AP+1 during your opponent's turn."
         ],
         "rules": [
           {
@@ -8319,7 +8400,8 @@
       "effects": {
         "description": [
           "【Burst】Deploy this card.",
-          "【Deploy】Add 1 of your Shields to your hand. During your turn, when one of your friendly (Tekkadan)/(Teiwaz) Units receives effect damage, you may rest this Base. If you do, place the top card of your deck into your trash."
+          "【Deploy】Add 1 of your Shields to your hand.",
+          "During your turn, when one of your friendly (Tekkadan)/(Teiwaz) Units receives effect damage, you may rest this Base. If you do, place the top card of your deck into your trash."
         ],
         "rules": [
           {
