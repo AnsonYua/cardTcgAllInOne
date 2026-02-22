@@ -7,13 +7,21 @@ const { BaseAbilityManager } = require('../services/effects/BaseAbilityManager')
 const { createUnitZoneCard, createPilotZoneCard, findUnit } = require('./helpers/zoneCardFactory');
 
 describe('GD03 full-set audit fixes', () => {
-    test('card data contains fixed rules for GD03-017/053/073/097', () => {
+    test('card data contains fixed rules for GD03-017/052/053/073/097', () => {
         const gd03017 = gd03.cards['GD03-017'];
         const pairedRule = gd03017.effects.rules.find((rule) => rule.effectId === 'paired_cyclops_allow_attack_target_active_enemy_ap_le_5');
         expect(pairedRule).toBeTruthy();
         expect(pairedRule.trigger).toBe('PAIRING_COMPLETE');
         expect(pairedRule.action).toBe('sequence');
         expect(pairedRule.conditions).toEqual(expect.arrayContaining([{ type: 'pairedPilotTrait', scope: 'source', value: 'Cyclops Team' }]));
+
+        const gd03052 = gd03.cards['GD03-052'];
+        expect(gd03052.effects.description).toHaveLength(2);
+        expect(gd03052.effects.rules).toHaveLength(2);
+        const battleDamageRule = gd03052.effects.rules.find((rule) => rule.effectId === 'battle_damage_destroy_if_cb_pilot_in_play');
+        expect(battleDamageRule).toBeTruthy();
+        expect(battleDamageRule.trigger).toBe('BATTLE_DAMAGE_TO_UNIT');
+        expect(battleDamageRule.action).toBe('destroy');
 
         const gd03053 = gd03.cards['GD03-053'];
         const oncePerTurnPairRule = gd03053.effects.rules.find((rule) => rule.effectId === 'during_pair_effect');

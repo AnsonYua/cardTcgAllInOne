@@ -1,0 +1,184 @@
+{
+  "description": "gd03-058_when_linked_deploy_from_trash_cost_reduced_gd03_058",
+  "gameId": "gd03-058_when_linked_deploy_from_trash_cost_reduced_gd03_058",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD03-058",
+    "modifyCost",
+    "self_trash",
+    "GD03-051",
+    "PAIRING_COMPLETE",
+    "deploy_from_trash"
+  ],
+  "notes": [
+    "Action: Load scenario via getTestScenario and inject via injectGameState.",
+    "Setup: Player 1 has GD03-051 in slot1, GD03-096 in hand, and trash contains GD03-058 + GD03-031.",
+    "Setup: Player 1 starts with 4 energy total, exactly 2 active and 2 rested.",
+    "Action: Play GD03-096 as pilot onto GD03-051 to trigger linked optional deploy from trash.",
+    "Action: Choose to deploy GD03-058 from trash (payCost=true).",
+    "Expect: Deploy succeeds even with only 1 active energy remaining after pilot play, because GD03-058 cost in trash is reduced by 1.",
+    "Expect: GD03-058 moves from trash to an empty slot and 1 additional energy becomes rested."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed_gd03058_trash_cost",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_GD03058_TRASH_COST",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "GD03-096_hand_0001",
+              "cardId": "GD03-096"
+            }
+          ],
+          "handUids": [
+            "GD03-096_hand_0001"
+          ],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD03-051_unit_0001",
+              "cardId": "GD03-051",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_p1_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_p1_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_p1_0004",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [
+            {
+              "carduid": "GD03-058_trash_0001",
+              "cardId": "GD03-058"
+            },
+            {
+              "carduid": "GD03-031_trash_0001",
+              "cardId": "GD03-031"
+            }
+          ],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

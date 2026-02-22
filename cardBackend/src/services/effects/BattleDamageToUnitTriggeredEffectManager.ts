@@ -167,6 +167,7 @@ export class BattleDamageToUnitTriggeredEffectManager {
                 ? typed.sourceTraitsAny.filter((trait): trait is string => typeof trait === 'string')
                 : [];
             const sourceLevel = typed.sourceLevel;
+            const targetLevel = typed.targetLevel;
 
             if (sourceController === 'opponent') {
                 return false;
@@ -191,6 +192,14 @@ export class BattleDamageToUnitTriggeredEffectManager {
                 return false;
             }
             if (typeof sourceLevel === 'string' && !validateComparisonFilter(sourceLevelValue, sourceLevel)) {
+                return false;
+            }
+
+            const targetLevelValue = typeof context.targetUnit.cardData?.level === 'number' ? context.targetUnit.cardData.level : 0;
+            if (typeof targetLevel === 'number' && targetLevelValue !== targetLevel) {
+                return false;
+            }
+            if (typeof targetLevel === 'string' && !validateComparisonFilter(targetLevelValue, targetLevel)) {
                 return false;
             }
         }

@@ -2953,7 +2953,7 @@
             },
             "action": "sequence",
             "parameters": {
-              "text": "<Support 2> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.) When this Unit deals battle damage to an enemy Unit that is Lv.5 or lower, if you have a (CB) Pilot in play, destroy that enemy Unit.",
+              "text": "<Support 2> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)",
               "version": 1,
               "steps": [
                 {
@@ -2975,6 +2975,42 @@
                   }
                 }
               ]
+            }
+          },
+          {
+            "effectId": "battle_damage_destroy_if_cb_pilot_in_play",
+            "type": "triggered",
+            "trigger": "BATTLE_DAMAGE_TO_UNIT",
+            "action": "destroy",
+            "conditions": [
+              {
+                "type": "battleDamageToUnitEvent",
+                "sourceController": "self",
+                "targetController": "opponent",
+                "targetLevel": "<=5"
+              },
+              {
+                "type": "cardsInPlayWithFilter",
+                "scope": "self",
+                "value": ">=1",
+                "filters": {
+                  "cardType": "pilot",
+                  "traitsAny": [
+                    "CB"
+                  ]
+                }
+              }
+            ],
+            "target": {
+              "type": "unit",
+              "scope": "opponent",
+              "count": 1,
+              "filters": {
+                "isEventDefender": true
+              }
+            },
+            "parameters": {
+              "notes": "When this unit deals battle damage to an enemy unit of level 5 or lower, destroy that event defender if you have a CB pilot in play."
             }
           }
         ]
@@ -6525,8 +6561,7 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Burst】Activate this card's",
-          "【Main】.",
+          "【Burst】Activate this card's【Main】effect.",
           "【Main】【Action】Choose 1 enemy Unit that is Lv.4 or lower. Deal 3 damage to it. If there are 2 or more cards with \"Improved Technique\" in their card name in your trash, choose 1 enemy Unit instead."
         ],
         "rules": [
@@ -6945,8 +6980,7 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Burst】Activate this card's",
-          "【Action】.",
+          "【Burst】Activate this card's【Action】effect.",
           "【Action】Choose 1 active enemy Unit that is Lv.2 or lower. Destroy it. If there are 10 or more cards in your trash, choose 1 active enemy Unit that is Lv.4 or lower instead."
         ],
         "rules": [
