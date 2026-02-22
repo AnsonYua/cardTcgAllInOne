@@ -56,6 +56,54 @@ Use this skill when you need to create or review a complete action scenario JSON
     - Action: Player 1 attacks with GD01-001 (has Repair)
     - Expect: Effect triggers, player chooses enemy unit to rest
 
+- **"Exile" Effects** (Common Effect Type)
+  - "Exile" removes cards from the game permanently - they **disappear from gameEnv**
+  - Exiled cards cannot be recovered (different from trash/discard where cards can potentially be retrieved)
+  - **Setup Requirements**:
+    - Cards in `trashArea` (usually with specific traits like "(Titans)")
+    - Effect may have trait filters (e.g., "choose 2 Titans cards")
+  - **Exile Behavior**:
+    - Cards are removed from `trashArea` and **do not go to any specific zone**
+    - They are removed from gameEnv entirely (no "exileArea" zone at this moment)
+    - The effect often has a conditional second part (e.g., "If you do, choose 1 enemy Unit and rest it")
+  - **Example**: GD03-009 "Palace Athene" - "【Deploy】You may choose 2 (Titans) cards from your trash. Exile them from the game. If you do, choose 1 enemy Unit that is Lv.4 or lower. Rest it."
+    - Setup: Player has 2 Titans cards in trash (GD03-002, GD03-003)
+    - Action: Player deploys GD03-009, chooses to exile 1-2 Titans cards
+    - Expect: Chosen Titans cards disappear from trash (removed from gameEnv)
+    - Expect: Rest enemy unit effect triggers only if Titans cards are exiled
+
+- **"Grant Ability on Deploy" Effects** (Common Effect Type)
+  - Effects that grant abilities to your units when deployed from hand
+  - **Example**: GD03-021 "Gundam Deathscythe Hell" - "【Deploy】Choose 1 of your (Operation Meteor)/(G Team) Units. During this turn, it may choose an active enemy Unit as its attack target."
+  - **Effect Type**: Deploy triggered effect that grants attack targeting ability to 1 unit
+  - **Setup Requirements**:
+    - Deploying card in hand (GD03-021)
+    - 2+ units with specific traits already in play (to choose from)
+    - Effect grant ability to 1 of your units (player choice)
+  - **Effect Behavior**:
+    - Chosen unit can choose any active enemy unit as attack target (until end of turn)
+    - Effect bypasses normal blocking rules (can attack through blockers)
+    - Duration: Effect lasts only for this turn (`UNTIL_END_OF_TURN`)
+  - **Target Filter**: Only units with specified traits can be chosen
+  - **Manual Steps**:
+    1. Load scenario → inject
+    2. Action: Player 1 deploys GD03-021
+    3. Expect: Effect triggers - choose 1 unit to gain ability
+    4. Manual: Player 1 selects GD03-018 (has G Team trait)
+    5. Action: GD03-018 attacks enemy unit (can target even with blockers)
+    6. Expect: Attack successful
+
+- **"Attacking Rested Units" Scenarios**
+  - Scenarios where a unit attacks a rested enemy unit with AP high enough to destroy itself
+  - **Purpose**: Test battle damage calculations and AP mechanics
+  - **Battle Damage Formula**: `Damage = Attacker AP - Defender HP` (or `AP > HP = destroyer`)
+  - **Example Setup**:
+    - GD03-021 in play (AP 6, HP 5) vs rested enemy (AP 6, HP 3)
+    - Battle calculation: 6 - 3 = 3 damage → Enemy destroyed with 0 HP remaining
+  - **Verification**:
+    - Attacker with higher AP can destroy lower HP units
+    - Rested units have same AP but cannot battle (normal rules apply)
+
 ## Scenario Path Format
 The scenario path to add to `SCENARIO_PRESET_GROUPS` should match the file path structure:
 - Format: `<SET>/<CARD_ID>/<scenario_name>.json`
