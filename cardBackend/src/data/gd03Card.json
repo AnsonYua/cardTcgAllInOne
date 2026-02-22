@@ -4561,6 +4561,9 @@
                     "type": "card",
                     "scope": "source_paired_pilot",
                     "count": 1
+                  },
+                  "parameters": {
+                    "ownershipPolicy": "TARGET_OWNER"
                   }
                 }
               ]

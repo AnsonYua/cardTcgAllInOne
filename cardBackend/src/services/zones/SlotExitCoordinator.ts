@@ -2,11 +2,12 @@ import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { EffectDefinition } from '../EventQueue/interfaces/GameEvent';
 import {
     type SlotCardType,
+    type SlotCardEntry,
     type SlotToHandMoveResult,
     type SlotToTrashMoveResult,
     SlotExitTransferService
 } from './SlotExitTransferService';
-import { SlotExitPolicy } from './SlotExitPolicy';
+import { SlotExitPlanningService } from './SlotExitPlanningService';
 
 type HandMoveContext = {
     sourcePlayerId: string;
@@ -21,25 +22,44 @@ export class SlotExitCoordinator {
         slotName: string,
         targetType: SlotCardType,
         effect: EffectDefinition,
-        context: HandMoveContext
+        context: HandMoveContext,
+        destinationPlayerId: string = ownerPlayerId
     ): SlotToHandMoveResult {
-        const owner = gameEnv.getPlayer(ownerPlayerId);
-        if (!owner?.zones) {
-            return { success: false, error: `Owner player ${ownerPlayerId} not found`, moved: [] };
-        }
-
-        const slot = (owner.zones as any)[slotName];
-        const includePairedPilotWithUnit = SlotExitPolicy.shouldIncludePairedPilotWithUnit('hand', targetType, effect);
-        const plan = SlotExitTransferService.buildSlotExitPlan(slot, targetType, { includePairedPilotWithUnit });
-        if (!plan.success) {
-            return { success: false, error: plan.error || 'Failed to build return-to-hand plan', moved: [] };
-        }
-
-        return SlotExitTransferService.movePlannedCardsToHand(
+        const planResult = SlotExitPlanningService.planTargetToHand(
             gameEnv,
             ownerPlayerId,
             slotName,
-            plan.cards,
+            targetType,
+            effect
+        );
+        if (!planResult.success || !planResult.plan) {
+            return { success: false, error: planResult.error || 'Failed to build return-to-hand plan', moved: [] };
+        }
+
+        return this.movePlannedToHand(
+            gameEnv,
+            ownerPlayerId,
+            slotName,
+            planResult.plan.plannedCards,
+            context,
+            destinationPlayerId
+        );
+    }
+
+    static movePlannedToHand(
+        gameEnv: GameEnvironment,
+        ownerPlayerId: string,
+        slotName: string,
+        plannedCards: SlotCardEntry[],
+        context: HandMoveContext,
+        destinationPlayerId: string = ownerPlayerId
+    ): SlotToHandMoveResult {
+        return SlotExitTransferService.movePlannedCardsToHand(
+            gameEnv,
+            ownerPlayerId,
+            destinationPlayerId,
+            slotName,
+            plannedCards,
             context
         );
     }
@@ -50,23 +70,21 @@ export class SlotExitCoordinator {
         slotName: string,
         targetType: SlotCardType
     ): SlotToTrashMoveResult {
-        const owner = gameEnv.getPlayer(ownerPlayerId);
-        if (!owner?.zones) {
-            return { success: false, error: `Owner player ${ownerPlayerId} not found`, moved: [] };
-        }
-
-        const slot = (owner.zones as any)[slotName];
-        const includePairedPilotWithUnit = SlotExitPolicy.shouldIncludePairedPilotWithUnit('trash', targetType);
-        const plan = SlotExitTransferService.buildSlotExitPlan(slot, targetType, { includePairedPilotWithUnit });
-        if (!plan.success) {
-            return { success: false, error: plan.error || 'Failed to build move-to-trash plan', moved: [] };
+        const planResult = SlotExitPlanningService.planTargetToTrash(
+            gameEnv,
+            ownerPlayerId,
+            slotName,
+            targetType
+        );
+        if (!planResult.success || !planResult.plan) {
+            return { success: false, error: planResult.error || 'Failed to build move-to-trash plan', moved: [] };
         }
 
         return SlotExitTransferService.movePlannedCardsToTrash(
             gameEnv,
             ownerPlayerId,
             slotName,
-            plan.cards
+            planResult.plan.plannedCards
         );
     }
 }

@@ -4,7 +4,7 @@ import { HandZoneManager } from './HandZoneManager';
 
 export type SlotCardType = 'unit' | 'pilot';
 
-type SlotCardEntry = {
+export type SlotCardEntry = {
     card: any;
     type: SlotCardType;
 };
@@ -28,34 +28,10 @@ type MoveContext = {
 };
 
 export class SlotExitTransferService {
-    static buildSlotExitPlan(
-        slot: any,
-        targetType: SlotCardType,
-        options: { includePairedPilotWithUnit: boolean }
-    ): { success: boolean; error?: string; cards: SlotCardEntry[] } {
-        const cards: SlotCardEntry[] = [];
-
-        if (targetType === 'unit') {
-            if (!slot?.unit) {
-                return { success: false, error: 'Target unit not found in slot', cards: [] };
-            }
-            cards.push({ card: slot.unit, type: 'unit' });
-            if (options.includePairedPilotWithUnit && slot?.pilot) {
-                cards.push({ card: slot.pilot, type: 'pilot' });
-            }
-            return { success: true, cards };
-        }
-
-        if (!slot?.pilot) {
-            return { success: false, error: 'Target pilot not found in slot', cards: [] };
-        }
-        cards.push({ card: slot.pilot, type: 'pilot' });
-        return { success: true, cards };
-    }
-
     static movePlannedCardsToHand(
         gameEnv: GameEnvironment,
         ownerPlayerId: string,
+        destinationPlayerId: string,
         slotName: string,
         plannedCards: SlotCardEntry[],
         context: MoveContext
@@ -81,7 +57,7 @@ export class SlotExitTransferService {
 
             const addResult = HandZoneManager.addCardToHand(
                 gameEnv,
-                ownerPlayerId,
+                destinationPlayerId,
                 slotCard.carduid,
                 slotCard.cardData as any,
                 {

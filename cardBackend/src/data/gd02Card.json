@@ -193,6 +193,7 @@
             ],
             "optional": true,
             "parameters": {
+              "ownershipPolicy": "TARGET_OWNER",
               "discardFromHand": {
                 "cardType": "unit",
                 "count": 1

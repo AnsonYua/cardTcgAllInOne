@@ -1,7 +1,8 @@
 const {
     __testUtils: {
         validateScalingConfig,
-        detectAlwaysOnTextRuleMismatches
+        detectAlwaysOnTextRuleMismatches,
+        validateReturnToHandSemantics
     }
 } = require('../tests/validators/effectSchemaCanonicalValidation');
 
@@ -159,5 +160,47 @@ describe('effectSchemaCanonicalValidation utilities', () => {
         }, diagnostics);
 
         expect(diagnostics.some((d) => /pair_target_unit replace_cost/.test(d.message))).toBe(false);
+    });
+
+    test('warns when returnToHand with non-opponent scope omits ownership policy', () => {
+        const diagnostics = [];
+        validateReturnToHandSemantics(
+            {
+                action: 'returnToHand',
+                target: {
+                    type: 'card',
+                    scope: 'source_paired_pilot',
+                    count: 1
+                },
+                parameters: {}
+            },
+            { cardId: 'MOCK-RET-001', effectId: 'ret_test', jsonPath: 'cards.MOCK-RET-001.effects.rules[0]' },
+            diagnostics
+        );
+
+        expect(diagnostics.some((d) => d.severity === 'warning' && /ownershipPolicy/.test(d.message))).toBe(true);
+    });
+
+    test('warns when returnToHand uses SOURCE_CONTROLLER policy without whitelist', () => {
+        const diagnostics = [];
+        validateReturnToHandSemantics(
+            {
+                action: 'returnToHand',
+                target: {
+                    type: 'unit',
+                    scope: 'opponent',
+                    count: 1
+                },
+                parameters: {
+                    ownershipPolicy: 'SOURCE_CONTROLLER'
+                }
+            },
+            { cardId: 'MOCK-RET-002', effectId: 'ret_test_2', jsonPath: 'cards.MOCK-RET-002.effects.rules[0]' },
+            diagnostics
+        );
+
+        expect(
+            diagnostics.some((d) => d.severity === 'warning' && /SOURCE_CONTROLLER/.test(d.message))
+        ).toBe(true);
     });
 });

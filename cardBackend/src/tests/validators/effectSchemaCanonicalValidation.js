@@ -35,6 +35,8 @@ const CARD_FILES = [
 
 const LEVEL_COMPARISON_LITERAL_REGEX = /^(<=|>=|<|>|==|!=)\d+$/;
 const LEVEL_DYNAMIC_PLACEHOLDER_REGEX = /^(<=|>=|<|>|==|!=)\s*(SOURCE_LEVEL|sourceLevel|EVENT_ATTACKER_LEVEL|eventAttackerLevel|RESTED_UNIT_LEVEL|restedUnitLevel)$/;
+const RETURN_TO_HAND_ALLOWED_TYPES = new Set(['unit', 'pilot', 'card']);
+const RETURN_TO_HAND_SOURCE_CONTROLLER_WHITELIST = new Set([]);
 
 function loadCardFile(fileName) {
   const filePath = path.join(__dirname, '..', '..', 'data', fileName);
@@ -214,6 +216,71 @@ function validateConditionEntry(condition, conditionPath, context, diagnostics, 
   }
 }
 
+function validateReturnToHandSemantics(node, context, diagnostics) {
+  if (!node || typeof node !== 'object' || node.action !== 'returnToHand') {
+    return;
+  }
+
+  const target = node.target && typeof node.target === 'object' ? node.target : {};
+  const targetType = typeof target.type === 'string' ? target.type.toLowerCase() : '';
+  const scope = typeof target.scope === 'string' ? target.scope.toLowerCase() : '';
+  const parameters = node.parameters && typeof node.parameters === 'object' ? node.parameters : {};
+  const ownershipPolicyRaw = parameters.ownershipPolicy;
+  const destinationOwnerRaw = parameters.destination && typeof parameters.destination === 'object'
+    ? parameters.destination.owner
+    : undefined;
+  const normalizedOwnershipPolicy = typeof ownershipPolicyRaw === 'string'
+    ? ownershipPolicyRaw.toUpperCase()
+    : undefined;
+  const normalizedDestinationOwner = typeof destinationOwnerRaw === 'string'
+    ? destinationOwnerRaw.toUpperCase()
+    : undefined;
+  const effectiveOwnershipPolicy = normalizedDestinationOwner || normalizedOwnershipPolicy;
+
+  if (!RETURN_TO_HAND_ALLOWED_TYPES.has(targetType)) {
+    diagnostics.push({
+      severity: 'warning',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: `${context.jsonPath}.target.type`,
+      message: `returnToHand target.type should be one of unit|pilot|card (got ${target.type || 'missing'})`
+    });
+  }
+
+  if (targetType === 'card' && !(scope.startsWith('source') || scope.startsWith('opponent') || scope.startsWith('self'))) {
+    diagnostics.push({
+      severity: 'warning',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: `${context.jsonPath}.target.scope`,
+      message: `returnToHand with target.type=card should declare an explicit source/self/opponent scope (got ${target.scope || 'missing'})`
+    });
+  }
+
+  if (!scope.startsWith('opponent') && !effectiveOwnershipPolicy) {
+    diagnostics.push({
+      severity: 'warning',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: `${context.jsonPath}.parameters`,
+      message: 'returnToHand using non-opponent scope should declare ownershipPolicy or destination.owner explicitly'
+    });
+  }
+
+  if (
+    effectiveOwnershipPolicy === 'SOURCE_CONTROLLER' &&
+    !RETURN_TO_HAND_SOURCE_CONTROLLER_WHITELIST.has(context.cardId)
+  ) {
+    diagnostics.push({
+      severity: 'warning',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: `${context.jsonPath}.parameters.ownershipPolicy`,
+      message: 'returnToHand ownershipPolicy SOURCE_CONTROLLER is not allowed unless explicitly whitelisted'
+    });
+  }
+}
+
 function walkEffects(node, context, diagnostics) {
   if (Array.isArray(node)) {
     node.forEach((entry, index) => {
@@ -346,6 +413,12 @@ function walkEffects(node, context, diagnostics) {
       );
     }
   }
+
+  validateReturnToHandSemantics(node, {
+    cardId: context.cardId,
+    effectId: nextContext.effectId || 'unknown',
+    jsonPath: context.jsonPath
+  }, diagnostics);
 
   for (const [key, value] of Object.entries(node)) {
     walkEffects(value, { ...nextContext, jsonPath: `${context.jsonPath}.${key}` }, diagnostics);
@@ -565,6 +638,7 @@ module.exports = {
     validateConditionEntry,
     walkEffects,
     validateScalingConfig,
-    detectAlwaysOnTextRuleMismatches
+    detectAlwaysOnTextRuleMismatches,
+    validateReturnToHandSemantics
   }
 };

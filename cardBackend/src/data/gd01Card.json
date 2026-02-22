@@ -315,6 +315,7 @@
                     "count": 1
                   },
                   "parameters": {
+                    "ownershipPolicy": "TARGET_OWNER",
                     "notes": "Implemented: source_paired_pilot targeting resolves and can be returned to hand."
                   }
                 },
