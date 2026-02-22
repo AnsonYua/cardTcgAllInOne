@@ -139,6 +139,27 @@ When player attacks:
 7. Players confirm battle.
 8. Battle resolves.
 
+### 6.1) Destroy Timing Rules (Important)
+The backend uses one shared destruction pipeline based on **slot total HP** (unit + pilot in same slot).
+
+Rule summary:
+1. If destruction is from **unit battle damage** (`attackUnit` resolution):
+   - queue destruction first
+   - emit `BATTLE_RESOLVED`
+   - then run `DESTROYED` effects and move cards to trash
+2. If destruction is from **non-battle paths** (command/effect/cost/rule destroy):
+   - resolve destruction immediately
+   - `DESTROYED` effects trigger immediately (no need to wait for battle resolution)
+
+Deterministic order for simultaneous unit-battle lethal:
+- defender slot destruction resolves first, attacker slot second.
+
+Main files for this timing model:
+- `src/services/destruction/DestructionCoordinator.ts`
+- `src/services/destruction/BattleDestructionOrchestrator.ts`
+- `src/services/destruction/SlotHpDestructionChecker.ts`
+- `src/services/BattlePhaseManager.ts`
+
 `Suppression` note (shield attack path):
 - If attacker has keyword `Suppression` and battle resolves to shield side, backend targets up to first 2 shield cards.
 - This logic is in shield resolution branch. If defender still has `base`, base branch is resolved first.

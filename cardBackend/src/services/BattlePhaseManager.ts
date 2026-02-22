@@ -37,6 +37,7 @@ import { ShieldAreaCardDamagedTriggerDispatcher } from './effects/ShieldAreaCard
 import { ActionStepBattleConsistencyService } from './battle/ActionStepBattleConsistencyService';
 import { SlotHealthService } from './health/SlotHealthService';
 import { BattleDamageToUnitTriggeredEffectManager } from './effects/BattleDamageToUnitTriggeredEffectManager';
+import { BattleDestructionOrchestrator } from './destruction/BattleDestructionOrchestrator';
 
 export class BattlePhaseManager {
     private static openBattleAndRefreshContinuous(gameEnv: GameEnvironment, context: BattleContext, label: string): void {
@@ -636,6 +637,19 @@ export class BattlePhaseManager {
             }
         });
 
+        const queueResult = BattleDestructionOrchestrator.queueBattleDamageDestructions(gameEnv, {
+            context,
+            attackerDestroyed,
+            defenderDestroyed,
+            attackingUnit: attackingUnit as UnitZoneCard,
+            targetUnit: targetUnit as UnitZoneCard
+        });
+        if (!queueResult.success) {
+            this.clearBattleAndRefreshContinuous(gameEnv, 'failed_queue_battle_destruction');
+            return { success: false, error: queueResult.error || 'Failed to queue battle destruction' };
+        }
+        const battleContextId = queueResult.battleContextId;
+
         // Emit the battle result first, then resolve post-battle triggers (BATTLE_DESTROY, DESTROYED, etc.)
         // so their notifications (like EFFECT_DRAW_TRIGGERED from [Destroyed]) appear after BATTLE_RESOLVED.
         console.log(`⚔️ Battle resolved: Attacker ${attackerDestroyed ? 'destroyed' : 'survived'}, Defender ${defenderDestroyed ? 'destroyed' : 'survived'}`);
@@ -649,6 +663,7 @@ export class BattlePhaseManager {
                 destroyedUnit: targetUnit
             });
             if (!battleDestroyResult.success) {
+                BattleDestructionOrchestrator.clearQueuedBattleDestructions(gameEnv, battleContextId);
                 this.clearBattleAndRefreshContinuous(gameEnv, 'battle_destroy_effect_failed_defender');
                 return { success: false, error: battleDestroyResult.error || 'Battle destroy effect failed' };
             }
@@ -663,17 +678,16 @@ export class BattlePhaseManager {
                 destroyedUnit: attackingUnit
             });
             if (!battleDestroyResult.success) {
+                BattleDestructionOrchestrator.clearQueuedBattleDestructions(gameEnv, battleContextId);
                 this.clearBattleAndRefreshContinuous(gameEnv, 'battle_destroy_effect_failed_attacker');
                 return { success: false, error: battleDestroyResult.error || 'Battle destroy effect failed' };
             }
         }
 
-        if (attackerDestroyed) {
-            PlayerCardManager.destroyUnitInSlot(gameEnv, attacker.id, attackerSlot, attackingUnit);
-        }
-
-        if (defenderDestroyed) {
-            PlayerCardManager.destroyUnitInSlot(gameEnv, defender.id, targetSlotName, targetUnit);
+        const flushResult = BattleDestructionOrchestrator.flushQueuedBattleDestructions(gameEnv, battleContextId);
+        if (!flushResult.success) {
+            this.clearBattleAndRefreshContinuous(gameEnv, 'battle_post_resolution_destruction_failed');
+            return { success: false, error: flushResult.error };
         }
 
         EffectExecutor.cleanupEndOfBattleTemporaryEffects(gameEnv, SlotZoneUtils.getAllUnitAndPilotCarduids(gameEnv));

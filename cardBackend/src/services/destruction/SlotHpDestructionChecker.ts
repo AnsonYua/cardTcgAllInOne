@@ -1,34 +1,25 @@
 import type { GameEnvironment } from '../../models/GameEnvironment';
-import type { UnitZoneCard } from '../../models/CardSystem';
-import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
-import { getSlotTotals } from '../../utils/FieldValueCalculator';
-import { PlayerCardManager } from '../PlayerCardManager';
+import { DestructionCoordinator } from './DestructionCoordinator';
+import type { DestructionCause, DestructionTiming } from './DestructionTypes';
 
 export class SlotHpDestructionChecker {
-    static destroyUnitIfSlotHpZero(gameEnv: GameEnvironment, unitCarduid: string): boolean {
-        const lookup = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, unitCarduid);
-        if (!lookup.found || !lookup.playerId || !lookup.slotName) {
-            return true;
+    static destroyUnitIfSlotHpZero(
+        gameEnv: GameEnvironment,
+        unitCarduid: string,
+        options?: {
+            timing?: DestructionTiming;
+            cause?: DestructionCause;
+            battleContextId?: string;
+            orderKey?: number;
         }
-
-        const player = gameEnv.getPlayer(lookup.playerId);
-        const slotResult = player?.zones ? SlotZoneUtils.getSlotZone(player.zones, lookup.slotName) : null;
-        if (!slotResult || !slotResult.isValid || !slotResult.slot) {
-            return true;
-        }
-
-        const slot = slotResult.slot;
-        const slotHp = getSlotTotals(slot).totalHP;
-        if (slotHp > 0) {
-            return true;
-        }
-
-        const unit = slot.unit as UnitZoneCard | undefined;
-        if (!unit || unit.carduid !== unitCarduid) {
-            return true;
-        }
-
-        return PlayerCardManager.destroyUnitInSlot(gameEnv, lookup.playerId, lookup.slotName, unit);
+    ): boolean {
+        const result = DestructionCoordinator.requestSlotDestruction(gameEnv, {
+            unitCarduid,
+            timing: options?.timing || 'IMMEDIATE',
+            cause: options?.cause || 'RULE_DESTROY',
+            battleContextId: options?.battleContextId,
+            orderKey: options?.orderKey
+        });
+        return result.success;
     }
 }
-

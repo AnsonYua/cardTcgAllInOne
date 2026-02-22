@@ -9,6 +9,7 @@ import { ProcessingResult } from './EventInterfaces';
 import { BattleContext, ActionStepTargetSummary } from './BattleContext';
 import { EffectScannerUtils } from '../utils/EffectScannerUtils';
 import { HandContinuousModifier } from '../services/effects/HandContinuousModifier';
+import type { PendingDestruction } from '../services/destruction/DestructionTypes';
 
 // Forward declaration to avoid circular dependency
 declare class StaticEventProcessor {
@@ -70,6 +71,7 @@ export class GameEnvironment {
 
     // Phase transition guard to avoid duplicate SBA enqueues
     public pendingPhaseTransition: EventType | null;
+    public pendingDestructions: PendingDestruction[];
     
     // Card selection system - REMOVED: pendingCardSelections no longer needed
     // Deploy effects now process automatically with smart target selection
@@ -105,6 +107,7 @@ export class GameEnvironment {
         this.lastEventId = 0;
 
         this.pendingPhaseTransition = null;
+        this.pendingDestructions = [];
         this.gameEnded = false;
         this.winnerId = null;
         this.endReason = null;
@@ -493,6 +496,49 @@ export class GameEnvironment {
             return a.id.localeCompare(b.id);
         });
     }
+
+    public enqueuePendingDestruction(entry: PendingDestruction): boolean {
+        const duplicate = this.pendingDestructions.some((pending) =>
+            pending.playerId === entry.playerId &&
+            pending.slotName === entry.slotName &&
+            pending.unitCarduid === entry.unitCarduid &&
+            (pending.battleContextId || null) === (entry.battleContextId || null)
+        );
+        if (duplicate) {
+            return false;
+        }
+
+        this.pendingDestructions.push(entry);
+        return true;
+    }
+
+    public drainPendingDestructionsByBattleContextId(battleContextId: string): PendingDestruction[] {
+        if (!battleContextId) {
+            return [];
+        }
+
+        const drained: PendingDestruction[] = [];
+        const retained: PendingDestruction[] = [];
+        for (const entry of this.pendingDestructions) {
+            if (entry.battleContextId === battleContextId) {
+                drained.push(entry);
+            } else {
+                retained.push(entry);
+            }
+        }
+        this.pendingDestructions = retained;
+        return drained;
+    }
+
+    public clearPendingDestructionsByBattleContextId(battleContextId: string): number {
+        if (!battleContextId) {
+            return 0;
+        }
+
+        const initial = this.pendingDestructions.length;
+        this.pendingDestructions = this.pendingDestructions.filter((entry) => entry.battleContextId !== battleContextId);
+        return initial - this.pendingDestructions.length;
+    }
     
     // ============ LEGACY EVENT SYSTEM (Removed) ============
     // EventManager functionality has been moved to direct GameEnvironment methods
@@ -664,6 +710,7 @@ export class GameEnvironment {
             lastEventId: this.lastEventId,
             battlePhaseReturnPoint: this.battlePhaseReturnPoint,
             pendingPhaseTransition: this.pendingPhaseTransition,
+            pendingDestructions: this.pendingDestructions,
             
         };
     }
@@ -717,6 +764,7 @@ export class GameEnvironment {
         gameEnv.lastEventId = data.lastEventId || 0;
         gameEnv.battlePhaseReturnPoint = data.battlePhaseReturnPoint;
         gameEnv.pendingPhaseTransition = data.pendingPhaseTransition || null;
+        gameEnv.pendingDestructions = Array.isArray(data.pendingDestructions) ? data.pendingDestructions : [];
         
         return gameEnv;
     }

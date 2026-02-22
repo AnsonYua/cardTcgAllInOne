@@ -21,7 +21,7 @@ export function applyReturnToHandEffect(
     const returned: Array<{ carduid: string; fromZone: string; ownerPlayerId: string }> = [];
 
     for (const target of selectedTargets) {
-        const resolved = SlotZoneUtils.resolveTargetReference(gameEnv, target);
+        const resolved = resolveReturnTarget(gameEnv, sourcePlayerId, effect, target);
         if (!resolved) {
             return {
                 success: false,
@@ -78,4 +78,48 @@ export function applyReturnToHandEffect(
     );
 
     return { success: true };
+}
+
+function resolveReturnTarget(
+    gameEnv: GameEnvironment,
+    sourcePlayerId: string,
+    effect: EffectDefinition,
+    target: TargetReference
+) {
+    const direct = SlotZoneUtils.resolveTargetReference(gameEnv, target);
+    const expectsOpponent = isOpponentScope(effect);
+    if (!expectsOpponent) {
+        return direct;
+    }
+    if (direct && direct.playerId !== sourcePlayerId) {
+        return direct;
+    }
+
+    // Safety fallback:
+    // if the effect expects an opponent target but the incoming target resolves to self
+    // (or fails due playerId drift), resolve by UID across players and keep zone consistency.
+    const search = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, target.carduid);
+    if (!search.found || !search.playerId || !search.slotName || !search.type || !search.card) {
+        return direct;
+    }
+
+    if (target.zone && target.zone !== search.slotName) {
+        return direct;
+    }
+
+    if (search.playerId === sourcePlayerId) {
+        return direct;
+    }
+
+    return {
+        card: search.card,
+        type: search.type,
+        slotName: search.slotName,
+        playerId: search.playerId
+    };
+}
+
+function isOpponentScope(effect: EffectDefinition): boolean {
+    const scope = typeof effect?.target?.scope === 'string' ? effect.target.scope.toLowerCase() : '';
+    return scope.startsWith('opponent');
 }

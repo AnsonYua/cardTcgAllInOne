@@ -19,7 +19,8 @@
     "Expect: Because TSA Units in play are >=2, Deploy step 2 becomes available.",
     "Expect: Return target filter allows only enemy Units with Lv.4 or lower (slot1 valid, slot2 invalid).",
     "Action: Choose enemy slot1 unit (GD03-047, Lv.4).",
-    "Expect: Selected enemy unit is returned to opponent hand."
+    "Expect: Selected enemy unit is returned to opponent hand.",
+    "Expect: The pilot paired with the selected enemy unit is also returned to opponent hand."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -203,6 +204,15 @@
               "canAttackThisTurn": true,
               "isFirstPlay": false,
               "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            },
+            "pilot": {
+              "carduid": "GD03-089_enemy_pilot_0001",
+              "cardId": "GD03-089",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
               "continueModifyAP": 0,
               "continueModifyHP": 0
             }

@@ -53,6 +53,18 @@ const {
 const {
   validateEffectSchemaCanonical
 } = require('./validators/effectSchemaCanonicalValidation');
+const {
+  validateBattleSimultaneousDestroyOrder
+} = require('./validators/battleSimultaneousDestroyOrderValidation');
+const {
+  validateEffectDamageImmediateDestroyed
+} = require('./validators/effectDamageImmediateDestroyedValidation');
+const {
+  validateEffectDestroyImmediate
+} = require('./validators/effectDestroyImmediateValidation');
+const {
+  validateSlotTotalHpLethal
+} = require('./validators/slotTotalHpLethalValidation');
 
 function main() {
   const root = sharedGameStatesRoot();
@@ -80,6 +92,10 @@ function main() {
   validateGd02069DuringLinkActivatedAbility();
   validateGd03079RestBaseReplacement();
   validateAllowAttackTargetSchema();
+  validateBattleSimultaneousDestroyOrder();
+  validateEffectDamageImmediateDestroyed();
+  validateEffectDestroyImmediate();
+  validateSlotTotalHpLethal();
   validateEffectSchemaCanonical();
 
   console.log('OK: action scenarios validated');

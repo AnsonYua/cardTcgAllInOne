@@ -102,6 +102,27 @@ Unit 槽位全滿規則：
 5. 雙方確認戰鬥
 6. 戰鬥結算
 
+### 戰鬥與摧毀觸發時機（重要）
+後端使用統一摧毀管線，判斷基準是 **slot 總 HP**（同 slot 的 unit + pilot）。
+
+規則摘要：
+1. 若是 **單位戰鬥傷害** 導致摧毀（`attackUnit` 結算）：
+   - 先排入待摧毀
+   - 先送出 `BATTLE_RESOLVED`
+   - 再處理 `DESTROYED` 效果與移入 `trash`
+2. 若是 **非戰鬥路徑**（指令卡/效果/成本/規則摧毀）：
+   - 立即摧毀
+   - `DESTROYED` 立即觸發（不需等待 battle resolve）
+
+雙方同時被戰鬥打到 0 的固定順序：
+- 先處理防守方 slot，再處理攻擊方 slot。
+
+此時機模型的主要檔案：
+- `src/services/destruction/DestructionCoordinator.ts`
+- `src/services/destruction/BattleDestructionOrchestrator.ts`
+- `src/services/destruction/SlotHpDestructionChecker.ts`
+- `src/services/BattlePhaseManager.ts`
+
 `Suppression` 補充（盾側路徑）：
 - 若攻擊者有 `Suppression`，且結算走到 shield 側，後端會一次指定最多前 2 張 shield。
 - 這段邏輯在 shield 結算分支。若防守方仍有 `base`，會先走 base 分支。

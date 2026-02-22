@@ -97,7 +97,7 @@ export class TargetResolver {
                         carduid: shieldCard.carduid,
                         zone: 'shield',
                         playerId: targetPlayerId,
-                        cardData: shieldCard as any
+                        cardData: shieldCard.cardData as any
                     });
                 }
             }

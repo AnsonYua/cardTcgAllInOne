@@ -3,9 +3,8 @@
 import { GameEnvironment } from '../../../models/GameEnvironment';
 import { EffectDefinition, TargetReference } from '../../EventQueue/interfaces/GameEvent';
 import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
-import { PlayerCardManager } from '../../PlayerCardManager';
 import { GameNotificationManager } from '../../GameNotificationManager';
-import type { UnitZoneCard } from '../../../models/CardSystem';
+import { DestructionCoordinator } from '../../destruction/DestructionCoordinator';
 
 export function applyDestroyEffect(
     gameEnv: GameEnvironment,
@@ -28,10 +27,14 @@ export function applyDestroyEffect(
 
         const destroyedPlayerId = lookup.playerId;
         const slotName = lookup.slotName;
-        const unit = lookup.card as UnitZoneCard;
 
-        const destroyed = PlayerCardManager.destroyUnitInSlot(gameEnv, destroyedPlayerId, slotName, unit);
-        if (!destroyed) {
+        const destroyedResult = DestructionCoordinator.requestSlotDestruction(gameEnv, {
+            unitCarduid: target.carduid,
+            timing: 'IMMEDIATE',
+            cause: 'EFFECT_DESTROY',
+            allowNonLethal: true
+        });
+        if (!destroyedResult.success) {
             return { success: false, error: `Failed to destroy unit ${target.carduid}` };
         }
 
@@ -48,4 +51,3 @@ export function applyDestroyEffect(
 
     return { success: true };
 }
-

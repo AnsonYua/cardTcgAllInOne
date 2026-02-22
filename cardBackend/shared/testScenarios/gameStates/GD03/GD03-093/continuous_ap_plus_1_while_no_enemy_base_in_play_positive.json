@@ -1,0 +1,167 @@
+{
+  "description": "gd03-093_continuous_ap_plus_1_while_no_enemy_base_in_play_positive",
+  "gameId": "gd03-093_continuous_ap_plus_1_while_no_enemy_base_in_play_positive",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD03-093",
+    "continuous",
+    "modifyAP",
+    "no_enemy_base"
+  ],
+  "notes": [
+    "Action: Load scenario via getTestScenario and inject via injectGameState.",
+    "Expect: GD03-093 is paired with friendly slot1 unit.",
+    "Expect: Opponent base zone is empty, so GD03-093 continuous condition is satisfied.",
+    "Expect: Paired unit receives AP+1 while no enemy Base is in play.",
+    "Action (manual): Inspect slot1 unit AP value/modifier in UI or state detail before any other action.",
+    "Expect: AP includes +1 bonus from GD03-093 continuous effect."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed_gd03093_continuous",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_GD03093_CONTINUOUS",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD03-068_friendly_unit_0001",
+              "cardId": "GD03-068",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            },
+            "pilot": {
+              "carduid": "GD03-093_pilot_0001",
+              "cardId": "GD03-093",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "GD03-044_shield_p1_0001",
+              "cardId": "GD03-044"
+            }
+          ],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD03-068_enemy_unit_0001",
+              "cardId": "GD03-068",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "GD03-045_shield_p2_0001",
+              "cardId": "GD03-045"
+            }
+          ],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

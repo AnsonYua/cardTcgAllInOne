@@ -159,7 +159,10 @@ export function applyDamageEffect(
         if (resolvedTarget.kind === 'unit' || resolvedTarget.kind === 'pilot') {
             const slotHealth = SlotHealthService.getSlotHealthStateByTarget(gameEnv, target);
             if (slotHealth && slotHealth.remainingHp <= 0 && slotHealth.unitCarduid) {
-                const destroyed = SlotHpDestructionChecker.destroyUnitIfSlotHpZero(gameEnv, slotHealth.unitCarduid);
+                const destroyed = SlotHpDestructionChecker.destroyUnitIfSlotHpZero(gameEnv, slotHealth.unitCarduid, {
+                    timing: 'IMMEDIATE',
+                    cause: 'EFFECT_DAMAGE'
+                });
                 if (!destroyed) {
                     return { success: false, error: `Failed to destroy unit ${slotHealth.unitCarduid} at slot HP 0` };
                 }
