@@ -1,0 +1,246 @@
+{
+  "description": "GD03-044 Daughtress Flyer - Deploy effect: Auto-deploy rested [Daughtress] token, slot-full flow (player moves unit to trash to make space for token)",
+  "gameId": "gd03-044-deploy-token-slot-full-test",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": ["GD03-044", "Deploy", "Token Deployment", "Slot Full", "Daughtress Token"],
+  "notes": [
+    "Action: Player 1 has GD03-044 in hand, all 6 slots occupied with units",
+    "Expect: Setup for slot-full token deployment flow testing",
+    "Action: Player 1 deploys GD03-044 from hand to empty Slot 1",
+    "Expect: GD03-044 successfully deployed with cost 2, isRested: true, playedThisTurn: true",
+    "Expect: Deploy effect triggers automatically - Deploy 1 rested [Daughtress] token",
+    "Expect: No empty slots available for token deployment (game engine handles slot-full)",
+    "Expect: Player needs to choose 1 unit in field to move to trash to make space for token",
+    "Action: Player 1 selects 1 unit from their slots to move to trash",
+    "Expect: Selected unit moves to trash area",
+    "Expect: Empty slot becomes available for token deployment",
+    "Expect: Game engine automatically deploys [Daughtress]((New UNE)･AP0･HP1) token to first empty slot",
+    "Expect: Token deployed with correct properties: AP0, HP1, New UNE, isRested: true",
+    "Expect: Token placed in the slot that was emptied by trashing the unit",
+    "Expect: No energy cost for token deployment",
+    "Expect: GD03-044 remains rested after deployment (playedThisTurn: true)",
+    "Expect: Token cannot attack this turn (rested, AP 0)",
+    "Expect: Slot-full flow works correctly - player clears space for token deployment"
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_CARDUID",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            { "carduid": "GD03-044_hand_0001", "cardId": "GD03-044" }
+          ],
+          "handUids": ["GD03-044_hand_0001"],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD03-044_unit_0001",
+              "cardId": "GD03-044",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "unit_to_trash_0001",
+              "cardId": "unit_to_trash",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "ap": 2,
+              "hp": 3
+            }
+          },
+          "slot3": {
+            "unit": {
+              "carduid": "unit_to_trash_0002",
+              "cardId": "unit_to_trash",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "ap": 2,
+              "hp": 3
+            }
+          },
+          "slot4": {
+            "unit": {
+              "carduid": "unit_to_trash_0003",
+              "cardId": "unit_to_trash",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "ap": 2,
+              "hp": 3
+            }
+          },
+          "slot5": {
+            "unit": {
+              "carduid": "unit_to_trash_0004",
+              "cardId": "unit_to_trash",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "ap": 2,
+              "hp": 3
+            }
+          },
+          "slot6": {
+            "unit": {
+              "carduid": "unit_to_trash_0005",
+              "cardId": "unit_to_trash",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "ap": 2,
+              "hp": 3
+            }
+          },
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_p1_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_p1_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,214 @@
+{
+  "description": "gd03-025_force_attack_target_rested_maganac_choice",
+  "gameId": "gd03-025_force_attack_target_rested_maganac_choice",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD03-025",
+    "require_attack_target_if_available",
+    "ForcedTarget",
+    "MaganacCorps"
+  ],
+  "notes": [
+    "Setup: Defender has GD03-025 in play with 2 rested (Maganac Corps) units in slot2 and slot3, plus a non-Maganac unit in slot4.",
+    "Action: Attacker declares attackUnit targeting defender slot4 (non-Maganac).",
+    "Expect: Backend schedules forced target choice because multiple valid rested (Maganac Corps) candidates exist.",
+    "Action: Defender confirms target choice and selects slot2 GD03-028.",
+    "Expect: Attack resumes as attackUnit against selected GD03-028 in slot2; original slot4 target is not used."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd03025",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "GD03-000_draw_0001",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST03-008_attacker_0001",
+              "cardId": "ST03-008",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "originalAP": 1,
+              "originalHP": 2,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd03-025_force_attack_target_rested_maganac_choice_playerId_1_0001",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD03-025_unit_0001",
+              "cardId": "GD03-025",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalAP": 5,
+              "originalHP": 4,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "GD03-028_unit_0002",
+              "cardId": "GD03-028",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": true,
+              "originalAP": 2,
+              "originalHP": 3,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false
+            }
+          },
+          "slot3": {
+            "unit": {
+              "carduid": "GD03-028_unit_0003",
+              "cardId": "GD03-028",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": true,
+              "originalAP": 2,
+              "originalHP": 3,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false
+            }
+          },
+          "slot4": {
+            "unit": {
+              "carduid": "ST03-007_unit_decoy_0004",
+              "cardId": "ST03-007",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalAP": 1,
+              "originalHP": 2,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false
+            }
+          },
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd03-025_force_attack_target_rested_maganac_choice_playerId_2_0001",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

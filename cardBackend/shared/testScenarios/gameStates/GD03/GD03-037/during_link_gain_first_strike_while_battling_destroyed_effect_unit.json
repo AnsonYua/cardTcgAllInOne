@@ -1,0 +1,242 @@
+{
+  "description": "gd03-037_during_link_gain_first_strike_while_battling_destroyed_effect_unit",
+  "gameId": "gd03-037_during_link_gain_first_strike_while_battling_destroyed_effect_unit",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD03-037",
+    "During Link",
+    "First Strike",
+    "continuous",
+    "battleTargetHasTrigger",
+    "DESTROYED"
+  ],
+  "notes": [
+    "Setup: Player 1 is currentPlayer in MAIN_PHASE. Slot1 has linked GD03-037 (Bertigo + pilot) and Bertigo is active with damageReceived=3 so survival depends on First Strike.",
+    "Setup: Player 2 slot1 has GD01-007 (Noin's Aries), which has a 【Destroyed】 effect and is a valid battle target.",
+    "Action (manual): Player 1 declares attackUnit with GD03-037_unit_0001 targeting GD01-007_unit_0001.",
+    "Expect: When battle opens, GD03-037 continuous During Link condition is satisfied (your turn + source battling + target has DESTROYED trigger), so GD03-037 gains <First Strike> (KEYWORD_GRANTED notification).",
+    "Action (manual): Resolve battle confirmation flow.",
+    "Expect: First Strike ordering applies; GD01-007 is destroyed before dealing battle damage back.",
+    "Expect: GD03-037 survives with damageReceived still 3 (it would be destroyed without First Strike because defender AP is 2 and Bertigo had only 1 HP remaining)."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd03037_seed",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "GD03-000_draw_0037",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD03-037_unit_0001",
+              "cardId": "GD03-037",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 3,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 4,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            },
+            "pilot": {
+              "carduid": "GD03-096_pilot_0001",
+              "cardId": "GD03-096",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd03-037_during_link_gain_first_strike_while_battling_destroyed_effect_unit_playerId_1_0001",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd03-037_during_link_gain_first_strike_while_battling_destroyed_effect_unit_playerId_1_0002",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd03-037_during_link_gain_first_strike_while_battling_destroyed_effect_unit_playerId_1_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd03-037_during_link_gain_first_strike_while_battling_destroyed_effect_unit_playerId_1_0004",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd03-037_during_link_gain_first_strike_while_battling_destroyed_effect_unit_playerId_1_0005",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD01-007_unit_0001",
+              "cardId": "GD01-007",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": true,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 3,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd03-037_during_link_gain_first_strike_while_battling_destroyed_effect_unit_playerId_2_0001",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd03-037_during_link_gain_first_strike_while_battling_destroyed_effect_unit_playerId_2_0002",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd03-037_during_link_gain_first_strike_while_battling_destroyed_effect_unit_playerId_2_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd03-037_during_link_gain_first_strike_while_battling_destroyed_effect_unit_playerId_2_0004",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

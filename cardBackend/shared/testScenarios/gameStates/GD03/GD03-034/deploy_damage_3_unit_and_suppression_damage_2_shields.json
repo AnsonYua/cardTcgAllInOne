@@ -1,0 +1,240 @@
+{
+  "description": "GD03-034 GQuuuuuuX - Deploy effect: Deal 3 damage to enemy unit and Suppression: Damage first 2 shield cards simultaneously when attacking shields",
+  "gameId": "gd03-034-deploy-suppression-test",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": ["GD03-034", "Deploy", "Suppression", "Shield Damage", "Simultaneous Damage"],
+  "notes": [
+    "Action: Player 1 deploys GD03-034 from hand to empty slot",
+    "Expect: GD03-034 successfully deployed with cost 7, isRested: true, playedThisTurn: true",
+    "Expect: Deploy effect triggers - Choose 1 enemy Unit. Deal 3 damage to it.",
+    "Action: Player 1 selects enemy unit in Slot 1 to receive 3 damage",
+    "Expect: Enemy unit receives 3 damage (HP decreased by 3)",
+    "Expect: Enemy unit survives the damage (HP 4 → 1 after 3 damage)",
+    "Action: Player 1 sets GD03-034 as active (isRested: false)",
+    "Expect: GD03-034 ready to attack",
+    "Action: Player 1 attacks GD03-034 against opponent's shield area",
+    "Expect: Attack deals damage to shield area",
+    "Expect: Suppression effect triggers - Damage to Shields by an attack is dealt to the first 2 cards simultaneously",
+    "Expect: First 2 shield cards receive damage simultaneously (not sequentially)",
+    "Expect: Shield cards receive battle damage from the attack",
+    "Expect: Suppression works correctly when shield damage is dealt",
+    "Expect: GD03-034 becomes rested after attacking (isRested: true)",
+    "Expect: Both effects work correctly - Deploy damage and Suppression shield damage"
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_CARDUID",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            { "carduid": "GD03-034_hand_0001", "cardId": "GD03-034" }
+          ],
+          "handUids": ["GD03-034_hand_0001"],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_p1_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_p1_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_p1_0004",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_p1_0005",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_p1_0006",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_p1_0007",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_p1_0008",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "enemy_unit_0001",
+              "cardId": "enemy_unit_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "ap": 3,
+              "hp": 4
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "shield_card_0001",
+              "cardId": "shield_card_1",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "damageReceived": 0
+            },
+            {
+              "carduid": "shield_card_0002",
+              "cardId": "shield_card_2",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "damageReceived": 0
+            },
+            {
+              "carduid": "shield_card_0003",
+              "cardId": "shield_card_3",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "damageReceived": 0
+            },
+            {
+              "carduid": "shield_card_0004",
+              "cardId": "shield_card_4",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "damageReceived": 0
+            }
+          ],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

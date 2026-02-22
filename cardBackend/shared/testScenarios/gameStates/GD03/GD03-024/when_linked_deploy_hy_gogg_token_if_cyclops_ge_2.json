@@ -1,0 +1,162 @@
+{
+  "description": "GD03-024 Hy-Gogg - When Linked effect: Auto-deploy rested [Hy-Gogg] token if another Cyclops Team unit in play",
+  "gameId": "gd03-024-when-linked-token-deploy-test",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": ["GD03-024", "When Linked", "Token Deployment", "Cyclops Team"],
+  "notes": [
+    "Action: Player 1 deploys GD03-024 from hand to empty slot",
+    "Expect: GD03-024 successfully deployed with cost 2, isRested: true, playedThisTurn: true",
+    "Action: Player 1 pairs GD03-089 Bernard Wiseman (Cyclops Team) with GD03-024",
+    "Expect: Pilot successfully paired, GD03-024 now in linked state (When Linked effect active)",
+    "Expect: When Linked effect checks for another Cyclops Team unit in play",
+    "Expect: GD03-020 Zaku Ⅱ FZ (Cyclops Team) in Slot 2 satisfies condition",
+    "Expect: Game engine automatically deploys 1 rested [Hy-Gogg] unit token",
+    "Expect: Token deployed to first empty slot (Slot 3) with correct properties",
+    "Expect: Token: T-022 [Hy-Gogg], AP:2, HP:1, Cyclops Team, Level:0, Cost:0, isRested: true",
+    "Expect: No energy cost paid for token deployment",
+    "Expect: GD03-020 Zaku Ⅱ FZ remains unchanged in Slot 2",
+    "Expect: GD03-024 remains linked with Bernard Wiseman, isRested: true"
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_CARDUID",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            { "carduid": "GD03-024_hand_0001", "cardId": "GD03-024" },
+            { "carduid": "GD03-089_hand_0001", "cardId": "GD03-089" }
+          ],
+          "handUids": ["GD03-024_hand_0001", "GD03-089_hand_0001"],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {
+            "unit": {
+              "carduid": "GD03-020_unit_0001",
+              "cardId": "GD03-020",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_p1_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_p1_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
