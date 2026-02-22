@@ -8429,7 +8429,7 @@
             "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
-              "text": "Add 1 of your Shields to your hand. During your turn, when one of your friendly (Tekkadan)/(Teiwaz) Units receives effect damage, you may rest this Base. If you do, place the top card of your deck into your trash.",
+              "text": "Add 1 of your Shields to your hand.",
               "version": 1,
               "steps": [
                 {
@@ -8446,47 +8446,63 @@
                     "from": "shield",
                     "value": 1
                   }
+                }
+              ]
+            }
+          },
+          {
+            "effectId": "during_your_turn_when_friendly_tte_effect_damaged_optional_rest_self_then_mill_1",
+            "type": "triggered",
+            "trigger": "EFFECT_DAMAGE_RECEIVED",
+            "action": "sequence",
+            "timing": {
+              "actionTurn": "YOUR_TURN"
+            },
+            "conditions": [
+              {
+                "type": "eventTargetController",
+                "value": "self"
+              },
+              {
+                "type": "eventTargetTraitsAny",
+                "value": [
+                  "Tekkadan",
+                  "Teiwaz"
+                ]
+              }
+            ],
+            "parameters": {
+              "text": "During your turn, when one of your friendly (Tekkadan)/(Teiwaz) Units receives effect damage, you may rest this Base. If you do, place the top card of your deck into your trash.",
+              "version": 1,
+              "steps": [
+                {
+                  "stepId": "rest_base",
+                  "action": "rest",
+                  "optional": true,
+                  "target": {
+                    "type": "base",
+                    "scope": "source",
+                    "count": 1,
+                    "selection": {
+                      "type": "player_choice"
+                    }
+                  }
                 },
                 {
-                  "action": "registerDelayedTrigger",
+                  "action": "conditional",
                   "parameters": {
-                    "duration": "UNTIL_END_OF_TURN",
-                    "trigger": {
-                      "type": "EFFECT_DAMAGE_RECEIVED",
-                      "targetController": "self",
-                      "targetTraitsAny": [
-                        "Tekkadan",
-                        "Teiwaz"
-                      ]
-                    },
+                    "if": [
+                      {
+                        "type": "stepResolved",
+                        "stepId": "rest_base"
+                      }
+                    ],
                     "then": [
                       {
-                        "stepId": "rest_base",
-                        "action": "rest",
-                        "optional": true,
-                        "target": {
-                          "type": "base",
-                          "scope": "self"
-                        }
-                      },
-                      {
-                        "action": "conditional",
+                        "action": "moveTopDeckToTrash",
                         "parameters": {
-                          "if": [
-                            {
-                              "type": "stepResolved",
-                              "stepId": "rest_base"
-                            }
-                          ],
-                          "then": [
-                            {
-                              "action": "moveTopDeckToTrash",
-                              "parameters": {
-                                "count": 1,
-                                "reveal": false
-                              }
-                            }
-                          ]
+                          "count": 1,
+                          "reveal": false
                         }
                       }
                     ]

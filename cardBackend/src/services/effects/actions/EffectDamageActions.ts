@@ -7,7 +7,7 @@ import { EffectDefinition, TargetReference } from '../../EventQueue/interfaces/G
 import { TargetCardResolver } from '../../targets/TargetCardResolver';
 import { EffectDamagePreventionUtils } from '../EffectDamagePreventionUtils';
 import { EffectStatApplier } from '../EffectStatApplier';
-import { TriggeredEffectProcessor } from '../TriggeredEffectProcessor';
+import { EffectDamageReceivedTriggeredEffectManager } from '../EffectDamageReceivedTriggeredEffectManager';
 import { SlotHpDestructionChecker } from '../../destruction/SlotHpDestructionChecker';
 import { SlotHealthService } from '../../health/SlotHealthService';
 import { resolveEffectDamageValue } from './EffectDamageValueResolver';
@@ -146,19 +146,9 @@ export function applyDamageEffect(
             return applyResult;
         }
 
-        const triggerResult = TriggeredEffectProcessor.processForSourceCard(gameEnv, target.playerId, resolvedTarget.card as any, {
-            trigger: 'EFFECT_DAMAGE_RECEIVED',
-            expectedTriggers: ['EFFECT_DAMAGE_RECEIVED'],
-            fallbackEffectId: 'effect_damage_received',
-            defaultTargetScope: 'self',
-            preFilter: (rawRule) => {
-                const parameters = rawRule['parameters'];
-                const damageSource = parameters && typeof parameters === 'object'
-                    ? (parameters as any).damageSource
-                    : undefined;
-                const requiresEnemySource = typeof damageSource === 'string' && damageSource.toUpperCase() === 'ENEMY';
-                return requiresEnemySource ? sourcePlayerId !== target.playerId : true;
-            }
+        const triggerResult = EffectDamageReceivedTriggeredEffectManager.execute(gameEnv, {
+            damagedPlayerId: target.playerId,
+            sourcePlayerId
         });
         if (!triggerResult.success) {
             return { success: false, error: triggerResult.error || 'Failed to process EFFECT_DAMAGE_RECEIVED triggers' };

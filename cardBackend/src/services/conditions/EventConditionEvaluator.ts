@@ -267,6 +267,11 @@ export class EventConditionEvaluator {
     }
 
     private static getLatestNotification(gameEnv: GameEnvironment): Record<string, unknown> | null {
+        const overrideNotification = (gameEnv as any)?.eventConditionNotificationOverride;
+        if (overrideNotification && typeof overrideNotification === 'object') {
+            return overrideNotification as Record<string, unknown>;
+        }
+
         const queue = Array.isArray(gameEnv.notificationQueue) ? gameEnv.notificationQueue : [];
         if (queue.length === 0) {
             return null;
@@ -290,6 +295,9 @@ export class EventConditionEvaluator {
         const latestNotification = this.getLatestNotification(gameEnv) as any;
         if (typeof latestNotification?.payload?.targetCarduid === 'string') {
             return latestNotification.payload.targetCarduid;
+        }
+        if (typeof latestNotification?.payload?.carduid === 'string') {
+            return latestNotification.payload.carduid;
         }
         const battle = gameEnv.currentBattle;
         if (battle?.targetCarduid) {
