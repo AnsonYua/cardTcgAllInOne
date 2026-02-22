@@ -4548,8 +4548,8 @@
         "rules": [
           {
             "effectId": "during_link_effect",
-            "type": "continuous",
-            "trigger": "continuous",
+            "type": "triggered",
+            "trigger": "DESTROYED",
             "action": "sequence",
             "parameters": {
               "text": "Return the card paired with this Unit to your hand.",
