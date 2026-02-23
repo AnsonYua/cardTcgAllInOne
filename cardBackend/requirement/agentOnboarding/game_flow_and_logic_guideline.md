@@ -170,6 +170,34 @@ Main file:
 Blocker file:
 - `src/services/BlockerChoiceManager.ts`
 
+### 6.2) Battle Abandon / Abort Logic (Important)
+In this project, "battle abandon" means backend **ends battle early as a valid result**, not as an API error.
+
+Main policy:
+1. If declared attacker or target is no longer on board before normal battle resolve, battle is aborted.
+2. Backend returns success path (do not fail the player action with HTTP error).
+3. The declared attack is consumed (no auto-retarget fallback).
+
+When this can happen:
+- During pre-battle attack effects (`ATTACK_PHASE`) that remove/destroy/return declared target.
+- During `ACTION_STEP` if command/effect/cost removes attacker or target while battle is open.
+
+Notification contract:
+1. Existing `UNIT_ATTACK_DECLARED` is updated with `payload.battleEnd = true`.
+2. Backend emits `BATTLE_RESOLVED` with aborted result payload, including:
+   - `aborted: true`
+   - `battleEndedEarly: true`
+   - `abortReason: TARGET_NOT_ON_BOARD` or `ATTACKER_NOT_ON_BOARD`
+   - `targetMissing` / `attackerMissing` flags when applicable
+
+Rules interaction notes:
+- Pre-battle target removal is **not** battle damage.
+- `BATTLE_DESTROY` triggers should not fire from this pre-battle removal path.
+
+Main files for this logic:
+- `src/services/BattlePhaseManager.ts`
+- `src/services/battle/ActionStepBattleConsistencyService.ts`
+
 ## 7) Choice Events (What Player Must Answer)
 These choices can pause the queue:
 - `BURST_EFFECT_CHOICE`

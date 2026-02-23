@@ -131,6 +131,34 @@ Unit 槽位全滿規則：
 - `src/services/BattlePhaseManager.ts`
 - `src/services/BlockerChoiceManager.ts`
 
+### Battle Abandon / Abort（戰鬥中止）邏輯（重要）
+在此專案中，battle abandon 的意思是：後端將戰鬥視為**合法提前結束**，不是 API 失敗。
+
+主要規則：
+1. 若宣告攻擊後，攻擊者或目標在正常結算前已不在場上，戰鬥會被中止（abort）。
+2. 後端走成功回傳路徑（不應回 HTTP 錯誤給玩家動作）。
+3. 這次攻擊視為已消耗（不做自動改目標）。
+
+常見發生時機：
+- `ATTACK_PHASE` 預戰鬥效果先把目標移除/摧毀/回手。
+- `ACTION_STEP` 期間，指令卡/效果/成本把攻擊者或目標移除。
+
+通知契約：
+1. 既有 `UNIT_ATTACK_DECLARED` 會被更新為 `payload.battleEnd = true`。
+2. 後端會送出 `BATTLE_RESOLVED`，且結果帶：
+   - `aborted: true`
+   - `battleEndedEarly: true`
+   - `abortReason: TARGET_NOT_ON_BOARD` 或 `ATTACKER_NOT_ON_BOARD`
+   - 視情況帶 `targetMissing` / `attackerMissing`
+
+規則互動重點：
+- 預戰鬥移除目標不算 battle damage。
+- 這條路徑不應觸發 `BATTLE_DESTROY`。
+
+主要實作檔案：
+- `src/services/BattlePhaseManager.ts`
+- `src/services/battle/ActionStepBattleConsistencyService.ts`
+
 ## 常見 Choice 事件
 - `BURST_EFFECT_CHOICE`
 - `TARGET_CHOICE`
