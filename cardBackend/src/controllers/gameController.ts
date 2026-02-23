@@ -188,7 +188,11 @@ export class GameController {
 
         const match = cardId.match(/^(ST|GD)(\d{2})-/i);
         if (match) {
-            return `${match[1].toLowerCase()}${match[2]}`;
+            const prefix = match[1].toUpperCase();
+            if (prefix === 'ST') {
+                return `ST${match[2]}`;
+            }
+            return `gd${match[2]}`;
         }
 
         return null;
@@ -1748,7 +1752,11 @@ export class GameController {
                 const filenameBase = resourcePath.split('/').pop() || resourcePath;
                 const baseKey = filenameBase.replace(/\.(png|jpe?g|webp|gif|svg)$/i, '');
 
-                const resolved = resolveExistingImage(resourcePath);
+                let resolved = resolveExistingImage(resourcePath);
+                if (!resolved && /^T-\d+$/i.test(baseKey)) {
+                    // Token fallback: if set-scoped token art is missing, try the global token folder.
+                    resolved = resolveExistingImage(`T/${baseKey}`);
+                }
                 if (!resolved) {
                     missing.push({ key: baseKey });
                     continue;

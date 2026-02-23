@@ -52,6 +52,10 @@ function parseMultipartManifest(buffer, boundary) {
   return JSON.parse(manifestJson);
 }
 
+function imageKeysFromManifest(manifest) {
+  return Array.isArray(manifest?.images) ? manifest.images.map((entry) => entry?.key).filter(Boolean) : [];
+}
+
 function makeGameId() {
   return `bundle-test-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
 }
@@ -65,8 +69,29 @@ function loadScenarioEnv() {
   return raw?.initialGameEnv || raw?.gameEnv || raw?.scenario?.initialGameEnv || raw?.scenario?.gameEnv || raw;
 }
 
-async function injectScenario(gameId) {
-  const req = { body: { gameId, gameEnv: loadScenarioEnv() } };
+function loadTokenFallbackEnv() {
+  const env = JSON.parse(JSON.stringify(loadScenarioEnv()));
+  env.players = env.players || {};
+  env.players.playerId_1 = env.players.playerId_1 || { zones: {} };
+  env.players.playerId_1.zones = env.players.playerId_1.zones || {};
+  env.players.playerId_1.zones.slot1 = env.players.playerId_1.zones.slot1 || {};
+  env.players.playerId_1.zones.slot1.unit = {
+    carduid: "T-006_token_test_0001",
+    cardId: "T-006",
+    cardData: {
+      id: "T-006",
+      name: "Char’s Zaku II",
+      cardType: "unit",
+      color: "Token",
+      ap: 3,
+      hp: 1,
+    },
+  };
+  return env;
+}
+
+async function injectScenario(gameId, gameEnv = loadScenarioEnv()) {
+  const req = { body: { gameId, gameEnv } };
   const res = new MockResponse();
   await gameController.injectGameState(req, res);
   expect(res.statusCode).toBe(200);
@@ -128,6 +153,28 @@ describe("Game resource bundle endpoint", () => {
     expect(manifest).toHaveProperty("version", 1);
     expect(Array.isArray(manifest.images)).toBe(true);
     expect(manifest.images.length).toBeGreaterThan(0);
+  });
+
+  test("includes token textures (with previews) and avoids marking token missing when token is in play", async () => {
+    const gameId = makeGameId();
+    await injectScenario(gameId, loadTokenFallbackEnv());
+    const token = await getBundleToken(gameId);
+
+    const req = {
+      headers: { authorization: `Bearer ${token}` },
+      body: { includePreviews: true, includeBothDecks: true, allowEnvScanFallback: true },
+    };
+    const res = new MockResponse();
+    await gameController.getGameResourceBundle(req, res);
+
+    expect(res.statusCode).toBe(200);
+    const boundary = res.headers["content-type"].split("boundary=")[1];
+    const manifest = parseMultipartManifest(res.body, boundary);
+    const imageKeys = imageKeysFromManifest(manifest);
+    expect(imageKeys).toContain("T-006");
+    expect(imageKeys).toContain("T-006-preview");
+    expect(Array.isArray(manifest.missing)).toBe(true);
+    expect(manifest.missing.some((entry) => entry?.key === "T-006")).toBe(false);
   });
 
   test("returns 401 for invalid resource bundle token", async () => {
