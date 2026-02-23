@@ -11,6 +11,8 @@ import { EffectExecutor } from './EffectExecutor';
 import { EffectRuleCatalog } from './EffectRuleCatalog';
 import { EffectUsageTracker } from './EffectUsageTracker';
 import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
+import { DeployTargetManager } from '../DeployTargetManager';
+import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 
 type SlotCard = { card: UnitZoneCard | PilotZoneCard | BaseCard; slotName: string };
 
@@ -18,6 +20,7 @@ export interface BattleDestroyGlobalContext {
     sourcePlayerId: string;
     sourceSlot: string;
     destroyedPlayerId: string;
+    destroyedSlot: string;
     sourceUnit: UnitZoneCard;
     destroyedUnit: UnitZoneCard;
 }
@@ -70,6 +73,9 @@ export class BattleDestroyGlobalEffectManager {
                 if (!this.isBattleDestroyTrigger(normalized)) {
                     continue;
                 }
+                if (!this.isGlobalBattleDestroyListener(normalized)) {
+                    continue;
+                }
 
                 // Link/Pair checks etc
                 if (!ContinuousEffectManager.sourceConditionsMet(normalized, card as any, gameEnv, context.sourcePlayerId)) {
@@ -109,16 +115,37 @@ export class BattleDestroyGlobalEffectManager {
                     }
                 }
 
-                const forcedTargets = this.resolveForcedTargetsFromBattleContext(normalized, context, slotName, card.carduid);
-                const result = EffectExecutor.applyEffectToTargets(
-                    gameEnv,
-                    normalized,
-                    forcedTargets,
-                    context.sourcePlayerId,
-                    card.carduid
-                );
-                if (!result.success) {
-                    return { success: false, error: result.error || `Failed to apply BATTLE_DESTROY global effect ${normalized.effectId}` };
+                const forcedTargets = this.resolveForcedTargetsFromBattleContext(normalized, context);
+                if (forcedTargets) {
+                    const resolvedTargets = forcedTargets.filter((target) => !!SlotZoneUtils.resolveTargetReference(gameEnv, target));
+                    if (resolvedTargets.length === 0) {
+                        console.log(`ℹ️ Skipping global BATTLE_DESTROY ${normalized.effectId || 'unknown'}: forced event target no longer exists`);
+                        continue;
+                    }
+                    const result = EffectExecutor.applyEffectToTargets(
+                        gameEnv,
+                        normalized,
+                        resolvedTargets,
+                        context.sourcePlayerId,
+                        card.carduid
+                    );
+                    if (!result.success) {
+                        if (this.isMissingTargetError(result.error)) {
+                            console.log(`ℹ️ Skipping global BATTLE_DESTROY ${normalized.effectId || 'unknown'}: ${result.error}`);
+                            continue;
+                        }
+                        return { success: false, error: result.error || `Failed to apply BATTLE_DESTROY global effect ${normalized.effectId}` };
+                    }
+                } else {
+                    const result = DeployTargetManager.processEffectWithTargetChoice(
+                        gameEnv,
+                        context.sourcePlayerId,
+                        card.carduid,
+                        normalized
+                    );
+                    if (!result.success) {
+                        return { success: false, error: result.error || `Failed to apply BATTLE_DESTROY global effect ${normalized.effectId}` };
+                    }
                 }
 
                 if (restrictions.includes('once_per_turn')) {
@@ -132,10 +159,8 @@ export class BattleDestroyGlobalEffectManager {
 
     private static resolveForcedTargetsFromBattleContext(
         effect: EffectDefinition,
-        context: BattleDestroyGlobalContext,
-        sourceSlotName: string,
-        sourceCarduid: string
-    ): TargetReference[] {
+        context: BattleDestroyGlobalContext
+    ): TargetReference[] | null {
         const targetFilters = effect.target?.filters && typeof effect.target.filters === 'object'
             ? (effect.target.filters as Record<string, unknown>)
             : {};
@@ -143,16 +168,19 @@ export class BattleDestroyGlobalEffectManager {
         if (targetFilters.isEventAttacker === true) {
             return [{
                 playerId: context.sourcePlayerId,
-                zone: context.sourceSlot || sourceSlotName,
+                zone: context.sourceSlot,
                 carduid: context.sourceUnit.carduid
             }];
         }
+        if (targetFilters.isEventDefender === true) {
+            return [{
+                playerId: context.destroyedPlayerId,
+                zone: context.destroyedSlot,
+                carduid: context.destroyedUnit.carduid
+            }];
+        }
 
-        return [{
-            playerId: context.sourcePlayerId,
-            zone: sourceSlotName,
-            carduid: sourceCarduid
-        }];
+        return null;
     }
 
     private static isBattleDestroyTrigger(effect: EffectDefinition): boolean {
@@ -161,6 +189,20 @@ export class BattleDestroyGlobalEffectManager {
             typeof effect.trigger === 'string' &&
             effect.trigger.toUpperCase() === 'BATTLE_DESTROY'
         );
+    }
+
+    private static isGlobalBattleDestroyListener(effect: EffectDefinition): boolean {
+        const hasBattleDestroyEventCondition = Array.isArray(effect.conditions)
+            && effect.conditions.some((entry) => entry && typeof entry === 'object' && (entry as Record<string, unknown>).type === 'battleDestroyEvent');
+        const filters = effect.target?.filters && typeof effect.target.filters === 'object'
+            ? (effect.target.filters as Record<string, unknown>)
+            : {};
+        const targetsEventCard = filters.isEventAttacker === true || filters.isEventDefender === true;
+        return hasBattleDestroyEventCondition || targetsEventCard;
+    }
+
+    private static isMissingTargetError(error?: string): boolean {
+        return typeof error === 'string' && /^Target card .+ not found in zone .+$/i.test(error);
     }
 
     private static battleDestroyEventConditionsSatisfied(

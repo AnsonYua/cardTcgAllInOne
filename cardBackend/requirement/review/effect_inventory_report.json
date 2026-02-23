@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-02-21T06:14:21.878Z",
+  "generatedAt": "2026-02-23T16:32:18.214Z",
   "fileCount": 11,
   "cardCount": 538,
   "ruleTypeSummary": {
-    "continuous": 79,
-    "triggered": 434,
+    "continuous": 90,
+    "triggered": 441,
+    "play": 90,
     "activated": 38,
-    "play": 88,
     "special": 40
   },
   "cards": [
@@ -29,8 +29,9 @@
       "name": "Unicorn Gundam (Destroy Mode)",
       "cardType": "unit",
       "descriptionCount": 2,
-      "ruleCount": 1,
+      "ruleCount": 2,
       "effectIds": [
+        "play_destroy_linked_unicorn_mode_lv5_as_zero",
         "attack_rest"
       ],
       "alwaysOnStatus": "no-passive-text"
@@ -78,9 +79,10 @@
       "name": "Delta Plus",
       "cardType": "unit",
       "descriptionCount": 2,
-      "ruleCount": 1,
+      "ruleCount": 2,
       "effectIds": [
-        "repair_1"
+        "repair_1",
+        "during_link_hp_plus_1"
       ],
       "alwaysOnStatus": "complete"
     },
@@ -542,9 +544,10 @@
       "name": "Buster Gundam",
       "cardType": "unit",
       "descriptionCount": 2,
-      "ruleCount": 1,
+      "ruleCount": 2,
       "effectIds": [
-        "activate_support_3"
+        "activate_support_3",
+        "support_ap_up_zaft_set_self_active_once_per_turn"
       ],
       "alwaysOnStatus": "no-passive-text"
     },
@@ -1045,10 +1048,11 @@
       "cardId": "GD01-089",
       "name": "Riddhe Marcenas",
       "cardType": "pilot",
-      "descriptionCount": 1,
-      "ruleCount": 1,
+      "descriptionCount": 2,
+      "ruleCount": 2,
       "effectIds": [
-        "burst_add_to_hand"
+        "burst_add_to_hand",
+        "continuous_ap_plus_1_if_unit_has_repair"
       ],
       "alwaysOnStatus": "complete"
     },
@@ -1058,9 +1062,10 @@
       "name": "Duo Maxwell",
       "cardType": "pilot",
       "descriptionCount": 2,
-      "ruleCount": 1,
+      "ruleCount": 2,
       "effectIds": [
-        "burst_add_to_hand"
+        "burst_add_to_hand",
+        "during_link_prevent_enemy_ap_reduction"
       ],
       "alwaysOnStatus": "no-passive-text"
     },
@@ -1069,10 +1074,11 @@
       "cardId": "GD01-091",
       "name": "Chang Wufei",
       "cardType": "pilot",
-      "descriptionCount": 1,
-      "ruleCount": 1,
+      "descriptionCount": 2,
+      "ruleCount": 2,
       "effectIds": [
-        "burst_add_to_hand"
+        "burst_add_to_hand",
+        "continuous_prevent_battle_damage_if_unit_has_breach_during_your_turn"
       ],
       "alwaysOnStatus": "complete"
     },
@@ -1108,9 +1114,10 @@
       "name": "Yzak Jule",
       "cardType": "pilot",
       "descriptionCount": 2,
-      "ruleCount": 1,
+      "ruleCount": 2,
       "effectIds": [
-        "burst_add_to_hand"
+        "burst_add_to_hand",
+        "linked_battle_destroy_draw_once_per_turn"
       ],
       "alwaysOnStatus": "complete"
     },
@@ -1120,9 +1127,10 @@
       "name": "Dearka Elthman",
       "cardType": "pilot",
       "descriptionCount": 2,
-      "ruleCount": 1,
+      "ruleCount": 2,
       "effectIds": [
-        "burst_add_to_hand"
+        "burst_add_to_hand",
+        "linked_discard_then_draw"
       ],
       "alwaysOnStatus": "no-passive-text"
     },
@@ -2222,8 +2230,9 @@
       "name": "Gundam X",
       "cardType": "unit",
       "descriptionCount": 2,
-      "ruleCount": 1,
+      "ruleCount": 2,
       "effectIds": [
+        "suppression_2",
         "link_effect"
       ],
       "alwaysOnStatus": "complete"
@@ -2605,11 +2614,11 @@
       "cardId": "GD02-086",
       "name": "Jerid Messa",
       "cardType": "pilot",
-      "descriptionCount": 1,
+      "descriptionCount": 2,
       "ruleCount": 2,
       "effectIds": [
         "burst_add_to_hand",
-        "pair_draw_then_discard_if_aeug"
+        "ap_plus_1_if_another_titans_unit"
       ],
       "alwaysOnStatus": "complete"
     },
@@ -2657,10 +2666,11 @@
       "cardId": "GD02-090",
       "name": "Challia Bull (GQ)",
       "cardType": "pilot",
-      "descriptionCount": 1,
-      "ruleCount": 1,
+      "descriptionCount": 2,
+      "ruleCount": 2,
       "effectIds": [
-        "burst_add_to_hand"
+        "burst_add_to_hand",
+        "ap_plus_1_if_another_high_maneuver_unit"
       ],
       "alwaysOnStatus": "complete"
     },
@@ -2695,10 +2705,11 @@
       "cardId": "GD02-093",
       "name": "Olba Frost",
       "cardType": "pilot",
-      "descriptionCount": 1,
-      "ruleCount": 1,
+      "descriptionCount": 2,
+      "ruleCount": 2,
       "effectIds": [
-        "burst_add_to_hand"
+        "burst_add_to_hand",
+        "draw_on_battle_destroy_newtype_paired_unit"
       ],
       "alwaysOnStatus": "no-passive-text"
     },
@@ -2734,9 +2745,10 @@
       "name": "Desil Galette",
       "cardType": "pilot",
       "descriptionCount": 2,
-      "ruleCount": 1,
+      "ruleCount": 2,
       "effectIds": [
-        "burst_add_to_hand"
+        "burst_add_to_hand",
+        "linked_deploy_vagan_unit_from_trash"
       ],
       "alwaysOnStatus": "no-passive-text"
     },
@@ -2745,10 +2757,11 @@
       "cardId": "GD02-097",
       "name": "Kamille Bidan",
       "cardType": "pilot",
-      "descriptionCount": 1,
-      "ruleCount": 1,
+      "descriptionCount": 2,
+      "ruleCount": 2,
       "effectIds": [
-        "burst_add_to_hand"
+        "burst_add_to_hand",
+        "ap_plus_2_if_friendly_white_base"
       ],
       "alwaysOnStatus": "complete"
     },
@@ -2758,9 +2771,10 @@
       "name": "Quattro Bajeena",
       "cardType": "pilot",
       "descriptionCount": 3,
-      "ruleCount": 1,
+      "ruleCount": 2,
       "effectIds": [
-        "burst_add_to_hand"
+        "burst_add_to_hand",
+        "linked_draw_then_discard_if_aeug_unit"
       ],
       "alwaysOnStatus": "no-passive-text"
     },
@@ -3387,9 +3401,10 @@
       "name": "Kämpfer",
       "cardType": "unit",
       "descriptionCount": 2,
-      "ruleCount": 1,
+      "ruleCount": 2,
       "effectIds": [
-        "burst_effect"
+        "burst_effect",
+        "paired_cyclops_allow_attack_target_active_enemy_ap_le_5"
       ],
       "alwaysOnStatus": "no-passive-text"
     },
@@ -3589,8 +3604,9 @@
       "name": "GQuuuuuuX (Omega Psycommu)",
       "cardType": "unit",
       "descriptionCount": 2,
-      "ruleCount": 1,
+      "ruleCount": 2,
       "effectIds": [
+        "suppression_2",
         "deploy_effect"
       ],
       "alwaysOnStatus": "no-passive-text"
@@ -3625,11 +3641,10 @@
       "cardId": "GD03-037",
       "name": "Bertigo",
       "cardType": "unit",
-      "descriptionCount": 2,
-      "ruleCount": 2,
+      "descriptionCount": 1,
+      "ruleCount": 1,
       "effectIds": [
-        "during_link_effect",
-        "destroyed_effect"
+        "during_link_effect"
       ],
       "alwaysOnStatus": "complete"
     },
@@ -3638,7 +3653,7 @@
       "cardId": "GD03-038",
       "name": "GuAIZ (Commander Type)",
       "cardType": "unit",
-      "descriptionCount": 1,
+      "descriptionCount": 2,
       "ruleCount": 2,
       "effectIds": [
         "activate_effect",
@@ -3804,10 +3819,11 @@
       "cardId": "GD03-052",
       "name": "Gundam Virtue",
       "cardType": "unit",
-      "descriptionCount": 1,
-      "ruleCount": 1,
+      "descriptionCount": 2,
+      "ruleCount": 2,
       "effectIds": [
-        "activate_effect"
+        "activate_effect",
+        "battle_damage_destroy_if_cb_pilot_in_play"
       ],
       "alwaysOnStatus": "no-passive-text"
     },
@@ -4005,8 +4021,9 @@
       "name": "Graham's Union Flag Custom",
       "cardType": "unit",
       "descriptionCount": 2,
-      "ruleCount": 1,
+      "ruleCount": 2,
       "effectIds": [
+        "high_maneuver",
         "during_link_effect"
       ],
       "alwaysOnStatus": "no-passive-text"
@@ -4199,10 +4216,11 @@
       "cardId": "GD03-085",
       "name": "Christina Mackenzie",
       "cardType": "pilot",
-      "descriptionCount": 1,
-      "ruleCount": 1,
+      "descriptionCount": 2,
+      "ruleCount": 2,
       "effectIds": [
-        "burst_add_to_hand"
+        "burst_add_to_hand",
+        "play_pair_nt1_as_zero_cost"
       ],
       "alwaysOnStatus": "no-passive-text"
     },
@@ -4302,10 +4320,11 @@
       "cardId": "GD03-093",
       "name": "Carris Nautilus",
       "cardType": "pilot",
-      "descriptionCount": 1,
-      "ruleCount": 1,
+      "descriptionCount": 2,
+      "ruleCount": 2,
       "effectIds": [
-        "burst_add_to_hand"
+        "burst_add_to_hand",
+        "ap_plus_1_if_no_enemy_base"
       ],
       "alwaysOnStatus": "complete"
     },
@@ -4507,7 +4526,7 @@
       "cardId": "GD03-109",
       "name": "Improved Technique",
       "cardType": "command",
-      "descriptionCount": 3,
+      "descriptionCount": 2,
       "ruleCount": 2,
       "effectIds": [
         "burst_effect",
@@ -4570,7 +4589,7 @@
       "cardId": "GD03-114",
       "name": "Look of Determination",
       "cardType": "command",
-      "descriptionCount": 3,
+      "descriptionCount": 2,
       "ruleCount": 2,
       "effectIds": [
         "burst_effect",
@@ -4725,7 +4744,7 @@
       "cardId": "GD03-126",
       "name": "Cyclops Team",
       "cardType": "base",
-      "descriptionCount": 2,
+      "descriptionCount": 3,
       "ruleCount": 3,
       "effectIds": [
         "burst_effect",
@@ -4766,11 +4785,12 @@
       "cardId": "GD03-129",
       "name": "Hotarubi",
       "cardType": "base",
-      "descriptionCount": 2,
-      "ruleCount": 2,
+      "descriptionCount": 3,
+      "ruleCount": 3,
       "effectIds": [
         "burst_effect",
-        "deploy_effect"
+        "deploy_effect",
+        "during_your_turn_when_friendly_tte_effect_damaged_optional_rest_self_then_mill_1"
       ],
       "alwaysOnStatus": "no-passive-text"
     },
@@ -5242,7 +5262,7 @@
       "cardId": "ST02-010",
       "name": "Heero Yuy",
       "cardType": "pilot",
-      "descriptionCount": 2,
+      "descriptionCount": 3,
       "ruleCount": 3,
       "effectIds": [
         "burst_add_to_hand",
@@ -5470,7 +5490,7 @@
       "cardId": "ST03-011",
       "name": "Char Aznable",
       "cardType": "pilot",
-      "descriptionCount": 2,
+      "descriptionCount": 3,
       "ruleCount": 3,
       "effectIds": [
         "burst_add_to_hand",
@@ -6338,7 +6358,7 @@
       "cardId": "ST08-001",
       "name": "Ξ Gundam",
       "cardType": "unit",
-      "descriptionCount": 2,
+      "descriptionCount": 3,
       "ruleCount": 3,
       "effectIds": [
         "hand_cost_minus_1_per_enemy_unit_if_no_friendly_ge_6",

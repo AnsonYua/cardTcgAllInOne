@@ -6339,7 +6339,9 @@
               "type": "unit",
               "scope": "opponent",
               "filters": {
-                "hp": "<=4"
+                "hp": "<=4",
+                "isBattling": true,
+                "battleOpponentHasKeyword": "Blocker"
               },
               "count": 1
             },

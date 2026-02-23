@@ -15,6 +15,7 @@ const {
   CANONICAL_TARGET_FILTER_KEYS,
   CANONICAL_SCALING_TYPES,
   SEQUENCE_INTERNAL_CONDITION_TYPES,
+  normalizeEffectTriggerAlias,
   normalizeConditionTypeAlias,
   normalizeSelectionTypeAlias
 } = require('../../services/effects/schema/EffectSchema.ts');
@@ -300,14 +301,24 @@ function walkEffects(node, context, diagnostics) {
 
   if (typeof node.trigger === 'string' && typeof nextContext.effectId === 'string') {
     const triggerPath = `${context.jsonPath}.trigger`;
-    if (!CANONICAL_EFFECT_TRIGGERS.has(node.trigger)) {
+    const normalizedTrigger = normalizeEffectTriggerAlias(node.trigger);
+    if (normalizedTrigger !== node.trigger) {
+      diagnostics.push({
+        severity: 'error',
+        cardId: context.cardId,
+        effectId: nextContext.effectId,
+        jsonPath: triggerPath,
+        message: `non-canonical trigger alias ${node.trigger}; use ${normalizedTrigger}`
+      });
+    }
+    if (!CANONICAL_EFFECT_TRIGGERS.has(normalizedTrigger)) {
       diagnostics.push({
         severity: 'error',
         cardId: context.cardId,
         effectId: nextContext.effectId,
         jsonPath: triggerPath,
         message:
-          node.trigger === 'CUSTOM'
+          normalizedTrigger === 'CUSTOM'
             ? 'trigger CUSTOM is not allowed; migrate to explicit trigger enums'
             : `unknown trigger ${node.trigger}`
       });

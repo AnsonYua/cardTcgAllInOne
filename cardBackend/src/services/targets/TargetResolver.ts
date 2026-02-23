@@ -17,6 +17,7 @@ import { TargetKeywordFilterUtils } from './TargetKeywordFilterUtils';
 import { TargetStateFilterUtils } from './TargetStateFilterUtils';
 import { getSlotTotals } from '../../utils/FieldValueCalculator';
 import { DynamicComparisonFilterResolver } from './filters/DynamicComparisonFilterResolver';
+import { TargetBattleFilterUtils } from './TargetBattleFilterUtils';
 
 export interface ResolvedTargetConfig {
     type: TargetType;
@@ -386,18 +387,9 @@ export class TargetResolver {
             }
         }
 
-        if (typeof (filters as any).isBattling === 'boolean') {
-            const expectedBattling = (filters as any).isBattling === true;
-            const battle = gameEnv.currentBattle;
-            const unitCarduid = slotContext?.slot?.unit?.carduid;
-            const isBattling = Boolean(
-                unitCarduid &&
-                battle &&
-                (battle.attackerCarduid === unitCarduid || battle.targetCarduid === unitCarduid)
-            );
-            if (isBattling !== expectedBattling) {
-                return false;
-            }
+        const battleFilterResult = TargetBattleFilterUtils.validateBattleFilters(gameEnv, filters, slotContext);
+        if (!battleFilterResult.ok) {
+            return false;
         }
 
         if (typeof (filters as any).isLinkUnit === 'boolean') {

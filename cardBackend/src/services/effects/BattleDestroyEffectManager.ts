@@ -15,6 +15,7 @@ export interface BattleDestroyContext {
     sourceUnit: UnitZoneCard;
     sourceSlot: string;
     destroyedPlayerId: string;
+    destroyedSlot: string;
     destroyedUnit: UnitZoneCard;
 }
 
@@ -49,6 +50,7 @@ export class BattleDestroyEffectManager {
             sourcePlayerId: context.sourcePlayerId,
             sourceSlot: context.sourceSlot,
             destroyedPlayerId: context.destroyedPlayerId,
+            destroyedSlot: context.destroyedSlot,
             sourceUnit: context.sourceUnit,
             destroyedUnit: context.destroyedUnit
         });

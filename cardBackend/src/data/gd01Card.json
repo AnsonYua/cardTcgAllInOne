@@ -100,7 +100,7 @@
           {
             "effectId": "play_destroy_linked_unicorn_mode_lv5_as_zero",
             "type": "play",
-            "trigger": "PLAY_CARD",
+            "trigger": "COST",
             "optional": true,
             "action": "replace_cost",
             "parameters": {
@@ -1757,10 +1757,17 @@
             "effectId": "deploy_damage_1",
             "type": "triggered",
             "trigger": "ENTERS_PLAY",
+            "conditions": [
+              {
+                "type": "unitsInPlay",
+                "scope": "opponent",
+                "value": ">=5"
+              }
+            ],
             "target": {
               "type": "unit",
-              "scope": "opponent",
-              "count": 1
+              "scope": "opponent_all",
+              "count": 99
             },
             "action": "damage",
             "parameters": {

@@ -107,7 +107,8 @@ export const CANONICAL_CONDITION_TYPES = new Set<string>([
 export const SEQUENCE_INTERNAL_CONDITION_TYPES = new Set<string>([
     'stepResolved',
     'milledAnyCardHasTrait',
-    'milledCardHasTraitsAny'
+    'milledCardHasTraitsAny',
+    'previousTargetHasTrait'
 ]);
 
 export const CANONICAL_SELECTION_TYPES = new Set<string>([
@@ -119,6 +120,7 @@ export const CANONICAL_SELECTION_TYPES = new Set<string>([
 
 export const CANONICAL_TARGET_FILTER_KEYS = new Set<string>([
     'ap',
+    'battleOpponentHasKeyword',
     'cardType',
     'color',
     'colorNot',
@@ -157,11 +159,22 @@ const CONDITION_TYPE_ALIASES: Record<string, string> = {
     sourceHP: 'sourceHp'
 };
 
+const EFFECT_TRIGGER_ALIASES: Record<string, string> = {
+    PLAY_CARD: 'COST'
+};
+
 export function normalizeConditionTypeAlias(type: string | undefined): string | undefined {
     if (typeof type !== 'string' || type.length === 0) {
         return type;
     }
     return CONDITION_TYPE_ALIASES[type] || type;
+}
+
+export function normalizeEffectTriggerAlias(trigger: string | undefined): string | undefined {
+    if (typeof trigger !== 'string' || trigger.length === 0) {
+        return trigger;
+    }
+    return EFFECT_TRIGGER_ALIASES[trigger] || trigger;
 }
 
 export function normalizeSelectionTypeAlias(

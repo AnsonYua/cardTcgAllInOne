@@ -22,7 +22,8 @@ import {
     buildForcedTargetSnapshot,
     buildBaseSnapshot,
     buildShieldSnapshot,
-    emitBattleResolutionNotification
+    emitBattleResolutionNotification,
+    buildSlotReferenceSnapshot
 } from './battle/BattleSnapshotUtils';
 import { getShieldCardsToAttack, isShieldDamagePrevented } from './battle/BattleShieldUtils';
 import { KeywordUtils } from '../utils/KeywordUtils';
@@ -111,6 +112,16 @@ export class BattlePhaseManager {
                 }
                 return { success: true, requiresSelection: true };
             }
+
+            const targetGoneAfterAttackEffects = this.tryResolvePreBattleTargetGone(
+                gameEnv,
+                event,
+                defendingPlayerId,
+                'after_attack_phase_effects'
+            );
+            if (targetGoneAfterAttackEffects) {
+                return { success: true };
+            }
         }
 
         const blockerResult = BlockerChoiceManager.processAttackWithBlockerChoice(
@@ -128,6 +139,15 @@ export class BattlePhaseManager {
         }
 
         if (blockerResult.normalAttack) {
+            const targetGoneBeforeBattleOpen = this.tryResolvePreBattleTargetGone(
+                gameEnv,
+                event,
+                defendingPlayerId,
+                'before_start_battle'
+            );
+            if (targetGoneBeforeBattleOpen) {
+                return { success: true };
+            }
             return this.startBattle(gameEnv, event);
         }
 
@@ -660,6 +680,7 @@ export class BattlePhaseManager {
                 sourceUnit: attackingUnit,
                 sourceSlot: attackerSlot,
                 destroyedPlayerId: defender.id,
+                destroyedSlot: targetSlotName,
                 destroyedUnit: targetUnit
             });
             if (!battleDestroyResult.success) {
@@ -675,6 +696,7 @@ export class BattlePhaseManager {
                 sourceUnit: targetUnit,
                 sourceSlot: targetSlotName,
                 destroyedPlayerId: attacker.id,
+                destroyedSlot: attackerSlot,
                 destroyedUnit: attackingUnit
             });
             if (!battleDestroyResult.success) {
@@ -988,6 +1010,119 @@ export class BattlePhaseManager {
 
         data.attackNotificationSent = true;
         data.attackNotificationId = notificationId;
+    }
+
+    private static tryResolvePreBattleTargetGone(
+        gameEnv: GameEnvironment,
+        event: PlayerActionEvent,
+        defendingPlayerId: string,
+        reason: string
+    ): boolean {
+        const data = event.data || {};
+        if (data.actionType !== 'attackUnit') {
+            return false;
+        }
+
+        const attackerCarduid = typeof data.attackerCarduid === 'string' ? data.attackerCarduid : '';
+        const targetCarduid = typeof data.targetUnitUid === 'string'
+            ? data.targetUnitUid
+            : typeof data.targetCarduid === 'string'
+                ? data.targetCarduid
+                : '';
+        const targetPlayerId = typeof data.targetPlayerId === 'string' ? data.targetPlayerId : defendingPlayerId;
+        if (!attackerCarduid || !targetCarduid || !targetPlayerId) {
+            return false;
+        }
+
+        const targetSearch = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, targetCarduid);
+        const targetStillUnit = Boolean(
+            targetSearch?.found &&
+            targetSearch?.playerId &&
+            targetSearch.playerId === targetPlayerId &&
+            targetSearch?.unit?.carduid === targetCarduid
+        );
+
+        if (targetStillUnit) {
+            return false;
+        }
+
+        const attackerSearch = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, attackerCarduid);
+        const attackerSnapshot = attackerSearch?.found && attackerSearch?.playerId && attackerSearch?.slotName
+            ? buildSlotSnapshot(gameEnv.getPlayer(attackerSearch.playerId) || undefined, attackerSearch.slotName)
+            : null;
+
+        const targetSlotName = this.resolveDeclaredTargetSlotName(gameEnv, event, targetPlayerId, targetCarduid);
+        const targetSnapshot = targetSlotName
+            ? buildSlotReferenceSnapshot(targetPlayerId, targetSlotName)
+            : null;
+
+        const attackNotificationId = this.extractAttackNotificationId(data);
+        if (attackNotificationId) {
+            const notificationManager = new GameNotificationManager(gameEnv);
+            notificationManager.updateNotificationEvent(attackNotificationId, {
+                battleEnd: true
+            });
+            console.log(`📣 Attack notification ${attackNotificationId} marked as battleEnd (pre-battle target gone: ${reason})`);
+        }
+
+        const preBattleContext: BattleContext = {
+            actionType: 'attackUnit',
+            attackingPlayerId: event.playerId,
+            defendingPlayerId: targetPlayerId,
+            attackerCarduid,
+            targetCarduid,
+            targetPlayerId,
+            status: 'ACTION_STEP',
+            fromBurst: Boolean(data.fromBurst),
+            openedAt: Date.now(),
+            forcedTarget: this.extractForcedTarget(data),
+            attackNotificationId
+        };
+
+        emitBattleResolutionNotification(gameEnv, preBattleContext, {
+            attacker: attackerSnapshot,
+            target: targetSnapshot,
+            focusTarget: targetSnapshot,
+            result: {
+                targetType: 'unit',
+                aborted: true,
+                battleEndedEarly: true,
+                abortReason: 'TARGET_NOT_ON_BOARD',
+                targetMissing: true,
+                preBattle: true
+            }
+        });
+
+        console.log(`⚠️ Attack ended before battle open because target left board (${reason}): ${targetCarduid}`);
+        return true;
+    }
+
+    private static resolveDeclaredTargetSlotName(
+        gameEnv: GameEnvironment,
+        event: PlayerActionEvent,
+        targetPlayerId: string,
+        targetCarduid: string
+    ): string | undefined {
+        const data = event.data || {};
+        if (typeof (data as any).targetSlotName === 'string' && (data as any).targetSlotName.length > 0) {
+            return (data as any).targetSlotName;
+        }
+
+        const attackNotificationId = this.extractAttackNotificationId(data);
+        if (attackNotificationId) {
+            const note = (gameEnv.notificationQueue || []).find((entry: any) => entry?.id === attackNotificationId);
+            const slotName = note?.payload?.targetSlotName;
+            if (typeof slotName === 'string' && slotName.length > 0) {
+                return slotName;
+            }
+        }
+
+        const defender = gameEnv.getPlayer(targetPlayerId);
+        if (!defender?.zones) {
+            return undefined;
+        }
+        const slot = SlotZoneUtils.findSlotByCarduid(defender.zones, targetCarduid);
+        return slot?.slotName || undefined;
     }
 
     private static extractForcedTarget(eventData: PlayerActionEventData): ForcedTargetSummary | undefined {

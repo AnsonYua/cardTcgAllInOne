@@ -4918,7 +4918,7 @@
           {
             "effectId": "play_pair_nt1_as_zero_cost",
             "type": "play",
-            "trigger": "PLAY_CARD",
+            "trigger": "COST",
             "action": "replace_cost",
             "parameters": {
               "replace": {
