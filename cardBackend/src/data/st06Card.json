@@ -154,7 +154,7 @@
                         "action": "modifyAP",
                         "target": {
                             "type": "unit",
-                            "scope": "self_all_unit",
+                            "scope": "self",
                             "selection": {
                                 "type": "player_choice"
                             },

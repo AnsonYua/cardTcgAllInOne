@@ -127,6 +127,56 @@ describe('GD03-129 (Hotarubi) split deploy + effect-damage trigger', () => {
         expect(owner.deck.mainDeck.length).toBe(1);
     });
 
+    test('already rested base does not prompt target choice and does not mill', () => {
+        const gameEnv = new GameEnvironment();
+        const owner = gameEnv.addPlayer('playerId_1', 'P1');
+        const opponent = gameEnv.addPlayer('playerId_2', 'P2');
+
+        gameEnv.currentTurn = 1;
+        gameEnv.currentPlayer = owner.id;
+
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, owner.id, {
+            carduid: 'GD03-129_base_0004',
+            playAs: 'base'
+        }).success).toBe(true);
+
+        owner.zones.base[0].isRested = true;
+        owner.deck.mainDeck = ['GD03-001_deck_0005'];
+        owner.zones.trashArea = [];
+
+        owner.zones.slot1.unit = createUnitZoneCard({
+            carduid: 'friendly_tekkadan_unit_0003',
+            cardId: 'ALLY-TEKKADAN-0003',
+            ap: 2,
+            hp: 2,
+            cardDataExtras: { traits: ['Tekkadan'], color: 'Purple', level: 2 }
+        });
+
+        const damageResult = EffectExecutor.applyEffectToTargets(
+            gameEnv,
+            {
+                effectId: 'test_damage_4',
+                action: 'damage',
+                parameters: { value: 1 }
+            },
+            [{ carduid: 'friendly_tekkadan_unit_0003', zone: 'slot1', playerId: owner.id }],
+            opponent.id,
+            'enemy_effect_source_0004'
+        );
+
+        expect(damageResult.success).toBe(true);
+
+        const choiceEvent = gameEnv.processingQueue.find((event) => event.type === EventType.TARGET_CHOICE);
+        expect(choiceEvent).toBeFalsy();
+
+        const processResult = gameEnv.processEvents();
+        expect(processResult.success).toBe(true);
+
+        expect(owner.zones.base[0].isRested).toBe(true);
+        expect(owner.zones.trashArea.length).toBe(0);
+        expect(owner.deck.mainDeck.length).toBe(1);
+    });
+
     test('does not trigger on opponent turn', () => {
         const gameEnv = new GameEnvironment();
         const owner = gameEnv.addPlayer('playerId_1', 'P1');

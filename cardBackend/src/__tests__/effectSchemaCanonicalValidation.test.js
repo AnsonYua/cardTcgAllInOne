@@ -2,7 +2,8 @@ const {
     __testUtils: {
         validateScalingConfig,
         detectAlwaysOnTextRuleMismatches,
-        validateReturnToHandSemantics
+        validateReturnToHandSemantics,
+        detectSupportActivatedSchemaMismatches
     }
 } = require('../tests/validators/effectSchemaCanonicalValidation');
 
@@ -202,5 +203,71 @@ describe('effectSchemaCanonicalValidation utilities', () => {
         expect(
             diagnostics.some((d) => d.severity === 'warning' && /SOURCE_CONTROLLER/.test(d.message))
         ).toBe(true);
+    });
+
+    test('accepts canonical support activated schema', () => {
+        const diagnostics = [];
+        detectSupportActivatedSchemaMismatches('mock.json', {
+            'MOCK-SUP-OK': {
+                effects: {
+                    description: ['[Activate/Main]<Support 2> (Rest this Unit. 1 other friendly Unit gets AP+2 during this turn.)'],
+                    rules: [
+                        {
+                            effectId: 'activate_support_2',
+                            type: 'activated',
+                            timing: {
+                                windows: ['MAIN_PHASE'],
+                                duration: 'UNTIL_END_OF_TURN'
+                            },
+                            cost: { rest: 'self' },
+                            action: 'modifyAP',
+                            target: {
+                                type: 'unit',
+                                scope: 'self',
+                                count: 1
+                            },
+                            parameters: {
+                                value: 2,
+                                excludeSource: true
+                            }
+                        }
+                    ]
+                }
+            }
+        }, diagnostics);
+
+        expect(diagnostics).toHaveLength(0);
+    });
+
+    test('rejects sequence-wrapped support schema', () => {
+        const diagnostics = [];
+        detectSupportActivatedSchemaMismatches('mock.json', {
+            'MOCK-SUP-BAD': {
+                effects: {
+                    description: ['[Activate/Main]<Support 1> (Rest this Unit. 1 other friendly Unit gets AP+1 during this turn.)'],
+                    rules: [
+                        {
+                            effectId: 'activate_effect',
+                            type: 'activated',
+                            timing: { windows: ['MAIN_PHASE'] },
+                            cost: { rest: 'self' },
+                            action: 'sequence',
+                            parameters: {
+                                text: '<Support 1> ...',
+                                steps: [
+                                    {
+                                        action: 'modifyAP',
+                                        target: { type: 'unit', scope: 'self', count: 1 },
+                                        parameters: { value: 1, excludeSource: true }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }, diagnostics);
+
+        expect(diagnostics.some((d) => d.severity === 'error' && /top-level modifyAP/.test(d.message))).toBe(true);
     });
 });

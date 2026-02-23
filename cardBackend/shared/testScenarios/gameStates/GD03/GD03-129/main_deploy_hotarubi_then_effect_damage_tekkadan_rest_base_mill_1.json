@@ -77,15 +77,21 @@
             {
               "carduid": "GD03-056_hand_0002",
               "cardId": "GD03-056"
+            },
+            {
+              "carduid": "GD03-056_hand_0003",
+              "cardId": "GD03-056"
             }
           ],
           "handUids": [
             "GD03-129_hand_0001",
-            "GD03-056_hand_0002"
+            "GD03-056_hand_0002",
+             "GD03-056_hand_0003"
           ],
           "mainDeck": [
             "GD03-045_topdeck_0001",
-            "GD03-044_topdeck_0002"
+            "GD03-044_topdeck_0002",
+             "GD03-056_hand_0003"
           ]
         },
         "confirmIsRedraw": false,
@@ -136,6 +142,22 @@
             },
             {
               "carduid": "energy_basic_gd03129_p1_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd03129_p1_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd03129_p1_0004",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",

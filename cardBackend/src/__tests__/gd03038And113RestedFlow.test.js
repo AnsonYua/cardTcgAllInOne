@@ -52,6 +52,17 @@ function setupTurn(gameEnv) {
 }
 
 describe('GD03-038 / GD03-113 rest + dynamic level regression', () => {
+    test('GD03-038 support activated effect uses canonical modifyAP schema', () => {
+        const guaiz = gd03.cards['GD03-038'];
+        const support = guaiz.effects.rules.find(rule => rule.effectId === 'activate_effect');
+        expect(support).toBeTruthy();
+        expect(support.type).toBe('activated');
+        expect(support.action).toBe('modifyAP');
+        expect(support.cost?.rest).toBe('self');
+        expect(support.parameters?.excludeSource).toBe(true);
+        expect(support.parameters?.value).toBe(1);
+    });
+
     test('GD03-113 rests GD03-038, triggers UNIT_RESTED_BY_EFFECT AP+2, and damages valid lower-level enemy', () => {
         const gameEnv = new GameEnvironment();
         const p1 = gameEnv.addPlayer('playerId_1', 'P1');

@@ -1,25 +1,26 @@
 {
-  "description": "gd03-127_deploy_add_shield_then_grant_ap_plus_3_to_friendly_zaft_unit",
-  "gameId": "gd03-127_deploy_add_shield_then_grant_ap_plus_3_to_friendly_zaft_unit",
+  "description": "gd03-131_deploy_add_shield_then_return_enemy_le4_if_tsa_units_ge2_extra_enemy_le4_target",
+  "gameId": "gd03-131_deploy_add_shield_then_return_enemy_le4_if_tsa_units_ge2_extra_enemy_le4_target",
   "testType": "action",
   "category": "ActionCase",
   "tags": [
-    "GD03-127",
+    "GD03-131",
     "Deploy",
     "shield_to_hand",
-    "ZAFT",
-    "modifyAP"
+    "TripleShipAlliance",
+    "returnToHand"
   ],
   "notes": [
     "Action: Load scenario via getTestScenario and inject via injectGameState.",
-    "Expect: Player 1 hand contains GD03-127 and has 6 active energy cards.",
-    "Action: During MAIN_PHASE, play GD03-127 from hand to base zone.",
-    "Expect: Deploy step 1 asks to choose 1 card from your shield area and add it to hand.",
-    "Action: Select one shield card.",
-    "Expect: Selected shield card moves from shield area to hand.",
-    "Expect: Deploy step 2 allows only friendly (ZAFT) Units as AP+3 targets.",
-    "Action: Select friendly slot1 GD03-046 (ZAFT).",
-    "Expect: Selected ZAFT Unit gets AP+3 until end of turn."
+    "Expect: Player 1 hand contains GD03-131 and has 5 active energy cards.",
+    "Expect: Player 1 already has 2 friendly (Triple Ship Alliance) Units in play (slot1 and slot2).",
+    "Action: During MAIN_PHASE, play GD03-131 from hand to base zone.",
+    "Action: Resolve Deploy step 1 by choosing 1 shield card to add to hand.",
+    "Expect: Because TSA Units in play are >=2, Deploy step 2 becomes available.",
+    "Expect: Return target filter allows only enemy Units with Lv.4 or lower (slot1 and slot3 valid, slot2 invalid).",
+    "Action: Choose one valid target (for example enemy slot1 unit GD03-047, Lv.4).",
+    "Expect: Selected enemy unit is returned to opponent hand.",
+    "Expect: The pilot paired with the selected enemy unit is also returned to opponent hand."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -41,7 +42,7 @@
     "maxEventsPerCycle": 50,
     "notificationQueue": [
       {
-        "id": "card_drawn_seed_gd03127_deploy",
+        "id": "card_drawn_seed_gd03131_deploy",
         "type": "CARD_DRAWN",
         "metadata": {
           "timestamp": 1768362880422,
@@ -51,7 +52,7 @@
         },
         "payload": {
           "playerId": "playerId_1",
-          "carduid": "DRAW_SEED_GD03127_DEPLOY",
+          "carduid": "DRAW_SEED_GD03131_DEPLOY",
           "sourceZone": "deck",
           "reason": "draw",
           "timestamp": 1768362880422,
@@ -70,12 +71,12 @@
         "deck": {
           "hand": [
             {
-              "carduid": "GD03-127_hand_0001",
-              "cardId": "GD03-127"
+              "carduid": "GD03-131_hand_0001",
+              "cardId": "GD03-131"
             }
           ],
           "handUids": [
-            "GD03-127_hand_0001"
+            "GD03-131_hand_0001"
           ],
           "mainDeck": []
         },
@@ -86,8 +87,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD03-046_friendly_zaft_0001",
-              "cardId": "GD03-046",
+              "carduid": "GD03-072_friendly_tsa_0001",
+              "cardId": "GD03-072",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -102,8 +103,8 @@
           },
           "slot2": {
             "unit": {
-              "carduid": "GD03-068_friendly_non_zaft_0002",
-              "cardId": "GD03-068",
+              "carduid": "GD03-070_friendly_tsa_0002",
+              "cardId": "GD03-070",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -118,10 +119,10 @@
           },
           "slot3": {
             "unit": {
-              "carduid": "GD01-046_friendly_zaft_0003",
-              "cardId": "GD01-046",
+              "carduid": "GD03-038_enemy_valid_0003",
+              "cardId": "GD03-038",
               "placedAt": 0,
-              "placedBy": "playerId_1",
+              "placedBy": "playerId_2",
               "isRested": false,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
@@ -147,12 +148,46 @@
             }
           ],
           "energyArea": [
-            { "carduid": "energy_basic_gd03127_p1_0001", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false },
-            { "carduid": "energy_basic_gd03127_p1_0002", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false },
-            { "carduid": "energy_basic_gd03127_p1_0003", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false },
-            { "carduid": "energy_basic_gd03127_p1_0004", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false },
-            { "carduid": "energy_basic_gd03127_p1_0005", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false },
-            { "carduid": "energy_basic_gd03127_p1_0006", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false }
+            {
+              "carduid": "energy_basic_gd03131_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd03131_p1_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd03131_p1_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd03131_p1_0004",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd03131_p1_0005",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
           ],
           "trashArea": [],
           "repairAbilitiesCheckedThisCycle": false,
@@ -174,8 +209,33 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD03-068_enemy_0001",
-              "cardId": "GD03-068",
+              "carduid": "GD03-047_enemy_valid_0001",
+              "cardId": "GD03-047",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            },
+            "pilot": {
+              "carduid": "GD03-089_enemy_pilot_0001",
+              "cardId": "GD03-089",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "GD03-040_enemy_invalid_0002",
+              "cardId": "GD03-040",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -188,8 +248,24 @@
               "continueModifyHP": 0
             }
           },
-          "slot2": {},
-          "slot3": {},
+          "slot3": {
+          
+            "unit": {
+              "carduid": "GD03-007_friendly_tsa_0002",
+              "cardId": "GD03-007",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+
+          },
           "slot4": {},
           "slot5": {},
           "slot6": {},

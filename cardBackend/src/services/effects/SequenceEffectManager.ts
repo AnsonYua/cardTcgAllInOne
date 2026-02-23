@@ -277,10 +277,19 @@ export class SequenceEffectManager {
                 return { success: true, requiresSelection: true };
             }
 
-            this.markResolved(ctx, stepId || step.effectId || stepAction);
+            const affectedTargets = Array.isArray((result as any).affectedTargets)
+                ? (result as any).affectedTargets
+                : [];
+            const stepApplied =
+                affectedTargets.length > 0 ||
+                EffectExecutor.actionSupportsNoTargets(EffectExecutor.getEffectAction(normalizedStepEffect));
 
-            if (Array.isArray((result as any).affectedTargets) && (result as any).affectedTargets.length > 0) {
-                ctx.previousTargets = (result as any).affectedTargets.map((t: any) => ({
+            if (stepApplied) {
+                this.markResolved(ctx, stepId || step.effectId || stepAction);
+            }
+
+            if (affectedTargets.length > 0) {
+                ctx.previousTargets = affectedTargets.map((t: any) => ({
                     carduid: t.carduid,
                     zone: t.zone,
                     playerId: t.playerId
@@ -369,7 +378,15 @@ export class SequenceEffectManager {
             return { success: true, requiresSelection: true };
         }
 
-        this.markResolved(ctx, stepId || step.effectId || 'discard');
+        const affectedTargets = Array.isArray((result as any).affectedTargets)
+            ? (result as any).affectedTargets
+            : [];
+        if (
+            affectedTargets.length > 0 ||
+            EffectExecutor.actionSupportsNoTargets(EffectExecutor.getEffectAction(normalizedDiscardEffect))
+        ) {
+            this.markResolved(ctx, stepId || step.effectId || 'discard');
+        }
         return null;
     }
 

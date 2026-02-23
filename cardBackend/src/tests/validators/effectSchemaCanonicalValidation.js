@@ -575,6 +575,126 @@ function detectAlwaysOnTextRuleMismatches(fileName, cards, diagnostics) {
   }
 }
 
+function detectSupportActivatedSchemaMismatches(fileName, cards, diagnostics) {
+  const supportTextRegex = /support/i;
+
+  for (const [cardId, card] of Object.entries(cards)) {
+    const descriptions = Array.isArray(card?.effects?.description) ? card.effects.description : [];
+    const rules = Array.isArray(card?.effects?.rules) ? card.effects.rules : [];
+    const hasSupportDescription = descriptions.some((line) => typeof line === 'string' && supportTextRegex.test(line));
+
+    rules.forEach((rule, index) => {
+      if (!rule || typeof rule !== 'object') return;
+      if (String(rule.type || '').toLowerCase() !== 'activated') return;
+
+      const effectId = typeof rule.effectId === 'string' ? rule.effectId : 'unknown';
+      const action = typeof rule.action === 'string' ? rule.action : '';
+      const ruleText = typeof rule?.parameters?.text === 'string' ? rule.parameters.text : '';
+      const supportLike =
+        hasSupportDescription ||
+        supportTextRegex.test(effectId) ||
+        supportTextRegex.test(ruleText);
+
+      if (!supportLike) return;
+
+      const rulePath = `cards.${cardId}.effects.rules[${index}]`;
+      if (action === 'sequence') {
+        diagnostics.push({
+          severity: 'error',
+          cardId,
+          effectId,
+          jsonPath: `${rulePath}.action`,
+          message: `${fileName}: support activated effects must be top-level modifyAP, not sequence`
+        });
+      }
+
+      if (action !== 'modifyAP') {
+        diagnostics.push({
+          severity: 'error',
+          cardId,
+          effectId,
+          jsonPath: `${rulePath}.action`,
+          message: `${fileName}: support activated effect action must be modifyAP`
+        });
+      }
+
+      const windows = Array.isArray(rule?.timing?.windows) ? rule.timing.windows : [];
+      const hasMainPhaseWindow = windows.some((window) => String(window).toUpperCase() === 'MAIN_PHASE');
+      if (!hasMainPhaseWindow) {
+        diagnostics.push({
+          severity: 'error',
+          cardId,
+          effectId,
+          jsonPath: `${rulePath}.timing.windows`,
+          message: `${fileName}: support activated effect must include MAIN_PHASE timing window`
+        });
+      }
+
+      const restCost = rule?.cost?.rest;
+      const restSelf = rule?.cost?.restSelf === true;
+      if (restCost !== 'self' && !restSelf) {
+        diagnostics.push({
+          severity: 'error',
+          cardId,
+          effectId,
+          jsonPath: `${rulePath}.cost`,
+          message: `${fileName}: support activated effect must rest self as cost`
+        });
+      }
+
+      if (rule?.target?.type !== 'unit') {
+        diagnostics.push({
+          severity: 'error',
+          cardId,
+          effectId,
+          jsonPath: `${rulePath}.target.type`,
+          message: `${fileName}: support activated effect target.type must be unit`
+        });
+      }
+
+      if (rule?.target?.scope !== 'self') {
+        diagnostics.push({
+          severity: 'error',
+          cardId,
+          effectId,
+          jsonPath: `${rulePath}.target.scope`,
+          message: `${fileName}: support activated effect target.scope must be self`
+        });
+      }
+
+      if (rule?.target?.count !== 1) {
+        diagnostics.push({
+          severity: 'error',
+          cardId,
+          effectId,
+          jsonPath: `${rulePath}.target.count`,
+          message: `${fileName}: support activated effect target.count must be 1`
+        });
+      }
+
+      if (rule?.parameters?.excludeSource !== true) {
+        diagnostics.push({
+          severity: 'error',
+          cardId,
+          effectId,
+          jsonPath: `${rulePath}.parameters.excludeSource`,
+          message: `${fileName}: support activated effect must set parameters.excludeSource=true`
+        });
+      }
+
+      if (!(typeof rule?.parameters?.value === 'number' && rule.parameters.value > 0)) {
+        diagnostics.push({
+          severity: 'error',
+          cardId,
+          effectId,
+          jsonPath: `${rulePath}.parameters.value`,
+          message: `${fileName}: support activated effect must set parameters.value to a positive number`
+        });
+      }
+    });
+  }
+}
+
 function validateCardLinks(fileName, cards, diagnostics) {
   for (const [cardId, card] of Object.entries(cards)) {
     if (!Array.isArray(card.link)) {
@@ -605,6 +725,7 @@ function validateEffectSchemaCanonical() {
     const cards = json.cards || {};
     validateCardLinks(fileName, cards, diagnostics);
     detectAlwaysOnTextRuleMismatches(fileName, cards, diagnostics);
+    detectSupportActivatedSchemaMismatches(fileName, cards, diagnostics);
 
     for (const [cardId, card] of Object.entries(cards)) {
       const rules = card && card.effects && Array.isArray(card.effects.rules) ? card.effects.rules : [];
@@ -639,6 +760,7 @@ module.exports = {
     walkEffects,
     validateScalingConfig,
     detectAlwaysOnTextRuleMismatches,
-    validateReturnToHandSemantics
+    validateReturnToHandSemantics,
+    detectSupportActivatedSchemaMismatches
   }
 };

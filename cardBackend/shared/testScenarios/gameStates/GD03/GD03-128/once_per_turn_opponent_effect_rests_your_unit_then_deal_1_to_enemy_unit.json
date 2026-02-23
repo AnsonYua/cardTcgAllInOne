@@ -20,7 +20,7 @@
     "Expect: Selected enemy unit takes 1 effect damage."
   ],
   "initialGameEnv": {
-    "phase": "ACTION_STEP_PHASE",
+    "phase": "MAIN_PHASE",
     "playerId_1": "playerId_1",
     "playerId_2": "playerId_2",
     "gameStarted": true,
@@ -59,17 +59,7 @@
     ],
     "lastEventId": 0,
     "pendingPhaseTransition": null,
-    "currentBattle": {
-      "actionType": "attackUnit",
-      "attackingPlayerId": "playerId_2",
-      "defendingPlayerId": "playerId_1",
-      "attackerCarduid": "GD03-071_p2_attacker_0001",
-      "targetCarduid": "GD03-075_p1_defender_0002",
-      "targetPlayerId": "playerId_1",
-      "status": "ACTION_STEP",
-      "fromBurst": false,
-      "openedAt": 1768362880422
-    },
+    "currentBattle": null,
     "version": 0,
     "players": {
       "playerId_1": {
@@ -117,7 +107,22 @@
               "continueModifyHP": 0
             }
           },
-          "slot3": {},
+          "slot3": {
+            "unit": {
+              "carduid": "GD03-007_p1_defender_0003",
+              "cardId": "GD03-007",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
           "slot4": {},
           "slot5": {},
           "slot6": {},
@@ -152,10 +157,15 @@
             {
               "carduid": "GD03-121_hand_0001",
               "cardId": "GD03-121"
+            },
+            {
+              "carduid": "GD03-121_hand_0002",
+              "cardId": "GD03-121"
             }
           ],
           "handUids": [
-            "GD03-121_hand_0001"
+            "GD03-121_hand_0001",
+            "GD03-121_hand_0002"
           ],
           "mainDeck": []
         },
@@ -233,6 +243,22 @@
             }
           ],
           "energyArea": [
+            {
+              "carduid": "energy_basic_gd03128_p2_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd03128_p2_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
             {
               "carduid": "energy_basic_gd03128_p2_0001",
               "cardId": "energy_basic",

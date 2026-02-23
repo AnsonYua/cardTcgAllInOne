@@ -1,0 +1,20 @@
+{
+  "generatedAt": "2026-02-23T12:13:10.540Z",
+  "filesScanned": [
+    "gd01Card.json",
+    "gd02Card.json",
+    "gd03Card.json",
+    "st01Card.json",
+    "st02Card.json",
+    "st03Card.json",
+    "st04Card.json",
+    "st05Card.json",
+    "st06Card.json",
+    "st07Card.json",
+    "st08Card.json"
+  ],
+  "total": 0,
+  "summaryByFile": {},
+  "summaryByFeatureFamily": {},
+  "entries": []
+}
