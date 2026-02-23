@@ -16,6 +16,9 @@
 - `testType` is `action`.
 - `processingQueue` exists and is `[]`.
 - `notificationQueue` includes `CARD_DRAWN` seed with `payload.playerId === currentPlayer`.
+- If notes/effect say "During Link" or source condition is `linked`:
+  - verify setup is truly linked, not only paired
+  - verify pilot identity matches unit `link` requirements (name/trait, or `designate_pilot` when command is played as pilot)
 - Both players include:
   - `deck.handUids`
   - `zones.slot1..slot6`

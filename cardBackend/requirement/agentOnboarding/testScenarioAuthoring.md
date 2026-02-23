@@ -83,6 +83,14 @@ Rules:
 }
 ```
 
+### 3.1) Linked vs Paired (critical)
+- `Paired`: unit + pilot are both present in the same slot.
+- `Linked`: paired plus link identity check passes.
+- Runtime link check uses `LinkUtils.isLinkedPair(unit, pilot)`:
+  - Unit `cardData.link` must match pilot name/trait.
+  - For command played as pilot, include `playedAs: "pilot"` so `designate_pilot` identity can be used.
+- Do not label setup as "linked" unless this check is truly satisfied.
+
 ### 4) During Pair Effect Setup
 
 **What is "During Pair"?**
@@ -117,6 +125,23 @@ Rules:
 - Any pilot can be used to pair (not necessarily the card's linked pilot)
 - The unit must be paired (unit + pilot in same slot) for the effect to activate
 - Continuous "During Pair" effects check conditions continuously while the unit is paired
+
+### 4.1) During Link Effect Setup
+
+**What is "During Link"?**
+- A condition-gated effect that requires linked state (`sourceConditions: [{ "type": "linked" }]`).
+- Pairing alone is not enough.
+
+**GameEnv Setup Requirements:**
+| Requirement | Env Encoding |
+|-------------|--------------|
+| Unit with "During Link" effect | Unit + pilot in same slot |
+| True linked state | Pilot identity/trait matches unit `link` entries |
+| Command-as-pilot link match | Pilot card includes `playedAs: "pilot"` and command has `designate_pilot` |
+
+**Example Pitfall:**
+- `GD03-078` links to `"Sergei Smirnov"`.
+- Pairing `GD03-078` with `GD03-096 (Jamil Neate)` is paired-only, not linked.
 
 ### 5) Base
 ```json

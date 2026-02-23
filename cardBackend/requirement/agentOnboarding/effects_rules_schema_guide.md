@@ -259,6 +259,10 @@ Source:
 - `unitsInPlay`
 - `hasAnotherLinkedUnit`
 
+Definition note:
+- `paired`: unit and pilot both exist in the same slot.
+- `linked`: `paired` plus link identity match passes (`LinkUtils.isLinkedPair`).
+
 Source:
 - `src/services/effects/schema/EffectSchema.ts`
 

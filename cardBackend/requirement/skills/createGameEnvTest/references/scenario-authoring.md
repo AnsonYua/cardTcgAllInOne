@@ -59,6 +59,11 @@ Required `initialGameEnv` fields:
 - Always include all six slot objects and explicit arrays for `base`, `shieldArea`, `energyArea`, `trashArea`.
 - Always include `deck.handUids` for each player.
 - If `deck.hand` is included, keep it aligned with `handUids`.
+- Linked/paired terminology must match engine behavior:
+  - `paired`: slot has both `unit` and `pilot`.
+  - `linked`: `paired` + link match (`LinkUtils.isLinkedPair`) succeeds.
+  - For `sourceConditions: [{ "type": "linked" }]`, setup must satisfy true linked state, not just unit+pilot occupancy.
+  - If unit link list requires a specific pilot identity (name/trait), use a matching pilot (or command played as pilot with `designate_pilot`).
 - **ENERGY REQUIREMENTS CRITICAL:**
   - Card `Level` = minimum energy cards required in energy area
   - Level 1→1, 2→2, 3→3, 4→4, 5→5, 6→6, 7→7 energy cards

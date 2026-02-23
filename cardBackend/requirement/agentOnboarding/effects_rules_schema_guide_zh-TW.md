@@ -67,6 +67,10 @@
 4. 別名混用（建議 `sourceAp` 而非 `sourceAP`）
 5. 成本 `cost` 格式寫錯
 
+### `linked` / `paired` 判定補充
+- `paired`：同一個 slot 同時有 unit 與 pilot。
+- `linked`：`paired` 之外，還要通過 link 身份匹配（`LinkUtils.isLinkedPair`）。
+
 ## 9) Choice 事件提醒
 遇到以下事件要先解：
 - `TARGET_CHOICE`

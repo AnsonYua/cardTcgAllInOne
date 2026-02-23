@@ -31,6 +31,15 @@ Use this skill when you need to create or review a complete action scenario JSON
 - Include `processingQueue: []`.
 - Include `notificationQueue` with a `CARD_DRAWN` seed where `payload.playerId === currentPlayer`.
 - Include `notes` with alternating `Action` and `Expect` lines.
+- **CRITICAL: Linked vs Paired Definition (Engine-Accurate)**
+  - `paired`: unit and pilot both exist in the same slot.
+  - `linked`: paired **and** `LinkUtils.isLinkedPair(unit, pilot)` is true.
+  - Link match rule:
+    - Unit `cardData.link` must include pilot identity.
+    - Pilot identity is pilot `cardData.name` or (for command cards played as pilot) `designate_pilot.parameters.pilotName`.
+    - Trait-based linking is also allowed when unit link entries match pilot traits.
+  - Do not write "linked" in notes/setup unless link match is actually satisfied.
+  - Example: `GD03-078` has `link: ["Sergei Smirnov"]`; pairing it with `GD03-096 (Jamil Neate)` is paired-only, **not linked**.
 - **CRITICAL: Energy Requirements**
   - Card `Level` determines minimum energy cards required in energy area
   - Level 1 → 1 energy card, Level 2 → 2 energy cards, Level 3 → 3 energy cards
@@ -55,6 +64,14 @@ Use this skill when you need to create or review a complete action scenario JSON
     - Setup: GD03-002 + pilot (paired), GD01-001 + pilot (grants Repair, can attack), enemy unit with Lv. ≤ GD01-001's Lv.
     - Action: Player 1 attacks with GD01-001 (has Repair)
     - Expect: Effect triggers, player chooses enemy unit to rest
+
+- **"During Link" Effects** (Common Effect Type)
+  - "During Link" effects require `sourceConditions: [{ "type": "linked" }]` to be true at runtime.
+  - Pairing alone is not enough; link compatibility must match unit `link` entries.
+  - Setup requirement:
+    - Use a pilot (or command played as pilot) that satisfies the unit's link identity.
+  - Failure pattern:
+    - Unit + non-matching pilot is only paired, so During Link effects must not be expected to trigger.
 
 - **"Exile" Effects** (Common Effect Type)
   - "Exile" removes cards from the game permanently - they **disappear from gameEnv**

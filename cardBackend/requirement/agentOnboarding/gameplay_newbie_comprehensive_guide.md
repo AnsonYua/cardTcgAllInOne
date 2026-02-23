@@ -41,7 +41,8 @@ Start Turn -> Draw -> Main -> Attack/Blocker/Action Step -> End Turn
 ## 4) Keywords You Must Know
 - `Deploy`: effect when card enters play.
 - `Pair`: effect when unit + pilot pairing completes.
-- `Linked`: linked state between cards (often pair context).
+- `Linked`: strict state. Not every pair is linked.
+  Linked = unit + pilot in same slot + unit link requirement matches pilot identity/trait.
 - `Attack`: effect during attack flow.
 - `Burst`: shield-triggered effect.
 - `Continuous`: always active while condition is true.

@@ -26,6 +26,10 @@
 - `processingQueue: []`
 - `notificationQueue` 至少一筆 seed（`payload.playerId` 要對應 `currentPlayer`）
 - `deck.handUids` 與 `deck.hand` 對齊
+- `linked` 與 `paired` 要分清楚：
+  - `paired`：同 slot 有 unit + pilot
+  - `linked`：`paired` + pilot 身份符合 unit `link`（名稱或 trait）
+  - 若是 command 當 pilot，需有 `playedAs: "pilot"` 讓 `designate_pilot` 可參與連結判定
 
 ## 能量規則
 - 一般情況下，`energyArea` 建議用 `isRested: false`。

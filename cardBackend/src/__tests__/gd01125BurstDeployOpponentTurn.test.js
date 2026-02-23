@@ -62,7 +62,7 @@ describe('GD01-125 (Zanzibar) deploy effect turn gating', () => {
         expect(countUnitsInSlots(owner)).toBe(beforeUnits);
     });
 
-    test('on opponent turn with multiple shields, continuation resolves shield add and still skips deploy_from_hand', () => {
+    test('on opponent turn with multiple shields, self_shield addToHand auto-resolves and still skips deploy_from_hand', () => {
         const gameEnv = new GameEnvironment();
         gameEnv.addPlayer('playerId_1', 'P1');
         const owner = gameEnv.addPlayer('playerId_2', 'P2');
@@ -101,19 +101,11 @@ describe('GD01-125 (Zanzibar) deploy effect turn gating', () => {
 
         const sequenceResult = SequenceEffectManager.processSequenceEffect(gameEnv, owner.id, 'GD01-125_SRC', deployEffect);
         expect(sequenceResult.success).toBe(true);
-        expect(sequenceResult.requiresSelection).toBe(true);
+        expect(sequenceResult.requiresSelection).not.toBe(true);
 
         const choiceEvent = gameEnv.processingQueue.find((evt) => evt.type === EventType.TARGET_CHOICE);
-        expect(choiceEvent).toBeTruthy();
-        expect(choiceEvent.data.availableTargets.length).toBe(2);
-
-        choiceEvent.data.selectedTargets = [choiceEvent.data.availableTargets[0]];
-        choiceEvent.data.userDecisionMade = true;
-
-        const processingResult = gameEnv.processEvents();
-        expect(processingResult.success).toBe(true);
+        expect(choiceEvent).toBeFalsy();
         expect(gameEnv.processingQueue.length).toBe(startQueueSize);
-        expect(gameEnv.processingQueue.find((evt) => evt.type === EventType.TARGET_CHOICE)).toBeFalsy();
 
         expect(owner.deck.handUids.length).toBe(startHandSize + 1);
         expect(owner.zones.shieldArea.length).toBe(startShieldSize - 1);

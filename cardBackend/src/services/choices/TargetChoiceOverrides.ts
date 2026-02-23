@@ -39,6 +39,12 @@ export function overrideRequiresChoice(
         return false;
     }
 
+    // Rule/UX: selecting your own shield for addToHand should auto-resolve to avoid
+    // exposing hidden shield identities in a picker. Sequence can continue to later steps.
+    if (action === 'addtohand' && scopeValue === 'self_shield') {
+        return false;
+    }
+
     // Self-referential allow_attack_target permissions with deterministic targeting
     // should auto-apply (no pre-choice dialog), even when effect.optional=true.
     if (isDeterministicSourceAllowAttackTarget(action, scopeValue, targetType, targetConfig.count, availableTargets)) {

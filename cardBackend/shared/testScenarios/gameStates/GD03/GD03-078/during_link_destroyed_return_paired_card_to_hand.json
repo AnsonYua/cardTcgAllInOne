@@ -12,10 +12,10 @@
   ],
   "notes": [
     "Action: Load scenario via getTestScenario and inject via injectGameState.",
-    "Setup: Player 1 slot1 has linked GD03-078 (unit + pilot) with empty hand. Player 2 has an active attacker in slot1.",
+    "Setup: Player 1 slot1 has linked GD03-078 (unit + command-as-pilot designated as Sergei Smirnov) with empty hand. Player 2 has an active attacker in slot1.",
     "Action (manual): Player 2 attacks Player 1 slot1 unit GD03-078_unit_0001 with GD01-002_attacker_0001.",
     "Expect: GD03-078 is destroyed by battle damage.",
-    "Expect: During Link destroyed effect resolves and returns the paired pilot card (GD03-096_pilot_0001) to Player 1 hand.",
+    "Expect: During Link destroyed effect resolves and returns the paired pilot card (GD03-122_pilot_0001) to Player 1 hand.",
     "Expect: Player 1 hand count increases by 1 and GD03-078 moves to trash."
   ],
   "initialGameEnv": {
@@ -94,12 +94,13 @@
               "isFirstPlay": false
             },
             "pilot": {
-              "carduid": "GD03-096_pilot_0001",
-              "cardId": "GD03-096",
+              "carduid": "GD03-122_pilot_0001",
+              "cardId": "GD03-122",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isFirstPlay": false
+              "isFirstPlay": false,
+              "playedAs": "pilot"
             }
           },
           "slot2": {},

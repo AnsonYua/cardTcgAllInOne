@@ -11,7 +11,8 @@
 - `Attack`：攻擊流程觸發
 - `Burst`：護盾受擊後可觸發
 - `End Turn`：回合結束觸發
-- `Linked`：需要連結狀態
+- `Linked`：需要真正連結狀態，不是只有配對
+  後端規則：linked = paired + 連結身份匹配（`LinkUtils.isLinkedPair`）。
 - `Continuous`：條件成立時持續有效
 - `Slot`：`slot1`~`slot6`
 - `Pilot card`：駕駛卡

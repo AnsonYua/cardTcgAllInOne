@@ -32,6 +32,10 @@ Start Turn -> Draw -> Main -> Attack/Blocker/Action Step -> End Turn
 ## 4) 必懂關鍵字
 `Deploy`, `Pair`, `Linked`, `Attack`, `Burst`, `Continuous`, `Blocker`, `Repair`, `Breach`, `First Strike`, `High-Maneuver`, `Suppression`, `Activate`, `Cost`, `Target`, `Optional`, `Once per turn`
 
+補充：
+- `paired`：同一個 slot 同時有 unit + pilot。
+- `linked`：`paired` 之外，還要符合 unit 的 `link` 對應（名稱或 trait）。
+
 ## 5) 一個回合怎麼玩
 1. 看手牌與能量
 2. Main 出牌

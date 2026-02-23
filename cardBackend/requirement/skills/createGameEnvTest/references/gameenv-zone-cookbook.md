@@ -43,6 +43,12 @@ Rules:
 }
 ```
 
+### Linked vs Paired (Important)
+- `paired` means `slot.unit` and `slot.pilot` both exist.
+- `linked` means `paired` plus link compatibility is satisfied by engine link rules.
+- For command cards used as pilots, include `"playedAs": "pilot"` on the pilot card so `designate_pilot` identity can be used for link checks.
+- If a scenario expects a "During Link" effect, do not assume any pilot works; verify the unit `link` list is matched.
+
 ## Base
 ```json
 "base": [

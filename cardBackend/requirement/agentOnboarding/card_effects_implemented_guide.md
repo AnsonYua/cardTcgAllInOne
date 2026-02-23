@@ -13,7 +13,8 @@ Current audit reports are also summarized near the end.
 - `Attack`: effect happens during attack flow.
 - `Burst`: effect happens when shield is damaged and burst can trigger.
 - `End Turn`: effect happens in end-turn cleanup timing.
-- `Linked`: effect needs a linked state (unit and pilot are linked/paired as required by the card text).
+- `Linked`: effect needs true linked state, not only paired.
+  Engine rule: linked = paired + link identity match (`LinkUtils.isLinkedPair`).
 - `Continuous`: effect stays active while condition stays true.
 - `Slot`: board position where unit/pilot cards are placed (`slot1` to `slot6`).
 - `Pilot card`: pilot part of a pair, usually attached in the same slot.
