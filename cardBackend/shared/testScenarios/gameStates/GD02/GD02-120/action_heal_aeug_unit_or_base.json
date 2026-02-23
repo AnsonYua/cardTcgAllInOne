@@ -1,0 +1,143 @@
+{
+  "description": "gd02-120_action_heal_aeug_unit_or_base",
+  "gameId": "gd02-120_action_heal_aeug_unit_or_base",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD02-120",
+    "action",
+    "heal"
+  ],
+  "notes": [
+    "Action: Load scenario via getTestScenario and inject via injectGameState.",
+    "Expect: Player 1 has GD02-120 in hand during ACTION_STEP.",
+    "Expect: There is a damaged friendly (AEUG) Unit and a damaged friendly (AEUG) Base.",
+    "Action: Play GD02-120 and resolve target choice.",
+    "Expect: Chosen target recovers 2 HP."
+  ],
+  "initialGameEnv": {
+    "phase": "ACTION_STEP_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "lastEventId": 0,
+    "notificationQueue": [],
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "GD02-120_hand_0001",
+              "cardId": "GD02-120"
+            }
+          ],
+          "handUids": [
+            "GD02-120_hand_0001"
+          ],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD02-071_aeug_unit_0001",
+              "cardId": "GD02-071",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 2,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 4,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [
+            {
+              "carduid": "GD02-129_aeug_base_0001",
+              "cardId": "GD02-129",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "originalHP": 5,
+              "damageReceived": 2
+            }
+          ],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd02120_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

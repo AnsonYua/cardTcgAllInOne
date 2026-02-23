@@ -1,28 +1,21 @@
 {
-  "description": "gd03-123_deploy_add_shield_then_rest_enemy_level_le_3_if_friendly_jupitris_unit_in_play",
-  "gameId": "gd03-123_deploy_add_shield_then_rest_enemy_level_le_3_if_friendly_jupitris_unit_in_play",
+  "description": "gd02-075_attack_rest_enemy_unit_lv_le_4",
+  "gameId": "gd02-075_attack_rest_enemy_unit_lv_le_4",
   "testType": "action",
   "category": "ActionCase",
   "tags": [
-    "GD03-123",
-    "MAIN_PHASE",
-    "deploy",
-    "add_shield_to_hand",
-    "Jupitris",
+    "GD02-075",
+    "attack",
     "rest"
   ],
   "notes": [
     "Action: Load scenario via getTestScenario and inject via injectGameState.",
-    "Expect: Player 1 has GD03-123 in hand, 3 active energy cards, and at least 1 shield in shield area.",
-    "Action: During MAIN_PHASE, Player 1 plays GD03-123 from hand.",
-    "Expect: Deploy effect step 1 resolves: choose 1 of Player 1 shields and add it to hand.",
-    "Action: Continue deploy effect after adding shield.",
-    "Expect: Because a friendly (Jupitris) Unit is in play, step 2 triggers and allows selecting 1 enemy Unit with Lv.3 or lower.",
-    "Action: Select enemy slot1 unit (Lv.3) as target.",
-    "Expect: Selected enemy Lv.3 unit becomes rested; enemy Lv.4 unit is not selectable."
+    "Expect: GD02-075 is in player 1 slot1 and is able to attack.",
+    "Action: Trigger attack flow so ATTACK_PHASE effect can resolve.",
+    "Expect: Enemy active Unit with Lv.4 or lower is targetable and becomes rested."
   ],
   "initialGameEnv": {
-    "phase": "MAIN_PHASE",
+    "phase": "ATTACK_STEP_PHASE",
     "playerId_1": "playerId_1",
     "playerId_2": "playerId_2",
     "gameStarted": true,
@@ -39,27 +32,8 @@
     "processingQueue": [],
     "processingEnabled": true,
     "maxEventsPerCycle": 50,
-    "notificationQueue": [
-      {
-        "id": "card_drawn_1768362880422_gd03123_seed",
-        "type": "CARD_DRAWN",
-        "metadata": {
-          "timestamp": 1768362880422,
-          "expiresAt": 1768362883422,
-          "requiresAcknowledgment": false,
-          "priority": "normal"
-        },
-        "payload": {
-          "playerId": "playerId_1",
-          "carduid": "GD03-000_draw_0123",
-          "sourceZone": "deck",
-          "reason": "draw",
-          "timestamp": 1768362880422,
-          "drawContext": "turn_start"
-        }
-      }
-    ],
     "lastEventId": 0,
+    "notificationQueue": [],
     "pendingPhaseTransition": null,
     "currentBattle": null,
     "version": 0,
@@ -68,15 +42,8 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": [
-            {
-              "carduid": "GD03-123_hand_0001",
-              "cardId": "GD03-123"
-            }
-          ],
-          "handUids": [
-            "GD03-123_hand_0001"
-          ],
+          "hand": [],
+          "handUids": [],
           "mainDeck": []
         },
         "confirmIsRedraw": false,
@@ -86,8 +53,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD03-003_jupitris_unit_0001",
-              "cardId": "GD03-003",
+              "carduid": "GD02-075_src_0001",
+              "cardId": "GD02-075",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -96,8 +63,8 @@
               "modifyHP": 0,
               "continueModifyAP": 0,
               "continueModifyHP": 0,
-              "originalAP": 5,
-              "originalHP": 4,
+              "originalAP": 4,
+              "originalHP": 3,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
@@ -109,43 +76,19 @@
           "slot4": {},
           "slot5": {},
           "slot6": {},
-          "base": [],
-          "shieldArea": [
+          "base": [
             {
-              "carduid": "GD03-044_shield_p1_0001",
-              "cardId": "GD03-044"
-            },
-            {
-              "carduid": "GD03-045_shield_p1_0002",
-              "cardId": "GD03-045"
+              "carduid": "GD02-129_base_p1_0001",
+              "cardId": "GD02-129",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "originalHP": 5,
+              "damageReceived": 0
             }
           ],
-          "energyArea": [
-            {
-              "carduid": "energy_basic_gd03123_p1_0001",
-              "cardId": "energy_basic",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "isExtraEnergy": false
-            },
-            {
-              "carduid": "energy_basic_gd03123_p1_0002",
-              "cardId": "energy_basic",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "isExtraEnergy": false
-            },
-            {
-              "carduid": "energy_basic_gd03123_p1_0003",
-              "cardId": "energy_basic",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "isExtraEnergy": false
-            }
-          ],
+          "shieldArea": [],
+          "energyArea": [],
           "trashArea": [],
           "repairAbilitiesCheckedThisCycle": false,
           "endTurnEffectsCheckedThisCycle": false
@@ -166,8 +109,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD03-007_enemy_lv3_0001",
-              "cardId": "GD03-007",
+              "carduid": "GD02-010_enemy_lv4_0001",
+              "cardId": "GD02-010",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -177,7 +120,7 @@
               "continueModifyAP": 0,
               "continueModifyHP": 0,
               "originalAP": 4,
-              "originalHP": 3,
+              "originalHP": 4,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
@@ -186,8 +129,8 @@
           },
           "slot2": {
             "unit": {
-              "carduid": "GD03-012_enemy_lv4_0002",
-              "cardId": "GD03-012",
+              "carduid": "GD02-012_enemy_lv5_0002",
+              "cardId": "GD02-012",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,

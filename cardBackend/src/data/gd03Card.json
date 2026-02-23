@@ -7852,18 +7852,54 @@
             "effectId": "deploy_rest",
             "type": "triggered",
             "trigger": "ENTERS_PLAY",
-            "target": {
-              "type": "card",
-              "scope": "opponent",
-              "filters": {
-                "level": "<=3",
-                "traits": [
-                  "Jupitris"
-                ]
-              },
-              "count": 1
-            },
-            "action": "rest"
+            "action": "sequence",
+            "parameters": {
+              "text": "Add 1 of your Shields to your hand. Then, if a friendly (Jupitris) Unit is in play, choose 1 enemy Unit that is Lv.3 or lower. Rest it.",
+              "version": 1,
+              "steps": [
+                {
+                  "stepId": "add_shield_to_hand",
+                  "action": "addToHand",
+                  "target": {
+                    "type": "card",
+                    "scope": "self_shield",
+                    "count": 1,
+                    "selection": {
+                      "type": "player_choice"
+                    }
+                  },
+                  "parameters": {
+                    "from": "shield",
+                    "value": 1
+                  }
+                },
+                {
+                  "stepId": "rest_enemy_lv3_or_lower_if_friendly_jupitris",
+                  "action": "rest",
+                  "conditions": [
+                    {
+                      "type": "unitsInPlayWithTrait",
+                      "scope": "self",
+                      "traits": [
+                        "Jupitris"
+                      ],
+                      "value": ">=1"
+                    }
+                  ],
+                  "target": {
+                    "type": "unit",
+                    "scope": "opponent",
+                    "count": 1,
+                    "selection": {
+                      "type": "player_choice"
+                    },
+                    "filters": {
+                      "level": "<=3"
+                    }
+                  }
+                }
+              ]
+            }
           }
         ]
       }

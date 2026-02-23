@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import DemoSceneBasic from './DemoSceneBasic.js';
 import UIHelper from '../utils/UIHelper.js';
+import { DEBUG_SCENARIO_PATHS, getNextScenarioPath, resolveScenarioPathIndex } from '../phaser/controllers/DebugControls.ts';
 
 export default class DemoScene extends DemoSceneBasic {
   constructor() {
@@ -15,6 +16,7 @@ export default class DemoScene extends DemoSceneBasic {
     this.inGamePlayerId = "playerId_1";
     this.gameId = null;
     this.gameMode = 'host';
+    this.debugScenarioIndex = 0;
   }
 
 
@@ -33,6 +35,7 @@ export default class DemoScene extends DemoSceneBasic {
       this.scenarioPath = data.scenarioPath;
       console.log('DemoScene using scenarioPath:', this.scenarioPath);
     }
+    this.debugScenarioIndex = resolveScenarioPathIndex(this.scenarioPath);
     
     if (data.inGamePlayerId) {
       this.inGamePlayerId = data.inGamePlayerId;
@@ -132,6 +135,14 @@ export default class DemoScene extends DemoSceneBasic {
           text: 'Set Scenario',
           onClick: () => this.simulateSetScenario(),
           options: { 
+            enableHover: true,
+            fontSize: '12px'
+          }
+        },
+        {
+          text: 'Next Scenario',
+          onClick: () => this.cycleDebugScenario(),
+          options: {
             enableHover: true,
             fontSize: '12px'
           }
@@ -255,6 +266,14 @@ export default class DemoScene extends DemoSceneBasic {
           }
         },
         {
+          text: 'Next Scenario',
+          onClick: () => this.cycleDebugScenario(),
+          options: {
+            enableHover: true,
+            fontSize: '12px'
+          }
+        },
+        {
           text: 'SetGameEnv',
           onClick: () => this.setEnvironment(),
           options: { 
@@ -327,6 +346,14 @@ export default class DemoScene extends DemoSceneBasic {
         super.simulateSetScenario(_scenarioPath);
       }
     })
+  }
+
+  cycleDebugScenario() {
+    const nextPath = getNextScenarioPath(this.scenarioPath);
+    this.scenarioPath = nextPath;
+    this.debugScenarioIndex = resolveScenarioPathIndex(nextPath);
+    this.showRoomStatus(`Scenario selected (${this.debugScenarioIndex + 1}/${DEBUG_SCENARIO_PATHS.length}): ${nextPath}`);
+    console.log('DemoScene switched scenarioPath:', nextPath);
   }
 
   async setEnvironment() {

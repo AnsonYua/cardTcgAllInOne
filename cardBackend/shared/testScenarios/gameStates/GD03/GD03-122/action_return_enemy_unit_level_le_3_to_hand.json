@@ -18,7 +18,7 @@
     "Expect: Selected enemy unit is returned to opponent hand."
   ],
   "initialGameEnv": {
-    "phase": "ACTION_STEP_PHASE",
+    "phase": "MAIN_PHASE",
     "playerId_1": "playerId_1",
     "playerId_2": "playerId_2",
     "gameStarted": true,
@@ -57,17 +57,7 @@
     ],
     "lastEventId": 0,
     "pendingPhaseTransition": null,
-    "currentBattle": {
-      "actionType": "attackUnit",
-      "attackingPlayerId": "playerId_1",
-      "defendingPlayerId": "playerId_2",
-      "attackerCarduid": "GD03-075_attacker_0001",
-      "targetCarduid": "GD03-071_battle_target_0003",
-      "targetPlayerId": "playerId_2",
-      "status": "ACTION_STEP",
-      "fromBurst": false,
-      "openedAt": 1768362880422
-    },
+    "currentBattle": null,
     "version": 0,
     "players": {
       "playerId_1": {
@@ -188,7 +178,22 @@
               "continueModifyHP": 0
             }
           },
-          "slot4": {},
+          "slot4": {
+            "unit": {
+              "carduid": "GD03-007_battle_target_0003",
+              "cardId": "GD03-007",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
           "slot5": {},
           "slot6": {},
           "base": [],

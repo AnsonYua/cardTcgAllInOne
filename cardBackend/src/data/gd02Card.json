@@ -3687,7 +3687,7 @@
             "type": "triggered",
             "trigger": "ATTACK_PHASE",
             "target": {
-              "type": "card",
+              "type": "unit",
               "scope": "opponent",
               "filters": {
                 "level": "<=4",
@@ -6451,19 +6451,17 @@
               "version": 1,
               "steps": [
                 {
+                  "stepId": "heal_aeug_unit",
                   "action": "heal",
+                  "optional": true,
                   "target": {
-                    "type": "card",
+                    "type": "unit",
                     "scope": "self",
                     "count": 1,
                     "selection": {
                       "type": "player_choice"
                     },
                     "filters": {
-                      "cardType": [
-                        "unit",
-                        "base"
-                      ],
                       "traits": [
                         "AEUG"
                       ]
@@ -6471,6 +6469,40 @@
                   },
                   "parameters": {
                     "value": 2
+                  }
+                },
+                {
+                  "action": "conditional",
+                  "parameters": {
+                    "if": [
+                      {
+                        "type": "stepResolved",
+                        "stepId": "heal_aeug_unit"
+                      }
+                    ],
+                    "then": [],
+                    "else": [
+                      {
+                        "action": "heal",
+                        "optional": true,
+                        "target": {
+                          "type": "base",
+                          "scope": "self",
+                          "count": 1,
+                          "selection": {
+                            "type": "player_choice"
+                          },
+                          "filters": {
+                            "traits": [
+                              "AEUG"
+                            ]
+                          }
+                        },
+                        "parameters": {
+                          "value": 2
+                        }
+                      }
+                    ]
                   }
                 }
               ]

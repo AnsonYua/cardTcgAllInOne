@@ -1,25 +1,19 @@
 {
-  "description": "gd03-123_deploy_add_shield_then_rest_enemy_level_le_3_if_friendly_jupitris_unit_in_play",
-  "gameId": "gd03-123_deploy_add_shield_then_rest_enemy_level_le_3_if_friendly_jupitris_unit_in_play",
+  "description": "gd03-123_deploy_add_shield_no_rest_without_friendly_jupitris",
+  "gameId": "gd03-123_deploy_add_shield_no_rest_without_friendly_jupitris",
   "testType": "action",
   "category": "ActionCase",
   "tags": [
     "GD03-123",
-    "MAIN_PHASE",
     "deploy",
     "add_shield_to_hand",
-    "Jupitris",
-    "rest"
+    "conditional"
   ],
   "notes": [
     "Action: Load scenario via getTestScenario and inject via injectGameState.",
-    "Expect: Player 1 has GD03-123 in hand, 3 active energy cards, and at least 1 shield in shield area.",
-    "Action: During MAIN_PHASE, Player 1 plays GD03-123 from hand.",
-    "Expect: Deploy effect step 1 resolves: choose 1 of Player 1 shields and add it to hand.",
-    "Action: Continue deploy effect after adding shield.",
-    "Expect: Because a friendly (Jupitris) Unit is in play, step 2 triggers and allows selecting 1 enemy Unit with Lv.3 or lower.",
-    "Action: Select enemy slot1 unit (Lv.3) as target.",
-    "Expect: Selected enemy Lv.3 unit becomes rested; enemy Lv.4 unit is not selectable."
+    "Action: During MAIN_PHASE, play GD03-123 with no friendly (Jupitris) Unit in play.",
+    "Expect: Add 1 shield to hand resolves.",
+    "Expect: Conditional rest step does not execute and no enemy unit is rested."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -39,27 +33,8 @@
     "processingQueue": [],
     "processingEnabled": true,
     "maxEventsPerCycle": 50,
-    "notificationQueue": [
-      {
-        "id": "card_drawn_1768362880422_gd03123_seed",
-        "type": "CARD_DRAWN",
-        "metadata": {
-          "timestamp": 1768362880422,
-          "expiresAt": 1768362883422,
-          "requiresAcknowledgment": false,
-          "priority": "normal"
-        },
-        "payload": {
-          "playerId": "playerId_1",
-          "carduid": "GD03-000_draw_0123",
-          "sourceZone": "deck",
-          "reason": "draw",
-          "timestamp": 1768362880422,
-          "drawContext": "turn_start"
-        }
-      }
-    ],
     "lastEventId": 0,
+    "notificationQueue": [],
     "pendingPhaseTransition": null,
     "currentBattle": null,
     "version": 0,
@@ -70,12 +45,12 @@
         "deck": {
           "hand": [
             {
-              "carduid": "GD03-123_hand_0001",
+              "carduid": "GD03-123_hand_0002",
               "cardId": "GD03-123"
             }
           ],
           "handUids": [
-            "GD03-123_hand_0001"
+            "GD03-123_hand_0002"
           ],
           "mainDeck": []
         },
@@ -84,26 +59,7 @@
         "playerPoint": 0,
         "isReady": true,
         "zones": {
-          "slot1": {
-            "unit": {
-              "carduid": "GD03-003_jupitris_unit_0001",
-              "cardId": "GD03-003",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "damageReceived": 0,
-              "modifyAP": 0,
-              "modifyHP": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
-              "originalAP": 5,
-              "originalHP": 4,
-              "playedThisTurn": false,
-              "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false
-            }
-          },
+          "slot1": {},
           "slot2": {},
           "slot3": {},
           "slot4": {},
@@ -112,17 +68,17 @@
           "base": [],
           "shieldArea": [
             {
-              "carduid": "GD03-044_shield_p1_0001",
+              "carduid": "GD03-044_shield_p1_0101",
               "cardId": "GD03-044"
             },
             {
-              "carduid": "GD03-045_shield_p1_0002",
+              "carduid": "GD03-045_shield_p1_0102",
               "cardId": "GD03-045"
             }
           ],
           "energyArea": [
             {
-              "carduid": "energy_basic_gd03123_p1_0001",
+              "carduid": "energy_basic_gd03123b_p1_0001",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -130,7 +86,7 @@
               "isExtraEnergy": false
             },
             {
-              "carduid": "energy_basic_gd03123_p1_0002",
+              "carduid": "energy_basic_gd03123b_p1_0002",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -138,7 +94,7 @@
               "isExtraEnergy": false
             },
             {
-              "carduid": "energy_basic_gd03123_p1_0003",
+              "carduid": "energy_basic_gd03123b_p1_0003",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -166,7 +122,7 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD03-007_enemy_lv3_0001",
+              "carduid": "GD03-007_enemy_lv3_0101",
               "cardId": "GD03-007",
               "placedAt": 0,
               "placedBy": "playerId_2",
@@ -176,7 +132,7 @@
               "modifyHP": 0,
               "continueModifyAP": 0,
               "continueModifyHP": 0,
-              "originalAP": 4,
+              "originalAP": 2,
               "originalHP": 3,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
@@ -184,26 +140,7 @@
               "isFirstPlay": false
             }
           },
-          "slot2": {
-            "unit": {
-              "carduid": "GD03-012_enemy_lv4_0002",
-              "cardId": "GD03-012",
-              "placedAt": 0,
-              "placedBy": "playerId_2",
-              "isRested": false,
-              "damageReceived": 0,
-              "modifyAP": 0,
-              "modifyHP": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
-              "originalAP": 5,
-              "originalHP": 4,
-              "playedThisTurn": false,
-              "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false
-            }
-          },
+          "slot2": {},
           "slot3": {},
           "slot4": {},
           "slot5": {},

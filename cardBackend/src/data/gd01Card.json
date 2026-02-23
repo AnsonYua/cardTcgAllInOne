@@ -6013,15 +6013,44 @@
             "effectId": "deploy_rest",
             "type": "triggered",
             "trigger": "ENTERS_PLAY",
-            "target": {
-              "type": "unit",
-              "scope": "opponent",
-              "filters": {
-                "hp": "<=3"
-              },
-              "count": 1
-            },
-            "action": "rest"
+            "action": "sequence",
+            "parameters": {
+              "text": "Add 1 of your Shields to your hand. Then, choose 1 enemy Unit with 3 or less HP. Rest it.",
+              "version": 1,
+              "steps": [
+                {
+                  "stepId": "add_shield_to_hand",
+                  "action": "addToHand",
+                  "target": {
+                    "type": "card",
+                    "scope": "self_shield",
+                    "count": 1,
+                    "selection": {
+                      "type": "player_choice"
+                    }
+                  },
+                  "parameters": {
+                    "from": "shield",
+                    "value": 1
+                  }
+                },
+                {
+                  "stepId": "rest_enemy_hp3_or_lower",
+                  "action": "rest",
+                  "target": {
+                    "type": "unit",
+                    "scope": "opponent",
+                    "count": 1,
+                    "selection": {
+                      "type": "player_choice"
+                    },
+                    "filters": {
+                      "hp": "<=3"
+                    }
+                  }
+                }
+              ]
+            }
           }
         ]
       }
