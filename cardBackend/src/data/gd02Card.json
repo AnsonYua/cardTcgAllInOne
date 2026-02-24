@@ -311,7 +311,8 @@
               "type": "unit",
               "scope": "opponent",
               "filters": {
-                "hp": "<=2"
+                "hp": "<=2",
+                "status": "active"
               },
               "count": 1
             },
@@ -3010,7 +3011,8 @@
               "type": "unit",
               "scope": "opponent",
               "filters": {
-                "ap": "<=3"
+                "ap": "<=3",
+                "status": "active"
               },
               "count": 1
             }
@@ -4155,7 +4157,7 @@
       "hp": 1,
       "effects": {
         "description": [
-          "[Burst]Add this card to your hand.", 
+          "[Burst]Add this card to your hand.",
           "While you have another (Titans) Unit in play, this gets AP+1."
         ],
         "rules": [
@@ -4249,7 +4251,8 @@
               "filters": {
                 "keywords": [
                   "Blocker"
-                ]
+                ],
+                "status": "active"
               },
               "count": 1,
               "selection": {

@@ -267,7 +267,8 @@
                 "hp": "<=5",
                 "traits": [
                   "Titans"
-                ]
+                ],
+                "status": "active"
               },
               "count": 1
             },
@@ -359,7 +360,8 @@
               "type": "unit",
               "scope": "opponent",
               "filters": {
-                "hp": "<=3"
+                "hp": "<=3",
+                "status": "active"
               },
               "count": {
                 "min": 1,
@@ -522,7 +524,8 @@
               "type": "unit",
               "scope": "opponent",
               "filters": {
-                "level": "<=4"
+                "level": "<=4",
+                "status": "active"
               },
               "count": 1,
               "selection": {
@@ -2235,7 +2238,9 @@
                 "type": "player_choice"
               },
               "filters": {
-                "traits": ["ZAFT"]
+                "traits": [
+                  "ZAFT"
+                ]
               }
             },
             "parameters": {
@@ -4901,7 +4906,7 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Burst】Add this card to your hand.", 
+          "【Burst】Add this card to your hand.",
           "When playing this card from your hand and pairing it with a Unit with \"Gundam NT-1\" in its card name, play this card as if it has 0 cost."
         ],
         "rules": [
@@ -7994,7 +7999,8 @@
                 "type": "player_choice"
               },
               "filters": {
-                "hp": "<=3"
+                "hp": "<=3",
+                "status": "active"
               }
             }
           }

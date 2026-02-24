@@ -347,13 +347,13 @@
       "link": [],
       "ap": 2,
       "hp": 1,
-            "effects": {
-                "description": [
-                    "[Burst]Add this card to your hand.",
-                    "[During Link]This Unit gets AP+1.",
-                    "[During Link]This Unit gets HP+1."
-                ],
-                "rules": [
+      "effects": {
+        "description": [
+          "[Burst]Add this card to your hand.",
+          "[During Link]This Unit gets AP+1.",
+          "[During Link]This Unit gets HP+1."
+        ],
+        "rules": [
           {
             "effectId": "burst_add_to_hand",
             "trigger": "BURST_CONDITION",
@@ -606,7 +606,8 @@
               "type": "unit",
               "scope": "opponent",
               "filters": {
-                "hp": "<=5"
+                "hp": "<=5",
+                "status": "active"
               },
               "count": 1
             },

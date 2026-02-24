@@ -131,6 +131,9 @@
               "count": 1,
               "selection": {
                 "type": "player_choice"
+              },
+              "filters": {
+                "status": "active"
               }
             },
             "action": "rest"
@@ -259,7 +262,8 @@
               "type": "unit",
               "scope": "opponent",
               "filters": {
-                "hp": "<=2"
+                "hp": "<=2",
+                "status": "active"
               },
               "count": 1,
               "selection": {
@@ -572,7 +576,8 @@
               "type": "unit",
               "scope": "opponent",
               "filters": {
-                "hp": "<=3"
+                "hp": "<=3",
+                "status": "active"
               },
               "count": 1,
               "selection": {
@@ -640,7 +645,8 @@
               "type": "unit",
               "scope": "opponent",
               "filters": {
-                "hp": "<=3"
+                "hp": "<=3",
+                "status": "active"
               },
               "count": 1
             },
@@ -4721,7 +4727,8 @@
               "type": "unit",
               "scope": "opponent",
               "filters": {
-                "hp": "<=5"
+                "hp": "<=5",
+                "status": "active"
               },
               "count": 1
             },
@@ -4740,7 +4747,8 @@
               "type": "unit",
               "scope": "opponent",
               "filters": {
-                "hp": "<=3"
+                "hp": "<=3",
+                "status": "active"
               },
               "count": {
                 "min": 1,
