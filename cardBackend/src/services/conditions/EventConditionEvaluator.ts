@@ -55,7 +55,8 @@ export class EventConditionEvaluator {
         }
 
         if (expected === 'self') {
-            return typeof sourceCard?.carduid === 'string' && sourceCard.carduid === attackerCarduid;
+            const effectiveSelfAttacker = this.getEffectiveSelfAttackerCarduid(gameEnv, sourceCard);
+            return Boolean(effectiveSelfAttacker) && effectiveSelfAttacker === attackerCarduid;
         }
 
         return false;
@@ -304,6 +305,32 @@ export class EventConditionEvaluator {
             return battle.targetCarduid;
         }
         return null;
+    }
+
+    private static getEffectiveSelfAttackerCarduid(gameEnv: GameEnvironment, sourceCard: any): string | null {
+        const sourceCarduid = typeof sourceCard?.carduid === 'string' ? sourceCard.carduid : '';
+        if (!sourceCarduid) {
+            return null;
+        }
+
+        const sourceType = typeof sourceCard?.cardData?.cardType === 'string'
+            ? String(sourceCard.cardData.cardType).toLowerCase()
+            : '';
+        if (sourceType === 'unit') {
+            return sourceCarduid;
+        }
+
+        if (sourceType === 'pilot' || sourceType === 'command') {
+            const slotRef = this.findSlotByCarduid(gameEnv, sourceCarduid);
+            const pairedUnitCarduid = typeof slotRef?.slot?.unit?.carduid === 'string'
+                ? slotRef.slot.unit.carduid
+                : '';
+            if (pairedUnitCarduid) {
+                return pairedUnitCarduid;
+            }
+        }
+
+        return sourceCarduid;
     }
 
     private static findSlotByCarduid(

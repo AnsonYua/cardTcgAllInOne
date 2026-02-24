@@ -23,6 +23,7 @@
 - If notes/effect say "During Link" or source condition is `linked`:
   - verify setup is truly linked, not only paired
   - verify pilot identity matches unit `link` requirements (name/trait, or `designate_pilot` when command is played as pilot)
+  - sanity example: `GD03-099 + GD03-083` is only paired; `GD03-099 + GD03-079` is linked
 - Both players include:
   - `deck.handUids`
   - `zones.slot1..slot6`

@@ -1810,13 +1810,11 @@
             "trigger": "ENTERS_PLAY",
             "action": "scry_top_deck",
             "parameters": {
-              "lookCount": 1,
-              "choices": [
-                "top",
-                "bottom"
-              ],
+              "count": 1,
+              "keep": 1,
+              "choice": "top_or_bottom",
               "notes": "Implemented: scry supports choosing top or bottom placement.",
-              "count": 1
+              "rest": "bottom"
             }
           }
         ]

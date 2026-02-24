@@ -1,24 +1,18 @@
 {
-  "description": "gd03-099_during_link_destroyed_with_white_base_return_enemy_level_le_source",
-  "gameId": "gd03-099_during_link_destroyed_with_white_base_return_enemy_level_le_source",
+  "description": "gd01-042_attack_target_active_enemy_unit_level_2_or_lower_active_gate_manual_flow",
+  "gameId": "gd01-042_attack_target_active_enemy_unit_level_2_or_lower_active_gate_manual_flow",
   "testType": "action",
   "category": "ActionCase",
-  "tags": [
-    "GD03-099",
-    "During Link",
-    "DESTROYED",
-    "conditional",
-    "returnToHand",
-    "white_base"
-  ],
+  "tags": ["GD01-042", "AttackTarget", "Continuous", "ActiveGate", "LevelBoundary"],
   "notes": [
-    "Action: Load scenario via getTestScenario and inject via injectGameState.",
-    "Setup: Player 1 slot1 has linked unit (GD03-079 + GD03-099; linked by AEUG trait match) and a friendly white Base in play. Player 2 has one Lv.3 enemy unit (valid) and one Lv.4 enemy unit (invalid).",
-    "Action (manual): Player 2 attacks and destroys Player 1 slot1 unit with GD01-002_attacker_0001.",
-    "Expect: GD03-099 During Link DESTROYED effect triggers because friendly white Base is in play.",
-    "Expect: Target choice allows enemy unit whose Lv. is equal to or lower than source level filter; Lv.3 target is selectable, Lv.4 target is not.",
-    "Action (manual): Choose enemy slot2 unit GD03-083_enemy_valid_0001.",
-    "Expect: Selected enemy unit is returned to playerId_2 hand."
+    "Action: Load scenario with getTestScenario and inject with injectGameState.",
+    "Expect: Game starts in MAIN_PHASE with playerId_1 turn, currentBattle is null, and GD01-042 is active in playerId_1 slot1.",
+    "Action: From playerId_1 slot1 (GD01-042), start an attack and open enemy unit target selection.",
+    "Expect: playerId_2 slot1 active Lv.2 unit (GD01-012) is selectable.",
+    "Action: In the same target-selection step, inspect playerId_2 slot2 active Lv.3 unit (GD01-043) and playerId_2 slot3 rested Lv.2 unit (GD01-010).",
+    "Expect: slot2 is not selectable because level is above 2, and slot3 is not selectable because it is not active.",
+    "Action: Select playerId_2 slot1 as target and complete battle confirmations.",
+    "Expect: Battle starts with currentBattle attacker at playerId_1 slot1 and target at playerId_2 slot1."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -29,7 +23,7 @@
     "firstPlayerChooser": null,
     "firstPlayerDecision": null,
     "hasChosenFirstPlayer": true,
-    "currentPlayer": "playerId_2",
+    "currentPlayer": "playerId_1",
     "currentTurn": 1,
     "playersReady": {
       "playerId_1": true,
@@ -40,7 +34,7 @@
     "maxEventsPerCycle": 50,
     "notificationQueue": [
       {
-        "id": "card_drawn_1768362880422_gd03099_seed",
+        "id": "card_drawn_seed_gd01042_attack_target_active_gate_manual",
         "type": "CARD_DRAWN",
         "metadata": {
           "timestamp": 1768362880422,
@@ -49,8 +43,8 @@
           "priority": "normal"
         },
         "payload": {
-          "playerId": "playerId_2",
-          "carduid": "GD03-000_draw_0099",
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_GD01042_ATTACK_TARGET_ACTIVE_GATE_MANUAL",
           "sourceZone": "deck",
           "reason": "draw",
           "timestamp": 1768362880422,
@@ -78,30 +72,17 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD03-079_unit_0001",
-              "cardId": "GD03-079",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": true,
-              "damageReceived": 0,
-              "modifyAP": 0,
-              "modifyHP": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
-              "originalAP": 3,
-              "originalHP": 2,
-              "playedThisTurn": false,
-              "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false
-            },
-            "pilot": {
-              "carduid": "GD03-099_pilot_0001",
-              "cardId": "GD03-099",
+              "carduid": "GD01-042_unit_p1_0001",
+              "cardId": "GD01-042",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isFirstPlay": false
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
             }
           },
           "slot2": {},
@@ -109,20 +90,16 @@
           "slot4": {},
           "slot5": {},
           "slot6": {},
-          "base": [
+          "base": [],
+          "shieldArea": [
             {
-              "carduid": "GD03-131_base_0001",
-              "cardId": "GD03-131",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "damageReceived": 0
+              "carduid": "GD01-001_shield_p1_0001",
+              "cardId": "GD01-001"
             }
           ],
-          "shieldArea": [],
           "energyArea": [
             {
-              "carduid": "energy_basic_gd03099_p1_0001",
+              "carduid": "energy_basic_p1_0001",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -130,15 +107,7 @@
               "isExtraEnergy": false
             },
             {
-              "carduid": "energy_basic_gd03099_p1_0002",
-              "cardId": "energy_basic",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "isExtraEnergy": false
-            },
-            {
-              "carduid": "energy_basic_gd03099_p1_0003",
+              "carduid": "energy_basic_p1_0002",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -166,72 +135,66 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD01-002_attacker_0001",
-              "cardId": "GD01-002",
+              "carduid": "GD01-012_unit_p2_0001",
+              "cardId": "GD01-012",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
-              "damageReceived": 0,
-              "modifyAP": 0,
-              "modifyHP": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
-              "originalAP": 5,
-              "originalHP": 4,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
             }
           },
           "slot2": {
             "unit": {
-              "carduid": "GD03-083_enemy_valid_0001",
-              "cardId": "GD03-083",
+              "carduid": "GD01-043_unit_p2_0001",
+              "cardId": "GD01-043",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
-              "damageReceived": 0,
-              "modifyAP": 0,
-              "modifyHP": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
-              "originalAP": 1,
-              "originalHP": 1,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
             }
           },
           "slot3": {
             "unit": {
-              "carduid": "GD03-031_enemy_invalid_0001",
-              "cardId": "GD03-031",
+              "carduid": "GD01-010_unit_p2_0001",
+              "cardId": "GD01-010",
               "placedAt": 0,
               "placedBy": "playerId_2",
-              "isRested": false,
-              "damageReceived": 0,
-              "modifyAP": 0,
-              "modifyHP": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
-              "originalAP": 4,
-              "originalHP": 3,
+              "isRested": true,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
             }
           },
           "slot4": {},
           "slot5": {},
           "slot6": {},
           "base": [],
-          "shieldArea": [],
+          "shieldArea": [
+            {
+              "carduid": "GD01-007_shield_p2_0001",
+              "cardId": "GD01-007"
+            },
+            {
+              "carduid": "GD01-042_shield_p2_0002",
+              "cardId": "GD01-042"
+            }
+          ],
           "energyArea": [
             {
-              "carduid": "energy_basic_gd03099_p2_0001",
+              "carduid": "energy_basic_p2_0001",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_2",
@@ -239,7 +202,15 @@
               "isExtraEnergy": false
             },
             {
-              "carduid": "energy_basic_gd03099_p2_0002",
+              "carduid": "energy_basic_p2_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_p2_0003",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_2",

@@ -7,6 +7,7 @@ import type { ExecutionResult } from '../ExecutionResult';
 import { TutorTopDeckManager } from './TutorTopDeckManager';
 import { DeployEffectOrderManager } from './DeployEffectOrderManager';
 import { TUTOR_TOP_DECK_REVEAL_CHOICE_ID } from './tutorTopDeck/TutorTopDeckFlowUtils';
+import { ScryTopDeckManager } from './ScryTopDeckManager';
 
 export class PromptChoiceManager {
     static executePromptChoice(event: PromptChoiceEvent, gameEnv: GameEnvironment): ExecutionResult {
@@ -26,6 +27,8 @@ export class PromptChoiceManager {
                 return TutorTopDeckManager.executePromptChoice(event, gameEnv);
             case TUTOR_TOP_DECK_REVEAL_CHOICE_ID:
                 return TutorTopDeckManager.executeRevealConfirmPromptChoice(event, gameEnv);
+            case 'scry_top_deck_choice':
+                return ScryTopDeckManager.executePromptChoice(event, gameEnv);
             default:
                 return { success: false, error: `PROMPT_CHOICE unsupported choiceId: ${event.data.choiceId || 'unknown'}` };
         }

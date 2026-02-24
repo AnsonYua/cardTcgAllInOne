@@ -45,6 +45,8 @@ Use this skill when you need to create or review a complete action scenario JSON
     - Trait-based linking is also allowed when unit link entries match pilot traits.
   - Do not write "linked" in notes/setup unless link match is actually satisfied.
   - Example: `GD03-078` has `link: ["Sergei Smirnov"]`; pairing it with `GD03-096 (Jamil Neate)` is paired-only, **not linked**.
+  - Example: `GD03-099` paired with `GD03-083` is paired-only (GD03-083 has `link: []`), **not linked**.
+  - Positive example: `GD03-099` paired with `GD03-079` is linked (GD03-079 has `link: ["AEUG"]` and GD03-099 has `traits: ["AEUG"]`).
 - **CRITICAL: Energy Requirements**
   - Card `Level` determines minimum energy cards required in energy area
   - Level 1 -> 1 energy card, Level 2 -> 2 energy cards, Level 3 -> 3 energy cards

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-24T14:21:49.309Z",
+  "generatedAt": "2026-02-24T16:25:12.632Z",
   "filesScanned": [
     "gd01Card.json",
     "gd02Card.json",
@@ -72,7 +72,7 @@
       "clusterId": "cluster_4",
       "memberCount": 13,
       "variantCount": 12,
-      "canonicalVariantKey": "{\"action\":\"rest\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":1,\"targetFilters\":{\"hp\":\"<=3\"},\"targetScope\":\"opponent\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"PAIRING_COMPLETE\",\"windows\":[]}",
+      "canonicalVariantKey": "{\"action\":\"rest\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":1,\"targetFilters\":{\"hp\":\"<=3\",\"status\":\"active\"},\"targetScope\":\"opponent\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"PAIRING_COMPLETE\",\"windows\":[]}",
       "memberRefs": [
         {
           "file": "gd01Card.json",
@@ -851,7 +851,7 @@
     },
     {
       "clusterId": "cluster_29",
-      "memberCount": 2,
+      "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"scry_top_deck\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"ENTERS_PLAY\",\"windows\":[]}",
       "memberRefs": [
@@ -861,13 +861,6 @@
           "cardName": "Dopp",
           "rulePath": "cards.GD01-039.effects.rules[0]",
           "effectId": "deploy_scry_top_1"
-        },
-        {
-          "file": "gd02Card.json",
-          "cardId": "GD02-038",
-          "cardName": "GQuuuuuuX (Omega Psycommu)",
-          "rulePath": "cards.GD02-038.effects.rules[0]",
-          "effectId": "deploy_scry"
         }
       ]
     },
@@ -932,8 +925,8 @@
     },
     {
       "clusterId": "cluster_33",
-      "memberCount": 1,
-      "variantCount": 1,
+      "memberCount": 2,
+      "variantCount": 2,
       "canonicalVariantKey": "{\"action\":\"deploy_from_top_deck\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"PAIRING_COMPLETE\",\"windows\":[]}",
       "memberRefs": [
         {
@@ -942,6 +935,13 @@
           "cardName": "Duel Gundam (Assault Shroud)",
           "rulePath": "cards.GD01-045.effects.rules[0]",
           "effectId": "pair_look_top_3_deploy_zaft_unit_le_4"
+        },
+        {
+          "file": "gd02Card.json",
+          "cardId": "GD02-038",
+          "cardName": "GQuuuuuuX (Omega Psycommu)",
+          "rulePath": "cards.GD02-038.effects.rules[0]",
+          "effectId": "deploy_scry"
         }
       ]
     },
@@ -2437,7 +2437,7 @@
       "clusterId": "cluster_73",
       "memberCount": 1,
       "variantCount": 1,
-      "canonicalVariantKey": "{\"action\":\"rest\",\"conditionTypes\":[],\"effectType\":\"play\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":{\"max\":2,\"min\":1},\"targetFilters\":{\"hp\":\"<=3\"},\"targetScope\":\"opponent\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"\",\"windows\":[\"ACTION_STEP\",\"MAIN_PHASE\"]}",
+      "canonicalVariantKey": "{\"action\":\"rest\",\"conditionTypes\":[],\"effectType\":\"play\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":{\"max\":2,\"min\":1},\"targetFilters\":{\"hp\":\"<=3\",\"status\":\"active\"},\"targetScope\":\"opponent\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"\",\"windows\":[\"ACTION_STEP\",\"MAIN_PHASE\"]}",
       "memberRefs": [
         {
           "file": "gd01Card.json",
@@ -3775,7 +3775,7 @@
       "clusterId": "cluster_109",
       "memberCount": 1,
       "variantCount": 1,
-      "canonicalVariantKey": "{\"action\":\"rest\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[\"linked\"],\"targetCount\":1,\"targetFilters\":{\"hp\":\"<=2\"},\"targetScope\":\"opponent\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"ATTACK_PHASE\",\"windows\":[]}",
+      "canonicalVariantKey": "{\"action\":\"rest\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[\"linked\"],\"targetCount\":1,\"targetFilters\":{\"hp\":\"<=2\",\"status\":\"active\"},\"targetScope\":\"opponent\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"ATTACK_PHASE\",\"windows\":[]}",
       "memberRefs": [
         {
           "file": "gd02Card.json",
@@ -4350,7 +4350,7 @@
       "clusterId": "cluster_138",
       "memberCount": 1,
       "variantCount": 1,
-      "canonicalVariantKey": "{\"action\":\"rest\",\"conditionTypes\":[\"cardsInTrashWithTraitsAny\",\"pairedPilotColor\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":1,\"targetFilters\":{\"ap\":\"<=3\"},\"targetScope\":\"opponent\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"PAIRING_COMPLETE\",\"windows\":[]}",
+      "canonicalVariantKey": "{\"action\":\"rest\",\"conditionTypes\":[\"cardsInTrashWithTraitsAny\",\"pairedPilotColor\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":1,\"targetFilters\":{\"ap\":\"<=3\",\"status\":\"active\"},\"targetScope\":\"opponent\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"PAIRING_COMPLETE\",\"windows\":[]}",
       "memberRefs": [
         {
           "file": "gd02Card.json",
@@ -4537,7 +4537,7 @@
       "clusterId": "cluster_150",
       "memberCount": 1,
       "variantCount": 1,
-      "canonicalVariantKey": "{\"action\":\"rest\",\"conditionTypes\":[\"pairedUnitColor\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[\"linked\"],\"targetCount\":1,\"targetFilters\":{\"keywords\":[\"Blocker\"]},\"targetScope\":\"opponent\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"PAIRING_COMPLETE\",\"windows\":[]}",
+      "canonicalVariantKey": "{\"action\":\"rest\",\"conditionTypes\":[\"pairedUnitColor\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[\"linked\"],\"targetCount\":1,\"targetFilters\":{\"keywords\":[\"Blocker\"],\"status\":\"active\"},\"targetScope\":\"opponent\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"PAIRING_COMPLETE\",\"windows\":[]}",
       "memberRefs": [
         {
           "file": "gd02Card.json",
@@ -4619,7 +4619,7 @@
       "clusterId": "cluster_155",
       "memberCount": 1,
       "variantCount": 1,
-      "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[\"eventAttacker\",\"eventTargetController\",\"eventTargetPairedPilotTrait\",\"eventType\",\"turnPlayer\"],\"effectType\":\"continuous\",\"sequenceActions\":[\"conditional\",\"draw\"],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"continuous\",\"windows\":[]}",
+      "canonicalVariantKey": "{\"action\":\"draw\",\"conditionTypes\":[\"eventAttacker\",\"eventTargetController\",\"eventTargetPairedPilotTrait\",\"turnPlayer\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"BATTLE_DESTROY\",\"windows\":[]}",
       "memberRefs": [
         {
           "file": "gd02Card.json",
@@ -5190,7 +5190,7 @@
       "clusterId": "cluster_187",
       "memberCount": 1,
       "variantCount": 1,
-      "canonicalVariantKey": "{\"action\":\"rest\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":{\"max\":2,\"min\":1},\"targetFilters\":{\"hp\":\"<=3\"},\"targetScope\":\"opponent\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"ENTERS_PLAY\",\"windows\":[]}",
+      "canonicalVariantKey": "{\"action\":\"rest\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":{\"max\":2,\"min\":1},\"targetFilters\":{\"hp\":\"<=3\",\"status\":\"active\"},\"targetScope\":\"opponent\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"ENTERS_PLAY\",\"windows\":[]}",
       "memberRefs": [
         {
           "file": "gd03Card.json",
@@ -6079,7 +6079,7 @@
       "clusterId": "cluster_243",
       "memberCount": 1,
       "variantCount": 1,
-      "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[\"eventAttacker\",\"eventType\",\"turnPlayer\"],\"effectType\":\"continuous\",\"sequenceActions\":[\"conditional\",\"scry_top_deck\"],\"sourceConditionTypes\":[\"linked\"],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"continuous\",\"windows\":[]}",
+      "canonicalVariantKey": "{\"action\":\"scry_top_deck\",\"conditionTypes\":[\"eventAttacker\",\"turnPlayer\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[\"linked\"],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"BATTLE_DESTROY\",\"windows\":[]}",
       "memberRefs": [
         {
           "file": "gd03Card.json",
@@ -7153,7 +7153,7 @@
       "clusterId": "cluster_309",
       "memberCount": 1,
       "variantCount": 1,
-      "canonicalVariantKey": "{\"action\":\"rest\",\"conditionTypes\":[\"unitsInPlayWithTrait\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":1,\"targetFilters\":{\"hp\":\"<=3\"},\"targetScope\":\"opponent\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"PAIRING_COMPLETE\",\"windows\":[]}",
+      "canonicalVariantKey": "{\"action\":\"rest\",\"conditionTypes\":[\"unitsInPlayWithTrait\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":1,\"targetFilters\":{\"hp\":\"<=3\",\"status\":\"active\"},\"targetScope\":\"opponent\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"PAIRING_COMPLETE\",\"windows\":[]}",
       "memberRefs": [
         {
           "file": "st05Card.json",

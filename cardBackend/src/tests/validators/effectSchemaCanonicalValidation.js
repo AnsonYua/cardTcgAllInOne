@@ -14,6 +14,8 @@ const {
   CANONICAL_SELECTION_TYPES,
   CANONICAL_TARGET_FILTER_KEYS,
   CANONICAL_SCALING_TYPES,
+  CANONICAL_SCRY_CHOICES,
+  CANONICAL_SCRY_REST_DESTINATIONS,
   SEQUENCE_INTERNAL_CONDITION_TYPES,
   normalizeEffectTriggerAlias,
   normalizeConditionTypeAlias,
@@ -46,6 +48,12 @@ const PREVENT_BATTLE_DAMAGE_ALLOWED_PARAM_KEYS = new Set([
   'maxEnemyAp',
   'enemyHp',
   'notes'
+]);
+
+const SCRY_TOP_DECK_LEGACY_ALLOWED_CHOICES = new Set([
+  'top',
+  'bottom',
+  'trash'
 ]);
 
 function loadCardFile(fileName) {
@@ -368,6 +376,159 @@ function validatePreventBattleDamageParameters(node, context, diagnostics) {
   }
 }
 
+function validateScryTopDeckParameters(node, context, diagnostics) {
+  if (!node || typeof node !== 'object' || node.action !== 'scry_top_deck') {
+    return;
+  }
+
+  const parameters = node.parameters && typeof node.parameters === 'object' ? node.parameters : {};
+  const paramsPath = `${context.jsonPath}.parameters`;
+
+  const hasCount = Object.prototype.hasOwnProperty.call(parameters, 'count');
+  const hasLookCount = Object.prototype.hasOwnProperty.call(parameters, 'lookCount');
+  const hasValue = Object.prototype.hasOwnProperty.call(parameters, 'value');
+  const resolvedCountRaw = hasCount ? parameters.count : (hasLookCount ? parameters.lookCount : parameters.value);
+  const resolvedCount = typeof resolvedCountRaw === 'number' ? resolvedCountRaw : Number(resolvedCountRaw);
+
+  if (!Number.isFinite(resolvedCount) || resolvedCount <= 0) {
+    diagnostics.push({
+      severity: 'error',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: paramsPath,
+      message: 'scry_top_deck requires count (or lookCount/value) > 0'
+    });
+  }
+
+  if (hasCount && hasLookCount && Number(parameters.count) !== Number(parameters.lookCount)) {
+    diagnostics.push({
+      severity: 'error',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: paramsPath,
+      message: 'scry_top_deck count and lookCount must match when both are present'
+    });
+  }
+
+  if (Object.prototype.hasOwnProperty.call(parameters, 'keep')) {
+    const keepValue = Number(parameters.keep);
+    if (!Number.isInteger(keepValue) || keepValue < 0) {
+      diagnostics.push({
+        severity: 'error',
+        cardId: context.cardId,
+        effectId: context.effectId || 'unknown',
+        jsonPath: `${paramsPath}.keep`,
+        message: 'scry_top_deck keep must be an integer >= 0'
+      });
+    }
+  }
+
+  const rawChoice = typeof parameters.choice === 'string' ? parameters.choice.toLowerCase() : '';
+  if (rawChoice && !CANONICAL_SCRY_CHOICES.has(rawChoice)) {
+    diagnostics.push({
+      severity: 'error',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: `${paramsPath}.choice`,
+      message: `scry_top_deck choice must be one of ${Array.from(CANONICAL_SCRY_CHOICES).join('|')}`
+    });
+  }
+
+  const rawRest = typeof parameters.rest === 'string' ? parameters.rest.toLowerCase() : '';
+  if (rawRest && !CANONICAL_SCRY_REST_DESTINATIONS.has(rawRest)) {
+    diagnostics.push({
+      severity: 'error',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: `${paramsPath}.rest`,
+      message: `scry_top_deck rest must be one of ${Array.from(CANONICAL_SCRY_REST_DESTINATIONS).join('|')}`
+    });
+  }
+
+  if (rawChoice === 'top_or_trash' && rawRest && rawRest !== 'trash') {
+    diagnostics.push({
+      severity: 'error',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: `${paramsPath}.rest`,
+      message: 'scry_top_deck choice=top_or_trash requires rest=trash when rest is provided'
+    });
+  }
+
+  const hasLegacyChoices = Array.isArray(parameters.choices);
+  if (hasLegacyChoices) {
+    const normalizedLegacyChoices = parameters.choices
+      .filter((entry) => typeof entry === 'string')
+      .map((entry) => entry.toLowerCase());
+
+    const unknownLegacyChoice = normalizedLegacyChoices.find((entry) => !SCRY_TOP_DECK_LEGACY_ALLOWED_CHOICES.has(entry));
+    if (unknownLegacyChoice) {
+      diagnostics.push({
+        severity: 'error',
+        cardId: context.cardId,
+        effectId: context.effectId || 'unknown',
+        jsonPath: `${paramsPath}.choices`,
+        message: `scry_top_deck legacy choices has unsupported value ${unknownLegacyChoice}`
+      });
+    }
+
+    const hasTop = normalizedLegacyChoices.includes('top');
+    const hasBottom = normalizedLegacyChoices.includes('bottom');
+    const hasTrash = normalizedLegacyChoices.includes('trash');
+    const supportedPair = (hasTop && hasBottom && !hasTrash) || (hasTop && hasTrash && !hasBottom);
+    if (!supportedPair) {
+      diagnostics.push({
+        severity: 'error',
+        cardId: context.cardId,
+        effectId: context.effectId || 'unknown',
+        jsonPath: `${paramsPath}.choices`,
+        message: 'scry_top_deck legacy choices must be [top,bottom] or [top,trash]'
+      });
+    }
+
+    if (rawChoice) {
+      const inferredLegacyChoice = hasBottom ? 'top_or_bottom' : (hasTrash ? 'top_or_trash' : '');
+      if (inferredLegacyChoice && rawChoice !== inferredLegacyChoice) {
+        diagnostics.push({
+          severity: 'error',
+          cardId: context.cardId,
+          effectId: context.effectId || 'unknown',
+          jsonPath: paramsPath,
+          message: `scry_top_deck choice (${rawChoice}) conflicts with legacy choices (${inferredLegacyChoice})`
+        });
+      }
+    }
+
+    diagnostics.push({
+      severity: 'warning',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: `${paramsPath}.choices`,
+      message: 'scry_top_deck uses legacy choices; prefer canonical choice field'
+    });
+  }
+
+  if (hasLookCount) {
+    diagnostics.push({
+      severity: 'warning',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: `${paramsPath}.lookCount`,
+      message: 'scry_top_deck uses legacy lookCount; prefer canonical count field'
+    });
+  }
+
+  if (Object.prototype.hasOwnProperty.call(parameters, 'bottom')) {
+    diagnostics.push({
+      severity: 'warning',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: `${paramsPath}.bottom`,
+      message: 'scry_top_deck uses legacy bottom field; prefer canonical rest=bottom'
+    });
+  }
+}
+
 function walkEffects(node, context, diagnostics) {
   if (Array.isArray(node)) {
     node.forEach((entry, index) => {
@@ -517,6 +678,11 @@ function walkEffects(node, context, diagnostics) {
     jsonPath: context.jsonPath
   }, diagnostics);
   validatePreventBattleDamageParameters(node, {
+    cardId: context.cardId,
+    effectId: nextContext.effectId || 'unknown',
+    jsonPath: context.jsonPath
+  }, diagnostics);
+  validateScryTopDeckParameters(node, {
     cardId: context.cardId,
     effectId: nextContext.effectId || 'unknown',
     jsonPath: context.jsonPath
@@ -863,6 +1029,7 @@ module.exports = {
     validateScalingConfig,
     detectAlwaysOnTextRuleMismatches,
     validateReturnToHandSemantics,
-    detectSupportActivatedSchemaMismatches
+    detectSupportActivatedSchemaMismatches,
+    validateScryTopDeckParameters
   }
 };

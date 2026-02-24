@@ -57,7 +57,8 @@ export class EffectExecutor {
             applyAddExtraEnergyEffect(gameEnv, sourcePlayerId, sourceCarduid, effect),
         addBasicEnergy: ({ gameEnv, effect, sourcePlayerId, sourceCarduid }) =>
             applyAddBasicEnergyEffect(gameEnv, sourcePlayerId, sourceCarduid, effect),
-        scry_top_deck: ({ gameEnv, effect, sourcePlayerId }) => applyScryTopDeckEffect(gameEnv, sourcePlayerId, effect),
+        scry_top_deck: ({ gameEnv, effect, sourcePlayerId, sourceCarduid }) =>
+            applyScryTopDeckEffect(gameEnv, sourcePlayerId, effect, sourceCarduid),
         grant_breach: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyGrantBreachEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         prevent_shield_damage: ({ gameEnv, effect, sourcePlayerId, sourceCarduid }) =>

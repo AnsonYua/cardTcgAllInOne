@@ -5741,47 +5741,29 @@
           },
           {
             "effectId": "during_link_effect",
-            "type": "continuous",
-            "trigger": "continuous",
+            "type": "triggered",
+            "trigger": "BATTLE_DESTROY",
             "restrictions": [
               "once_per_turn"
             ],
-            "action": "sequence",
+            "action": "scry_top_deck",
+            "conditions": [
+              {
+                "type": "turnPlayer",
+                "scope": "self"
+              },
+              {
+                "type": "eventAttacker",
+                "value": "self"
+              }
+            ],
             "parameters": {
               "text": "During your turn, when this Unit destroys an enemy Unit with battle damage, look at the top 2 cards of your deck and return 1 to the top. Place the remaining card into your trash.",
               "version": 1,
-              "steps": [
-                {
-                  "action": "conditional",
-                  "parameters": {
-                    "if": [
-                      {
-                        "type": "turnPlayer",
-                        "scope": "self"
-                      },
-                      {
-                        "type": "eventType",
-                        "value": "BATTLE_DESTROY"
-                      },
-                      {
-                        "type": "eventAttacker",
-                        "value": "self"
-                      }
-                    ],
-                    "then": [
-                      {
-                        "action": "scry_top_deck",
-                        "parameters": {
-                          "count": 2,
-                          "keep": 1,
-                          "choice": "top_or_trash",
-                          "rest": "trash"
-                        }
-                      }
-                    ]
-                  }
-                }
-              ]
+              "count": 2,
+              "keep": 1,
+              "choice": "top_or_trash",
+              "rest": "trash"
             },
             "sourceConditions": [
               {

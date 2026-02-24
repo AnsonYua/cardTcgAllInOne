@@ -674,7 +674,8 @@
                   "parameters": {
                     "count": 2,
                     "keep": 1,
-                    "bottom": 1
+                    "choice": "top_or_bottom",
+                    "rest": "bottom"
                   }
                 }
               ]

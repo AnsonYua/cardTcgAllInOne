@@ -154,6 +154,17 @@ export const CANONICAL_SCALING_TYPES = new Set<string>([
     'SOURCE_AP_PER'
 ]);
 
+export const CANONICAL_SCRY_CHOICES = new Set<string>([
+    'top_or_bottom',
+    'top_or_trash'
+]);
+
+export const CANONICAL_SCRY_REST_DESTINATIONS = new Set<string>([
+    'bottom',
+    'trash',
+    'deck_bottom'
+]);
+
 const CONDITION_TYPE_ALIASES: Record<string, string> = {
     sourceAP: 'sourceAp',
     sourceHP: 'sourceHp'

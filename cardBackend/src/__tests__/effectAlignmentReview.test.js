@@ -339,4 +339,101 @@ describe('Effect alignment review tooling', () => {
     const pilotIssues = report.issues.filter((issue) => issue.category === 'pilot-level-filter-mismatch');
     expect(pilotIssues).toHaveLength(0);
   });
+
+  test('pilot self-attacker detector flags risky battle-destroy pilot rules when engine support is missing', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'effect-alignment-pilot-self-risk-'));
+    const dataDir = path.join(tempDir, 'src', 'data');
+    fs.mkdirSync(dataDir, { recursive: true });
+
+    const fixture = {
+      cards: {
+        T200: {
+          id: 'T200',
+          name: 'Pilot Self Risk Fixture',
+          cardType: 'pilot',
+          effects: {
+            description: [
+              'During your turn, when this Unit destroys an enemy Unit with battle damage, draw 1.'
+            ],
+            rules: [
+              {
+                effectId: 'during_battle_destroy',
+                type: 'continuous',
+                trigger: 'continuous',
+                action: 'sequence',
+                parameters: {
+                  steps: [
+                    {
+                      action: 'conditional',
+                      parameters: {
+                        if: [
+                          { type: 'eventType', value: 'BATTLE_DESTROY' },
+                          { type: 'eventAttacker', value: 'self' }
+                        ],
+                        then: [{ action: 'draw', parameters: { value: 1 } }]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    };
+
+    fs.writeFileSync(path.join(dataDir, 'fixtureCard.json'), `${JSON.stringify(fixture, null, 2)}\n`, 'utf8');
+
+    const report = generateEffectAlignmentReport(tempDir, { cardFiles: ['fixtureCard.json'] });
+    const riskIssues = report.issues.filter((issue) => issue.category === 'pilot-event-attacker-self-risk');
+    expect(riskIssues.some((issue) => issue.cardId === 'T200')).toBe(true);
+  });
+
+  test('scry choice destination detector flags risk when interactive scry runtime support is missing', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'effect-alignment-scry-risk-'));
+    const dataDir = path.join(tempDir, 'src', 'data');
+    fs.mkdirSync(dataDir, { recursive: true });
+
+    const fixture = {
+      cards: {
+        T201: {
+          id: 'T201',
+          name: 'Scry Choice Risk Fixture',
+          cardType: 'pilot',
+          effects: {
+            description: [
+              'Look at the top 2 cards of your deck, keep 1 on top, and put the other in trash.'
+            ],
+            rules: [
+              {
+                effectId: 'scry_risky',
+                type: 'continuous',
+                trigger: 'continuous',
+                action: 'sequence',
+                parameters: {
+                  steps: [
+                    {
+                      action: 'scry_top_deck',
+                      parameters: {
+                        count: 2,
+                        keep: 1,
+                        choice: 'top_or_trash',
+                        rest: 'trash'
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    };
+
+    fs.writeFileSync(path.join(dataDir, 'fixtureCard.json'), `${JSON.stringify(fixture, null, 2)}\n`, 'utf8');
+
+    const report = generateEffectAlignmentReport(tempDir, { cardFiles: ['fixtureCard.json'] });
+    const riskIssues = report.issues.filter((issue) => issue.category === 'scry-choice-destination-risk');
+    expect(riskIssues.some((issue) => issue.cardId === 'T201')).toBe(true);
+  });
 });

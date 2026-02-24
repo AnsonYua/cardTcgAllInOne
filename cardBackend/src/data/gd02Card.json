@@ -1836,11 +1836,26 @@
             "effectId": "deploy_scry",
             "type": "triggered",
             "trigger": "ENTERS_PLAY",
-            "action": "scry_top_deck",
+            "optional": true,
+            "action": "deploy_from_top_deck",
             "parameters": {
-              "count": 3,
-              "keep": 1,
-              "bottom": 2
+              "lookCount": 3,
+              "select": {
+                "count": 1,
+                "toZone": "play",
+                "filters": {
+                  "cardType": "unit",
+                  "traitsAny": [
+                    "Clan"
+                  ],
+                  "level": "<=4"
+                }
+              },
+              "rest": {
+                "toZone": "deck_bottom",
+                "order": "random"
+              },
+              "notes": "Implemented: deploy_from_top_deck supports look, optional deploy, and random bottom placement."
             }
           }
         ]
@@ -4624,49 +4639,31 @@
           },
           {
             "effectId": "draw_on_battle_destroy_newtype_paired_unit",
-            "type": "continuous",
-            "trigger": "continuous",
-            "action": "sequence",
+            "type": "triggered",
+            "trigger": "BATTLE_DESTROY",
+            "action": "draw",
+            "conditions": [
+              {
+                "type": "turnPlayer",
+                "scope": "self"
+              },
+              {
+                "type": "eventAttacker",
+                "value": "self"
+              },
+              {
+                "type": "eventTargetController",
+                "value": "opponent"
+              },
+              {
+                "type": "eventTargetPairedPilotTrait",
+                "value": "Newtype"
+              }
+            ],
             "parameters": {
               "text": "During your turn, when this Unit destroys an enemy Unit paired with a (Newtype) Pilot with battle damage, draw 1.",
               "version": 1,
-              "steps": [
-                {
-                  "action": "conditional",
-                  "parameters": {
-                    "if": [
-                      {
-                        "type": "turnPlayer",
-                        "scope": "self"
-                      },
-                      {
-                        "type": "eventType",
-                        "value": "BATTLE_DESTROY"
-                      },
-                      {
-                        "type": "eventAttacker",
-                        "value": "self"
-                      },
-                      {
-                        "type": "eventTargetController",
-                        "value": "opponent"
-                      },
-                      {
-                        "type": "eventTargetPairedPilotTrait",
-                        "value": "Newtype"
-                      }
-                    ],
-                    "then": [
-                      {
-                        "action": "draw",
-                        "parameters": {
-                          "value": 1
-                        }
-                      }
-                    ]
-                  }
-                }
-              ]
+              "value": 1
             }
           }
         ]

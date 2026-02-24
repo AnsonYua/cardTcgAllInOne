@@ -67,6 +67,8 @@ Required `initialGameEnv` fields:
   - `linked`: `paired` + link match (`LinkUtils.isLinkedPair`) succeeds.
   - For `sourceConditions: [{ "type": "linked" }]`, setup must satisfy true linked state, not just unit+pilot occupancy.
   - If unit link list requires a specific pilot identity (name/trait), use a matching pilot (or command played as pilot with `designate_pilot`).
+  - Example mismatch: `GD03-099 + GD03-083` is paired only (`GD03-083` has `link: []`), so linked effects must not be expected.
+  - Example valid link: `GD03-099 + GD03-079` is linked via `AEUG` trait match.
 - **ENERGY REQUIREMENTS CRITICAL:**
   - Card `Level` = minimum energy cards required in energy area
   - Level 1→1, 2→2, 3→3, 4→4, 5→5, 6→6, 7→7 energy cards

@@ -453,13 +453,11 @@
                         ],
                         "action": "scry_top_deck",
                         "parameters": {
-                            "lookCount": 1,
-                            "choices": [
-                                "top",
-                                "bottom"
-                            ],
+                            "count": 1,
+                            "keep": 1,
+                            "choice": "top_or_bottom",
                             "notes": "Implemented: scry supports top/bottom deck placement.",
-                            "count": 1
+                            "rest": "bottom"
                         }
                     }
                 ]

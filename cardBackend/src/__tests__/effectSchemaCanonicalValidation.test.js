@@ -324,4 +324,73 @@ describe('effectSchemaCanonicalValidation utilities', () => {
             )
         ).toBe(true);
     });
+
+    test('accepts canonical scry_top_deck parameters', () => {
+        const diagnostics = [];
+        walkEffects(
+            {
+                effectId: 'scry_ok',
+                type: 'triggered',
+                trigger: 'ENTERS_PLAY',
+                action: 'scry_top_deck',
+                parameters: {
+                    count: 2,
+                    keep: 1,
+                    choice: 'top_or_trash',
+                    rest: 'trash'
+                }
+            },
+            { cardId: 'MOCK-SCRY-OK', effectId: 'scry_ok', jsonPath: 'cards.MOCK-SCRY-OK.effects.rules[0]' },
+            diagnostics
+        );
+
+        expect(diagnostics.some((d) => d.severity === 'error')).toBe(false);
+    });
+
+    test('rejects conflicting scry choice and rest schema', () => {
+        const diagnostics = [];
+        walkEffects(
+            {
+                effectId: 'scry_bad',
+                type: 'triggered',
+                trigger: 'ENTERS_PLAY',
+                action: 'scry_top_deck',
+                parameters: {
+                    count: 2,
+                    keep: 1,
+                    choice: 'top_or_trash',
+                    rest: 'bottom'
+                }
+            },
+            { cardId: 'MOCK-SCRY-BAD', effectId: 'scry_bad', jsonPath: 'cards.MOCK-SCRY-BAD.effects.rules[0]' },
+            diagnostics
+        );
+
+        expect(
+            diagnostics.some((d) => d.severity === 'error' && /requires rest=trash/.test(d.message))
+        ).toBe(true);
+    });
+
+    test('warns for legacy scry parameter aliases', () => {
+        const diagnostics = [];
+        walkEffects(
+            {
+                effectId: 'scry_legacy',
+                type: 'triggered',
+                trigger: 'ENTERS_PLAY',
+                action: 'scry_top_deck',
+                parameters: {
+                    lookCount: 1,
+                    choices: ['top', 'bottom']
+                }
+            },
+            { cardId: 'MOCK-SCRY-LEGACY', effectId: 'scry_legacy', jsonPath: 'cards.MOCK-SCRY-LEGACY.effects.rules[0]' },
+            diagnostics
+        );
+
+        expect(
+            diagnostics.some((d) => d.severity === 'warning' && /legacy/.test(d.message))
+        ).toBe(true);
+        expect(diagnostics.some((d) => d.severity === 'error')).toBe(false);
+    });
 });

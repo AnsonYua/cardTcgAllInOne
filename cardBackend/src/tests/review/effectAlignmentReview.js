@@ -1132,6 +1132,168 @@ function detectPilotLevelRuleMismatch(baseDir, files) {
   return issues;
 }
 
+function hasPilotSelfAttackerSemanticSupport(baseDir) {
+  const evaluatorPath = path.join(baseDir, 'src', 'services', 'conditions', 'EventConditionEvaluator.ts');
+  if (!fs.existsSync(evaluatorPath)) {
+    return false;
+  }
+  const source = fs.readFileSync(evaluatorPath, 'utf8');
+  return /getEffectiveSelfAttackerCarduid/.test(source) && /pairedUnitCarduid/.test(source);
+}
+
+function hasInteractiveScrySupport(baseDir) {
+  const scryManagerPath = path.join(baseDir, 'src', 'services', 'effects', 'ScryTopDeckManager.ts');
+  if (!fs.existsSync(scryManagerPath)) {
+    return false;
+  }
+  const source = fs.readFileSync(scryManagerPath, 'utf8');
+  return /SCRY_TOP_DECK/.test(source) && /enqueuePromptChoice/.test(source);
+}
+
+function nodeContainsEventAttackerSelfBattleDestroy(node) {
+  let hasEventTypeBattleDestroy = false;
+  let hasEventAttackerSelf = false;
+
+  function walk(value) {
+    if (!value || typeof value !== 'object') {
+      return;
+    }
+    if (Array.isArray(value)) {
+      for (const entry of value) {
+        walk(entry);
+      }
+      return;
+    }
+
+    if (value.type === 'eventType' && String(value.value || '').toUpperCase() === 'BATTLE_DESTROY') {
+      hasEventTypeBattleDestroy = true;
+    }
+    if (value.type === 'eventAttacker' && String(value.value || '').toLowerCase() === 'self') {
+      hasEventAttackerSelf = true;
+    }
+
+    for (const nested of Object.values(value)) {
+      walk(nested);
+    }
+  }
+
+  walk(node);
+  return hasEventTypeBattleDestroy && hasEventAttackerSelf;
+}
+
+function detectPilotEventAttackerSelfRisk(baseDir, files) {
+  if (hasPilotSelfAttackerSemanticSupport(baseDir)) {
+    return [];
+  }
+
+  const issues = [];
+  for (const file of files) {
+    const filePath = path.join(baseDir, 'src', 'data', file);
+    const json = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    const cards = json.cards || {};
+
+    for (const [cardId, card] of Object.entries(cards)) {
+      const isPilot = String(card?.cardType || '').toLowerCase() === 'pilot';
+      if (!isPilot) {
+        continue;
+      }
+      const rules = Array.isArray(card?.effects?.rules) ? card.effects.rules : [];
+      for (const [index, rule] of rules.entries()) {
+        if (!nodeContainsEventAttackerSelfBattleDestroy(rule)) {
+          continue;
+        }
+        issues.push(issueFactory({
+          issueId: `pilot_event_attacker_self_risk_${file}_${cardId}_${index}`,
+          severity: 'P1',
+          confidence: 0.92,
+          category: 'pilot-event-attacker-self-risk',
+          cardId,
+          file,
+          rulePath: `cards.${cardId}.effects.rules[${index}]`,
+          currentSchema: { rule },
+          expectedCanonicalSchema: {
+            eventAttackerSelfResolvesToPairedUnit: true
+          },
+          behavioralRisk: 'Pilot battle-destroy trigger using eventAttacker:self can fail when attacker UID is the paired unit.',
+          recommendedFix: 'Implement pilot self-attacker semantic resolution or normalize rule conditions to compare against the paired source unit.'
+        }));
+      }
+    }
+  }
+  return issues;
+}
+
+function collectScryTopDeckActions(node, collector = []) {
+  if (!node || typeof node !== 'object') {
+    return collector;
+  }
+  if (Array.isArray(node)) {
+    for (const entry of node) {
+      collectScryTopDeckActions(entry, collector);
+    }
+    return collector;
+  }
+
+  if (String(node.action || '').toLowerCase() === 'scry_top_deck') {
+    collector.push(node);
+  }
+
+  for (const value of Object.values(node)) {
+    collectScryTopDeckActions(value, collector);
+  }
+  return collector;
+}
+
+function detectScryChoiceDestinationRisk(baseDir, files) {
+  if (hasInteractiveScrySupport(baseDir)) {
+    return [];
+  }
+
+  const issues = [];
+  for (const file of files) {
+    const filePath = path.join(baseDir, 'src', 'data', file);
+    const json = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    const cards = json.cards || {};
+
+    for (const [cardId, card] of Object.entries(cards)) {
+      const rules = Array.isArray(card?.effects?.rules) ? card.effects.rules : [];
+      for (const [index, rule] of rules.entries()) {
+        const scryActions = collectScryTopDeckActions(rule, []);
+        for (const [scryIndex, scryNode] of scryActions.entries()) {
+          const params = scryNode?.parameters && typeof scryNode.parameters === 'object'
+            ? scryNode.parameters
+            : {};
+          const hasChoice = typeof params.choice === 'string';
+          const hasRest = typeof params.rest === 'string';
+          if (!hasChoice && !hasRest) {
+            continue;
+          }
+          issues.push(issueFactory({
+            issueId: `scry_choice_destination_risk_${file}_${cardId}_${index}_${scryIndex}`,
+            severity: 'P1',
+            confidence: 0.9,
+            category: 'scry-choice-destination-risk',
+            cardId,
+            file,
+            rulePath: `cards.${cardId}.effects.rules[${index}]`,
+            currentSchema: { params },
+            expectedCanonicalSchema: {
+              interactiveChoiceResolution: true,
+              destinationResolution: {
+                supportsBottom: true,
+                supportsTrash: true
+              }
+            },
+            behavioralRisk: 'scry_top_deck with choice/rest parameters can resolve to wrong card order/zone when runtime choice flow is missing.',
+            recommendedFix: 'Add interactive scry choice handling and honor rest destination semantics (top/bottom/trash).'
+          }));
+        }
+      }
+    }
+  }
+  return issues;
+}
+
 function dedupeIssues(issues) {
   const seen = new Set();
   const result = [];
@@ -1170,7 +1332,9 @@ function generateEffectAlignmentReport(baseDir, options = {}) {
     ...detectCanonicalFieldDrift(inventory),
     ...detectSourceExclusionConsistency(inventory),
     ...detectOptionalExileIfYouDoMismatch(baseDir, files),
-    ...detectPilotLevelRuleMismatch(baseDir, files)
+    ...detectPilotLevelRuleMismatch(baseDir, files),
+    ...detectPilotEventAttackerSelfRisk(baseDir, files),
+    ...detectScryChoiceDestinationRisk(baseDir, files)
   ]);
   const allowlistedIssues = issues.filter((issue) =>
     manifest.intentionalDivergenceAllowlist.some((entry) => issueMatchesAllowlist(issue, entry))
