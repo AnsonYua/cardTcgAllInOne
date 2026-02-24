@@ -1,4 +1,5 @@
 export const DEBUG_SCENARIO_PATHS: string[] = [
+  'GD01/GD01-004/when_paired_choose_enemy_unit_hp_le_2_rest',
   'GD01/GD01-123/deploy_add_shield_then_rest_enemy_hp_le_3',
   'GD02/GD02-075/attack_rest_enemy_unit_lv_le_4',
   'GD02/GD02-120/action_heal_aeug_unit_or_base',

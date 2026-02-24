@@ -1,0 +1,264 @@
+{
+  "totalCards": 133,
+  "cardsWithIgnoredEffects": 17,
+  "cardsFullySkipped": 7,
+  "ignoredEffectTypes": 4,
+  "byEffect": {
+    "<Blocker> (Rest this Unit to change the attack target to it.)": [
+      {
+        "cardId": "GD01-065",
+        "cardName": "Freedom Gundam"
+      },
+      {
+        "cardId": "GD01-068",
+        "cardName": "Perfect Strike Gundam"
+      },
+      {
+        "cardId": "GD01-072",
+        "cardName": "Launcher Strike Gundam"
+      },
+      {
+        "cardId": "GD01-086",
+        "cardName": "Gundam Lfrith"
+      },
+      {
+        "cardId": "T-011",
+        "cardName": "Fatum-00"
+      }
+    ],
+    "<Repair 1> (At the end of your turn, this Unit recovers the specified number of HP.)": [
+      {
+        "cardId": "GD01-004",
+        "cardName": "Guncannon"
+      },
+      {
+        "cardId": "GD01-006",
+        "cardName": "Delta Plus"
+      },
+      {
+        "cardId": "GD01-017",
+        "cardName": "Stark Jegan"
+      },
+      {
+        "cardId": "GD01-033",
+        "cardName": "Gundam Deathscythe"
+      }
+    ],
+    "[Burst]Deploy this card.": [
+      {
+        "cardId": "GD01-123",
+        "cardName": "Nahel Argama"
+      },
+      {
+        "cardId": "GD01-124",
+        "cardName": "Side 7"
+      },
+      {
+        "cardId": "GD01-125",
+        "cardName": "Zanzibar"
+      },
+      {
+        "cardId": "GD01-126",
+        "cardName": "Underground Desert Base"
+      },
+      {
+        "cardId": "GD01-127",
+        "cardName": "Gamow"
+      },
+      {
+        "cardId": "GD01-128",
+        "cardName": "Mining Asteroid Palau"
+      },
+      {
+        "cardId": "GD01-129",
+        "cardName": "Kusanagi"
+      },
+      {
+        "cardId": "GD01-130",
+        "cardName": "13th Tactical Testing Sector"
+      }
+    ],
+    "[Deploy]Add 1 of your Shields to your hand.": [
+      {
+        "cardId": "GD01-124",
+        "cardName": "Side 7"
+      },
+      {
+        "cardId": "GD01-126",
+        "cardName": "Underground Desert Base"
+      },
+      {
+        "cardId": "GD01-127",
+        "cardName": "Gamow"
+      },
+      {
+        "cardId": "GD01-128",
+        "cardName": "Mining Asteroid Palau"
+      },
+      {
+        "cardId": "GD01-130",
+        "cardName": "13th Tactical Testing Sector"
+      }
+    ]
+  },
+  "cards": [
+    {
+      "cardId": "GD01-004",
+      "cardName": "Guncannon",
+      "ignoredEffects": [
+        "<Repair 1> (At the end of your turn, this Unit recovers the specified number of HP.)"
+      ],
+      "shouldSkip": false,
+      "keptEffectDescription": "[When Paired]Choose 1 enemy Unit with 2 or less HP. Rest it."
+    },
+    {
+      "cardId": "GD01-006",
+      "cardName": "Delta Plus",
+      "ignoredEffects": [
+        "<Repair 1> (At the end of your turn, this Unit recovers the specified number of HP.)"
+      ],
+      "shouldSkip": false,
+      "keptEffectDescription": "[During Link]This Unit gets HP+1."
+    },
+    {
+      "cardId": "GD01-017",
+      "cardName": "Stark Jegan",
+      "ignoredEffects": [
+        "<Repair 1> (At the end of your turn, this Unit recovers the specified number of HP.)"
+      ],
+      "shouldSkip": true,
+      "keptEffectDescription": "(ignored: shared effect only)"
+    },
+    {
+      "cardId": "GD01-033",
+      "cardName": "Gundam Deathscythe",
+      "ignoredEffects": [
+        "<Repair 1> (At the end of your turn, this Unit recovers the specified number of HP.)"
+      ],
+      "shouldSkip": true,
+      "keptEffectDescription": "(ignored: shared effect only)"
+    },
+    {
+      "cardId": "GD01-065",
+      "cardName": "Freedom Gundam",
+      "ignoredEffects": [
+        "<Blocker> (Rest this Unit to change the attack target to it.)"
+      ],
+      "shouldSkip": false,
+      "keptEffectDescription": "[During Pair][Once per Turn]When you pair a Pilot with this Unit or one of your white Units, choose 1 enemy Unit. It gets AP-2 during this turn."
+    },
+    {
+      "cardId": "GD01-068",
+      "cardName": "Perfect Strike Gundam",
+      "ignoredEffects": [
+        "<Blocker> (Rest this Unit to change the attack target to it.)"
+      ],
+      "shouldSkip": false,
+      "keptEffectDescription": "[Deploy]Choose 1 enemy Unit with 1 HP. Return it to its owner's hand."
+    },
+    {
+      "cardId": "GD01-072",
+      "cardName": "Launcher Strike Gundam",
+      "ignoredEffects": [
+        "<Blocker> (Rest this Unit to change the attack target to it.)"
+      ],
+      "shouldSkip": true,
+      "keptEffectDescription": "(ignored: shared effect only)"
+    },
+    {
+      "cardId": "GD01-086",
+      "cardName": "Gundam Lfrith",
+      "ignoredEffects": [
+        "<Blocker> (Rest this Unit to change the attack target to it.)"
+      ],
+      "shouldSkip": true,
+      "keptEffectDescription": "(ignored: shared effect only)"
+    },
+    {
+      "cardId": "GD01-123",
+      "cardName": "Nahel Argama",
+      "ignoredEffects": [
+        "[Burst]Deploy this card."
+      ],
+      "shouldSkip": false,
+      "keptEffectDescription": "[Deploy]Add 1 of your Shields to your hand. Then, choose 1 enemy Unit with 3 or less HP. Rest it."
+    },
+    {
+      "cardId": "GD01-124",
+      "cardName": "Side 7",
+      "ignoredEffects": [
+        "[Burst]Deploy this card.",
+        "[Deploy]Add 1 of your Shields to your hand."
+      ],
+      "shouldSkip": false,
+      "keptEffectDescription": "[Activate/Main]Rest this Base:Choose 1 friendly Unit. It recovers 1 HP."
+    },
+    {
+      "cardId": "GD01-125",
+      "cardName": "Zanzibar",
+      "ignoredEffects": [
+        "[Burst]Deploy this card."
+      ],
+      "shouldSkip": false,
+      "keptEffectDescription": "[Deploy]Add 1 of your Shields to your hand. Then, if it is your turn, you may deploy 1 (Zeon) Unit card that is Lv.4 or lower from your hand."
+    },
+    {
+      "cardId": "GD01-126",
+      "cardName": "Underground Desert Base",
+      "ignoredEffects": [
+        "[Burst]Deploy this card.",
+        "[Deploy]Add 1 of your Shields to your hand."
+      ],
+      "shouldSkip": true,
+      "keptEffectDescription": "(ignored: shared effect only)"
+    },
+    {
+      "cardId": "GD01-127",
+      "cardName": "Gamow",
+      "ignoredEffects": [
+        "[Burst]Deploy this card.",
+        "[Deploy]Add 1 of your Shields to your hand."
+      ],
+      "shouldSkip": false,
+      "keptEffectDescription": "[Activate-Action]Rest this Base:Choose 1 friendly (ZAFT) Unit with 5 or more AP. It gains <Breach 3> during this battle. (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)"
+    },
+    {
+      "cardId": "GD01-128",
+      "cardName": "Mining Asteroid Palau",
+      "ignoredEffects": [
+        "[Burst]Deploy this card.",
+        "[Deploy]Add 1 of your Shields to your hand."
+      ],
+      "shouldSkip": true,
+      "keptEffectDescription": "(ignored: shared effect only)"
+    },
+    {
+      "cardId": "GD01-129",
+      "cardName": "Kusanagi",
+      "ignoredEffects": [
+        "[Burst]Deploy this card."
+      ],
+      "shouldSkip": false,
+      "keptEffectDescription": "[Deploy]Add 1 of your Shields to your hand. Then, choose 1 enemy Unit with 3 or less HP. Return it to its owner's hand."
+    },
+    {
+      "cardId": "GD01-130",
+      "cardName": "13th Tactical Testing Sector",
+      "ignoredEffects": [
+        "[Burst]Deploy this card.",
+        "[Deploy]Add 1 of your Shields to your hand."
+      ],
+      "shouldSkip": false,
+      "keptEffectDescription": "[Activate/Main]Rest this Base:If a friendly (Academy) Unit is in play, choose 1 enemy Unit. It gets AP-1 during this turn."
+    },
+    {
+      "cardId": "T-011",
+      "cardName": "Fatum-00",
+      "ignoredEffects": [
+        "<Blocker> (Rest this Unit to change the attack target to it.)"
+      ],
+      "shouldSkip": true,
+      "keptEffectDescription": "(ignored: shared effect only)"
+    }
+  ]
+}

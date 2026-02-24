@@ -1,0 +1,14 @@
+[
+  {
+    "runTag": "20260224T091332Z",
+    "mode": "dry-run",
+    "workspaceDir": "/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend",
+    "model": "gpt-5",
+    "approvalPolicy": "never",
+    "sandbox": "workspace-write",
+    "maxTurns": 20,
+    "cardId": "GD01-004",
+    "cardName": "Guncannon",
+    "prompt": "based on my context in createGameEnvTest agent skill, i want to create test case for GD01-004 to test [When Paired]Choose 1 enemy Unit with 2 or less HP. Rest it. dont change code and dont start write test case frontend. help me thin of what is the gameEnv should be and what manual step i need to do. if u dont understand the effect , ask me. you can look at createGameEnvTest agent skill in /Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/requirement/skil/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/requirement/agentOnboarding if you can clear use createGameEnvTest agent skill to do create the test environment file (json) for me, please add in DebugControls.ts as skill required"
+  }
+]
