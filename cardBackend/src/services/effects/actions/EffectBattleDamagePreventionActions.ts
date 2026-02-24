@@ -6,6 +6,23 @@ import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
 import { TemporaryEffectFactory } from '../TemporaryEffectFactory';
 import { GameNotificationManager } from '../../GameNotificationManager';
 
+function resolveEnemyApFilters(effect: EffectDefinition): { enemyAp?: string; maxEnemyAp?: number } {
+    const enemyAp = typeof effect.parameters?.enemyAp === 'string' ? effect.parameters.enemyAp : undefined;
+    const maxEnemyAp = typeof effect.parameters?.maxEnemyAp === 'number' ? effect.parameters.maxEnemyAp : undefined;
+
+    if (enemyAp) {
+        return { enemyAp, maxEnemyAp };
+    }
+    if (typeof maxEnemyAp === 'number') {
+        return { enemyAp: `<=${maxEnemyAp}`, maxEnemyAp };
+    }
+    return {};
+}
+
+function resolveEnemyHpFilter(effect: EffectDefinition): string | undefined {
+    return typeof effect.parameters?.enemyHp === 'string' ? effect.parameters.enemyHp : undefined;
+}
+
 export function applyPreventBattleDamageEffect(
     gameEnv: GameEnvironment,
     sourcePlayerId: string,
@@ -23,7 +40,8 @@ export function applyPreventBattleDamageEffect(
 
     const from = typeof effect.parameters?.from === 'string' ? effect.parameters.from : undefined;
     const enemyLevel = typeof effect.parameters?.enemyLevel === 'string' ? effect.parameters.enemyLevel : undefined;
-    const maxEnemyAp = typeof effect.parameters?.maxEnemyAp === 'number' ? effect.parameters.maxEnemyAp : undefined;
+    const { enemyAp, maxEnemyAp } = resolveEnemyApFilters(effect);
+    const enemyHp = resolveEnemyHpFilter(effect);
 
     const appliedTargets: TargetReference[] = [];
 
@@ -46,7 +64,7 @@ export function applyPreventBattleDamageEffect(
             sourcePlayerId,
             sourceCarduid,
             effect,
-            { from, enemyLevel, maxEnemyAp }
+            { from, enemyLevel, enemyAp, enemyHp, maxEnemyAp }
         );
 
         card.temporaryEffects.push(tempEffect);
@@ -62,6 +80,8 @@ export function applyPreventBattleDamageEffect(
             targets: appliedTargets.map(t => ({ carduid: t.carduid, zone: t.zone, playerId: t.playerId })),
             from,
             enemyLevel,
+            enemyAp,
+            enemyHp,
             maxEnemyAp,
             duration: effect.timing?.duration || 'UNTIL_END_OF_TURN',
             timestamp: Date.now()
@@ -71,4 +91,3 @@ export function applyPreventBattleDamageEffect(
 
     return { success: true };
 }
-

@@ -1,0 +1,15 @@
+[
+  {
+    "mode": "codex-mcp-direct-dry-run",
+    "runTag": "20260224T100444Z_02",
+    "workingDir": "/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/aiScript",
+    "cardId": "GD01-004",
+    "cardName": "Guncannon",
+    "codexArguments": {
+      "prompt": "based on my context in createGameEnvTest agent skill, i want to create test case for GD01-004 to test [When Paired]Choose 1 enemy Unit with 2 or less HP. Rest it. dont change code and dont start write test case frontend. help me thin of what is the gameEnv should be and what manual step i need to do. if u dont understand the effect , ask me. you can look at createGameEnvTest agent skill in /Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/requirement/skil/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/requirement/agentOnboarding if you can clear use createGameEnvTest agent skill to do create the test environment file (json) for me, make sure u add the test scenoria file path to const SCENARIO_PRESET_GROUPS =  in make sure u add the test scenoria file path to const SCENARIO_PRESET_GROUPS =  in /Users/hello/Desktop/card/unity/cardGameFrontend/src/phaser/controllers/DebugControls.ts as skill required (not in my repo, but i give u the permission)) as skill required",
+      "cwd": "/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/aiScript",
+      "sandbox": "workspace-write",
+      "approval-policy": "never"
+    }
+  }
+]

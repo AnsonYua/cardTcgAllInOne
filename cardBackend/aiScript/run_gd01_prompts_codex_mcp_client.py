@@ -13,6 +13,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+import re
 
 
 DEFAULT_INPUT = Path(__file__).resolve().parent / "data" / "draft_run" / "gd01_prompt_drafts.json"
@@ -28,7 +29,14 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run prompt drafts via direct Codex MCP client")
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
-    parser.add_argument("--working-dir", type=Path, default=DEFAULT_WORKING_DIR)
+    parser.add_argument(
+        "--working-dir",
+        dest="working_dirs",
+        type=Path,
+        action="append",
+        default=None,
+        help="Can be passed multiple times to run the same prompt selection against multiple directories.",
+    )
     parser.add_argument("--start-index", type=int, default=0)
     parser.add_argument("--max-cards", type=int, default=0, help="0 means all")
     parser.add_argument("--timeout-seconds", type=int, default=600)
@@ -84,6 +92,12 @@ def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
     with path.open("w", encoding="utf-8") as f:
         for row in rows:
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+
+def slugify_working_dir(path: Path) -> str:
+    parts = [p for p in path.resolve().parts if p not in ("/", "\\")]
+    tail = "-".join(parts[-3:]) if parts else "root"
+    return re.sub(r"[^A-Za-z0-9._-]+", "-", tail).strip("-") or "working-dir"
 
 
 class CodexMCPClient:
@@ -214,16 +228,42 @@ class CodexMCPClient:
                 method_name = str(message.get("method"))
                 params_obj = message.get("params", {})
                 if method_name == "codex/event" and isinstance(params_obj, dict):
-                    # Print concise event details so the console is informative but not flooded.
-                    event_name = (
-                        params_obj.get("event")
-                        or params_obj.get("type")
-                        or params_obj.get("name")
-                        or "unknown"
-                    )
+                    # Codex event payloads can be under params.msg or params.event.
+                    event_obj = params_obj.get("msg")
+                    if event_obj is None:
+                        event_obj = params_obj.get("event")
+                    event_name = "unknown"
                     status = params_obj.get("status")
-                    summary = params_obj.get("summary") or params_obj.get("message")
-                    thread_id = params_obj.get("threadId")
+                    summary: str | None = None
+                    thread_id = params_obj.get("threadId") or params_obj.get("conversationId")
+
+                    if isinstance(event_obj, dict):
+                        event_name = str(
+                            event_obj.get("type")
+                            or event_obj.get("name")
+                            or event_obj.get("event")
+                            or "unknown"
+                        )
+                        status = status or event_obj.get("status")
+                        summary = (
+                            event_obj.get("summary")
+                            or event_obj.get("message")
+                            or event_obj.get("delta")
+                            or event_obj.get("text")
+                            or event_obj.get("output")
+                        )
+                        thread_id = thread_id or event_obj.get("threadId")
+                    elif isinstance(event_obj, str):
+                        event_name = event_obj
+                    else:
+                        event_name = str(
+                            params_obj.get("type")
+                            or params_obj.get("name")
+                            or params_obj.get("event")
+                            or "unknown"
+                        )
+                        summary = params_obj.get("summary") or params_obj.get("message")
+
                     pieces = [f"[mcp] codex/event: {event_name}"]
                     if status:
                         pieces.append(f"status={status}")
@@ -232,6 +272,8 @@ class CodexMCPClient:
                     if isinstance(summary, str) and summary.strip():
                         trimmed = summary.strip().replace("\n", " ")
                         pieces.append(f"msg={trimmed[:180]}")
+                    elif event_name == "unknown":
+                        pieces.append(f"keys={list(params_obj.keys())[:6]}")
                     print(" ".join(pieces))
                 else:
                     print(f"[mcp] notification: {method_name}")
@@ -266,10 +308,10 @@ class CodexMCPClient:
         return await self._request("tools/call", {"name": name, "arguments": arguments})
 
 
-def build_codex_args(row: dict[str, str], args: argparse.Namespace) -> dict[str, Any]:
+def build_codex_args(row: dict[str, str], args: argparse.Namespace, working_dir: Path) -> dict[str, Any]:
     codex_args: dict[str, Any] = {
         "prompt": row["prompt"],
-        "cwd": str(args.working_dir.resolve()),
+        "cwd": str(working_dir.resolve()),
         "sandbox": args.sandbox,
         "approval-policy": args.approval_policy,
     }
@@ -280,12 +322,68 @@ def build_codex_args(row: dict[str, str], args: argparse.Namespace) -> dict[str,
     return codex_args
 
 
-async def run_real(args: argparse.Namespace, rows: list[dict[str, str]], run_tag: str) -> None:
+def _extract_text_chunks_from_obj(obj: Any) -> list[str]:
+    chunks: list[str] = []
+    if obj is None:
+        return chunks
+    if isinstance(obj, str):
+        s = obj.strip()
+        if s:
+            chunks.append(s)
+        return chunks
+    if isinstance(obj, dict):
+        for key in ("text", "message", "summary", "content", "output", "finalOutput", "final_output"):
+            if key in obj:
+                chunks.extend(_extract_text_chunks_from_obj(obj.get(key)))
+        return chunks
+    if isinstance(obj, list):
+        for item in obj:
+            chunks.extend(_extract_text_chunks_from_obj(item))
+        return chunks
+    return chunks
+
+
+def extract_result_text(result: dict[str, Any]) -> str:
+    texts: list[str] = []
+
+    # Legacy/content-first path
+    content = result.get("content")
+    if isinstance(content, list):
+        for item in content:
+            if isinstance(item, dict) and item.get("type") == "text":
+                texts.extend(_extract_text_chunks_from_obj(item.get("text")))
+            else:
+                texts.extend(_extract_text_chunks_from_obj(item))
+
+    # Structured payload often carries final output in Codex MCP.
+    structured = result.get("structuredContent")
+    texts.extend(_extract_text_chunks_from_obj(structured))
+
+    # Fallback: scan top-level keys.
+    texts.extend(_extract_text_chunks_from_obj(result))
+
+    # De-duplicate while preserving order.
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for t in texts:
+        if t not in seen:
+            seen.add(t)
+            deduped.append(t)
+    return "\n".join(deduped).strip()
+
+
+async def run_real(
+    args: argparse.Namespace,
+    rows: list[dict[str, str]],
+    run_tag: str,
+    working_dir: Path,
+    output_suffix: str,
+) -> None:
     results: list[dict[str, Any]] = []
     meta = {
         "mode": "codex-mcp-direct",
         "runTag": run_tag,
-        "workingDir": str(args.working_dir.resolve()),
+        "workingDir": str(working_dir.resolve()),
         "sandbox": args.sandbox,
         "approvalPolicy": args.approval_policy,
         "model": args.model,
@@ -301,21 +399,13 @@ async def run_real(args: argparse.Namespace, rows: list[dict[str, str]], run_tag
 
         for idx, row in enumerate(rows):
             print(f"[{idx + 1}/{len(rows)}] {row['cardId']} {row['cardName']}")
-            args_payload = build_codex_args(row, args)
+            args_payload = build_codex_args(row, args, working_dir)
             if args.verbose:
                 print(f"[mcp] calling codex with cwd={args_payload.get('cwd')}")
             try:
                 result = await client.call_tool("codex", args_payload)
                 structured = result.get("structuredContent", {}) if isinstance(result, dict) else {}
-                content_text = ""
-                if isinstance(result, dict):
-                    content = result.get("content")
-                    if isinstance(content, list):
-                        texts = []
-                        for item in content:
-                            if isinstance(item, dict) and item.get("type") == "text":
-                                texts.append(str(item.get("text", "")))
-                        content_text = "\n".join([t for t in texts if t]).strip()
+                content_text = extract_result_text(result) if isinstance(result, dict) else ""
                 results.append(
                     {
                         **meta,
@@ -346,28 +436,34 @@ async def run_real(args: argparse.Namespace, rows: list[dict[str, str]], run_tag
                 )
                 print(f"[error] {row['cardId']} {row['cardName']}: {exc}")
 
-    out_json = args.output_dir / f"gd01_codex_mcp_results_{run_tag}.json"
-    out_jsonl = args.output_dir / f"gd01_codex_mcp_results_{run_tag}.jsonl"
+    out_json = args.output_dir / f"gd01_codex_mcp_results_{run_tag}{output_suffix}.json"
+    out_jsonl = args.output_dir / f"gd01_codex_mcp_results_{run_tag}{output_suffix}.jsonl"
     write_json(out_json, results)
     write_jsonl(out_jsonl, results)
     print(f"Saved results:\n- {out_json}\n- {out_jsonl}")
 
 
-def run_dry(args: argparse.Namespace, rows: list[dict[str, str]], run_tag: str) -> None:
+def run_dry(
+    args: argparse.Namespace,
+    rows: list[dict[str, str]],
+    run_tag: str,
+    working_dir: Path,
+    output_suffix: str,
+) -> None:
     plan_rows = []
     for row in rows:
         plan_rows.append(
             {
                 "mode": "codex-mcp-direct-dry-run",
                 "runTag": run_tag,
-                "workingDir": str(args.working_dir.resolve()),
+                "workingDir": str(working_dir.resolve()),
                 "cardId": row["cardId"],
                 "cardName": row["cardName"],
-                "codexArguments": build_codex_args(row, args),
+                "codexArguments": build_codex_args(row, args, working_dir),
             }
         )
-    out_json = args.output_dir / f"gd01_codex_mcp_plan_{run_tag}.json"
-    out_jsonl = args.output_dir / f"gd01_codex_mcp_plan_{run_tag}.jsonl"
+    out_json = args.output_dir / f"gd01_codex_mcp_plan_{run_tag}{output_suffix}.json"
+    out_jsonl = args.output_dir / f"gd01_codex_mcp_plan_{run_tag}{output_suffix}.jsonl"
     write_json(out_json, plan_rows)
     write_jsonl(out_jsonl, plan_rows)
     print("Dry run only (no MCP tool call made).")
@@ -377,9 +473,14 @@ def run_dry(args: argparse.Namespace, rows: list[dict[str, str]], run_tag: str) 
 
 def main() -> None:
     args = parse_args()
-    args.working_dir = args.working_dir.resolve()
-    if not args.working_dir.exists() or not args.working_dir.is_dir():
-        raise FileNotFoundError(f"Working dir not found or not a directory: {args.working_dir}")
+    working_dirs = args.working_dirs or [DEFAULT_WORKING_DIR]
+    resolved_working_dirs: list[Path] = []
+    for working_dir in working_dirs:
+        resolved = working_dir.resolve()
+        if not resolved.exists() or not resolved.is_dir():
+            raise FileNotFoundError(f"Working dir not found or not a directory: {resolved}")
+        resolved_working_dirs.append(resolved)
+    args.working_dirs = resolved_working_dirs
 
     all_rows = load_prompts(args.input)
     rows = select_rows(all_rows, start_index=args.start_index, max_cards=args.max_cards)
@@ -387,11 +488,16 @@ def main() -> None:
         print("No prompts selected. Nothing to do.")
         return
 
-    run_tag = now_utc_tag()
-    if args.dry_run:
-        run_dry(args, rows, run_tag)
-    else:
-        asyncio.run(run_real(args, rows, run_tag))
+    base_run_tag = now_utc_tag()
+    multi_dir = len(args.working_dirs) > 1
+    for index, working_dir in enumerate(args.working_dirs):
+        run_tag = base_run_tag if not multi_dir else f"{base_run_tag}_{index + 1:02d}"
+        output_suffix = f"_{slugify_working_dir(working_dir)}" if multi_dir else ""
+        print(f"Running prompts with working-dir: {working_dir}")
+        if args.dry_run:
+            run_dry(args, rows, run_tag, working_dir, output_suffix)
+        else:
+            asyncio.run(run_real(args, rows, run_tag, working_dir, output_suffix))
 
 
 if __name__ == "__main__":

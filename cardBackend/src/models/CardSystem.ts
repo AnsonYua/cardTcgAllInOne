@@ -26,6 +26,8 @@ export interface TemporaryEffect {
     preventBattleDamage?: {
         from?: string;
         enemyLevel?: string;
+        enemyAp?: string;
+        enemyHp?: string;
         maxEnemyAp?: number;
     };
     preventEffectDamage?: {

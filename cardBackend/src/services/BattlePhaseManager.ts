@@ -524,7 +524,8 @@ export class BattlePhaseManager {
             defenderDamagePrevented = BattleDamagePreventionUtils.isBattleDamagePrevented(
                 targetUnit as UnitZoneCard,
                 attackingUnit as UnitZoneCard,
-                attackerStats.totalAP
+                attackerStats.totalAP,
+                attackerStats.totalHP
             );
             if (defenderDamagePrevented) {
                 defenderDamageTaken = 0;
@@ -545,7 +546,8 @@ export class BattlePhaseManager {
                 attackerDamagePrevented = BattleDamagePreventionUtils.isBattleDamagePrevented(
                     attackingUnit as UnitZoneCard,
                     targetUnit as UnitZoneCard,
-                    defenderStats.totalAP
+                    defenderStats.totalAP,
+                    defenderStats.totalHP
                 );
                 if (attackerDamagePrevented) {
                     attackerDamageTaken = 0;
@@ -570,7 +572,8 @@ export class BattlePhaseManager {
             attackerDamagePrevented = BattleDamagePreventionUtils.isBattleDamagePrevented(
                 attackingUnit as UnitZoneCard,
                 targetUnit as UnitZoneCard,
-                defenderStats.totalAP
+                defenderStats.totalAP,
+                defenderStats.totalHP
             );
             if (attackerDamagePrevented) {
                 attackerDamageTaken = 0;
@@ -579,7 +582,8 @@ export class BattlePhaseManager {
             defenderDamagePrevented = BattleDamagePreventionUtils.isBattleDamagePrevented(
                 targetUnit as UnitZoneCard,
                 attackingUnit as UnitZoneCard,
-                attackerStats.totalAP
+                attackerStats.totalAP,
+                attackerStats.totalHP
             );
             if (defenderDamagePrevented) {
                 defenderDamageTaken = 0;

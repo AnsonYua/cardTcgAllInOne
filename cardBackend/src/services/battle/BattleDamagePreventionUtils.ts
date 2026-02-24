@@ -7,7 +7,8 @@ export class BattleDamagePreventionUtils {
     static isBattleDamagePrevented(
         receivingUnit: UnitZoneCard,
         enemyUnit: UnitZoneCard,
-        enemyUnitTotalAp: number
+        enemyUnitTotalAp: number,
+        enemyUnitTotalHp?: number
     ): boolean {
         const tempEffects = (receivingUnit as any).temporaryEffects;
         if (!Array.isArray(tempEffects) || tempEffects.length === 0) {
@@ -33,13 +34,32 @@ export class BattleDamagePreventionUtils {
                 }
             }
 
-            if (typeof prevention.maxEnemyAp === 'number') {
+            if (typeof prevention.enemyAp === 'string') {
+                if (!validateComparisonFilter(enemyUnitTotalAp, prevention.enemyAp)) {
+                    return false;
+                }
+            } else if (typeof prevention.maxEnemyAp === 'number') {
                 if (enemyUnitTotalAp > prevention.maxEnemyAp) {
                     return false;
                 }
             }
 
-            if (typeof prevention.enemyLevel !== 'string' && typeof prevention.maxEnemyAp !== 'number') {
+            if (typeof prevention.enemyHp === 'string') {
+                const hpValue = typeof enemyUnitTotalHp === 'number'
+                    ? enemyUnitTotalHp
+                    : Math.max(0, (enemyUnit.cardData?.hp || 0) - ((enemyUnit as any).damageReceived || 0));
+                if (!validateComparisonFilter(hpValue, prevention.enemyHp)) {
+                    return false;
+                }
+            }
+
+            if (
+                typeof prevention.enemyLevel !== 'string'
+                && typeof prevention.enemyAp !== 'string'
+                && typeof prevention.enemyHp !== 'string'
+                && typeof prevention.maxEnemyAp !== 'number'
+                && from !== 'enemy_units'
+            ) {
                 return false;
             }
 
@@ -47,4 +67,3 @@ export class BattleDamagePreventionUtils {
         });
     }
 }
-

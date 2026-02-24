@@ -36,8 +36,17 @@ const CARD_FILES = [
 
 const LEVEL_COMPARISON_LITERAL_REGEX = /^(<=|>=|<|>|==|!=)\d+$/;
 const LEVEL_DYNAMIC_PLACEHOLDER_REGEX = /^(<=|>=|<|>|==|!=)\s*(SOURCE_LEVEL|sourceLevel|EVENT_ATTACKER_LEVEL|eventAttackerLevel|RESTED_UNIT_LEVEL|restedUnitLevel)$/;
+const NUMERIC_COMPARISON_LITERAL_REGEX = /^(<=|>=|<|>|==|!=)\d+$/;
 const RETURN_TO_HAND_ALLOWED_TYPES = new Set(['unit', 'pilot', 'card']);
 const RETURN_TO_HAND_SOURCE_CONTROLLER_WHITELIST = new Set([]);
+const PREVENT_BATTLE_DAMAGE_ALLOWED_PARAM_KEYS = new Set([
+  'from',
+  'enemyLevel',
+  'enemyAp',
+  'maxEnemyAp',
+  'enemyHp',
+  'notes'
+]);
 
 function loadCardFile(fileName) {
   const filePath = path.join(__dirname, '..', '..', 'data', fileName);
@@ -282,6 +291,83 @@ function validateReturnToHandSemantics(node, context, diagnostics) {
   }
 }
 
+function validatePreventBattleDamageParameters(node, context, diagnostics) {
+  if (!node || typeof node !== 'object' || node.action !== 'prevent_battle_damage') {
+    return;
+  }
+
+  const parameters = node.parameters && typeof node.parameters === 'object' ? node.parameters : {};
+  const paramsPath = `${context.jsonPath}.parameters`;
+
+  for (const key of Object.keys(parameters)) {
+    if (!PREVENT_BATTLE_DAMAGE_ALLOWED_PARAM_KEYS.has(key)) {
+      diagnostics.push({
+        severity: 'error',
+        cardId: context.cardId,
+        effectId: context.effectId || 'unknown',
+        jsonPath: `${paramsPath}.${key}`,
+        message: `prevent_battle_damage uses unsupported parameter key ${key}`
+      });
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(parameters, 'enemyAp') && typeof parameters.enemyAp !== 'string') {
+    diagnostics.push({
+      severity: 'error',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: `${paramsPath}.enemyAp`,
+      message: 'prevent_battle_damage enemyAp must be a comparison string like <=3'
+    });
+  } else if (typeof parameters.enemyAp === 'string' && !NUMERIC_COMPARISON_LITERAL_REGEX.test(parameters.enemyAp)) {
+    diagnostics.push({
+      severity: 'error',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: `${paramsPath}.enemyAp`,
+      message: `prevent_battle_damage enemyAp must match comparison format (got ${parameters.enemyAp})`
+    });
+  }
+
+  if (Object.prototype.hasOwnProperty.call(parameters, 'maxEnemyAp') && typeof parameters.maxEnemyAp !== 'number') {
+    diagnostics.push({
+      severity: 'error',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: `${paramsPath}.maxEnemyAp`,
+      message: 'prevent_battle_damage maxEnemyAp must be a number'
+    });
+  }
+
+  if (Object.prototype.hasOwnProperty.call(parameters, 'enemyHp') && typeof parameters.enemyHp !== 'string') {
+    diagnostics.push({
+      severity: 'error',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: `${paramsPath}.enemyHp`,
+      message: 'prevent_battle_damage enemyHp must be a comparison string like <=2'
+    });
+  } else if (typeof parameters.enemyHp === 'string' && !NUMERIC_COMPARISON_LITERAL_REGEX.test(parameters.enemyHp)) {
+    diagnostics.push({
+      severity: 'error',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: `${paramsPath}.enemyHp`,
+      message: `prevent_battle_damage enemyHp must match comparison format (got ${parameters.enemyHp})`
+    });
+  }
+
+  if (Object.prototype.hasOwnProperty.call(parameters, 'enemyLevel') && typeof parameters.enemyLevel !== 'string') {
+    diagnostics.push({
+      severity: 'error',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: `${paramsPath}.enemyLevel`,
+      message: 'prevent_battle_damage enemyLevel must be a comparison string'
+    });
+  }
+}
+
 function walkEffects(node, context, diagnostics) {
   if (Array.isArray(node)) {
     node.forEach((entry, index) => {
@@ -426,6 +512,11 @@ function walkEffects(node, context, diagnostics) {
   }
 
   validateReturnToHandSemantics(node, {
+    cardId: context.cardId,
+    effectId: nextContext.effectId || 'unknown',
+    jsonPath: context.jsonPath
+  }, diagnostics);
+  validatePreventBattleDamageParameters(node, {
     cardId: context.cardId,
     effectId: nextContext.effectId || 'unknown',
     jsonPath: context.jsonPath

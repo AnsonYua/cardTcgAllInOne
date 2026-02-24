@@ -71,13 +71,15 @@ export class TemporaryEffectFactory {
         sourcePlayerId: string,
         sourceCarduid: string,
         effect: EffectDefinition,
-        prevention: { from?: string; enemyLevel?: string; maxEnemyAp?: number }
+        prevention: { from?: string; enemyLevel?: string; enemyAp?: string; enemyHp?: string; maxEnemyAp?: number }
     ): TemporaryEffect {
         return {
             ...this.createBase(gameEnv, sourcePlayerId, sourceCarduid, effect),
             preventBattleDamage: {
                 from: prevention.from,
                 enemyLevel: prevention.enemyLevel,
+                enemyAp: prevention.enemyAp,
+                enemyHp: prevention.enemyHp,
                 maxEnemyAp: prevention.maxEnemyAp
             }
         };

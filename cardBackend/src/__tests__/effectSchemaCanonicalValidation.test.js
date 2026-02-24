@@ -1,6 +1,7 @@
 const {
     __testUtils: {
         validateScalingConfig,
+        walkEffects,
         detectAlwaysOnTextRuleMismatches,
         validateReturnToHandSemantics,
         detectSupportActivatedSchemaMismatches
@@ -269,5 +270,58 @@ describe('effectSchemaCanonicalValidation utilities', () => {
         }, diagnostics);
 
         expect(diagnostics.some((d) => d.severity === 'error' && /top-level modifyAP/.test(d.message))).toBe(true);
+    });
+
+    test('accepts prevent_battle_damage enemyHp comparator parameter', () => {
+        const diagnostics = [];
+        walkEffects(
+            {
+                effectId: 'deploy_effect',
+                type: 'triggered',
+                trigger: 'ENTERS_PLAY',
+                action: 'prevent_battle_damage',
+                target: {
+                    type: 'unit',
+                    scope: 'self',
+                    count: 1
+                },
+                parameters: {
+                    from: 'enemy_units',
+                    enemyHp: '<=2'
+                }
+            },
+            { cardId: 'MOCK-HP-OK', effectId: 'deploy_effect', jsonPath: 'cards.MOCK-HP-OK.effects.rules[0]' },
+            diagnostics
+        );
+
+        expect(diagnostics.some((d) => d.severity === 'error')).toBe(false);
+    });
+
+    test('rejects unsupported prevent_battle_damage parameter key', () => {
+        const diagnostics = [];
+        walkEffects(
+            {
+                effectId: 'play_effect',
+                type: 'play',
+                action: 'prevent_battle_damage',
+                target: {
+                    type: 'unit',
+                    scope: 'self',
+                    count: 1
+                },
+                parameters: {
+                    from: 'enemy_units',
+                    enemyAttack: '<=2'
+                }
+            },
+            { cardId: 'MOCK-HP-BAD', effectId: 'play_effect', jsonPath: 'cards.MOCK-HP-BAD.effects.rules[0]' },
+            diagnostics
+        );
+
+        expect(
+            diagnostics.some(
+                (d) => d.severity === 'error' && /unsupported parameter key enemyAttack/.test(d.message)
+            )
+        ).toBe(true);
     });
 });

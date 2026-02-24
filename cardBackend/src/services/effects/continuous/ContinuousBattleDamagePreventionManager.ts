@@ -7,6 +7,29 @@ import { TemporaryEffectFactory } from '../TemporaryEffectFactory';
 import { GameNotificationManager } from '../../GameNotificationManager';
 import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
 
+function resolveEnemyApFilters(effectData: EffectDefinition): { enemyAp?: string; maxEnemyAp?: number } {
+    const enemyAp = typeof effectData?.parameters?.enemyAp === 'string'
+        ? effectData.parameters.enemyAp
+        : undefined;
+    const maxEnemyAp = typeof effectData?.parameters?.maxEnemyAp === 'number'
+        ? effectData.parameters.maxEnemyAp
+        : undefined;
+
+    if (enemyAp) {
+        return { enemyAp, maxEnemyAp };
+    }
+    if (typeof maxEnemyAp === 'number') {
+        return { enemyAp: `<=${maxEnemyAp}`, maxEnemyAp };
+    }
+    return {};
+}
+
+function resolveEnemyHpFilter(effectData: EffectDefinition): string | undefined {
+    return typeof effectData?.parameters?.enemyHp === 'string'
+        ? effectData.parameters.enemyHp
+        : undefined;
+}
+
 export class ContinuousBattleDamagePreventionManager {
     static applyToTargets(
         gameEnv: GameEnvironment,
@@ -23,15 +46,15 @@ export class ContinuousBattleDamagePreventionManager {
         const enemyLevel = typeof effectEntry.effectData?.parameters?.enemyLevel === 'string'
             ? effectEntry.effectData.parameters.enemyLevel
             : undefined;
-        const maxEnemyAp = typeof effectEntry.effectData?.parameters?.maxEnemyAp === 'number'
-            ? effectEntry.effectData.parameters.maxEnemyAp
-            : undefined;
+        const { enemyAp, maxEnemyAp } = resolveEnemyApFilters(effectEntry.effectData);
+        const enemyHp = resolveEnemyHpFilter(effectEntry.effectData);
 
         const targetScope = typeof effectEntry.effectData?.target?.scope === 'string'
             ? effectEntry.effectData.target.scope.toLowerCase()
             : '';
         const shieldScope = targetScope.includes('shield');
-        const hasUnitFilters = typeof enemyLevel === 'string' || typeof maxEnemyAp === 'number';
+        const hasUnitFilters = typeof enemyLevel === 'string' || typeof enemyAp === 'string'
+            || typeof maxEnemyAp === 'number' || typeof enemyHp === 'string';
         if (!shieldScope && !hasUnitFilters) {
             return 0;
         }
@@ -111,6 +134,8 @@ export class ContinuousBattleDamagePreventionManager {
                 }
                 return prevention.from === from
                     && prevention.enemyLevel === enemyLevel
+                    && prevention.enemyAp === enemyAp
+                    && prevention.enemyHp === enemyHp
                     && prevention.maxEnemyAp === maxEnemyAp;
             });
 
@@ -123,7 +148,7 @@ export class ContinuousBattleDamagePreventionManager {
                 effectEntry.sourcePlayerId,
                 effectEntry.sourceCarduid,
                 effectEntry.effectData,
-                { from, enemyLevel, maxEnemyAp }
+                { from, enemyLevel, enemyAp, enemyHp, maxEnemyAp }
             );
             tempEffect.endOnSourceDestroyed = true;
 
@@ -146,6 +171,8 @@ export class ContinuousBattleDamagePreventionManager {
                     targets: appliedTargets,
                     from,
                     enemyLevel,
+                    enemyAp,
+                    enemyHp,
                     maxEnemyAp,
                     duration: effectEntry.effectData.timing?.duration || 'UNTIL_END_OF_TURN',
                     timestamp: Date.now()
