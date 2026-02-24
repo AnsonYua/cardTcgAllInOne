@@ -209,7 +209,22 @@
               "continueModifyHP": 0
             }
           },
-          "slot4": {},
+          "slot4": {
+            "unit": {
+              "carduid": "GD03-007_friendly_0002",
+              "cardId": "GD03-007",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
           "slot5": {},
           "slot6": {},
           "base": [],

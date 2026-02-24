@@ -36,11 +36,19 @@ export function scanForBlockerUnits(gameEnv: GameEnvironment, playerId: string):
 
         const cardData = unit.cardData;
         const rules = cardData?.effects?.rules;
+        const hasTemporarilyGrantedBlocker = typeof KeywordUtils.getKeywordValue(unit as any, 'Blocker') === 'number';
 
         // Primary: explicit ATTACK_REDIRECT rule (may have conditions)
         if (Array.isArray(rules)) {
             const blockerRule = rules.find(rule => isBlockerRedirectRule(rule));
             if (blockerRule) {
+                // If Blocker was granted temporarily (e.g. GD03-118), treat it as keyword-based blocker.
+                // This avoids conditional native blocker rules (like "while friendly base in play")
+                // from suppressing the temporary grant during blocker availability checks.
+                if (hasTemporarilyGrantedBlocker) {
+                    results.push({ carduid: unit.carduid });
+                    continue;
+                }
                 results.push({
                     carduid: unit.carduid,
                     effect: blockerRule
@@ -57,4 +65,3 @@ export function scanForBlockerUnits(gameEnv: GameEnvironment, playerId: string):
 
     return results;
 }
-
