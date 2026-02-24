@@ -8,6 +8,37 @@ import { TargetCountUtils } from '../targets/TargetCountUtils';
 import { deriveTargetChoiceKind } from './TargetChoiceKindResolver';
 
 export class ChoiceNotificationEmitter {
+    private static buildTargetChoicePayload(event: TargetChoiceEvent): Record<string, unknown> {
+        const allowEmptySelection = event.data?.effect?.optional === true;
+        const rawCount = event.data?.effect?.target?.count;
+        const countRange = TargetCountUtils.parseRange(rawCount, { min: 1, max: 1 });
+        const isCostChoice = event.data?.effect?.trigger === 'COST';
+        const effectAction = event.data?.effect?.action;
+        const effectId = event.data?.effect?.effectId;
+        const contextKind = (event.data as any)?.context?.kind;
+        const choiceKind = deriveTargetChoiceKind(effectAction, contextKind);
+
+        // For optional COST choices (i.e., "you may pay this cost"), allow declining (empty selection),
+        // but if the player chooses to pay, the selection should still match the effect's count.
+        const targetCount = (allowEmptySelection && !isCostChoice)
+            ? { min: 0, max: countRange.max }
+            : countRange;
+
+        return {
+            playerId: event.playerId,
+            allowEmptySelection,
+            targetCount,
+            choiceKind,
+            choice: {
+                action: typeof effectAction === 'string' ? effectAction : undefined,
+                effectId: typeof effectId === 'string' ? effectId : undefined,
+                sourceCarduid: event.data?.sourceCarduid,
+                contextKind: typeof contextKind === 'string' ? contextKind : undefined
+            },
+            event
+        };
+    }
+
     private static emitPersistentChoiceCreated(
         gameEnv: GameEnvironment,
         params: {
@@ -103,39 +134,20 @@ export class ChoiceNotificationEmitter {
     }
 
     static emitTargetChoiceCreated(gameEnv: GameEnvironment, event: TargetChoiceEvent): void {
-        const allowEmptySelection = event.data?.effect?.optional === true;
-        const rawCount = event.data?.effect?.target?.count;
-        const countRange = TargetCountUtils.parseRange(rawCount, { min: 1, max: 1 });
-        const isCostChoice = event.data?.effect?.trigger === 'COST';
-        const effectAction = event.data?.effect?.action;
-        const effectId = event.data?.effect?.effectId;
-        const contextKind = (event.data as any)?.context?.kind;
-        const choiceKind = deriveTargetChoiceKind(effectAction, contextKind);
-
-        // For optional COST choices (i.e., "you may pay this cost"), allow declining (empty selection),
-        // but if the player chooses to pay, the selection should still match the effect's count.
-        const targetCount = (allowEmptySelection && !isCostChoice)
-            ? { min: 0, max: countRange.max }
-            : countRange;
         ChoiceNotificationEmitter.emitPersistentChoiceCreated(gameEnv, {
             eventId: event.id,
             type: 'TARGET_CHOICE',
             payload: {
-                playerId: event.playerId,
-                allowEmptySelection,
-                targetCount,
-                choiceKind,
-                choice: {
-                    action: typeof effectAction === 'string' ? effectAction : undefined,
-                    effectId: typeof effectId === 'string' ? effectId : undefined,
-                    sourceCarduid: event.data?.sourceCarduid,
-                    contextKind: typeof contextKind === 'string' ? contextKind : undefined
-                },
-                event,
+                ...ChoiceNotificationEmitter.buildTargetChoicePayload(event),
                 isCompleted: false
             },
             priority: 'high'
         });
+    }
+
+    static syncTargetChoiceNotification(gameEnv: GameEnvironment, event: TargetChoiceEvent): void {
+        const notificationManager = new GameNotificationManager(gameEnv);
+        notificationManager.updateNotificationEvent(event.id, ChoiceNotificationEmitter.buildTargetChoicePayload(event));
     }
 
     static emitTargetChoiceResolved(

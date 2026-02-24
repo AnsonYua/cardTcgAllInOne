@@ -90,8 +90,8 @@
           "slot6": {},
           "base": [
             {
-              "carduid": "GD03-132_base_rested_0001",
-              "cardId": "GD03-132",
+              "carduid": "ST01-016_base_rested_0001",
+              "cardId": "ST01-016",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": true,

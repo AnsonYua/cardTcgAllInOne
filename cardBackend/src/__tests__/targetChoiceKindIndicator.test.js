@@ -74,4 +74,50 @@ describe('TARGET_CHOICE notification indicator', () => {
         expect(notif.payload.choiceKind).toBe('PAIR_FROM_HAND');
         expect(notif.payload.choice.action).toBe('pair_from_hand');
     });
+
+    test('sync updates choiceKind/contextKind when sequence context is attached after creation', () => {
+        const gameEnv = new GameEnvironment();
+        gameEnv.addPlayer('playerId_1', 'P1');
+
+        const effect = {
+            effectId: 'grant_keyword',
+            type: 'internal',
+            trigger: 'SEQUENCE_STEP',
+            optional: true,
+            action: 'grant_keyword',
+            target: {
+                type: 'unit',
+                scope: 'self_all_unit',
+                count: 1,
+                selection: { type: 'player_choice' }
+            },
+            parameters: { keyword: 'Blocker' }
+        };
+
+        const choiceEvent = EventFactory.createTargetChoiceEvent({
+            playerId: 'playerId_1',
+            sourceCarduid: 'GD03-118_hand_0001',
+            effect,
+            availableTargets: [{ carduid: 'u1', zone: 'slot1', playerId: 'playerId_1' }]
+        });
+
+        ChoiceNotificationEmitter.emitTargetChoiceCreated(gameEnv, choiceEvent);
+
+        let notif = Array.isArray(gameEnv.notificationQueue)
+            ? gameEnv.notificationQueue.find((e) => e && e.id === choiceEvent.id && e.type === 'TARGET_CHOICE')
+            : undefined;
+        expect(notif).toBeTruthy();
+        expect(notif.payload.choiceKind).toBe('GRANT_KEYWORD');
+        expect(notif.payload.choice.contextKind).toBeUndefined();
+
+        choiceEvent.data.context = { kind: 'SEQUENCE_CONTINUATION_AFTER_CHOICE' };
+        ChoiceNotificationEmitter.syncTargetChoiceNotification(gameEnv, choiceEvent);
+
+        notif = Array.isArray(gameEnv.notificationQueue)
+            ? gameEnv.notificationQueue.find((e) => e && e.id === choiceEvent.id && e.type === 'TARGET_CHOICE')
+            : undefined;
+        expect(notif).toBeTruthy();
+        expect(notif.payload.choiceKind).toBe('SEQUENCE_GRANT_KEYWORD');
+        expect(notif.payload.choice.contextKind).toBe('SEQUENCE_CONTINUATION_AFTER_CHOICE');
+    });
 });

@@ -8,6 +8,7 @@ import { applyMoveTopDeckToTrash } from './actions/EffectDeckActions';
 import { EffectExecutor } from './EffectExecutor';
 import { DelayedTriggerManager } from './DelayedTriggerManager';
 import { DeployTargetManager } from '../DeployTargetManager';
+import { ChoiceNotificationEmitter } from '../notifications/ChoiceNotificationEmitter';
 import type { SequenceContinuationAfterChoiceContext } from './sequence/SequenceContinuationContext';
 import { EffectSelfTargetNormalizer } from '../targets/EffectSelfTargetNormalizer';
 import { EffectConditionEvaluator } from '../conditions/EffectConditionEvaluator';
@@ -409,7 +410,7 @@ export class SequenceEffectManager {
             return;
         }
 
-            const continuationContext: SequenceContinuationAfterChoiceContext = {
+        const continuationContext: SequenceContinuationAfterChoiceContext = {
                 kind: 'SEQUENCE_CONTINUATION_AFTER_CHOICE',
                 playerId,
                 sourceCarduid,
@@ -425,6 +426,7 @@ export class SequenceEffectManager {
                 ...(cardPlayNotificationId ? { cardPlayNotificationId } : {})
         };
         (choiceEvent.data as any).context = continuationContext;
+        ChoiceNotificationEmitter.syncTargetChoiceNotification(gameEnv, choiceEvent as any);
     }
 
     private static markResolved(ctx: SequenceContext, key: string): void {
