@@ -56,6 +56,9 @@ Required `initialGameEnv` fields:
 - Always include `processingQueue: []`.
 - Always include at least one `CARD_DRAWN` seed in `notificationQueue`.
 - Seed rule: `notificationQueue[*].payload.playerId === currentPlayer`.
+- For action-effect scenarios, do **not** initialize directly in battle/action step.
+  - Keep `initialGameEnv` before manual battle entry (default `phase: "MAIN_PHASE"` and `currentBattle: null` unless explicitly required otherwise).
+  - Do not pre-seed action-step confirmations or queued events that skip user-driven battle entry.
 - Always include all six slot objects and explicit arrays for `base`, `shieldArea`, `energyArea`, `trashArea`.
 - Always include `deck.handUids` for each player.
 - If `deck.hand` is included, keep it aligned with `handUids`.

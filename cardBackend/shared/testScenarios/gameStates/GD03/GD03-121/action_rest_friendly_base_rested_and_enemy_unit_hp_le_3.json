@@ -1,6 +1,6 @@
 {
-  "description": "gd03-121_action_rest_friendly_base_and_enemy_unit_hp_le_3",
-  "gameId": "gd03-121_action_rest_friendly_base_and_enemy_unit_hp_le_3",
+  "description": "gd03-121_action_rest_friendly_base_rested_and_enemy_unit_hp_le_3",
+  "gameId": "gd03-121_action_rest_friendly_base_rested_and_enemy_unit_hp_le_3",
   "testType": "action",
   "category": "ActionCase",
   "tags": [
@@ -12,13 +12,9 @@
   ],
   "notes": [
     "Action: Load scenario via getTestScenario and inject via injectGameState.",
-    "Expect: Player 1 is in ACTION_STEP with GD03-121 in hand and 1 active energy card.",
-    "Action: Player 1 plays GD03-121 during ACTION_STEP.",
-    "Expect: First choice prompts for 1 friendly Base; select the active base in Player 1 base zone.",
-    "Action: Resolve second choice for enemy Unit target.",
-    "Expect: Only enemy Units with HP <= 3 are selectable (enemy slot2 valid HP3; enemy slot1 invalid HP4).",
-    "Action: Select enemy slot2 unit as target.",
-    "Expect: Selected friendly Base and selected enemy Unit are both rested."
+    "Setup: Player 1 has GD03-121 in hand and exactly one friendly Base, and that Base is already rested.",
+    "Expect: During ACTION_STEP, GD03-121 is NOT playable because step 1 requires choosing 1 friendly Base to rest.",
+    "Expect: Play attempt is rejected with a mandatory-target validation error before energy payment and before moving the card from hand."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -110,7 +106,7 @@
               "cardId": "GD03-132",
               "placedAt": 0,
               "placedBy": "playerId_1",
-              "isRested": false,
+              "isRested": true,
               "originalHP": 5,
               "damageReceived": 0
             }

@@ -30,6 +30,11 @@ Use this skill when you need to create or review a complete action scenario JSON
 - Include complete `initialGameEnv` for both players.
 - Include `processingQueue: []`.
 - Include `notificationQueue` with a `CARD_DRAWN` seed where `payload.playerId === currentPlayer`.
+- **Action-Effect Manual Entry Rule (CRITICAL):**
+  - For card effects tested via action flow, do **not** pre-set `gameEnv` to battle/action step.
+  - Keep initial state before battle progression (normally `phase: "MAIN_PHASE"` with `currentBattle: null`).
+  - Do **not** pre-seed battle confirmations or action-step progress in `processingQueue`.
+  - Notes should instruct manual runtime actions so the user enters battle and reaches action step themselves.
 - Include `notes` with alternating `Action` and `Expect` lines.
 - **CRITICAL: Linked vs Paired Definition (Engine-Accurate)**
   - `paired`: unit and pilot both exist in the same slot.

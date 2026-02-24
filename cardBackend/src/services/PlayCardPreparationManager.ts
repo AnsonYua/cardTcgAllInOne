@@ -18,7 +18,12 @@ import { RestrictionNotificationEmitter } from './restrictions/RestrictionNotifi
 import { validateUnitReplaceSlotForPlay } from './playCard/UnitReplaceSlotCoordinator';
 import { SLOT_ZONES } from '../config/gameConstants';
 import { SlotCardStateUtils } from './conditions/SlotCardStateUtils';
-import { validateComparisonFilter } from '../utils/EffectNormalizationUtils';
+import { ensureEffectDefaults, validateComparisonFilter } from '../utils/EffectNormalizationUtils';
+import { EffectTimingWindowUtils } from '../utils/EffectTimingWindowUtils';
+import { TargetResolver } from './targets/TargetResolver';
+import { TargetSelectionPipeline } from './targets/TargetSelectionPipeline';
+import { TargetScopeResolverRegistry } from './targets/TargetScopeResolverRegistry';
+import { EffectDefinition, TargetReference } from './EventQueue/interfaces/GameEvent';
 
 export interface PlayCardPreparationFailure {
     success: false;
@@ -174,6 +179,19 @@ export class PlayCardPreparationManager {
                 },
                 'normal'
             );
+        }
+
+        const mandatoryTargetError = this.validateMandatoryFirstSequenceStepTargets(
+            gameEnv,
+            playerId,
+            eventData,
+            cardDataForEnergy
+        );
+        if (mandatoryTargetError) {
+            return {
+                success: false,
+                error: mandatoryTargetError
+            };
         }
 
         const energyResult: EnergyCheckResult = EnergyManager.validateAndPayEnergyForCard(
@@ -595,5 +613,106 @@ export class PlayCardPreparationManager {
                 card.isRested = false;
             }
         });
+    }
+
+    private static validateMandatoryFirstSequenceStepTargets(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        eventData: PlayCardEventData,
+        cardData: any
+    ): string | null {
+        const rules = Array.isArray(cardData?.effects?.rules) ? cardData.effects.rules : [];
+        const activePlayRules = rules.filter((rule: any) =>
+            rule?.type === 'play' &&
+            rule?.action === 'sequence' &&
+            EffectTimingWindowUtils.allowsPhase(rule, gameEnv.phase)
+        );
+
+        for (const rule of activePlayRules) {
+            const steps = Array.isArray(rule?.parameters?.steps) ? rule.parameters.steps : [];
+            if (steps.length === 0) {
+                continue;
+            }
+
+            const firstStep = steps[0];
+            if (!this.isMandatoryTargetStep(firstStep, rule)) {
+                continue;
+            }
+
+            const availableTargets = this.resolveAvailableTargetsForSequenceStep(
+                gameEnv,
+                playerId,
+                eventData.carduid,
+                firstStep,
+                rule
+            );
+
+            if (availableTargets.length === 0) {
+                return `No eligible targets for mandatory effect step (card ${cardData?.id || eventData.carduid}, effect ${rule?.effectId || 'play_effect'})`;
+            }
+        }
+
+        return null;
+    }
+
+    private static isMandatoryTargetStep(step: any, parentRule: any): boolean {
+        if (!step || typeof step !== 'object' || !step.target || typeof step.target !== 'object') {
+            return false;
+        }
+
+        if (step.optional === true || parentRule?.optional === true) {
+            return false;
+        }
+
+        if (step.allowEmptySelection === true || step.target.allowEmptySelection === true) {
+            return false;
+        }
+
+        if (step.target.required === false) {
+            return false;
+        }
+
+        const countConfig = step.target.count;
+        if (countConfig && typeof countConfig === 'object' && typeof countConfig.min === 'number' && countConfig.min <= 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static resolveAvailableTargetsForSequenceStep(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        sourceCarduid: string,
+        step: any,
+        parentRule: any
+    ): TargetReference[] {
+        const stepEffect = ensureEffectDefaults({
+            effectId: step.effectId || `${parentRule?.effectId || 'play_effect'}_step1_precheck`,
+            type: 'internal',
+            trigger: 'SEQUENCE_STEP',
+            optional: false,
+            action: step.action,
+            target: step.target
+        } as EffectDefinition);
+
+        const scoped = TargetScopeResolverRegistry.resolve(gameEnv, sourceCarduid, stepEffect);
+        let availableTargets = Array.isArray(scoped)
+            ? scoped
+            : TargetResolver.generateAvailableTargets(
+                gameEnv,
+                playerId,
+                TargetResolver.resolveTargetConfig(stepEffect),
+                sourceCarduid
+            );
+
+        availableTargets = TargetSelectionPipeline.apply(
+            gameEnv,
+            availableTargets,
+            stepEffect,
+            sourceCarduid
+        );
+
+        return availableTargets;
     }
 }

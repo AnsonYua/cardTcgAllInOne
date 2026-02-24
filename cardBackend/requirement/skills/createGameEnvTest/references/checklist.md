@@ -16,6 +16,10 @@
 - `testType` is `action`.
 - `processingQueue` exists and is `[]`.
 - `notificationQueue` includes `CARD_DRAWN` seed with `payload.playerId === currentPlayer`.
+- For action-effect scenarios:
+  - `initialGameEnv` is not pre-set to battle/action step (`phase` should remain pre-battle, usually `MAIN_PHASE`).
+  - `currentBattle` is `null` at scenario start unless explicitly required.
+  - No pre-seeded confirmations/events that auto-enter action step.
 - If notes/effect say "During Link" or source condition is `linked`:
   - verify setup is truly linked, not only paired
   - verify pilot identity matches unit `link` requirements (name/trait, or `designate_pilot` when command is played as pilot)
