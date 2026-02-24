@@ -464,6 +464,11 @@ function detectBranchIncomplete(inventory) {
       if (ifConds.length === 0) {
         continue;
       }
+      if (
+        isFallbackChoiceConditional(steps, idx, ifConds, thenSteps, elseSteps)
+      ) {
+        continue;
+      }
       if (thenSteps.length === 0 || (/\binstead\b/.test(row.description) && elseSteps.length === 0)) {
         issues.push(issueFactory({
           issueId: `branch_incomplete_${row.file}_${row.cardId}_${row.ruleIndex}_${idx}`,
@@ -487,6 +492,28 @@ function detectBranchIncomplete(inventory) {
     }
   }
   return issues;
+}
+
+function isFallbackChoiceConditional(steps, stepIndex, ifConds, thenSteps, elseSteps) {
+  if (thenSteps.length !== 0 || elseSteps.length === 0) {
+    return false;
+  }
+  if (ifConds.length !== 1) {
+    return false;
+  }
+  const cond = ifConds[0];
+  if (!cond || typeof cond !== 'object' || cond.type !== 'stepResolved') {
+    return false;
+  }
+  const stepId = typeof cond.stepId === 'string' ? cond.stepId : '';
+  if (!stepId || stepIndex <= 0) {
+    return false;
+  }
+  const previousStep = steps[stepIndex - 1];
+  if (!previousStep || typeof previousStep !== 'object') {
+    return false;
+  }
+  return previousStep.stepId === stepId && previousStep.optional === true;
 }
 
 function detectDrift(clusters) {
@@ -977,6 +1004,134 @@ function detectOptionalExileIfYouDoMismatch(baseDir, files) {
   return issues;
 }
 
+function collectTargetDefinitions(node, targets = []) {
+  if (!node || typeof node !== 'object') {
+    return targets;
+  }
+  if (Array.isArray(node)) {
+    for (const entry of node) {
+      collectTargetDefinitions(entry, targets);
+    }
+    return targets;
+  }
+  if (node.target && typeof node.target === 'object') {
+    targets.push(node.target);
+  }
+  for (const value of Object.values(node)) {
+    collectTargetDefinitions(value, targets);
+  }
+  return targets;
+}
+
+function detectPilotLevelRuleMismatch(baseDir, files) {
+  const issues = [];
+
+  for (const file of files) {
+    const filePath = path.join(baseDir, 'src', 'data', file);
+    const json = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    const cards = json.cards || {};
+
+    for (const [cardId, card] of Object.entries(cards)) {
+      const rules = Array.isArray(card?.effects?.rules) ? card.effects.rules : [];
+      if (rules.length === 0) {
+        continue;
+      }
+
+      for (const segment of extractDescriptionSegments(card)) {
+        const normalizedLine = normalizeText(segment.line);
+        const mentionsChoosePilot = /\bchoose\b[\s\S]*\bpilot\b/.test(normalizedLine);
+        const mentionsPilotLevel = /\bpilot\b[\s\S]*\blv\.?\b[\s\S]*(or lower|or higher|<=|>=|<|>|\d)/.test(normalizedLine);
+        if (!mentionsChoosePilot || !mentionsPilotLevel) {
+          continue;
+        }
+
+        const mentionsPairedEnemyUnit = /\bpaired with\b[\s\S]*\benemy unit\b/.test(normalizedLine);
+        const mentionsEnemyUnitLevel = /\benemy unit\b[\s\S]*\blv\.?\b/.test(normalizedLine);
+        const flags = segmentFlags(segment.tags);
+        const mappedRules = rules
+          .map((rule, index) => ({ rule, index }))
+          .filter(({ rule }) => matchesSegmentByTrigger(rule, flags));
+        if (mappedRules.length === 0) {
+          continue;
+        }
+
+        for (const { rule, index } of mappedRules) {
+          const allTargets = collectTargetDefinitions(rule, []);
+          const pilotTargets = allTargets.filter((target) => {
+            const targetType = typeof target?.type === 'string' ? target.type.toLowerCase() : '';
+            const filterCardType = typeof target?.filters?.cardType === 'string'
+              ? target.filters.cardType.toLowerCase()
+              : '';
+            return targetType === 'pilot' || filterCardType === 'pilot';
+          });
+          if (pilotTargets.length === 0) {
+            continue;
+          }
+
+          const hasPilotLevelFilter = pilotTargets.some((target) =>
+            target?.filters && Object.prototype.hasOwnProperty.call(target.filters, 'level')
+          );
+          if (!hasPilotLevelFilter) {
+            issues.push(issueFactory({
+              issueId: `pilot_level_filter_mismatch_${file}_${cardId}_${index}_${segment.index}`,
+              severity: 'P1',
+              confidence: 0.95,
+              category: 'pilot-level-filter-mismatch',
+              cardId,
+              file,
+              rulePath: `cards.${cardId}.effects.rules[${index}]`,
+              currentSchema: {
+                descriptionLine: segment.line,
+                rule
+              },
+              expectedCanonicalSchema: {
+                targetFilters: {
+                  cardType: 'pilot',
+                  level: '<=N | >=N'
+                }
+              },
+              behavioralRisk: 'Pilot level text can resolve with wrong target eligibility.',
+              recommendedFix: 'Add pilot target level filter (`target.filters.level`) matching description.'
+            }));
+            continue;
+          }
+
+          if ((mentionsPairedEnemyUnit || mentionsEnemyUnitLevel)) {
+            const hasPairedUnitGate = pilotTargets.some((target) =>
+              target?.filters && Object.prototype.hasOwnProperty.call(target.filters, 'pairedUnitLevel')
+            );
+            if (!hasPairedUnitGate) {
+              issues.push(issueFactory({
+                issueId: `pilot_pairing_gate_mismatch_${file}_${cardId}_${index}_${segment.index}`,
+                severity: 'P1',
+                confidence: 0.9,
+                category: 'pilot-level-filter-mismatch',
+                cardId,
+                file,
+                rulePath: `cards.${cardId}.effects.rules[${index}]`,
+                currentSchema: {
+                  descriptionLine: segment.line,
+                  rule
+                },
+                expectedCanonicalSchema: {
+                  targetFilters: {
+                    cardType: 'pilot',
+                    pairedUnitLevel: '<=N | >=N'
+                  }
+                },
+                behavioralRisk: 'Pilot target may ignore paired enemy-unit level constraints from card text.',
+                recommendedFix: 'Add `target.filters.pairedUnitLevel` when description constrains paired enemy unit level.'
+              }));
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return issues;
+}
+
 function dedupeIssues(issues) {
   const seen = new Set();
   const result = [];
@@ -1014,7 +1169,8 @@ function generateEffectAlignmentReport(baseDir, options = {}) {
     ...detectDrift(clusters),
     ...detectCanonicalFieldDrift(inventory),
     ...detectSourceExclusionConsistency(inventory),
-    ...detectOptionalExileIfYouDoMismatch(baseDir, files)
+    ...detectOptionalExileIfYouDoMismatch(baseDir, files),
+    ...detectPilotLevelRuleMismatch(baseDir, files)
   ]);
   const allowlistedIssues = issues.filter((issue) =>
     manifest.intentionalDivergenceAllowlist.some((entry) => issueMatchesAllowlist(issue, entry))

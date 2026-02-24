@@ -62,8 +62,8 @@ export class EffectExecutor {
             applyGrantBreachEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         prevent_shield_damage: ({ gameEnv, effect, sourcePlayerId, sourceCarduid }) =>
             applyPreventShieldDamageEffect(gameEnv, sourcePlayerId, sourceCarduid, effect),
-        conditionalTokenDeploy: ({ gameEnv, effect, sourcePlayerId, sourceCarduid }) =>
-            applyConditionalTokenDeployEffect(gameEnv, sourcePlayerId, sourceCarduid, effect),
+        conditionalTokenDeploy: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyConditionalTokenDeployEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         deploy: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyDeployEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         deploy_from_hand: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>

@@ -5,6 +5,7 @@ import { EffectDefinition, TargetReference } from '../../EventQueue/interfaces/G
 import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
 import { GameNotificationManager } from '../../GameNotificationManager';
 import { DestructionCoordinator } from '../../destruction/DestructionCoordinator';
+import { PlayerCardManager } from '../../PlayerCardManager';
 
 export function applyDestroyEffect(
     gameEnv: GameEnvironment,
@@ -27,20 +28,35 @@ export function applyDestroyEffect(
 
         const destroyedPlayerId = lookup.playerId;
         const slotName = lookup.slotName;
+        const targetCardType = String((lookup.card as any)?.cardData?.cardType || '').toLowerCase();
 
-        const destroyedResult = DestructionCoordinator.requestSlotDestruction(gameEnv, {
-            unitCarduid: target.carduid,
-            timing: 'IMMEDIATE',
-            cause: 'EFFECT_DESTROY',
-            allowNonLethal: true
-        });
-        if (!destroyedResult.success) {
-            return { success: false, error: `Failed to destroy unit ${target.carduid}` };
+        if (targetCardType === 'pilot') {
+            const pilotDestroyed = PlayerCardManager.moveCardToTrashFromSlot(
+                gameEnv,
+                destroyedPlayerId,
+                slotName,
+                lookup.card as any,
+                'pilot'
+            );
+            if (!pilotDestroyed) {
+                return { success: false, error: `Failed to destroy pilot ${target.carduid}` };
+            }
+        } else {
+            const destroyedResult = DestructionCoordinator.requestSlotDestruction(gameEnv, {
+                unitCarduid: target.carduid,
+                timing: 'IMMEDIATE',
+                cause: 'EFFECT_DESTROY',
+                allowNonLethal: true
+            });
+            if (!destroyedResult.success) {
+                return { success: false, error: `Failed to destroy unit ${target.carduid}` };
+            }
         }
 
         notificationManager.addNotificationEvent('UNIT_DESTROYED_BY_EFFECT', {
             playerId: destroyedPlayerId,
             carduid: target.carduid,
+            destroyedCardType: targetCardType === 'pilot' ? 'pilot' : 'unit',
             zone: slotName,
             sourcePlayerId,
             sourceCarduid,

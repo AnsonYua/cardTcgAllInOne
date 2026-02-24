@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-23T16:30:51.156Z",
+  "generatedAt": "2026-02-24T14:21:49.309Z",
   "filesScanned": [
     "gd01Card.json",
     "gd02Card.json",
@@ -110,11 +110,11 @@
           "effectId": "burst_rest"
         },
         {
-          "file": "gd01Card.json",
-          "cardId": "GD01-123",
-          "cardName": "Nahel Argama",
-          "rulePath": "cards.GD01-123.effects.rules[1]",
-          "effectId": "deploy_rest"
+          "file": "gd02Card.json",
+          "cardId": "GD02-075",
+          "cardName": "Rick Dias (Red)",
+          "rulePath": "cards.GD02-075.effects.rules[0]",
+          "effectId": "attack_rest"
         },
         {
           "file": "gd03Card.json",
@@ -3525,6 +3525,28 @@
     },
     {
       "clusterId": "cluster_99",
+      "memberCount": 2,
+      "variantCount": 1,
+      "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[\"addToHand\",\"rest\"],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"ENTERS_PLAY\",\"windows\":[]}",
+      "memberRefs": [
+        {
+          "file": "gd01Card.json",
+          "cardId": "GD01-123",
+          "cardName": "Nahel Argama",
+          "rulePath": "cards.GD01-123.effects.rules[1]",
+          "effectId": "deploy_rest"
+        },
+        {
+          "file": "gd03Card.json",
+          "cardId": "GD03-123",
+          "cardName": "Jupitris",
+          "rulePath": "cards.GD03-123.effects.rules[1]",
+          "effectId": "deploy_rest"
+        }
+      ]
+    },
+    {
+      "clusterId": "cluster_100",
       "memberCount": 14,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"addToHand\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"self_shield\",\"targetType\":\"card\",\"timingDuration\":\"\",\"trigger\":\"ENTERS_PLAY\",\"windows\":[]}",
@@ -3630,7 +3652,7 @@
       ]
     },
     {
-      "clusterId": "cluster_100",
+      "clusterId": "cluster_101",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[\"turnPlayer\"],\"effectType\":\"triggered\",\"sequenceActions\":[\"addToHand\",\"conditional\",\"deploy_from_hand\"],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"ENTERS_PLAY\",\"windows\":[]}",
@@ -3645,7 +3667,7 @@
       ]
     },
     {
-      "clusterId": "cluster_101",
+      "clusterId": "cluster_102",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"grant_breach\",\"conditionTypes\":[],\"effectType\":\"activated\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":1,\"targetFilters\":{\"ap\":\">=5\",\"traits\":[\"ZAFT\"]},\"targetScope\":\"self_all_unit\",\"targetType\":\"unit\",\"timingDuration\":\"UNTIL_END_OF_BATTLE\",\"trigger\":\"\",\"windows\":[\"ACTION_STEP\"]}",
@@ -3660,7 +3682,7 @@
       ]
     },
     {
-      "clusterId": "cluster_102",
+      "clusterId": "cluster_103",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[\"addToHand\",\"returnToHand\"],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"ENTERS_PLAY\",\"windows\":[]}",
@@ -3675,7 +3697,7 @@
       ]
     },
     {
-      "clusterId": "cluster_103",
+      "clusterId": "cluster_104",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"modifyAP\",\"conditionTypes\":[\"unitsInPlayWithTrait\"],\"effectType\":\"activated\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":1,\"targetFilters\":{},\"targetScope\":\"opponent\",\"targetType\":\"unit\",\"timingDuration\":\"UNTIL_END_OF_TURN\",\"trigger\":\"\",\"windows\":[\"MAIN_PHASE\"]}",
@@ -3690,7 +3712,7 @@
       ]
     },
     {
-      "clusterId": "cluster_104",
+      "clusterId": "cluster_105",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"heal\",\"conditionTypes\":[\"pairedPilotTrait\",\"shieldAreaCardDamagedByBattleDamage\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[\"paired\"],\"targetCount\":1,\"targetFilters\":{},\"targetScope\":\"source\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"SHIELD_AREA_CARD_DAMAGED\",\"windows\":[]}",
@@ -3705,7 +3727,7 @@
       ]
     },
     {
-      "clusterId": "cluster_105",
+      "clusterId": "cluster_106",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"setActive\",\"conditionTypes\":[\"battleDestroyEvent\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[\"linked\"],\"targetCount\":1,\"targetFilters\":{},\"targetScope\":\"self\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"BATTLE_DESTROY\",\"windows\":[]}",
@@ -3720,7 +3742,7 @@
       ]
     },
     {
-      "clusterId": "cluster_106",
+      "clusterId": "cluster_107",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"returnToHand\",\"conditionTypes\":[\"pairedPilotLevel\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[\"paired\"],\"targetCount\":1,\"targetFilters\":{},\"targetScope\":\"source_paired_pilot\",\"targetType\":\"card\",\"timingDuration\":\"\",\"trigger\":\"DESTROYED\",\"windows\":[]}",
@@ -3735,7 +3757,7 @@
       ]
     },
     {
-      "clusterId": "cluster_107",
+      "clusterId": "cluster_108",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"prevent_set_active_next_turn\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[\"paired\"],\"targetCount\":1,\"targetFilters\":{\"hp\":\"<=3\",\"status\":\"rested\"},\"targetScope\":\"opponent\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"PAIRING_COMPLETE\",\"windows\":[]}",
@@ -3750,7 +3772,7 @@
       ]
     },
     {
-      "clusterId": "cluster_108",
+      "clusterId": "cluster_109",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"rest\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[\"linked\"],\"targetCount\":1,\"targetFilters\":{\"hp\":\"<=2\"},\"targetScope\":\"opponent\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"ATTACK_PHASE\",\"windows\":[]}",
@@ -3765,7 +3787,7 @@
       ]
     },
     {
-      "clusterId": "cluster_109",
+      "clusterId": "cluster_110",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"prevent_battle_damage\",\"conditionTypes\":[],\"effectType\":\"continuous\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":1,\"targetFilters\":{},\"targetScope\":\"self\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"continuous\",\"windows\":[]}",
@@ -3780,7 +3802,7 @@
       ]
     },
     {
-      "clusterId": "cluster_110",
+      "clusterId": "cluster_111",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[],\"effectType\":\"activated\",\"sequenceActions\":[\"destroy\",\"damage\"],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"\",\"windows\":[\"ACTION_STEP\"]}",
@@ -3795,7 +3817,7 @@
       ]
     },
     {
-      "clusterId": "cluster_111",
+      "clusterId": "cluster_112",
       "memberCount": 4,
       "variantCount": 2,
       "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[\"modifyAP\"],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"ENTERS_PLAY\",\"windows\":[]}",
@@ -3831,7 +3853,7 @@
       ]
     },
     {
-      "clusterId": "cluster_112",
+      "clusterId": "cluster_113",
       "memberCount": 3,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"restrict_attack\",\"conditionTypes\":[],\"effectType\":\"continuous\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":1,\"targetFilters\":{},\"targetScope\":\"self\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"continuous\",\"windows\":[]}",
@@ -3860,7 +3882,7 @@
       ]
     },
     {
-      "clusterId": "cluster_113",
+      "clusterId": "cluster_114",
       "memberCount": 2,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"modifyAP\",\"conditionTypes\":[],\"effectType\":\"continuous\",\"sequenceActions\":[],\"sourceConditionTypes\":[\"linked\"],\"targetCount\":1,\"targetFilters\":{},\"targetScope\":\"self\",\"targetType\":\"unit\",\"timingDuration\":\"continuous\",\"trigger\":\"continuous\",\"windows\":[]}",
@@ -3882,7 +3904,7 @@
       ]
     },
     {
-      "clusterId": "cluster_114",
+      "clusterId": "cluster_115",
       "memberCount": 2,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[\"discard\"],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"ENTERS_PLAY\",\"windows\":[]}",
@@ -3904,7 +3926,7 @@
       ]
     },
     {
-      "clusterId": "cluster_115",
+      "clusterId": "cluster_116",
       "memberCount": 2,
       "variantCount": 2,
       "canonicalVariantKey": "{\"action\":\"grant_breach\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":1,\"targetFilters\":{\"traits\":[\"AGE System\"]},\"targetScope\":\"self\",\"targetType\":\"unit\",\"timingDuration\":\"UNTIL_END_OF_TURN\",\"trigger\":\"EX_RESOURCE_PLACED\",\"windows\":[]}",
@@ -3926,7 +3948,7 @@
       ]
     },
     {
-      "clusterId": "cluster_116",
+      "clusterId": "cluster_117",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"conditional\",\"conditionTypes\":[\"playerLevel\"],\"effectType\":\"continuous\",\"sequenceActions\":[],\"sourceConditionTypes\":[\"linked\"],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"continuous\",\"windows\":[]}",
@@ -3941,7 +3963,7 @@
       ]
     },
     {
-      "clusterId": "cluster_117",
+      "clusterId": "cluster_118",
       "memberCount": 2,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[],\"effectType\":\"continuous\",\"sequenceActions\":[\"grant_keyword\"],\"sourceConditionTypes\":[\"linked\"],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"continuous\",\"windows\":[]}",
@@ -3963,7 +3985,7 @@
       ]
     },
     {
-      "clusterId": "cluster_118",
+      "clusterId": "cluster_119",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[\"scry_top_deck\"],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"ENTERS_PLAY\",\"windows\":[]}",
@@ -3978,7 +4000,7 @@
       ]
     },
     {
-      "clusterId": "cluster_119",
+      "clusterId": "cluster_120",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"conditional\",\"conditionTypes\":[\"playerLevel\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"ENTERS_PLAY\",\"windows\":[]}",
@@ -3993,7 +4015,7 @@
       ]
     },
     {
-      "clusterId": "cluster_120",
+      "clusterId": "cluster_121",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"modifyAP\",\"conditionTypes\":[\"playerLevel\"],\"effectType\":\"continuous\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":1,\"targetFilters\":{},\"targetScope\":\"self\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"continuous\",\"windows\":[]}",
@@ -4008,7 +4030,7 @@
       ]
     },
     {
-      "clusterId": "cluster_121",
+      "clusterId": "cluster_122",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"grant_breach\",\"conditionTypes\":[\"hasAnotherLinkedUnitWithTrait\"],\"effectType\":\"continuous\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":1,\"targetFilters\":{},\"targetScope\":\"self\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"continuous\",\"windows\":[]}",
@@ -4023,7 +4045,7 @@
       ]
     },
     {
-      "clusterId": "cluster_122",
+      "clusterId": "cluster_123",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"modifyAP\",\"conditionTypes\":[\"pairedPilotColor\"],\"effectType\":\"continuous\",\"sequenceActions\":[],\"sourceConditionTypes\":[\"paired\"],\"targetCount\":1,\"targetFilters\":{},\"targetScope\":\"self\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"continuous\",\"windows\":[]}",
@@ -4038,7 +4060,7 @@
       ]
     },
     {
-      "clusterId": "cluster_123",
+      "clusterId": "cluster_124",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"grant_keyword\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[\"linked\"],\"targetCount\":1,\"targetFilters\":{},\"targetScope\":\"self\",\"targetType\":\"unit\",\"timingDuration\":\"UNTIL_END_OF_TURN\",\"trigger\":\"PAIRING_COMPLETE\",\"windows\":[]}",
@@ -4053,7 +4075,7 @@
       ]
     },
     {
-      "clusterId": "cluster_124",
+      "clusterId": "cluster_125",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"damage\",\"conditionTypes\":[\"pairedPilotTrait\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[\"paired\"],\"targetCount\":1,\"targetFilters\":{\"damaged\":true},\"targetScope\":\"opponent\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"ATTACK_PHASE\",\"windows\":[]}",
@@ -4068,7 +4090,7 @@
       ]
     },
     {
-      "clusterId": "cluster_125",
+      "clusterId": "cluster_126",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"conditional\",\"conditionTypes\":[\"cardsInZone\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"ENTERS_PLAY\",\"windows\":[]}",
@@ -4083,7 +4105,7 @@
       ]
     },
     {
-      "clusterId": "cluster_126",
+      "clusterId": "cluster_127",
       "memberCount": 10,
       "variantCount": 4,
       "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[\"damage\"],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"ENTERS_PLAY\",\"windows\":[]}",
@@ -4161,7 +4183,7 @@
       ]
     },
     {
-      "clusterId": "cluster_127",
+      "clusterId": "cluster_128",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[\"prevent_battle_damage\"],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"ENTERS_PLAY\",\"windows\":[]}",
@@ -4176,7 +4198,7 @@
       ]
     },
     {
-      "clusterId": "cluster_128",
+      "clusterId": "cluster_129",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[\"grant_keyword\"],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"ENTERS_PLAY\",\"windows\":[]}",
@@ -4191,7 +4213,7 @@
       ]
     },
     {
-      "clusterId": "cluster_129",
+      "clusterId": "cluster_130",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"draw\",\"conditionTypes\":[\"attackTargetCardType\",\"sourceAp\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"ATTACK_PHASE\",\"windows\":[]}",
@@ -4206,7 +4228,7 @@
       ]
     },
     {
-      "clusterId": "cluster_130",
+      "clusterId": "cluster_131",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"conditional\",\"conditionTypes\":[\"cardsInTrash\",\"turnPlayer\"],\"effectType\":\"continuous\",\"sequenceActions\":[],\"sourceConditionTypes\":[\"linked\"],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"continuous\",\"windows\":[]}",
@@ -4221,7 +4243,7 @@
       ]
     },
     {
-      "clusterId": "cluster_131",
+      "clusterId": "cluster_132",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"draw\",\"conditionTypes\":[\"sourceDamaged\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"ATTACK_PHASE\",\"windows\":[]}",
@@ -4236,7 +4258,7 @@
       ]
     },
     {
-      "clusterId": "cluster_132",
+      "clusterId": "cluster_133",
       "memberCount": 3,
       "variantCount": 2,
       "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[\"damage\",\"damage\"],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"ENTERS_PLAY\",\"windows\":[]}",
@@ -4265,7 +4287,7 @@
       ]
     },
     {
-      "clusterId": "cluster_133",
+      "clusterId": "cluster_134",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"addToHand\",\"conditionTypes\":[\"pairedPilotTrait\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[\"paired\"],\"targetCount\":1,\"targetFilters\":{\"cardType\":\"unit\",\"level\":\">=5\",\"traits\":[\"Vulture\"]},\"targetScope\":\"self_trash\",\"targetType\":\"card\",\"timingDuration\":\"\",\"trigger\":\"DESTROYED\",\"windows\":[]}",
@@ -4280,7 +4302,7 @@
       ]
     },
     {
-      "clusterId": "cluster_134",
+      "clusterId": "cluster_135",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"damage\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[\"paired\"],\"targetCount\":1,\"targetFilters\":{\"level\":\"<=4\"},\"targetScope\":\"opponent\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"ATTACK_PHASE\",\"windows\":[]}",
@@ -4295,7 +4317,7 @@
       ]
     },
     {
-      "clusterId": "cluster_135",
+      "clusterId": "cluster_136",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[\"damage\",\"draw_then_discard\"],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"ENTERS_PLAY\",\"windows\":[]}",
@@ -4310,7 +4332,7 @@
       ]
     },
     {
-      "clusterId": "cluster_136",
+      "clusterId": "cluster_137",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"conditional\",\"conditionTypes\":[\"cardsInTrash\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"ENTERS_PLAY\",\"windows\":[]}",
@@ -4325,7 +4347,7 @@
       ]
     },
     {
-      "clusterId": "cluster_137",
+      "clusterId": "cluster_138",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"rest\",\"conditionTypes\":[\"cardsInTrashWithTraitsAny\",\"pairedPilotColor\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":1,\"targetFilters\":{\"ap\":\"<=3\"},\"targetScope\":\"opponent\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"PAIRING_COMPLETE\",\"windows\":[]}",
@@ -4340,7 +4362,7 @@
       ]
     },
     {
-      "clusterId": "cluster_138",
+      "clusterId": "cluster_139",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"prevent_damage\",\"conditionTypes\":[\"cardsInTrash\"],\"effectType\":\"continuous\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":1,\"targetFilters\":{},\"targetScope\":\"self\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"continuous\",\"windows\":[]}",
@@ -4355,7 +4377,7 @@
       ]
     },
     {
-      "clusterId": "cluster_139",
+      "clusterId": "cluster_140",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[\"isLinked\"],\"effectType\":\"activated\",\"sequenceActions\":[\"rest\",\"setActive\",\"restrict_attack\"],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"\",\"windows\":[\"MAIN_PHASE\"]}",
@@ -4370,7 +4392,7 @@
       ]
     },
     {
-      "clusterId": "cluster_140",
+      "clusterId": "cluster_141",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[\"cardsInTrashWithTraitsAny\"],\"effectType\":\"triggered\",\"sequenceActions\":[\"conditional\",\"draw_then_discard\"],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"ENTERS_PLAY\",\"windows\":[]}",
@@ -4385,7 +4407,7 @@
       ]
     },
     {
-      "clusterId": "cluster_141",
+      "clusterId": "cluster_142",
       "memberCount": 2,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"conditional\",\"conditionTypes\":[\"cardsInPlayWithFilter\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"ENTERS_PLAY\",\"windows\":[]}",
@@ -4407,7 +4429,7 @@
       ]
     },
     {
-      "clusterId": "cluster_142",
+      "clusterId": "cluster_143",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"heal\",\"conditionTypes\":[\"cardsInPlayWithFilter\"],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":1,\"targetFilters\":{},\"targetScope\":\"source\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"END_OF_TURN\",\"windows\":[]}",
@@ -4422,7 +4444,7 @@
       ]
     },
     {
-      "clusterId": "cluster_143",
+      "clusterId": "cluster_144",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"grant_keyword\",\"conditionTypes\":[],\"effectType\":\"continuous\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":1,\"targetFilters\":{},\"targetScope\":\"battle_opponent\",\"targetType\":\"unit\",\"timingDuration\":\"\",\"trigger\":\"continuous\",\"windows\":[]}",
@@ -4437,7 +4459,7 @@
       ]
     },
     {
-      "clusterId": "cluster_144",
+      "clusterId": "cluster_145",
       "memberCount": 1,
       "variantCount": 1,
       "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[],\"effectType\":\"continuous\",\"sequenceActions\":[\"grant_keyword\"],\"sourceConditionTypes\":[\"paired\"],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"continuous\",\"windows\":[]}",
@@ -4448,28 +4470,6 @@
           "cardName": "Gundam Aerial Rebuild",
           "rulePath": "cards.GD02-074.effects.rules[1]",
           "effectId": "during_pair_effect"
-        }
-      ]
-    },
-    {
-      "clusterId": "cluster_145",
-      "memberCount": 2,
-      "variantCount": 2,
-      "canonicalVariantKey": "{\"action\":\"rest\",\"conditionTypes\":[],\"effectType\":\"triggered\",\"sequenceActions\":[],\"sourceConditionTypes\":[],\"targetCount\":1,\"targetFilters\":{\"level\":\"<=4\",\"status\":\"active\"},\"targetScope\":\"opponent\",\"targetType\":\"card\",\"timingDuration\":\"\",\"trigger\":\"ATTACK_PHASE\",\"windows\":[]}",
-      "memberRefs": [
-        {
-          "file": "gd02Card.json",
-          "cardId": "GD02-075",
-          "cardName": "Rick Dias (Red)",
-          "rulePath": "cards.GD02-075.effects.rules[0]",
-          "effectId": "attack_rest"
-        },
-        {
-          "file": "gd03Card.json",
-          "cardId": "GD03-123",
-          "cardName": "Jupitris",
-          "rulePath": "cards.GD03-123.effects.rules[1]",
-          "effectId": "deploy_rest"
         }
       ]
     },
@@ -5018,7 +5018,7 @@
       "clusterId": "cluster_176",
       "memberCount": 1,
       "variantCount": 1,
-      "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[],\"effectType\":\"play\",\"sequenceActions\":[\"heal\"],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"\",\"windows\":[\"ACTION_STEP\"]}",
+      "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[\"stepResolved\"],\"effectType\":\"play\",\"sequenceActions\":[\"heal\",\"conditional\",\"heal\"],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"\",\"windows\":[\"ACTION_STEP\"]}",
       "memberRefs": [
         {
           "file": "gd02Card.json",

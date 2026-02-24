@@ -46,6 +46,20 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--model", default="")
     parser.add_argument("--profile", default="")
+    parser.add_argument(
+        "--skill-file",
+        type=Path,
+        default=None,
+        help=(
+            "Optional absolute/relative path to a skill markdown file to inject into each prompt. "
+            "If omitted, script tries requirement/skills/createGameEnvTest/SKILL.md under each working dir."
+        ),
+    )
+    parser.add_argument(
+        "--no-skill-injection",
+        action="store_true",
+        help="Disable automatic skill injection.",
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--verbose", action="store_true", help="Print MCP debug events")
     parser.add_argument(
@@ -98,6 +112,43 @@ def slugify_working_dir(path: Path) -> str:
     parts = [p for p in path.resolve().parts if p not in ("/", "\\")]
     tail = "-".join(parts[-3:]) if parts else "root"
     return re.sub(r"[^A-Za-z0-9._-]+", "-", tail).strip("-") or "working-dir"
+
+
+def resolve_skill_file(args: argparse.Namespace, working_dir: Path) -> Path | None:
+    if args.no_skill_injection:
+        return None
+
+    if args.skill_file:
+        candidate = args.skill_file.resolve()
+        return candidate if candidate.exists() and candidate.is_file() else None
+
+    default_candidates = [
+        working_dir / "requirement" / "skills" / "createGameEnvTest" / "SKILL.md",
+        working_dir / "requirement" / "skills" / "createGameEnvTest.md",
+    ]
+    for candidate in default_candidates:
+        if candidate.exists() and candidate.is_file():
+            return candidate
+    return None
+
+
+def load_skill_text(skill_file: Path | None) -> str:
+    if skill_file is None:
+        return ""
+    return skill_file.read_text(encoding="utf-8").strip()
+
+
+def compose_prompt_with_skill(prompt: str, skill_text: str, skill_file: Path | None) -> str:
+    if not skill_text:
+        return prompt
+    source_label = str(skill_file) if skill_file else "(unknown skill source)"
+    return (
+        "Use the following skill instructions as highest-priority local guidance for this task.\n"
+        f"Skill source: {source_label}\n\n"
+        f"{skill_text}\n\n"
+        "Now complete the user task below.\n\n"
+        f"{prompt}"
+    )
 
 
 class CodexMCPClient:
@@ -308,9 +359,11 @@ class CodexMCPClient:
         return await self._request("tools/call", {"name": name, "arguments": arguments})
 
 
-def build_codex_args(row: dict[str, str], args: argparse.Namespace, working_dir: Path) -> dict[str, Any]:
+def build_codex_args(
+    row: dict[str, str], args: argparse.Namespace, working_dir: Path, skill_text: str, skill_file: Path | None
+) -> dict[str, Any]:
     codex_args: dict[str, Any] = {
-        "prompt": row["prompt"],
+        "prompt": compose_prompt_with_skill(row["prompt"], skill_text, skill_file),
         "cwd": str(working_dir.resolve()),
         "sandbox": args.sandbox,
         "approval-policy": args.approval_policy,
@@ -380,10 +433,17 @@ async def run_real(
     output_suffix: str,
 ) -> None:
     results: list[dict[str, Any]] = []
+    skill_file = resolve_skill_file(args, working_dir)
+    skill_text = load_skill_text(skill_file)
+    if skill_file:
+        print(f"Skill injection enabled: {skill_file}")
+    else:
+        print("Skill injection not enabled (no skill file found or disabled).")
     meta = {
         "mode": "codex-mcp-direct",
         "runTag": run_tag,
         "workingDir": str(working_dir.resolve()),
+        "skillFile": str(skill_file) if skill_file else "",
         "sandbox": args.sandbox,
         "approvalPolicy": args.approval_policy,
         "model": args.model,
@@ -399,7 +459,7 @@ async def run_real(
 
         for idx, row in enumerate(rows):
             print(f"[{idx + 1}/{len(rows)}] {row['cardId']} {row['cardName']}")
-            args_payload = build_codex_args(row, args, working_dir)
+            args_payload = build_codex_args(row, args, working_dir, skill_text, skill_file)
             if args.verbose:
                 print(f"[mcp] calling codex with cwd={args_payload.get('cwd')}")
             try:
@@ -451,15 +511,22 @@ def run_dry(
     output_suffix: str,
 ) -> None:
     plan_rows = []
+    skill_file = resolve_skill_file(args, working_dir)
+    skill_text = load_skill_text(skill_file)
+    if skill_file:
+        print(f"Skill injection enabled: {skill_file}")
+    else:
+        print("Skill injection not enabled (no skill file found or disabled).")
     for row in rows:
         plan_rows.append(
             {
                 "mode": "codex-mcp-direct-dry-run",
                 "runTag": run_tag,
                 "workingDir": str(working_dir.resolve()),
+                "skillFile": str(skill_file) if skill_file else "",
                 "cardId": row["cardId"],
                 "cardName": row["cardName"],
-                "codexArguments": build_codex_args(row, args, working_dir),
+                "codexArguments": build_codex_args(row, args, working_dir, skill_text, skill_file),
             }
         )
     out_json = args.output_dir / f"gd01_codex_mcp_plan_{run_tag}{output_suffix}.json"

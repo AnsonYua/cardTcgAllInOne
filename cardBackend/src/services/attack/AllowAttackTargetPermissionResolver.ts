@@ -35,6 +35,10 @@ export class AllowAttackTargetPermissionResolver {
             : undefined;
         const targetSlotTotals = getSlotTotals(targetSlot);
         const targetDamaged = SlotHealthStorage.getSharedDamage(targetSlot) > 0;
+        const targetHasPairedPilot = Boolean(targetSlot?.pilot);
+        const targetPilotTraits = Array.isArray(targetSlot?.pilot?.cardData?.traits)
+            ? targetSlot.pilot.cardData.traits
+            : [];
 
         const effectSources: any[] = [attacker];
         if (attackerLookup.found && attackerLookup.playerId && attackerLookup.slotName) {
@@ -54,6 +58,8 @@ export class AllowAttackTargetPermissionResolver {
                 targetLevel: target.cardData?.level || 0,
                 targetTotalAp: targetSlotTotals.totalAP,
                 targetDamaged,
+                targetHasPairedPilot,
+                targetPilotTraits,
                 rule
             });
 

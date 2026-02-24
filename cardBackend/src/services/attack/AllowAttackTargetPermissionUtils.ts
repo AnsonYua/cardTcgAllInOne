@@ -25,6 +25,14 @@ export function normalizeAllowAttackTargetPermission(parameters: unknown): Allow
         permission.damaged = typed.damaged;
     }
 
+    if (typeof typed.pairedPilot === 'string') {
+        permission.pairedPilot = typed.pairedPilot;
+    }
+
+    if (typeof typed.pairedPilotTrait === 'string') {
+        permission.pairedPilotTrait = typed.pairedPilotTrait;
+    }
+
     if (typeof typed.allowAttackOnDeployTurn === 'boolean') {
         permission.allowAttackOnDeployTurn = typed.allowAttackOnDeployTurn;
     }

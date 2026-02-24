@@ -8,6 +8,7 @@ import { TutorTopDeckManager } from './TutorTopDeckManager';
 import { DeployFromTopDeckManager } from './DeployFromTopDeckManager';
 import { SequenceEffectManager } from './SequenceEffectManager';
 import { ConditionalEffectManager } from './ConditionalEffectManager';
+import { ConditionalTokenDeployFlowManager } from './ConditionalTokenDeployFlowManager';
 
 export class EffectActionRouter {
     static tryProcessEffectAction(
@@ -79,7 +80,16 @@ export class EffectActionRouter {
             ) as DeployTargetResult;
         }
 
+        if (effectAction === 'conditionalTokenDeploy') {
+            return ConditionalTokenDeployFlowManager.processEffect(
+                gameEnv,
+                playerId,
+                sourceCarduid,
+                effect,
+                cardPlayNotificationId
+            ) as DeployTargetResult;
+        }
+
         return null;
     }
 }
-

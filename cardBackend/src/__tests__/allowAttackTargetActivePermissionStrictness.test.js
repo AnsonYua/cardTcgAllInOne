@@ -180,4 +180,90 @@ describe('allow_attack_target active target strictness', () => {
         expect(denyResult.success).toBe(false);
         expect(denyResult.error).toContain('Target unit must be rested');
     });
+
+    test('pairedPilot none allows active unpaired targets and rejects active paired targets', () => {
+        const gameEnv = new GameEnvironment();
+        const attackerPlayer = gameEnv.addPlayer('playerId_1', 'P1');
+        const defenderPlayer = gameEnv.addPlayer('playerId_2', 'P2');
+
+        attackerPlayer.zones.slot1.unit = createUnit('gd03105_attacker_0001', 'GD03-031', [
+            {
+                action: 'allow_attack_target',
+                parameters: {
+                    status: 'active',
+                    pairedPilot: 'none'
+                }
+            }
+        ]);
+
+        defenderPlayer.zones.slot1.unit = createUnit('enemy_active_unpaired_0001', 'ST03-006', []);
+        defenderPlayer.zones.slot1.unit.isRested = false;
+        defenderPlayer.zones.slot2.unit = createUnit('enemy_active_paired_0001', 'ST03-007', []);
+        defenderPlayer.zones.slot2.unit.isRested = false;
+        defenderPlayer.zones.slot2.pilot = createPilot('enemy_pilot_0001');
+
+        const allowUnpaired = AttackPreparationManager.prepareUnitAttack(
+            gameEnv,
+            'playerId_1',
+            'gd03105_attacker_0001',
+            'playerId_2',
+            'enemy_active_unpaired_0001'
+        );
+        expect(allowUnpaired.success).toBe(true);
+
+        const rejectPaired = AttackPreparationManager.prepareUnitAttack(
+            gameEnv,
+            'playerId_1',
+            'gd03105_attacker_0001',
+            'playerId_2',
+            'enemy_active_paired_0001'
+        );
+        expect(rejectPaired.success).toBe(false);
+        expect(rejectPaired.error).toContain('Target unit must be rested');
+    });
+
+    test('temporary allow_attack_target permission enforces pairedPilot none', () => {
+        const gameEnv = new GameEnvironment();
+        const attackerPlayer = gameEnv.addPlayer('playerId_1', 'P1');
+        const defenderPlayer = gameEnv.addPlayer('playerId_2', 'P2');
+
+        attackerPlayer.zones.slot1.unit = createUnit('gd03105_temp_attacker_0001', 'GD03-031', []);
+        attackerPlayer.zones.slot1.unit.temporaryEffects = [
+            {
+                sourceCarduid: 'GD03-105_hand_0001',
+                duration: 'UNTIL_END_OF_TURN',
+                appliedTurn: 1,
+                appliedBy: 'playerId_1',
+                allowAttackTarget: {
+                    status: 'active',
+                    pairedPilot: 'none'
+                }
+            }
+        ];
+
+        defenderPlayer.zones.slot1.unit = createUnit('enemy_active_unpaired_0002', 'ST03-006', []);
+        defenderPlayer.zones.slot1.unit.isRested = false;
+        defenderPlayer.zones.slot2.unit = createUnit('enemy_active_paired_0002', 'ST03-007', []);
+        defenderPlayer.zones.slot2.unit.isRested = false;
+        defenderPlayer.zones.slot2.pilot = createPilot('enemy_pilot_0002');
+
+        const allowUnpaired = AttackPreparationManager.prepareUnitAttack(
+            gameEnv,
+            'playerId_1',
+            'gd03105_temp_attacker_0001',
+            'playerId_2',
+            'enemy_active_unpaired_0002'
+        );
+        expect(allowUnpaired.success).toBe(true);
+
+        const rejectPaired = AttackPreparationManager.prepareUnitAttack(
+            gameEnv,
+            'playerId_1',
+            'gd03105_temp_attacker_0001',
+            'playerId_2',
+            'enemy_active_paired_0002'
+        );
+        expect(rejectPaired.success).toBe(false);
+        expect(rejectPaired.error).toContain('Target unit must be rested');
+    });
 });

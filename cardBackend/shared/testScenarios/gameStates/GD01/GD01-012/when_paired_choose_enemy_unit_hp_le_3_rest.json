@@ -1,24 +1,24 @@
 {
-  "description": "gd03-114_burst_activate_action_destroy_active_enemy_level_le_4_when_trash_ge_10",
-  "gameId": "gd03-114_burst_activate_action_destroy_active_enemy_level_le_4_when_trash_ge_10",
+  "description": "gd01-012_when_paired_choose_enemy_unit_hp_le_3_rest",
+  "gameId": "gd01-012_when_paired_choose_enemy_unit_hp_le_3_rest",
   "testType": "action",
   "category": "ActionCase",
   "tags": [
-    "GD03-114",
-    "BURST_CONDITION",
-    "destroy",
-    "active",
-    "level_le_4",
-    "trash_ge_10"
+    "GD01-012",
+    "PAIRING_COMPLETE",
+    "rest",
+    "enemy_hp_filter",
+    "boundary"
   ],
   "notes": [
     "Action: Load scenario via getTestScenario and inject via injectGameState.",
-    "Action: Player 2 attacks Player 1 shield area with slot1 attacker and resolve battle confirms.",
-    "Expect: BURST_EFFECT_CHOICE appears for GD03-114 in shield.",
-    "Action (manual): Confirm burst activation.",
-    "Expect: Burst activates card's Action logic; with trash >= 10, choose 1 active enemy Unit with Lv.4 or lower to destroy.",
-    "Action (manual): Select enemy slot1 unit (Lv.4).",
-    "Expect: Selected active enemy unit is destroyed. Active Lv.5 enemy unit is not selectable."
+    "Expect: Player 1 starts in MAIN_PHASE with GD01-012 in slot1 and GD01-087 in hand.",
+    "Action: Player 1 plays GD01-087 as pilot onto GD01-012 in slot1 to complete pairing.",
+    "Expect: [When Paired] target selection appears for exactly 1 enemy Unit with 3 or less HP.",
+    "Action: Inspect selectable targets in opponent slots.",
+    "Expect: Opponent slot1 (GD01-010, HP 3) is selectable and slot2 (GD01-013, HP 4) is not selectable.",
+    "Action: Choose opponent slot1 as the effect target.",
+    "Expect: Opponent slot1 unit becomes rested."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -29,7 +29,7 @@
     "firstPlayerChooser": null,
     "firstPlayerDecision": null,
     "hasChosenFirstPlayer": true,
-    "currentPlayer": "playerId_2",
+    "currentPlayer": "playerId_1",
     "currentTurn": 1,
     "playersReady": {
       "playerId_1": true,
@@ -40,7 +40,7 @@
     "maxEventsPerCycle": 50,
     "notificationQueue": [
       {
-        "id": "card_drawn_seed_gd03114_burst",
+        "id": "card_drawn_seed_gd01012_pair_rest",
         "type": "CARD_DRAWN",
         "metadata": {
           "timestamp": 1768362880422,
@@ -49,8 +49,8 @@
           "priority": "normal"
         },
         "payload": {
-          "playerId": "playerId_2",
-          "carduid": "DRAW_SEED_GD03114_BURST",
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_GD01012_PAIR_REST",
           "sourceZone": "deck",
           "reason": "draw",
           "timestamp": 1768362880422,
@@ -67,8 +67,15 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": [],
-          "handUids": [],
+          "hand": [
+            {
+              "carduid": "GD01-087_hand_0001",
+              "cardId": "GD01-087"
+            }
+          ],
+          "handUids": [
+            "GD01-087_hand_0001"
+          ],
           "mainDeck": []
         },
         "confirmIsRedraw": false,
@@ -78,44 +85,21 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD03-031_enemy_lv4_0001",
-              "cardId": "GD03-031",
+              "carduid": "GD01-012_friendly_unit_0001",
+              "cardId": "GD01-012",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "damageReceived": 0,
-              "modifyAP": 0,
-              "modifyHP": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
-              "originalAP": 4,
-              "originalHP": 3,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
-              "isFirstPlay": false
-            }
-          },
-          "slot2": {
-            "unit": {
-              "carduid": "GD01-024_enemy_lv5_0001",
-              "cardId": "GD01-024",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
+              "isFirstPlay": false,
               "damageReceived": 0,
-              "modifyAP": 0,
-              "modifyHP": 0,
               "continueModifyAP": 0,
-              "continueModifyHP": 0,
-              "originalAP": 5,
-              "originalHP": 7,
-              "playedThisTurn": false,
-              "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false
+              "continueModifyHP": 0
             }
           },
+          "slot2": {},
           "slot3": {},
           "slot4": {},
           "slot5": {},
@@ -123,23 +107,45 @@
           "base": [],
           "shieldArea": [
             {
-              "carduid": "GD03-114_shield_0001",
-              "cardId": "GD03-114"
+              "carduid": "GD01-001_shield_p1_0001",
+              "cardId": "GD01-001"
             }
           ],
-          "energyArea": [],
-          "trashArea": [
-            { "carduid": "GD01-001_trash_0001", "cardId": "GD01-001" },
-            { "carduid": "GD01-002_trash_0002", "cardId": "GD01-002" },
-            { "carduid": "GD01-003_trash_0003", "cardId": "GD01-003" },
-            { "carduid": "GD01-004_trash_0004", "cardId": "GD01-004" },
-            { "carduid": "GD01-005_trash_0005", "cardId": "GD01-005" },
-            { "carduid": "GD01-006_trash_0006", "cardId": "GD01-006" },
-            { "carduid": "GD01-007_trash_0007", "cardId": "GD01-007" },
-            { "carduid": "GD01-008_trash_0008", "cardId": "GD01-008" },
-            { "carduid": "GD01-009_trash_0009", "cardId": "GD01-009" },
-            { "carduid": "GD01-010_trash_0010", "cardId": "GD01-010" }
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd01012_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd01012_p1_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd01012_p1_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd01012_p1_0004",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
           ],
+          "trashArea": [],
           "repairAbilitiesCheckedThisCycle": false,
           "endTurnEffectsCheckedThisCycle": false
         }
@@ -159,8 +165,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "ST03-008_attacker_0001",
-              "cardId": "ST03-008",
+              "carduid": "GD01-010_enemy_hp3_0001",
+              "cardId": "GD01-010",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -175,8 +181,8 @@
           },
           "slot2": {
             "unit": {
-              "carduid": "ST03-008_attacker_0002",
-              "cardId": "ST03-008",
+              "carduid": "GD01-013_enemy_hp4_0002",
+              "cardId": "GD01-013",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -194,7 +200,12 @@
           "slot5": {},
           "slot6": {},
           "base": [],
-          "shieldArea": [],
+          "shieldArea": [
+            {
+              "carduid": "GD01-005_shield_p2_0001",
+              "cardId": "GD01-005"
+            }
+          ],
           "energyArea": [],
           "trashArea": [],
           "repairAbilitiesCheckedThisCycle": false,

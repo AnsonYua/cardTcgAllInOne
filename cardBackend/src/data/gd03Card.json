@@ -6764,7 +6764,7 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Main】【Action】Choose 1 Pilot paired with an enemy Unit that is Lv.5 or lower. Destroy it."
+          "【Main】【Action】Choose 1 Pilot that is Lv.5 or lower paired with an enemy Unit. Destroy it."
         ],
         "rules": [
           {
@@ -6778,7 +6778,7 @@
             },
             "action": "sequence",
             "parameters": {
-              "text": "Choose 1 Pilot paired with an enemy Unit that is Lv.5 or lower. Destroy it.",
+              "text": "Choose 1 Pilot that is Lv.5 or lower paired with an enemy Unit. Destroy it.",
               "version": 1,
               "steps": [
                 {
@@ -6792,7 +6792,8 @@
                     },
                     "filters": {
                       "cardType": "pilot",
-                      "pairedUnitLevel": "<=5"
+                      "level": "<=5",
+                      "pairedUnitLevel": ">=0"
                     }
                   }
                 }

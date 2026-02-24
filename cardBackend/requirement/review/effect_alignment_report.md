@@ -1,6 +1,6 @@
 # Effect Alignment Review Report
 
-Generated at: 2026-02-23T16:30:51.156Z
+Generated at: 2026-02-24T14:21:49.309Z
 Files scanned: 11
 Cards scanned: 446
 Rules scanned: 699

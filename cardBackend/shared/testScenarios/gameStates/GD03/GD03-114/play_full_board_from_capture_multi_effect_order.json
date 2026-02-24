@@ -12,7 +12,7 @@
   ],
   "initialGameEnv": {
     "version": 23,
-    "phase": "ACTION_STEP_PHASE",
+    "phase": "MAIN_PHASE",
     "playerId_1": "player_eafc3ae6-68e2-40a5-b3e1-d2f367931aae",
     "playerId_2": "player_688e5fd6-be59-4d9d-8500-9e8d5b6cd447",
     "gameStarted": true,
@@ -1430,6 +1430,83 @@
               "carduid": "energy_basic_1771432905183_0.28114903122821744",
               "cardId": "energy_basic",
               "placedAt": 1771432905183,
+              "placedBy": "player_688e5fd6-be59-4d9d-8500-9e8d5b6cd447",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_1771432957274_0.7681369143309011",
+              "cardId": "energy_basic",
+              "placedAt": 1771432957274,
+              "placedBy": "player_688e5fd6-be59-4d9d-8500-9e8d5b6cd447",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_1771432957274_0.7681369143309011",
+              "cardId": "energy_basic",
+              "placedAt": 1771432957274,
+              "placedBy": "player_688e5fd6-be59-4d9d-8500-9e8d5b6cd447",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_1771432957274_0.7681369143309011",
+              "cardId": "energy_basic",
+              "placedAt": 1771432957274,
+              "placedBy": "player_688e5fd6-be59-4d9d-8500-9e8d5b6cd447",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_1771432957274_0.7681369143309011",
+              "cardId": "energy_basic",
+              "placedAt": 1771432957274,
+              "placedBy": "player_688e5fd6-be59-4d9d-8500-9e8d5b6cd447",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_1771432957274_0.7681369143309011",
+              "cardId": "energy_basic",
+              "placedAt": 1771432957274,
+              "placedBy": "player_688e5fd6-be59-4d9d-8500-9e8d5b6cd447",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_1771432957274_0.7681369143309011",
+              "cardId": "energy_basic",
+              "placedAt": 1771432957274,
+              "placedBy": "player_688e5fd6-be59-4d9d-8500-9e8d5b6cd447",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_1771432957274_0.7681369143309011",
+              "cardId": "energy_basic",
+              "placedAt": 1771432957274,
               "placedBy": "player_688e5fd6-be59-4d9d-8500-9e8d5b6cd447",
               "isRested": false,
               "isExtraEnergy": false,

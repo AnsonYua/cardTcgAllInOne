@@ -175,4 +175,168 @@ describe('Effect alignment review tooling', () => {
 
     expect(gd03009Issues).toHaveLength(0);
   });
+
+  test('branch-incomplete detector allows optional-step fallback conditional pattern', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'effect-alignment-branch-fallback-'));
+    const dataDir = path.join(tempDir, 'src', 'data');
+    fs.mkdirSync(dataDir, { recursive: true });
+
+    const fixture = {
+      cards: {
+        T102: {
+          id: 'T102',
+          name: 'Optional fallback fixture',
+          cardType: 'command',
+          effects: {
+            description: ['Choose 1 of your Units/Bases. It recovers 2 HP.'],
+            rules: [
+              {
+                effectId: 'play_effect',
+                type: 'play',
+                action: 'sequence',
+                parameters: {
+                  steps: [
+                    {
+                      stepId: 'heal_unit',
+                      action: 'heal',
+                      optional: true,
+                      target: { type: 'unit', scope: 'self', count: 1 },
+                      parameters: { value: 2 }
+                    },
+                    {
+                      action: 'conditional',
+                      parameters: {
+                        if: [{ type: 'stepResolved', stepId: 'heal_unit' }],
+                        then: [],
+                        else: [
+                          {
+                            action: 'heal',
+                            target: { type: 'base', scope: 'self', count: 1 },
+                            parameters: { value: 2 }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    };
+
+    fs.writeFileSync(path.join(dataDir, 'fixtureCard.json'), `${JSON.stringify(fixture, null, 2)}\n`, 'utf8');
+
+    const report = generateEffectAlignmentReport(tempDir, { cardFiles: ['fixtureCard.json'] });
+    const branchIssues = report.issues.filter((issue) => issue.category === 'branch-incomplete');
+    expect(branchIssues.some((issue) => issue.cardId === 'T102')).toBe(false);
+  });
+
+  test('pilot-level detector flags pilot text mapped to pairedUnitLevel-only schema', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'effect-alignment-pilot-level-'));
+    const dataDir = path.join(tempDir, 'src', 'data');
+    fs.mkdirSync(dataDir, { recursive: true });
+
+    const fixture = {
+      cards: {
+        T100: {
+          id: 'T100',
+          name: 'Pilot Level Mismatch Fixture',
+          cardType: 'command',
+          effects: {
+            description: [
+              '【Main】【Action】Choose 1 Pilot that is Lv.5 or lower paired with an enemy Unit. Destroy it.'
+            ],
+            rules: [
+              {
+                effectId: 'play_effect',
+                type: 'play',
+                timing: {
+                  windows: ['MAIN_PHASE', 'ACTION_STEP']
+                },
+                action: 'sequence',
+                parameters: {
+                  steps: [
+                    {
+                      action: 'destroy',
+                      target: {
+                        type: 'card',
+                        scope: 'opponent',
+                        count: 1,
+                        filters: {
+                          cardType: 'pilot',
+                          pairedUnitLevel: '<=5'
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    };
+
+    fs.writeFileSync(path.join(dataDir, 'fixtureCard.json'), `${JSON.stringify(fixture, null, 2)}\n`, 'utf8');
+
+    const report = generateEffectAlignmentReport(tempDir, { cardFiles: ['fixtureCard.json'] });
+    const pilotIssues = report.issues.filter((issue) => issue.category === 'pilot-level-filter-mismatch');
+    expect(pilotIssues.some((issue) => issue.cardId === 'T100')).toBe(true);
+  });
+
+  test('pilot-level detector stays clean when description and schema both constrain pilot level', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'effect-alignment-pilot-level-clean-'));
+    const dataDir = path.join(tempDir, 'src', 'data');
+    fs.mkdirSync(dataDir, { recursive: true });
+
+    const fixture = {
+      cards: {
+        T101: {
+          id: 'T101',
+          name: 'Pilot Level Clean Fixture',
+          cardType: 'command',
+          effects: {
+            description: [
+              '【Main】【Action】Choose 1 Pilot that is Lv.5 or lower paired with an enemy Unit. Destroy it.'
+            ],
+            rules: [
+              {
+                effectId: 'play_effect',
+                type: 'play',
+                timing: {
+                  windows: ['MAIN_PHASE', 'ACTION_STEP']
+                },
+                action: 'sequence',
+                parameters: {
+                  steps: [
+                    {
+                      action: 'destroy',
+                      target: {
+                        type: 'card',
+                        scope: 'opponent',
+                        count: 1,
+                        filters: {
+                          cardType: 'pilot',
+                          level: '<=5',
+                          pairedUnitLevel: '>=0'
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    };
+
+    fs.writeFileSync(path.join(dataDir, 'fixtureCard.json'), `${JSON.stringify(fixture, null, 2)}\n`, 'utf8');
+
+    const report = generateEffectAlignmentReport(tempDir, { cardFiles: ['fixtureCard.json'] });
+    const pilotIssues = report.issues.filter((issue) => issue.category === 'pilot-level-filter-mismatch');
+    expect(pilotIssues).toHaveLength(0);
+  });
 });

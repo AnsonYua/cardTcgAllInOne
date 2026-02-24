@@ -63,9 +63,20 @@ export class AllowAttackTargetRuleEvaluator {
         targetLevel: number;
         targetTotalAp: number;
         targetDamaged: boolean;
+        targetHasPairedPilot: boolean;
+        targetPilotTraits: string[];
         rule: { conditions?: unknown; parameters?: unknown };
     }): boolean {
-        const { sourceSlotTotals, sourceLevel, targetLevel, targetTotalAp, targetDamaged, rule } = params;
+        const {
+            sourceSlotTotals,
+            sourceLevel,
+            targetLevel,
+            targetTotalAp,
+            targetDamaged,
+            targetHasPairedPilot,
+            targetPilotTraits,
+            rule
+        } = params;
 
         if (!this.conditionsSatisfied(rule?.conditions, sourceSlotTotals)) {
             return false;
@@ -108,6 +119,22 @@ export class AllowAttackTargetRuleEvaluator {
 
         if (typeof parameters.damaged === 'boolean') {
             if (parameters.damaged !== targetDamaged) {
+                return false;
+            }
+        }
+
+        if (typeof parameters.pairedPilot === 'string') {
+            const pairedPilot = parameters.pairedPilot.toLowerCase();
+            if (pairedPilot === 'any' && !targetHasPairedPilot) {
+                return false;
+            }
+            if (pairedPilot === 'none' && targetHasPairedPilot) {
+                return false;
+            }
+        }
+
+        if (typeof parameters.pairedPilotTrait === 'string') {
+            if (!targetPilotTraits.includes(parameters.pairedPilotTrait)) {
                 return false;
             }
         }
