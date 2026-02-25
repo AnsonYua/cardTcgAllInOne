@@ -654,7 +654,8 @@
             },
             "parameters": {
               "maxEnemyAp": 2,
-              "notes": "Implemented: prevent_battle_damage supports maxEnemyAp filters."
+              "notes": "Implemented: prevent_battle_damage supports maxEnemyAp filters.",
+              "from": "enemy_units"
             }
           },
           {

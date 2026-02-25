@@ -365,7 +365,7 @@
             },
             "action": "restrict_attack",
             "parameters": {
-              "restriction": "cannot_attack_player"
+              "disallow": "player"
             },
             "type": "continuous"
           }
@@ -468,7 +468,15 @@
                 "type": "paired"
               }
             ],
-            "action": "setActive"
+            "action": "setActive",
+            "target": {
+              "type": "energy",
+              "scope": "self_resource",
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
+            }
           }
         ]
       }

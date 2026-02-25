@@ -342,7 +342,8 @@
       "hp": 4,
       "effects": {
         "description": [
-          "<Blocker> (Rest this Unit to change the attack target to it.) During your turn, this Unit can't receive battle damage from enemy Units that are Lv.2 or lower."
+          "<Blocker> (Rest this Unit to change the attack target to it.)",
+          "During your turn, this Unit can't receive battle damage from enemy Units that are Lv.2 or lower."
         ],
         "rules": [
           {
@@ -3352,7 +3353,7 @@
                     "duration": "UNTIL_END_OF_TURN"
                   },
                   "parameters": {
-                    "restriction": "cannot_attack_player"
+                    "disallow": "player"
                   }
                 }
               ]
@@ -4946,6 +4947,21 @@
           "[When Linked]If this is an (AEUG) Unit, draw 1. If you do, discard 1."
         ],
         "rules": [
+          {
+            "effectId": "name_alias_char_aznable",
+            "type": "continuous",
+            "trigger": "continuous",
+            "action": "set_name_alias",
+            "target": {
+              "type": "card",
+              "scope": "self"
+            },
+            "parameters": {
+              "alsoTreatedAs": [
+                "Char Aznable"
+              ]
+            }
+          },
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
