@@ -1,0 +1,5 @@
+interface:
+  display_name: "Troubleshoot Effect Rules"
+  short_description: "Fix frontend/backend effect-rule mismatches"
+  default_prompt: "Use $skills-troubleshoot-effect to diagnose and fix effect.rules/effect.description parity issues between backend card data and frontend behavior. Audit dynamic filters (SOURCE_AP/SOURCE_LEVEL), operator parsing, action gating (allow_attack_target/restrict_attack), add regression tests, and update EFFECT_PARITY_AUDIT.md with findings."
+
