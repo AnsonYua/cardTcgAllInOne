@@ -11,6 +11,7 @@ import { EffectDamageReceivedTriggeredEffectManager } from '../EffectDamageRecei
 import { SlotHpDestructionChecker } from '../../destruction/SlotHpDestructionChecker';
 import { SlotHealthService } from '../../health/SlotHealthService';
 import { resolveEffectDamageValue } from './EffectDamageValueResolver';
+import { deferEffectDamageReceivedTrigger, isSequenceExecutionActive } from '../sequence/SequenceExecutionContext';
 
 export function applyDamageEffect(
     gameEnv: GameEnvironment,
@@ -146,12 +147,19 @@ export function applyDamageEffect(
             return applyResult;
         }
 
-        const triggerResult = EffectDamageReceivedTriggeredEffectManager.execute(gameEnv, {
-            damagedPlayerId: target.playerId,
-            sourcePlayerId
-        });
-        if (!triggerResult.success) {
-            return { success: false, error: triggerResult.error || 'Failed to process EFFECT_DAMAGE_RECEIVED triggers' };
+        if (isSequenceExecutionActive(gameEnv)) {
+            deferEffectDamageReceivedTrigger(gameEnv, {
+                damagedPlayerId: target.playerId,
+                sourcePlayerId
+            });
+        } else {
+            const triggerResult = EffectDamageReceivedTriggeredEffectManager.execute(gameEnv, {
+                damagedPlayerId: target.playerId,
+                sourcePlayerId
+            });
+            if (!triggerResult.success) {
+                return { success: false, error: triggerResult.error || 'Failed to process EFFECT_DAMAGE_RECEIVED triggers' };
+            }
         }
 
         // Destroy the slot when shared slot HP is exhausted, regardless of whether

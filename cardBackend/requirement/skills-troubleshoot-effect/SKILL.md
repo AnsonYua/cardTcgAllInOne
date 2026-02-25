@@ -50,12 +50,16 @@ Use this skill when a card effect appears correct in data but gameplay/UI behavi
 - Frontend slot action bar must reflect `restrict_attack` semantics:
   - `disallow: "player"` => block Attack Shield button
   - `requires.type: "friendly_unit_deployed_this_turn"` => disable attack if unmet
+- Sequence ordering rule:
+  - For multi-step `sequence` effects, complete parent sequence target-choice flow first.
+  - Reactive triggers caused by intermediate step damage (e.g., `EFFECT_DAMAGE_RECEIVED`) should resolve after sequence completion.
 
 ## Known Real-World Bugs Captured
 See `references/incident-gd03-035.md` for concrete bugs and fixes:
 - `GD03-035` active-target button missing because frontend could not parse `<=SOURCE_AP`.
 - Attack action gating mismatch for `restrict_attack` rule patterns.
 - `GD03-096` scenario had a paired-but-not-linked setup (`GD03-031 + GD03-096`), so `[During Link]` behavior could not trigger until unit changed to `GD03-051` (links `Jamil Neate`).
+- `GD03-056` deploy sequence interleaved with `GD03-095` trigger mid-sequence; fixed by deferring `EFFECT_DAMAGE_RECEIVED` reactive processing until sequence completion.
 
 ## Output Requirements
 - Provide:

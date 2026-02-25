@@ -16,6 +16,23 @@
   - Scenario file:
     - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/shared/testScenarios/gameStates/GD03/GD03-096/during_link_attack_optional_discard_1_then_draw_1.json`
 
+## Additional Runtime Ordering Incident (Sequence vs Reactive Trigger)
+- Symptom:
+  - During `GD03-056` deploy sequence (`damage self`, then `damage opponent`), `GD03-095` (`EFFECT_DAMAGE_RECEIVED`) target choice appeared between the two sequence dialogs.
+- Desired behavior:
+  - Finish all `GD03-056` sequence dialogs first, then process `GD03-095` trigger.
+- Root cause:
+  - `EffectDamageReceivedTriggeredEffectManager.execute` was called immediately inside each `damage` step.
+- Fix:
+  - Added sequence execution context and deferred buffer for effect-damage-received triggers.
+  - Flush deferred triggers only after sequence completes (no remaining steps/choices).
+- Key files:
+  - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/services/effects/sequence/SequenceExecutionContext.ts`
+  - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/services/effects/actions/EffectDamageActions.ts`
+  - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/services/effects/SequenceEffectManager.ts`
+  - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/services/effects/SequenceTargetChoiceHandler.ts`
+  - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/__tests__/sequenceEffectDamageTriggerOrdering.test.js`
+
 ## Root Cause 1 (P1)
 - Frontend `attackTargetPolicy` used local parser that only handled numeric RHS.
 - It failed on dynamic token expression `<=SOURCE_AP`.

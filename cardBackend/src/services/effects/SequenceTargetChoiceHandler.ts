@@ -7,6 +7,7 @@ import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { EffectExecutor } from './EffectExecutor';
 import { EventFactory } from '../EventQueue/EventFactory';
 import { isSequenceContinuationAfterChoiceContext } from './sequence/SequenceContinuationContext';
+import { runWithinSequenceExecutionContext } from './sequence/SequenceExecutionContext';
 
 export class SequenceTargetChoiceHandler {
     static tryHandle(
@@ -21,12 +22,15 @@ export class SequenceTargetChoiceHandler {
 
         const normalizedEffect = ensureEffectDefaults(event.data.effect);
 
-        const applyResult = EffectExecutor.applyEffectToTargets(
+        const applyResult = runWithinSequenceExecutionContext(
             gameEnv,
-            normalizedEffect,
-            normalizedTargets,
-            event.playerId,
-            (event.data as any).sourceCarduid
+            () => EffectExecutor.applyEffectToTargets(
+                gameEnv,
+                normalizedEffect,
+                normalizedTargets,
+                event.playerId,
+                (event.data as any).sourceCarduid
+            )
         );
         if (!applyResult.success) {
             return { handled: true, success: false, error: applyResult.error || 'sequence step effect failed' };

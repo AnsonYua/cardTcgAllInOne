@@ -14,6 +14,11 @@ import { EffectSelfTargetNormalizer } from '../targets/EffectSelfTargetNormalize
 import { EffectConditionEvaluator } from '../conditions/EffectConditionEvaluator';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { SEQUENCE_SUPPORTED_STEP_ACTIONS } from './schema/EffectSchema';
+import {
+    clearDeferredEffectDamageReceivedTriggers,
+    flushDeferredEffectDamageReceivedTriggers,
+    runWithinSequenceExecutionContext
+} from './sequence/SequenceExecutionContext';
 
 export type SequenceStep = {
     action: string;
@@ -71,7 +76,11 @@ export class SequenceEffectManager {
             previousTargets: []
         };
 
-        return this.runSteps(gameEnv, playerId, sourceCarduid, steps, ctx, cardPlayNotificationId);
+        const result = runWithinSequenceExecutionContext(
+            gameEnv,
+            () => this.runSteps(gameEnv, playerId, sourceCarduid, steps, ctx, cardPlayNotificationId)
+        );
+        return this.finalizeDeferredEffectDamageTriggers(gameEnv, result);
     }
 
     static continueSequence(
@@ -92,7 +101,11 @@ export class SequenceEffectManager {
         };
 
         const steps = Array.isArray(payload.steps) ? payload.steps : [];
-        return this.runSteps(gameEnv, playerId, sourceCarduid, steps, ctx, cardPlayNotificationId);
+        const result = runWithinSequenceExecutionContext(
+            gameEnv,
+            () => this.runSteps(gameEnv, playerId, sourceCarduid, steps, ctx, cardPlayNotificationId)
+        );
+        return this.finalizeDeferredEffectDamageTriggers(gameEnv, result);
     }
 
     private static runSteps(
@@ -307,6 +320,28 @@ export class SequenceEffectManager {
         }
 
         return { success: true };
+    }
+
+    private static finalizeDeferredEffectDamageTriggers(
+        gameEnv: GameEnvironment,
+        result: SequenceProcessResult
+    ): SequenceProcessResult {
+        if (!result.success) {
+            clearDeferredEffectDamageReceivedTriggers(gameEnv);
+            return result;
+        }
+        if (result.requiresSelection) {
+            return result;
+        }
+
+        const flushResult = flushDeferredEffectDamageReceivedTriggers(gameEnv);
+        if (!flushResult.success) {
+            return { success: false, error: flushResult.error || 'Failed to flush deferred EFFECT_DAMAGE_RECEIVED triggers' };
+        }
+        if (flushResult.requiresSelection) {
+            return { success: true, requiresSelection: true };
+        }
+        return result;
     }
 
     private static processDiscardStep(
