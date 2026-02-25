@@ -16,6 +16,7 @@ import { UnitSlotDestructionFlow } from './destruction/UnitSlotDestructionFlow';
 import { SlotExitCoordinator } from './zones/SlotExitCoordinator';
 import { resolveUnitPlacementSlot } from './playCard/UnitReplaceSlotCoordinator';
 import { normalizeCarduid } from '../utils/CardUtils';
+import { copyNameAliases } from '../utils/NameAliasUtils';
 
 export interface CardPlacementResult {
     success: boolean;
@@ -648,9 +649,7 @@ export class PlayerCardManager {
 
             // Create trash card with card data
             const trashCard = createZoneCard(carduid, cardId, cardData, playerId);
-            if (Array.isArray((cardData as any)?.nameAliases) && (cardData as any).nameAliases.length > 0) {
-                trashCard.nameAliases = [...(cardData as any).nameAliases];
-            }
+            copyNameAliases(cardData as any, trashCard);
             player.zones.trashArea.push(trashCard);
 
             console.log(`🗑️ Card ${carduid} moved to trash`);

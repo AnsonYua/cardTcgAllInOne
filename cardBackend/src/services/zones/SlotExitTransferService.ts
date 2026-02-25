@@ -1,5 +1,6 @@
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import { createZoneCard } from '../../models/CardSystem';
+import { copyNameAliases } from '../../utils/NameAliasUtils';
 import { HandZoneManager } from './HandZoneManager';
 
 export type SlotCardType = 'unit' | 'pilot';
@@ -115,9 +116,7 @@ export class SlotExitTransferService {
         for (const entry of detached.cards) {
             const slotCard = entry.card;
             const trashCard = createZoneCard(slotCard.carduid, slotCard.cardId, slotCard.cardData, ownerPlayerId);
-            if (Array.isArray(slotCard.nameAliases) && slotCard.nameAliases.length > 0) {
-                trashCard.nameAliases = [...slotCard.nameAliases];
-            }
+            copyNameAliases(slotCard, trashCard);
             owner.zones.trashArea.push(trashCard);
             moved.push({
                 carduid: slotCard.carduid,

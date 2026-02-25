@@ -6,6 +6,7 @@ import type { EffectDefinition } from '../../EventQueue/interfaces/GameEvent';
 import { TemporaryEffectFactory } from '../TemporaryEffectFactory';
 import { GameNotificationManager } from '../../GameNotificationManager';
 import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
+import { parsePreventDamageVariant } from '../utils/PreventDamageVariantUtils';
 
 export class ContinuousEffectDamagePreventionManager {
     static applyToTargets(
@@ -17,29 +18,18 @@ export class ContinuousEffectDamagePreventionManager {
         },
         targets: any[]
     ): number {
-        const parameters = effectEntry.effectData?.parameters && typeof effectEntry.effectData.parameters === 'object'
-            ? effectEntry.effectData.parameters
-            : {};
-        const hasEffectDamageVariant = typeof parameters.sourceCardType === 'string'
-            || typeof parameters.sourceController === 'string';
-        const hasBaseBattleVariant = typeof parameters.from === 'string'
-            || typeof parameters.enemyLevel === 'string';
-
-        if (hasEffectDamageVariant && hasBaseBattleVariant) {
+        const parsed = parsePreventDamageVariant(effectEntry.effectData);
+        if (parsed.kind === 'invalid') {
             return 0;
         }
 
-        if (!hasEffectDamageVariant) {
+        if (parsed.kind !== 'effect_damage') {
             // Base battle prevention variant is evaluated in BattleBaseDamagePreventionUtils.
             return 0;
         }
 
-        const sourceCardType = typeof parameters.sourceCardType === 'string'
-            ? parameters.sourceCardType
-            : undefined;
-        const sourceController = typeof parameters.sourceController === 'string'
-            ? parameters.sourceController
-            : undefined;
+        const sourceCardType = parsed.sourceCardType;
+        const sourceController = parsed.sourceController;
 
         if (!sourceCardType && !sourceController) {
             return 0;

@@ -3,8 +3,7 @@ import type { EffectDefinition, TargetReference } from '../../EventQueue/interfa
 import { TargetCardResolver } from '../../targets/TargetCardResolver';
 import { TemporaryEffectFactory } from '../TemporaryEffectFactory';
 import { GameNotificationManager } from '../../GameNotificationManager';
-
-const EFFECT_DAMAGE_VARIANT_ALLOWED_KEYS = new Set(['sourceCardType', 'sourceController', 'notes']);
+import { parsePreventDamageVariant } from '../utils/PreventDamageVariantUtils';
 
 export function applyPreventEffectDamageEffect(
     gameEnv: GameEnvironment,
@@ -21,53 +20,23 @@ export function applyPreventEffectDamageEffect(
         return { success: true };
     }
 
-    const parameters = effect.parameters && typeof effect.parameters === 'object'
-        ? effect.parameters
-        : {};
-    const hasEffectDamageVariant = typeof parameters.sourceCardType === 'string'
-        || typeof parameters.sourceController === 'string';
-    const hasBaseBattleVariant = typeof parameters.from === 'string'
-        || typeof parameters.enemyLevel === 'string';
-
-    if (hasEffectDamageVariant && hasBaseBattleVariant) {
+    const parsed = parsePreventDamageVariant(effect);
+    if (parsed.kind === 'invalid') {
         return {
             success: false,
-            error: 'prevent_damage cannot mix sourceCardType/sourceController with from/enemyLevel'
+            error: parsed.error
         };
     }
 
-    if (!hasEffectDamageVariant && hasBaseBattleVariant) {
+    if (parsed.kind === 'base_battle') {
         return {
             success: false,
             error: 'prevent_damage from/enemyLevel is base-battle semantics and not executable via generic effect-damage handler'
         };
     }
 
-    if (!hasEffectDamageVariant) {
-        return {
-            success: false,
-            error: 'prevent_damage requires sourceCardType and/or sourceController for generic effect-damage prevention'
-        };
-    }
-
-    for (const key of Object.keys(parameters)) {
-        if (!EFFECT_DAMAGE_VARIANT_ALLOWED_KEYS.has(key)) {
-            return {
-                success: false,
-                error: `prevent_damage uses unsupported parameter key ${key} for generic effect-damage prevention`
-            };
-        }
-    }
-
-    const rawFrom = typeof parameters.from === 'string'
-        ? parameters.from.toLowerCase()
-        : '';
-    const sourceController = typeof effect.parameters?.sourceController === 'string'
-        ? effect.parameters.sourceController
-        : (rawFrom === 'enemy' || rawFrom === 'enemy_units' ? 'opponent' : undefined);
-    const sourceCardType = typeof effect.parameters?.sourceCardType === 'string'
-        ? effect.parameters.sourceCardType
-        : undefined;
+    const sourceController = parsed.sourceController;
+    const sourceCardType = parsed.sourceCardType;
 
     const appliedTargets: TargetReference[] = [];
 

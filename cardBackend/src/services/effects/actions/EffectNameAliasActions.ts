@@ -1,5 +1,6 @@
 import type { GameEnvironment } from '../../../models/GameEnvironment';
 import type { EffectDefinition } from '../../EventQueue/interfaces/GameEvent';
+import { mergeAliasLists, normalizeAliasList } from '../../../utils/NameAliasUtils';
 
 type AliasCarrier = {
     carduid?: string;
@@ -42,28 +43,6 @@ function findCardByUidEverywhere(gameEnv: GameEnvironment, carduid: string): Ali
     return null;
 }
 
-function normalizeAliases(effect: EffectDefinition): string[] {
-    const aliases = effect.parameters?.alsoTreatedAs;
-    if (!Array.isArray(aliases)) {
-        return [];
-    }
-
-    const normalized: string[] = [];
-    for (const alias of aliases) {
-        if (typeof alias !== 'string') {
-            continue;
-        }
-        const value = alias.trim();
-        if (value.length === 0) {
-            continue;
-        }
-        if (!normalized.includes(value)) {
-            normalized.push(value);
-        }
-    }
-    return normalized;
-}
-
 export function applySetNameAliasEffect(
     gameEnv: GameEnvironment,
     sourceCarduid: string | undefined,
@@ -73,7 +52,7 @@ export function applySetNameAliasEffect(
         return { success: false, error: 'set_name_alias requires sourceCarduid' };
     }
 
-    const aliases = normalizeAliases(effect);
+    const aliases = normalizeAliasList(effect.parameters?.alsoTreatedAs);
     if (aliases.length === 0) {
         return { success: false, error: 'set_name_alias requires non-empty parameters.alsoTreatedAs' };
     }
@@ -83,14 +62,8 @@ export function applySetNameAliasEffect(
         return { success: false, error: `set_name_alias source card not found: ${sourceCarduid}` };
     }
 
-    const currentAliases = Array.isArray(sourceCard.nameAliases) ? sourceCard.nameAliases : [];
-    const mergedAliases = [...currentAliases];
-    for (const alias of aliases) {
-        if (!mergedAliases.includes(alias)) {
-            mergedAliases.push(alias);
-        }
-    }
-    sourceCard.nameAliases = mergedAliases;
+    const currentAliases = normalizeAliasList(sourceCard.nameAliases);
+    sourceCard.nameAliases = mergeAliasLists(currentAliases, aliases);
 
     return { success: true };
 }
