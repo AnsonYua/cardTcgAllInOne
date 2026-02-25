@@ -41,6 +41,8 @@ Use this skill when a card effect appears correct in data but gameplay/UI behavi
 ## Canonical Rules (from recent fixes)
 - Backend is authoritative. Frontend local logic is only UX prediction/gating.
 - Do not parse comparison strings in multiple places; use one shared utility.
+- Schema-valid does not always mean text-complete:
+  - For descriptions containing `If you do` / `Then`, verify rules include matching `stepId` + `stepResolved` + `conditional` flow.
 - Pair and Link are different:
   - `paired` = unit + pilot in same slot
   - `linked` = paired AND unit link rules match pilot identity/traits
@@ -60,6 +62,7 @@ See `references/incident-gd03-035.md` for concrete bugs and fixes:
 - Attack action gating mismatch for `restrict_attack` rule patterns.
 - `GD03-096` scenario had a paired-but-not-linked setup (`GD03-031 + GD03-096`), so `[During Link]` behavior could not trigger until unit changed to `GD03-051` (links `Jamil Neate`).
 - `GD03-056` deploy sequence interleaved with `GD03-095` trigger mid-sequence; fixed by deferring `EFFECT_DAMAGE_RECEIVED` reactive processing until sequence completion.
+- `GD02-021` and `GD03-064` were schema-valid but sequence-incomplete (text said multi-step `If you do`, rules encoded only a subset of steps); fixed by adding explicit conditional branch semantics.
 
 ## Output Requirements
 - Provide:

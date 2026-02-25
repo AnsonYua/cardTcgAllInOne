@@ -33,6 +33,24 @@
   - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/services/effects/SequenceTargetChoiceHandler.ts`
   - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/__tests__/sequenceEffectDamageTriggerOrdering.test.js`
 
+## Additional Data Parity Incident (Schema Valid, Text Incomplete)
+- Symptoms:
+  - `GD02-021` description declared: discard EF unit -> if you do place EX resource -> then if Lv.7+ draw 1, but rule encoded only a discard step.
+  - `GD03-064` description declared: add `(X-Rounder)` from trash -> if you do discard 1, but rule encoded only discard.
+- Root cause:
+  - Canonical schema validator passed because rule shape was valid JSON schema, while semantic completeness versus `effect.description` was not encoded.
+- Fix:
+  - Added explicit sequence branches with `stepId` and `stepResolved` conditionals.
+  - Added explicit targets/filters for optional discard and add-to-hand steps.
+- Guardrails added:
+  - Regression tests in:
+    - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/__tests__/cardDataConsistencyRegression.test.js`
+    - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/__tests__/cardDataCanonicalPatchPlanRegression.test.js`
+- Verification commands:
+  - `cd /Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend`
+  - `npm test -- cardDataConsistencyRegression`
+  - `npm test -- cardDataCanonicalPatchPlanRegression`
+
 ## Root Cause 1 (P1)
 - Frontend `attackTargetPolicy` used local parser that only handled numeric RHS.
 - It failed on dynamic token expression `<=SOURCE_AP`.

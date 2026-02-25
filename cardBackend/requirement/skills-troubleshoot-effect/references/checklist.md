@@ -20,6 +20,10 @@
 - Capture dynamic filters:
   - `<=SOURCE_AP`, `<=SOURCE_LEVEL`, etc.
 - For link-dependent effects, validate scenario slot composition against unit `link` entries.
+- For text with `If you do` / `Then`, verify rule flow has explicit branch semantics:
+  - preceding step has stable `stepId`
+  - dependent branch checks `type: "stepResolved"` for that `stepId`
+  - resulting steps are encoded in `conditional.parameters.then` (not only in free-text `parameters.text`)
 
 ## 3) Frontend Evaluator Inventory
 - Check local evaluator modules (not backend-driven execution):

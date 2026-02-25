@@ -3681,11 +3681,53 @@
               "version": 1,
               "steps": [
                 {
-                  "action": "discard",
-                  "parameters": {
-                    "value": 1
+                  "stepId": "add_x_rounder_from_trash",
+                  "action": "addToHand",
+                  "optional": true,
+                  "target": {
+                    "type": "card",
+                    "scope": "self_trash",
+                    "count": 1,
+                    "selection": {
+                      "type": "player_choice"
+                    },
+                    "filters": {
+                      "traits": [
+                        "X-Rounder"
+                      ]
+                    }
                   },
-                  "notes": "Implemented: sequence discard steps resolve through discardFromHand targeting."
+                  "parameters": {
+                    "from": "trash",
+                    "value": 1
+                  }
+                },
+                {
+                  "action": "conditional",
+                  "parameters": {
+                    "if": [
+                      {
+                        "type": "stepResolved",
+                        "stepId": "add_x_rounder_from_trash"
+                      }
+                    ],
+                    "then": [
+                      {
+                        "action": "discard",
+                        "target": {
+                          "type": "card",
+                          "scope": "self_hand",
+                          "count": 1,
+                          "selection": {
+                            "type": "player_choice"
+                          }
+                        },
+                        "parameters": {
+                          "value": 1
+                        }
+                      }
+                    ]
+                  }
                 }
               ]
             }

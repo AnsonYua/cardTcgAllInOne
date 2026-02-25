@@ -196,4 +196,199 @@ describe('card data consistency regressions', () => {
 
         expect((p1.zones.slot1.unit.damageReceived || 0)).toBe(0);
     });
+
+    test('GD02-021 deploy_effect: optional discard resolves into EX+1 and draw when player is Lv.7+', () => {
+        const gameEnv = new GameEnvironment();
+        const p1 = gameEnv.addPlayer('playerId_1', 'P1');
+        gameEnv.addPlayer('playerId_2', 'P2');
+        gameEnv.currentPlayer = p1.id;
+        p1.playerPoint = 7;
+
+        const sourceUid = 'GD02-021_src_0001';
+        p1.zones.slot1.unit = createUnitZoneCard({
+            carduid: sourceUid,
+            cardId: 'GD02-021',
+            cardDataExtras: gd02.cards['GD02-021']
+        });
+
+        p1.deck._handUids = ['GD02-021_hand_ef_unit_0001'];
+        p1.deck.mainDeck = ['GD02-011_draw_0001'];
+
+        const effect = gd02.cards['GD02-021'].effects.rules.find((rule) => rule.effectId === 'deploy_effect');
+        const energyBefore = p1.zones.energyArea.length;
+        const handBefore = p1.deck._handUids.length;
+        const result = SequenceEffectManager.processSequenceEffect(gameEnv, p1.id, sourceUid, effect);
+
+        expect(result.success).toBe(true);
+        expect(result.requiresSelection).toBe(true);
+
+        const discardChoice = findFirstPendingTargetChoice(gameEnv);
+        expect(discardChoice).toBeTruthy();
+        expect(discardChoice.data.availableTargets).toHaveLength(1);
+        discardChoice.data.selectedTargets = [discardChoice.data.availableTargets[0]];
+        discardChoice.data.userDecisionMade = true;
+
+        const processResult = gameEnv.processEvents();
+        expect(processResult.success).toBe(true);
+        expect(p1.zones.energyArea.length).toBe(energyBefore + 1);
+        expect(p1.deck._handUids.length).toBe(handBefore);
+    });
+
+    test('GD02-021 deploy_effect: declining optional discard skips EX and draw', () => {
+        const gameEnv = new GameEnvironment();
+        const p1 = gameEnv.addPlayer('playerId_1', 'P1');
+        gameEnv.addPlayer('playerId_2', 'P2');
+        gameEnv.currentPlayer = p1.id;
+        p1.playerPoint = 7;
+
+        const sourceUid = 'GD02-021_src_0002';
+        p1.zones.slot1.unit = createUnitZoneCard({
+            carduid: sourceUid,
+            cardId: 'GD02-021',
+            cardDataExtras: gd02.cards['GD02-021']
+        });
+
+        p1.deck._handUids = ['GD02-021_hand_ef_unit_0002'];
+        p1.deck.mainDeck = ['GD02-011_draw_0002'];
+
+        const effect = gd02.cards['GD02-021'].effects.rules.find((rule) => rule.effectId === 'deploy_effect');
+        const energyBefore = p1.zones.energyArea.length;
+        const handBefore = p1.deck._handUids.length;
+        const result = SequenceEffectManager.processSequenceEffect(gameEnv, p1.id, sourceUid, effect);
+
+        expect(result.success).toBe(true);
+        expect(result.requiresSelection).toBe(true);
+
+        const discardChoice = findFirstPendingTargetChoice(gameEnv);
+        expect(discardChoice).toBeTruthy();
+        discardChoice.data.selectedTargets = [];
+        discardChoice.data.userDecisionMade = true;
+
+        const processResult = gameEnv.processEvents();
+        expect(processResult.success).toBe(true);
+        expect(p1.zones.energyArea.length).toBe(energyBefore);
+        expect(p1.deck._handUids.length).toBe(handBefore);
+        expect(p1.deck.mainDeck).toContain('GD02-011_draw_0002');
+    });
+
+    test('GD03-064 deploy_effect: choose X-Rounder from trash then discard 1', () => {
+        const gameEnv = new GameEnvironment();
+        const p1 = gameEnv.addPlayer('playerId_1', 'P1');
+        gameEnv.addPlayer('playerId_2', 'P2');
+        gameEnv.currentPlayer = p1.id;
+
+        const sourceUid = 'GD03-064_src_0001';
+        p1.zones.slot1.unit = createUnitZoneCard({
+            carduid: sourceUid,
+            cardId: 'GD03-064',
+            cardDataExtras: gd03.cards['GD03-064']
+        });
+
+        const xRounderTrashUid = 'GD03-095_trash_x_rounder_0001';
+        p1.zones.trashArea.push({
+            carduid: xRounderTrashUid,
+            cardId: 'GD03-095',
+            cardData: {
+                id: 'GD03-095',
+                name: 'X-Rounder Test Card',
+                cardType: 'pilot',
+                color: 'Purple',
+                traits: ['X-Rounder'],
+                level: 4,
+                cost: 1,
+                ap: 1,
+                hp: 2,
+                effects: { description: [], rules: [] }
+            }
+        });
+        p1.deck.hand = [
+            {
+                carduid: 'GD03-001_hand_discard_0001',
+                cardId: 'GD03-001',
+                cardData: gd03.cards['GD03-001']
+            }
+        ];
+        p1.deck.handUids = ['GD03-001_hand_discard_0001'];
+        p1.deck._handUids = ['GD03-001_hand_discard_0001'];
+
+        const effect = gd03.cards['GD03-064'].effects.rules.find((rule) => rule.effectId === 'deploy_effect');
+        const result = SequenceEffectManager.processSequenceEffect(gameEnv, p1.id, sourceUid, effect);
+        expect(result.success).toBe(true);
+        expect(result.requiresSelection).toBe(true);
+
+        const addChoice = findFirstPendingTargetChoice(gameEnv);
+        expect(addChoice).toBeTruthy();
+        expect(addChoice.data.availableTargets.some((target) => target.carduid === xRounderTrashUid)).toBe(true);
+        addChoice.data.selectedTargets = [addChoice.data.availableTargets.find((target) => target.carduid === xRounderTrashUid)];
+        addChoice.data.userDecisionMade = true;
+        expect(gameEnv.processEvents().success).toBe(true);
+
+        const discardChoice = findFirstPendingTargetChoice(gameEnv);
+        expect(discardChoice).toBeTruthy();
+        expect(discardChoice.data.availableTargets).toHaveLength(2);
+        const discardTarget = discardChoice.data.availableTargets.find((target) => target.carduid !== xRounderTrashUid);
+        discardChoice.data.selectedTargets = [discardTarget];
+        discardChoice.data.userDecisionMade = true;
+        expect(gameEnv.processEvents().success).toBe(true);
+
+        expect(p1.zones.trashArea.some((card) => card.carduid === xRounderTrashUid)).toBe(false);
+        expect(p1.deck._handUids).toContain(xRounderTrashUid);
+    });
+
+    test('GD03-064 deploy_effect: declining trash add skips discard step', () => {
+        const gameEnv = new GameEnvironment();
+        const p1 = gameEnv.addPlayer('playerId_1', 'P1');
+        gameEnv.addPlayer('playerId_2', 'P2');
+        gameEnv.currentPlayer = p1.id;
+
+        const sourceUid = 'GD03-064_src_0002';
+        p1.zones.slot1.unit = createUnitZoneCard({
+            carduid: sourceUid,
+            cardId: 'GD03-064',
+            cardDataExtras: gd03.cards['GD03-064']
+        });
+
+        const xRounderTrashUid = 'GD03-095_trash_x_rounder_0002';
+        p1.zones.trashArea.push({
+            carduid: xRounderTrashUid,
+            cardId: 'GD03-095',
+            cardData: {
+                id: 'GD03-095',
+                name: 'X-Rounder Test Card',
+                cardType: 'pilot',
+                color: 'Purple',
+                traits: ['X-Rounder'],
+                level: 4,
+                cost: 1,
+                ap: 1,
+                hp: 2,
+                effects: { description: [], rules: [] }
+            }
+        });
+        p1.deck.hand = [
+            {
+                carduid: 'GD03-001_hand_discard_0002',
+                cardId: 'GD03-001',
+                cardData: gd03.cards['GD03-001']
+            }
+        ];
+        p1.deck.handUids = ['GD03-001_hand_discard_0002'];
+        p1.deck._handUids = ['GD03-001_hand_discard_0002'];
+
+        const effect = gd03.cards['GD03-064'].effects.rules.find((rule) => rule.effectId === 'deploy_effect');
+        const result = SequenceEffectManager.processSequenceEffect(gameEnv, p1.id, sourceUid, effect);
+        expect(result.success).toBe(true);
+        expect(result.requiresSelection).toBe(true);
+
+        const addChoice = findFirstPendingTargetChoice(gameEnv);
+        expect(addChoice).toBeTruthy();
+        addChoice.data.selectedTargets = [];
+        addChoice.data.userDecisionMade = true;
+        expect(gameEnv.processEvents().success).toBe(true);
+
+        const pendingAfter = findFirstPendingTargetChoice(gameEnv);
+        expect(pendingAfter).toBeUndefined();
+        expect(p1.zones.trashArea.some((card) => card.carduid === xRounderTrashUid)).toBe(true);
+        expect(p1.deck._handUids).toEqual(['GD03-001_hand_discard_0002']);
+    });
 });

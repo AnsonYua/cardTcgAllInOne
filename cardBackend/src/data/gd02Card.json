@@ -1023,11 +1023,66 @@
               "version": 1,
               "steps": [
                 {
+                  "stepId": "discard_ef_unit",
                   "action": "discard",
+                  "optional": true,
+                  "target": {
+                    "type": "card",
+                    "scope": "self_hand",
+                    "count": 1,
+                    "selection": {
+                      "type": "player_choice"
+                    },
+                    "filters": {
+                      "cardType": "unit",
+                      "color": "Green",
+                      "traits": [
+                        "Earth Federation"
+                      ]
+                    }
+                  },
                   "parameters": {
                     "value": 1
-                  },
-                  "notes": "Implemented: sequence discard steps resolve through discardFromHand targeting."
+                  }
+                },
+                {
+                  "action": "conditional",
+                  "parameters": {
+                    "if": [
+                      {
+                        "type": "stepResolved",
+                        "stepId": "discard_ef_unit"
+                      }
+                    ],
+                    "then": [
+                      {
+                        "action": "addExtraEnergy",
+                        "parameters": {
+                          "value": 1
+                        }
+                      },
+                      {
+                        "action": "conditional",
+                        "parameters": {
+                          "if": [
+                            {
+                              "type": "playerLevel",
+                              "scope": "self",
+                              "value": ">=7"
+                            }
+                          ],
+                          "then": [
+                            {
+                              "action": "draw",
+                              "parameters": {
+                                "value": 1
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
                 }
               ]
             }

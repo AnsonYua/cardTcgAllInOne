@@ -253,4 +253,61 @@ describe('card data canonical patch plan regression', () => {
       expect(cardId).toMatch(/GD0[12]-/);
     });
   });
+
+  test('GD02-021 deploy_effect keeps full if-you-do sequence semantics', () => {
+    const card = gd02.cards['GD02-021'];
+    const rule = card.effects.rules.find((entry) => entry.effectId === 'deploy_effect');
+    expect(rule).toBeTruthy();
+    expect(rule.action).toBe('sequence');
+
+    const steps = rule.parameters?.steps;
+    expect(Array.isArray(steps)).toBe(true);
+    expect(steps[0]?.stepId).toBe('discard_ef_unit');
+    expect(steps[0]?.action).toBe('discard');
+    expect(steps[0]?.optional).toBe(true);
+    expect(steps[0]?.target?.scope).toBe('self_hand');
+    expect(steps[0]?.target?.filters?.cardType).toBe('unit');
+    expect(steps[0]?.target?.filters?.color).toBe('Green');
+    expect(steps[0]?.target?.filters?.traits).toEqual(expect.arrayContaining(['Earth Federation']));
+
+    const ifYouDoConditional = steps[1];
+    expect(ifYouDoConditional?.action).toBe('conditional');
+    expect(ifYouDoConditional?.parameters?.if).toEqual(
+      expect.arrayContaining([{ type: 'stepResolved', stepId: 'discard_ef_unit' }])
+    );
+    expect(ifYouDoConditional?.parameters?.then?.[0]?.action).toBe('addExtraEnergy');
+    expect(ifYouDoConditional?.parameters?.then?.[0]?.parameters?.value).toBe(1);
+
+    const levelConditional = ifYouDoConditional?.parameters?.then?.[1];
+    expect(levelConditional?.action).toBe('conditional');
+    expect(levelConditional?.parameters?.if).toEqual(
+      expect.arrayContaining([{ type: 'playerLevel', scope: 'self', value: '>=7' }])
+    );
+    expect(levelConditional?.parameters?.then?.[0]?.action).toBe('draw');
+    expect(levelConditional?.parameters?.then?.[0]?.parameters?.value).toBe(1);
+  });
+
+  test('GD03-064 deploy_effect keeps add-from-trash gated discard semantics', () => {
+    const card = gd03.cards['GD03-064'];
+    const rule = card.effects.rules.find((entry) => entry.effectId === 'deploy_effect');
+    expect(rule).toBeTruthy();
+    expect(rule.action).toBe('sequence');
+
+    const steps = rule.parameters?.steps;
+    expect(Array.isArray(steps)).toBe(true);
+    expect(steps[0]?.stepId).toBe('add_x_rounder_from_trash');
+    expect(steps[0]?.action).toBe('addToHand');
+    expect(steps[0]?.optional).toBe(true);
+    expect(steps[0]?.target?.scope).toBe('self_trash');
+    expect(steps[0]?.target?.filters?.traits).toEqual(expect.arrayContaining(['X-Rounder']));
+
+    const ifYouDoConditional = steps[1];
+    expect(ifYouDoConditional?.action).toBe('conditional');
+    expect(ifYouDoConditional?.parameters?.if).toEqual(
+      expect.arrayContaining([{ type: 'stepResolved', stepId: 'add_x_rounder_from_trash' }])
+    );
+    expect(ifYouDoConditional?.parameters?.then?.[0]?.action).toBe('discard');
+    expect(ifYouDoConditional?.parameters?.then?.[0]?.target?.scope).toBe('self_hand');
+    expect(ifYouDoConditional?.parameters?.then?.[0]?.parameters?.value).toBe(1);
+  });
 });
