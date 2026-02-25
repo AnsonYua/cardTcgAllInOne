@@ -75,6 +75,9 @@ export function normalizeEffectRule(
         : options.fallbackEffectId;
 
     const type = typeof raw['type'] === 'string' ? raw['type'] : undefined;
+    const sourceLevelScope = raw['sourceLevelScope'] === 'paired_unit' || raw['sourceLevelScope'] === 'source_card'
+        ? (raw['sourceLevelScope'] as 'paired_unit' | 'source_card')
+        : undefined;
     const optional = typeof raw['optional'] === 'boolean' ? raw['optional'] : undefined;
     const restrictions = Array.isArray(raw['restrictions'])
         ? raw['restrictions'].filter((value): value is string => typeof value === 'string')
@@ -84,6 +87,7 @@ export function normalizeEffectRule(
         effectId,
         type,
         trigger,
+        sourceLevelScope,
         optional,
         target,
         action,

@@ -42,6 +42,7 @@ const CARD_FILES = [
 
 const LEVEL_COMPARISON_LITERAL_REGEX = /^(<=|>=|<|>|==|!=)\d+$/;
 const LEVEL_DYNAMIC_PLACEHOLDER_REGEX = /^(<=|>=|<|>|==|!=)\s*(SOURCE_LEVEL|sourceLevel|EVENT_ATTACKER_LEVEL|eventAttackerLevel|RESTED_UNIT_LEVEL|restedUnitLevel)$/;
+const SOURCE_LEVEL_SCOPE_VALUES = new Set(['paired_unit', 'source_card']);
 const RETURN_TO_HAND_ALLOWED_TYPES = new Set(['unit', 'pilot', 'card']);
 const RETURN_TO_HAND_SOURCE_CONTROLLER_WHITELIST = new Set([]);
 
@@ -601,6 +602,18 @@ function walkEffects(node, context, diagnostics) {
           message: `unknown selection type ${rawType}`
         });
       }
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(node, 'sourceLevelScope')) {
+    if (!SOURCE_LEVEL_SCOPE_VALUES.has(node.sourceLevelScope)) {
+      diagnostics.push({
+        severity: 'error',
+        cardId: context.cardId,
+        effectId: nextContext.effectId || 'unknown',
+        jsonPath: `${context.jsonPath}.sourceLevelScope`,
+        message: `sourceLevelScope must be one of: ${[...SOURCE_LEVEL_SCOPE_VALUES].join(', ')}`
+      });
     }
   }
 

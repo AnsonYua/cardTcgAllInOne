@@ -72,6 +72,7 @@ export class GameEnvironment {
     // Phase transition guard to avoid duplicate SBA enqueues
     public pendingPhaseTransition: EventType | null;
     public pendingDestructions: PendingDestruction[];
+    public deferredEffectDamageReceivedEntries?: Array<{ damagedPlayerId: string; sourcePlayerId: string }>;
     
     // Card selection system - REMOVED: pendingCardSelections no longer needed
     // Deploy effects now process automatically with smart target selection
@@ -108,6 +109,7 @@ export class GameEnvironment {
 
         this.pendingPhaseTransition = null;
         this.pendingDestructions = [];
+        this.deferredEffectDamageReceivedEntries = undefined;
         this.gameEnded = false;
         this.winnerId = null;
         this.endReason = null;
@@ -711,6 +713,7 @@ export class GameEnvironment {
             battlePhaseReturnPoint: this.battlePhaseReturnPoint,
             pendingPhaseTransition: this.pendingPhaseTransition,
             pendingDestructions: this.pendingDestructions,
+            deferredEffectDamageReceivedEntries: this.deferredEffectDamageReceivedEntries,
             
         };
     }
@@ -765,6 +768,19 @@ export class GameEnvironment {
         gameEnv.battlePhaseReturnPoint = data.battlePhaseReturnPoint;
         gameEnv.pendingPhaseTransition = data.pendingPhaseTransition || null;
         gameEnv.pendingDestructions = Array.isArray(data.pendingDestructions) ? data.pendingDestructions : [];
+        gameEnv.deferredEffectDamageReceivedEntries = Array.isArray(data.deferredEffectDamageReceivedEntries)
+            ? data.deferredEffectDamageReceivedEntries
+                .filter((entry: any) =>
+                    entry &&
+                    typeof entry === 'object' &&
+                    typeof entry.damagedPlayerId === 'string' &&
+                    typeof entry.sourcePlayerId === 'string'
+                )
+                .map((entry: any) => ({
+                    damagedPlayerId: entry.damagedPlayerId,
+                    sourcePlayerId: entry.sourcePlayerId
+                }))
+            : undefined;
         
         return gameEnv;
     }

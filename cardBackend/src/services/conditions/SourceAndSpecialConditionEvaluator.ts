@@ -1,4 +1,5 @@
 import type { GameEnvironment } from '../../models/GameEnvironment';
+import type { SourceLevelScope } from '../EventQueue/interfaces/GameEvent';
 import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { SlotHealthService } from '../health/SlotHealthService';
@@ -7,6 +8,7 @@ import { SourceTraitConditionEvaluator } from './SourceTraitConditionEvaluator';
 import { SlotCardStateUtils } from './SlotCardStateUtils';
 import { ConditionScopeUtils } from './ConditionScopeUtils';
 import { TrashConditionUtils } from './TrashConditionUtils';
+import { EffectiveSourceLevelResolver } from './EffectiveSourceLevelResolver';
 
 export interface SourceAndSpecialConditionContext {
     gameEnv: GameEnvironment;
@@ -15,11 +17,12 @@ export interface SourceAndSpecialConditionContext {
     type: string;
     scope: string;
     typedCondition: Record<string, unknown>;
+    sourceLevelScope?: SourceLevelScope;
 }
 
 export class SourceAndSpecialConditionEvaluator {
     static evaluate(context: SourceAndSpecialConditionContext): boolean | null {
-        const { gameEnv, cardOwnerPlayerId, sourceCard, type, scope, typedCondition } = context;
+        const { gameEnv, cardOwnerPlayerId, sourceCard, type, scope, typedCondition, sourceLevelScope } = context;
 
         switch (type) {
             case 'sourceTrait': {
@@ -186,12 +189,14 @@ export class SourceAndSpecialConditionEvaluator {
                 if (scope !== 'source') {
                     return false;
                 }
-                if (!sourceCard) {
+                const sourceCarduid = typeof sourceCard?.carduid === 'string' ? sourceCard.carduid : '';
+                if (!sourceCarduid) {
                     return false;
                 }
-                const sourceLevel = typeof sourceCard?.cardData?.level === 'number'
-                    ? sourceCard.cardData.level
-                    : (typeof sourceCard?.level === 'number' ? sourceCard.level : 0);
+                const sourceLevel = EffectiveSourceLevelResolver.resolve(gameEnv, sourceCarduid, sourceLevelScope);
+                if (sourceLevel === null) {
+                    return false;
+                }
                 if (typeof typedCondition.value === 'number') {
                     return sourceLevel === typedCondition.value;
                 }

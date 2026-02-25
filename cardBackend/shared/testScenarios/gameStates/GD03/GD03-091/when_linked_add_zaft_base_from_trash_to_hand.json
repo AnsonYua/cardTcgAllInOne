@@ -117,8 +117,12 @@
               "cardId": "GD03-127"
             },
             {
-              "carduid": "GD03-124_trash_0001",
-              "cardId": "GD03-124"
+              "carduid": "GD03-127_trash_0002",
+              "cardId": "GD03-127"
+            },
+            {
+              "carduid": "ST04-016_trash_0033",
+              "cardId": "ST04-016"
             }
           ],
           "repairAbilitiesCheckedThisCycle": false,

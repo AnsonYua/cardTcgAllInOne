@@ -1,6 +1,6 @@
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import { GamePhase } from '../../models/GameEnums';
-import type { EffectDefinition } from '../EventQueue/interfaces/GameEvent';
+import type { EffectDefinition, SourceLevelScope } from '../EventQueue/interfaces/GameEvent';
 import { ConditionEvaluators } from './ConditionEvaluators';
 import { evaluateCardsInPlayCondition } from './CardsInPlayCondition';
 import { BattleConditionEvaluator } from './BattleConditionEvaluator';
@@ -39,7 +39,13 @@ export class EffectConditionEvaluator {
         }
 
         for (const condition of conditions) {
-            if (!EffectConditionEvaluator.checkSingleCondition(condition, gameEnv, cardOwnerPlayerId, sourceCard)) {
+            if (!EffectConditionEvaluator.checkSingleCondition(
+                condition,
+                gameEnv,
+                cardOwnerPlayerId,
+                sourceCard,
+                storedEffect.sourceLevelScope
+            )) {
                 return false;
             }
         }
@@ -72,7 +78,8 @@ export class EffectConditionEvaluator {
         condition: unknown,
         gameEnv: GameEnvironment,
         cardOwnerPlayerId: string | null,
-        sourceCard?: any
+        sourceCard?: any,
+        sourceLevelScope?: SourceLevelScope
     ): boolean {
         if (typeof condition === 'string') {
             switch (condition) {
@@ -487,7 +494,8 @@ export class EffectConditionEvaluator {
                     sourceCard,
                     type,
                     scope,
-                    typedCondition
+                    typedCondition,
+                    sourceLevelScope
                 });
                 if (specialConditionResult !== null) {
                     return specialConditionResult;

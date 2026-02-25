@@ -1,5 +1,5 @@
 import { GameEnvironment } from '../../models/GameEnvironment';
-import { TargetFilters, TargetReference, TargetScope, TargetType, EffectDefinition } from '../EventQueue/interfaces/GameEvent';
+import { TargetFilters, TargetReference, TargetScope, TargetType, EffectDefinition, SourceLevelScope } from '../EventQueue/interfaces/GameEvent';
 import { SLOT_ZONES } from '../../config/gameConstants';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { UnitZoneCard, PilotZoneCard } from '../../models/CardSystem';
@@ -24,6 +24,7 @@ export interface ResolvedTargetConfig {
     scope: TargetScope;
     count: number;
     filters: TargetFilters;
+    sourceLevelScope?: SourceLevelScope;
 }
 
 export interface DynamicTargetFilterContext {
@@ -54,7 +55,8 @@ export class TargetResolver {
             type,
             scope,
             count,
-            filters
+            filters,
+            sourceLevelScope: effect.sourceLevelScope
         };
     }
 
@@ -153,7 +155,8 @@ export class TargetResolver {
                             targetPlayerId,
                             sourceCarduid,
                             slotName,
-                            dynamicContext
+                            dynamicContext,
+                            targetConfig.sourceLevelScope
                         )) {
                             targets.push({
                                 carduid: unit.carduid,
@@ -175,7 +178,8 @@ export class TargetResolver {
                             targetPlayerId,
                             sourceCarduid,
                             slotName,
-                            dynamicContext
+                            dynamicContext,
+                            targetConfig.sourceLevelScope
                         )) {
                             targets.push({
                                 carduid: pilot.carduid,
@@ -221,7 +225,8 @@ export class TargetResolver {
         targetPlayerId?: string,
         sourceCarduid?: string,
         slotNameHint?: string,
-        dynamicContext?: DynamicTargetFilterContext
+        dynamicContext?: DynamicTargetFilterContext,
+        sourceLevelScope?: SourceLevelScope
     ): boolean {
         const cardType = typeof (card as any)?.cardData?.cardType === 'string'
             ? ((card as any).cardData.cardType as string).toLowerCase()
@@ -264,7 +269,8 @@ export class TargetResolver {
                     filters.level,
                     gameEnv,
                     sourceCarduid,
-                    dynamicContext
+                    dynamicContext,
+                    sourceLevelScope
                 );
                 if (!resolvedFilter) {
                     console.log(`❌ Card ${card.carduid} failed level filter: ${filters.level}`);

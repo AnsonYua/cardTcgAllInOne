@@ -1,6 +1,7 @@
 import type { GameEnvironment } from '../../../models/GameEnvironment';
-import type { TargetReference } from '../../EventQueue/interfaces/GameEvent';
+import type { SourceLevelScope, TargetReference } from '../../EventQueue/interfaces/GameEvent';
 import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
+import { EffectiveSourceLevelResolver } from '../../conditions/EffectiveSourceLevelResolver';
 
 interface DynamicTargetFilterContext {
     previousTargets?: TargetReference[];
@@ -11,7 +12,8 @@ export class DynamicComparisonFilterResolver {
         rawFilter: string,
         gameEnv: GameEnvironment,
         sourceCarduid?: string,
-        dynamicContext?: DynamicTargetFilterContext
+        dynamicContext?: DynamicTargetFilterContext,
+        sourceLevelScope?: SourceLevelScope
     ): string | null {
         if (!rawFilter) {
             return null;
@@ -24,8 +26,7 @@ export class DynamicComparisonFilterResolver {
                 return null;
             }
 
-            const sourceCard = SlotZoneUtils.getCardByUid(gameEnv, sourceCarduid) as any;
-            const sourceLevel = typeof sourceCard?.cardData?.level === 'number' ? (sourceCard.cardData.level as number) : null;
+            const sourceLevel = EffectiveSourceLevelResolver.resolve(gameEnv, sourceCarduid, sourceLevelScope);
             if (sourceLevel === null) {
                 console.log(`⚠️ Cannot resolve ${rawFilter}: source ${sourceCarduid} has no level`);
                 return null;

@@ -1,4 +1,4 @@
-# Effect Troubleshooting Checklist
+# Card Effect Expert Checklist
 
 ## 1) Reproduce and Frame
 - Confirm repo roots:
@@ -19,6 +19,11 @@
   - related `conditions`/`sourceConditions`
 - Capture dynamic filters:
   - `<=SOURCE_AP`, `<=SOURCE_LEVEL`, etc.
+- Capture source-level semantic controls:
+  - rule-level `sourceLevelScope` (`paired_unit` default, `source_card` explicit override)
+  - verify both dynamic filter and condition paths:
+    - `target.filters.level: "<=SOURCE_LEVEL"`
+    - `conditions: [{ type: "sourceLevel", ... }]`
 - For link-dependent effects, validate scenario slot composition against unit `link` entries.
 - For text with `If you do` / `Then`, verify rule flow has explicit branch semantics:
   - preceding step has stable `stepId`
@@ -41,6 +46,10 @@
   - Use field totals when required (e.g., `fieldCardValue.totalAP`).
 - Restriction parity:
   - `restrict_attack` must gate UI actions consistently.
+- Source-level parity:
+  - pilot-sourced `"this Unit"` logic should use effective source-level semantics.
+  - if rule sets `sourceLevelScope: "source_card"`, verify pilot-level is used even when paired.
+  - if omitted, verify default `paired_unit` and unpaired fallback behavior.
 
 ## 5) Fix Strategy
 - Centralize comparison parsing/evaluation in shared util.
@@ -49,6 +58,16 @@
 
 ## 6) Validation
 - Add focused tests for each mismatch class.
+- For source-level incidents, include both modes:
+  - default omitted scope (`paired_unit`)
+  - explicit `source_card`
+  - unpaired pilot fallback under default mode
+- For sequence + reactive trigger incidents, include a persistence-boundary regression:
+  - resolve first sequence choice
+  - serialize via `toJSON`
+  - restore via `fromJSON`
+  - resolve remaining choice(s)
+  - assert deferred trigger choice appears only after sequence completion
 - Run:
   - `npm test`
   - `npm run build`

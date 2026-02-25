@@ -51,6 +51,57 @@
   - `npm test -- cardDataConsistencyRegression`
   - `npm test -- cardDataCanonicalPatchPlanRegression`
 
+## Additional Persistence Boundary Incident (Deferred Trigger Lost Across API Calls)
+- Symptoms:
+  - In real API flow (`confirmTargetChoice` per step), `GD03-056` completed both damage dialogs, but `GD03-095` did not trigger afterward.
+  - Snapshot showed sequence finished and no pending `TARGET_CHOICE` for `GD03-095_pilot_0001`.
+- Root cause:
+  - Deferred `EFFECT_DAMAGE_RECEIVED` entries were stored on transient runtime key:
+    - `__deferredEffectDamageReceivedEntries`
+  - Between step confirmations, game state is persisted and reloaded.
+  - `GameEnvironment.toJSON()/fromJSON()` did not include deferred entries, so they were dropped before sequence final flush.
+- Fix:
+  - Added persisted internal field on `GameEnvironment`:
+    - `deferredEffectDamageReceivedEntries`
+  - Sequence defer/flush now uses persisted field as canonical source.
+  - Kept legacy key compatibility by merging legacy entries when present.
+- Key files:
+  - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/models/GameEnvironment.ts`
+  - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/services/effects/sequence/SequenceExecutionContext.ts`
+  - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/__tests__/sequenceEffectDamageTriggerOrdering.test.js`
+- Regression pattern added:
+  - Resolve first sequence choice -> `toJSON` -> `fromJSON` -> resolve second choice -> confirm `GD03-095` `TARGET_CHOICE` appears.
+
+## Additional Source-Level Semantics Incident (`this Unit` on Pilot-Sourced Effects)
+- Symptoms:
+  - `GD03-086` expected level gate to use paired unit level, but runtime treated source as pilot level.
+  - Same semantic drift impacted `GD01-093` (`<=SOURCE_LEVEL`) and `GD02-095` (`conditions.type = sourceLevel`).
+- Root cause:
+  - Level resolution used source-card level uniformly, with no rule-level semantic override.
+- Fix:
+  - Added global effective source-level resolver behavior with explicit rule-level override:
+    - `sourceLevelScope: "paired_unit"` (default)
+    - `sourceLevelScope: "source_card"` (opt-in override)
+  - Applied to both dynamic filter path and condition path.
+  - Preserved fallback: default mode still uses source-card level when pilot is not paired.
+- Key files:
+  - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/services/EventQueue/interfaces/GameEvent.ts`
+  - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/models/CardSystem.ts`
+  - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/services/conditions/EffectiveSourceLevelResolver.ts`
+  - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/services/targets/filters/DynamicComparisonFilterResolver.ts`
+  - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/services/targets/TargetResolver.ts`
+  - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/services/conditions/SourceAndSpecialConditionEvaluator.ts`
+  - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/services/conditions/EffectConditionEvaluator.ts`
+  - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/services/effects/attack/AttackConditionEvaluator.ts`
+  - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/utils/EffectNormalizationUtils.ts`
+  - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/tests/validators/effectSchemaCanonicalValidation.js`
+  - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/__tests__/attackSourceLevelTargetFilter.test.js`
+  - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/__tests__/effectSchemaCanonicalValidation.test.js`
+- Regression coverage added:
+  - default omitted scope uses paired-unit semantics
+  - explicit `source_card` uses pilot-level semantics
+  - default mode unpaired pilot fallback uses source-card level
+
 ## Root Cause 1 (P1)
 - Frontend `attackTargetPolicy` used local parser that only handled numeric RHS.
 - It failed on dynamic token expression `<=SOURCE_AP`.

@@ -13,7 +13,7 @@
   ],
   "notes": [
     "Action: Load scenario via getTestScenario and inject via injectGameState.",
-    "Setup: GD03-086 is paired to slot1 attacker. Friendly Titans units are level 5+ only, so none satisfy Lv <= SOURCE_LEVEL(4).",
+    "Setup: GD03-086 is paired to slot1 attacker whose Unit is Lv2. Friendly Titans units are level 5+ only, so none satisfy Lv <= SOURCE_LEVEL(2).",
     "Action (manual): Player 1 attacks enemy unit with slot1 unit (paired with GD03-086).",
     "Expect: GD03-086 attack_effect finds no valid targets; no AP+1 target choice appears and no unit gets AP+1 from this effect."
   ],
@@ -75,8 +75,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD03-002_unit_0001",
-              "cardId": "GD03-002",
+              "carduid": "GD03-013_unit_0001",
+              "cardId": "GD03-013",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,

@@ -9,6 +9,7 @@ import { ConditionEvaluators } from '../../conditions/ConditionEvaluators';
 import { SlotHealthStorage } from '../../health/SlotHealthStorage';
 import { EffectConditionEvaluator } from '../../conditions/EffectConditionEvaluator';
 import { normalizeConditionTypeAlias } from '../schema/EffectSchema';
+import { EffectiveSourceLevelResolver } from '../../conditions/EffectiveSourceLevelResolver';
 
 export interface AttackConditionContext {
     gameEnv: GameEnvironment;
@@ -34,9 +35,12 @@ export class AttackConditionEvaluator {
         const targetCardType = actionType === 'attackUnit' ? 'unit' : actionType === 'attackShieldArea' ? 'player' : '';
         const { totalAP } = getSlotTotals(sourceSlot);
         const sourceUnit = sourceSlot?.unit;
-        const sourceLevel = typeof sourceUnit?.cardData?.level === 'number' ? (sourceUnit.cardData.level as number) : 0;
         const sourceDamaged = SlotHealthStorage.getSharedDamage(sourceSlot) > 0;
         const sourceCard = context.sourceCard || sourceUnit;
+        const sourceCarduid = typeof sourceCard?.carduid === 'string' ? sourceCard.carduid : '';
+        const sourceLevel = sourceCarduid
+            ? EffectiveSourceLevelResolver.resolve(gameEnv, sourceCarduid, effect.sourceLevelScope)
+            : null;
 
         for (const raw of conditions) {
             if (!raw || typeof raw !== 'object') {
@@ -82,6 +86,9 @@ export class AttackConditionEvaluator {
             }
 
             if (type === 'sourceLevel') {
+                if (sourceLevel === null) {
+                    return false;
+                }
                 if (typeof typed.value === 'number') {
                     if (sourceLevel !== typed.value) {
                         return false;

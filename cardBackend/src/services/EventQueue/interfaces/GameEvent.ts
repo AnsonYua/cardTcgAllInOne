@@ -214,6 +214,8 @@ export interface EffectTiming {
     endOnSourceDestroyed?: boolean;
 }
 
+export type SourceLevelScope = 'paired_unit' | 'source_card';
+
 export type EffectCondition = string | Record<string, unknown>;
 
 export type SourceConditionScope = 'source' | 'player' | 'game';
@@ -231,6 +233,7 @@ export interface EffectDefinition {
     effectId: string;
     type?: string;
     trigger?: string;
+    sourceLevelScope?: SourceLevelScope;
     restrictions?: string[];
     optional?: boolean;
     target?: EffectTargetConfig;

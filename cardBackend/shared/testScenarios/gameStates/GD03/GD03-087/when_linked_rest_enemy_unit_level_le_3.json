@@ -12,7 +12,7 @@
   ],
   "notes": [
     "Action: Load scenario via getTestScenario and inject via injectGameState.",
-    "Setup: Player 1 has GD03-087 in hand and a friendly unit in slot1 to pair with. Enemy has one Lv.3 unit in slot1 and one Lv.4 unit in slot2.",
+    "Setup: Player 1 has GD03-087 in hand and GD03-003 (Jupitris) in slot1 so pairing can become linked. Enemy has one Lv.3-or-lower unit in slot1 and one Lv.4 unit in slot2.",
     "Action (manual): Player 1 pairs GD03-087 from hand onto the friendly unit in slot1.",
     "Expect: GD03-087 linked_effect triggers and asks to choose 1 enemy Unit that is Lv.3 or lower.",
     "Action (manual): Select enemy slot1 unit (Lv.3).",
@@ -84,8 +84,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD03-031_unit_0001",
-              "cardId": "GD03-031",
+              "carduid": "GD03-003_unit_0001",
+              "cardId": "GD03-003",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,

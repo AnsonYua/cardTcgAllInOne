@@ -585,4 +585,48 @@ describe('effectSchemaCanonicalValidation utilities', () => {
             diagnostics.some((d) => d.severity === 'error' && /unsupported sequence step action/i.test(d.message))
         ).toBe(true);
     });
+
+    test('accepts valid sourceLevelScope values', () => {
+        const diagnostics = [];
+        walkEffects(
+            {
+                effectId: 'scope_ok',
+                type: 'triggered',
+                trigger: 'ATTACK_PHASE',
+                action: 'modifyAP',
+                sourceLevelScope: 'source_card'
+            },
+            {
+                cardId: 'MOCK-SOURCE-SCOPE-OK',
+                effectId: 'scope_ok',
+                jsonPath: 'cards.MOCK-SOURCE-SCOPE-OK.effects.rules[0]'
+            },
+            diagnostics
+        );
+
+        expect(diagnostics.some((d) => d.severity === 'error')).toBe(false);
+    });
+
+    test('rejects invalid sourceLevelScope values', () => {
+        const diagnostics = [];
+        walkEffects(
+            {
+                effectId: 'scope_bad',
+                type: 'triggered',
+                trigger: 'ATTACK_PHASE',
+                action: 'modifyAP',
+                sourceLevelScope: 'pilot_level'
+            },
+            {
+                cardId: 'MOCK-SOURCE-SCOPE-BAD',
+                effectId: 'scope_bad',
+                jsonPath: 'cards.MOCK-SOURCE-SCOPE-BAD.effects.rules[0]'
+            },
+            diagnostics
+        );
+
+        expect(
+            diagnostics.some((d) => d.severity === 'error' && /sourceLevelScope must be one of/.test(d.message))
+        ).toBe(true);
+    });
 });

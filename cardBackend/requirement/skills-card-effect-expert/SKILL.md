@@ -1,7 +1,11 @@
 ---
-name: skills-troubleshoot-effect
-description: Troubleshoot and fix bugs related to card effect description/rules parity between backend card data and frontend behavior, including dynamic comparison filters, action gating, and regression test coverage.
+name: skills-card-effect-expert
+description: Card effect expert workflow for diagnosing and fixing effect.rules semantics, trigger ordering, dynamic level/filter resolution, and frontend/backend parity gaps.
 triggers:
+  - "card effect expert"
+  - "card effect scheme"
+  - "sourceLevelScope"
+  - "SOURCE_LEVEL bug"
   - "troubleshoot effect rule"
   - "effect.rules bug"
   - "effect.description bug"
@@ -11,9 +15,9 @@ triggers:
   - "restrict_attack mismatch"
 ---
 
-# Troubleshoot Effect Rules / Description
+# Card Effect Expert Skill
 
-Use this skill when a card effect appears correct in data but gameplay/UI behavior is wrong.
+Use this skill when a card effect appears correct in data but gameplay/UI behavior is wrong, or when effect schema semantics need to be clarified/extended safely.
 
 ## Scope
 - Backend source repo: `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend`
@@ -41,6 +45,7 @@ Use this skill when a card effect appears correct in data but gameplay/UI behavi
 ## Canonical Rules (from recent fixes)
 - Backend is authoritative. Frontend local logic is only UX prediction/gating.
 - Do not parse comparison strings in multiple places; use one shared utility.
+- Prefer engine-level semantic fixes over card-by-card data hacks when behavior is cross-card.
 - Schema-valid does not always mean text-complete:
   - For descriptions containing `If you do` / `Then`, verify rules include matching `stepId` + `stepResolved` + `conditional` flow.
 - Pair and Link are different:
@@ -52,9 +57,14 @@ Use this skill when a card effect appears correct in data but gameplay/UI behavi
 - Frontend slot action bar must reflect `restrict_attack` semantics:
   - `disallow: "player"` => block Attack Shield button
   - `requires.type: "friendly_unit_deployed_this_turn"` => disable attack if unmet
+- Source-level semantics must be explicit and consistent:
+  - `sourceLevelScope: "paired_unit"` (default) uses paired unit level for pilot-sourced checks, then safely falls back to source-card level.
+  - `sourceLevelScope: "source_card"` forces source-card level (pilot level for pilot source).
+  - Applies to both dynamic filters (`<=SOURCE_LEVEL`) and `conditions.type = "sourceLevel"`.
 - Sequence ordering rule:
   - For multi-step `sequence` effects, complete parent sequence target-choice flow first.
   - Reactive triggers caused by intermediate step damage (e.g., `EFFECT_DAMAGE_RECEIVED`) should resolve after sequence completion.
+  - If sequence resolution spans multiple API calls, deferred reactive trigger buffers must survive `GameEnvironment.toJSON()/fromJSON()` persistence.
 
 ## Known Real-World Bugs Captured
 See `references/incident-gd03-035.md` for concrete bugs and fixes:
@@ -62,7 +72,9 @@ See `references/incident-gd03-035.md` for concrete bugs and fixes:
 - Attack action gating mismatch for `restrict_attack` rule patterns.
 - `GD03-096` scenario had a paired-but-not-linked setup (`GD03-031 + GD03-096`), so `[During Link]` behavior could not trigger until unit changed to `GD03-051` (links `Jamil Neate`).
 - `GD03-056` deploy sequence interleaved with `GD03-095` trigger mid-sequence; fixed by deferring `EFFECT_DAMAGE_RECEIVED` reactive processing until sequence completion.
+- `GD03-095` trigger disappeared after sequence completion in API flow because deferred entries were stored only in transient runtime keys and lost across save/load between target-choice confirmations; fixed by persisting deferred entries on `GameEnvironment`.
 - `GD02-021` and `GD03-064` were schema-valid but sequence-incomplete (text said multi-step `If you do`, rules encoded only a subset of steps); fixed by adding explicit conditional branch semantics.
+- `GD03-086`/`GD01-093`/`GD02-095` source-level mismatch: fixed by introducing global effective source-level semantics and explicit `sourceLevelScope` override support (`paired_unit` vs `source_card`).
 
 ## Output Requirements
 - Provide:

@@ -13,10 +13,10 @@
   ],
   "notes": [
     "Action: Load scenario via getTestScenario and inject via injectGameState.",
-    "Setup: GD03-086 is paired to slot1 attacker. Friendly Titans units include Lv2 and Lv4 valid targets, plus one Lv5 invalid target.",
+    "Setup: GD03-086 is paired to slot1 attacker whose Unit is Lv5. Friendly Titans units include Lv2 and Lv4 valid targets, plus one Lv6 invalid target.",
     "Action (manual): Player 1 attacks enemy unit with slot1 unit (paired with GD03-086).",
-    "Expect: GD03-086 attack_effect triggers TARGET_CHOICE for friendly (Titans) Units with Lv <= SOURCE_LEVEL(4).",
-    "Expect: Lv5 Titans unit is not selectable.",
+    "Expect: GD03-086 attack_effect triggers TARGET_CHOICE for friendly (Titans) Units with Lv <= SOURCE_LEVEL(5).",
+    "Expect: Lv6 Titans unit is not selectable.",
     "Action (manual): Select slot3 GD03-008 (Lv4).",
     "Expect: Selected unit gets AP+1 during this turn."
   ],
@@ -78,8 +78,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD03-002_unit_0001",
-              "cardId": "GD03-002",
+              "carduid": "GD03-009_unit_0001",
+              "cardId": "GD03-009",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -134,8 +134,8 @@
           },
           "slot4": {
             "unit": {
-              "carduid": "GD03-009_unit_0001",
-              "cardId": "GD03-009",
+              "carduid": "GD03-015_unit_0001",
+              "cardId": "GD03-015",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,

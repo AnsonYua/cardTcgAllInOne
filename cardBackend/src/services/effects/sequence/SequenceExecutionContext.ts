@@ -8,6 +8,7 @@ type DeferredEffectDamageReceivedEntry = {
 
 const DEPTH_KEY = '__sequenceExecutionDepth';
 const DEFERRED_DAMAGE_KEY = '__deferredEffectDamageReceivedEntries';
+const PERSISTED_DEFERRED_DAMAGE_KEY = 'deferredEffectDamageReceivedEntries';
 
 function readDepth(gameEnv: GameEnvironment): number {
     const raw = (gameEnv as any)[DEPTH_KEY];
@@ -43,23 +44,20 @@ export function deferEffectDamageReceivedTrigger(
     gameEnv: GameEnvironment,
     entry: DeferredEffectDamageReceivedEntry
 ): void {
-    const list = Array.isArray((gameEnv as any)[DEFERRED_DAMAGE_KEY])
-        ? ((gameEnv as any)[DEFERRED_DAMAGE_KEY] as DeferredEffectDamageReceivedEntry[])
-        : [];
+    const list = readDeferredEffectDamageReceivedEntries(gameEnv);
     list.push(entry);
-    (gameEnv as any)[DEFERRED_DAMAGE_KEY] = list;
+    writeDeferredEffectDamageReceivedEntries(gameEnv, list);
 }
 
 export function clearDeferredEffectDamageReceivedTriggers(gameEnv: GameEnvironment): void {
+    delete (gameEnv as any)[PERSISTED_DEFERRED_DAMAGE_KEY];
     delete (gameEnv as any)[DEFERRED_DAMAGE_KEY];
 }
 
 export function flushDeferredEffectDamageReceivedTriggers(
     gameEnv: GameEnvironment
 ): { success: boolean; error?: string; requiresSelection?: boolean } {
-    const list = Array.isArray((gameEnv as any)[DEFERRED_DAMAGE_KEY])
-        ? ((gameEnv as any)[DEFERRED_DAMAGE_KEY] as DeferredEffectDamageReceivedEntry[])
-        : [];
+    const list = readDeferredEffectDamageReceivedEntries(gameEnv);
 
     if (list.length === 0) {
         return { success: true };
@@ -83,3 +81,32 @@ export function flushDeferredEffectDamageReceivedTriggers(
     return { success: true };
 }
 
+function readDeferredEffectDamageReceivedEntries(gameEnv: GameEnvironment): DeferredEffectDamageReceivedEntry[] {
+    const persisted = Array.isArray((gameEnv as any)[PERSISTED_DEFERRED_DAMAGE_KEY])
+        ? ((gameEnv as any)[PERSISTED_DEFERRED_DAMAGE_KEY] as DeferredEffectDamageReceivedEntry[])
+        : [];
+    const legacy = Array.isArray((gameEnv as any)[DEFERRED_DAMAGE_KEY])
+        ? ((gameEnv as any)[DEFERRED_DAMAGE_KEY] as DeferredEffectDamageReceivedEntry[])
+        : [];
+
+    if (legacy.length === 0) {
+        return [...persisted];
+    }
+
+    if (persisted.length === 0) {
+        writeDeferredEffectDamageReceivedEntries(gameEnv, legacy);
+        return [...legacy];
+    }
+
+    const merged = [...persisted, ...legacy];
+    writeDeferredEffectDamageReceivedEntries(gameEnv, merged);
+    return merged;
+}
+
+function writeDeferredEffectDamageReceivedEntries(
+    gameEnv: GameEnvironment,
+    entries: DeferredEffectDamageReceivedEntry[]
+): void {
+    (gameEnv as any)[PERSISTED_DEFERRED_DAMAGE_KEY] = entries;
+    (gameEnv as any)[DEFERRED_DAMAGE_KEY] = entries;
+}

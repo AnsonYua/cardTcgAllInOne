@@ -59,6 +59,7 @@ export interface EffectRule {
     type: string;
     trigger: string;
     action: string;                 // Direct action property (not nested)
+    sourceLevelScope?: 'paired_unit' | 'source_card';
     cost?: {
         [key: string]: any;
     };
