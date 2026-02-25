@@ -15,7 +15,7 @@
   ],
   "notes": [
     "Action: Load scenario via getTestScenario and inject via injectGameState.",
-    "Setup: Player 1 slot1 has linked GD03-073 (unit + pilot), is active, and Player 1 trash contains 6 Gjallarhorn cards.",
+    "Setup: Player 1 slot1 has linked GD03-073 (unit + GD02-118 command used as pilot with designate_pilot: Ein Dalton), is active, and Player 1 trash contains 6 Gjallarhorn cards.",
     "Action (manual): Player 1 declares attackUnit with GD03-073_unit_0001 targeting enemy slot1 unit GD01-002_enemy_0001.",
     "Expect: Battle starts and action window opens with GD03-073 activate_effect available.",
     "Action (manual): Player 1 uses activateCardAbility on GD03-073_unit_0001 with effectId=activate_effect.",
@@ -101,8 +101,8 @@
               "isFirstPlay": false
             },
             "pilot": {
-              "carduid": "GD03-096_pilot_0001",
-              "cardId": "GD03-096",
+              "carduid": "GD02-118_pilot_0001",
+              "cardId": "GD02-118",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,

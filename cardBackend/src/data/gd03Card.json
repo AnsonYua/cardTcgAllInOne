@@ -1064,7 +1064,7 @@
                         "status": "rested"
                       }
                     },
-                    "chooser": "DEFENDER"
+                    "chooser": "ATTACKER"
                   }
                 }
               ]
@@ -1479,7 +1479,7 @@
                   "status": "rested"
                 }
               },
-              "chooser": "DEFENDER",
+              "chooser": "ATTACKER",
               "notes": "Implemented: require_attack_target_if_available enforces attack-target constraints when candidates exist."
             }
           }
@@ -4400,7 +4400,7 @@
                               "status": "rested"
                             }
                           },
-                          "chooser": "DEFENDER"
+                          "chooser": "ATTACKER"
                         }
                       }
                     ]
