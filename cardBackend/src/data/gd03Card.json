@@ -2280,19 +2280,65 @@
             "effectId": "deploy_rest",
             "type": "triggered",
             "trigger": "ENTERS_PLAY",
-            "target": {
-              "type": "unit",
-              "scope": "opponent",
-              "filters": {
-                "ap": "<=2",
-                "status": "active",
-                "traits": [
-                  "Clan"
-                ]
-              },
-              "count": 1
-            },
-            "action": "rest"
+            "action": "sequence",
+            "parameters": {
+              "text": "Choose 1 other active friendly (Clan) Unit. Rest it. If you do, choose 1 enemy Unit with 2 or less AP. Deal 2 damage to it.",
+              "version": 1,
+              "steps": [
+                {
+                  "stepId": "rest_other_friendly_clan_unit",
+                  "action": "rest",
+                  "target": {
+                    "type": "unit",
+                    "scope": "self_all_unit",
+                    "filters": {
+                      "status": "active",
+                      "traits": [
+                        "Clan"
+                      ],
+                      "excludeSelf": true
+                    },
+                    "count": 1,
+                    "selection": {
+                      "type": "player_choice"
+                    }
+                  },
+                  "parameters": {
+                    "failIfNoTargets": true
+                  }
+                },
+                {
+                  "action": "conditional",
+                  "parameters": {
+                    "if": [
+                      {
+                        "type": "stepResolved",
+                        "stepId": "rest_other_friendly_clan_unit"
+                      }
+                    ],
+                    "then": [
+                      {
+                        "action": "damage",
+                        "target": {
+                          "type": "unit",
+                          "scope": "opponent",
+                          "filters": {
+                            "ap": "<=2"
+                          },
+                          "count": 1,
+                          "selection": {
+                            "type": "player_choice"
+                          }
+                        },
+                        "parameters": {
+                          "value": 2
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
           }
         ]
       }
@@ -4894,10 +4940,14 @@
                   "target": {
                     "type": "unit",
                     "scope": "self",
-                    "count": 1
+                    "count": 1,
+                    "selection": {
+                      "type": "player_choice"
+                    }
                   },
                   "parameters": {
-                    "keyword": "Repair 2"
+                    "keyword": "Repair 2",
+                    "excludePairedUnit": true
                   }
                 },
                 {

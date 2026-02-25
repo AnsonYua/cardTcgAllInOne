@@ -5369,15 +5369,58 @@
                 "MAIN_PHASE"
               ]
             },
-            "target": {
-              "type": "unit",
-              "scope": "opponent",
-              "filters": {
-                "status": "active"
-              },
-              "count": 2
-            },
-            "action": "rest"
+            "action": "sequence",
+            "parameters": {
+              "text": "Choose 2 of your active Units. Rest them. If you do, choose 1 enemy Unit. Deal 3 damage to it.",
+              "version": 1,
+              "steps": [
+                {
+                  "stepId": "rest_two_friendly_units",
+                  "action": "rest",
+                  "target": {
+                    "type": "unit",
+                    "scope": "self_all_unit",
+                    "filters": {
+                      "status": "active"
+                    },
+                    "count": 2,
+                    "selection": {
+                      "type": "player_choice"
+                    }
+                  },
+                  "parameters": {
+                    "failIfNoTargets": true
+                  }
+                },
+                {
+                  "action": "conditional",
+                  "parameters": {
+                    "if": [
+                      {
+                        "type": "stepResolved",
+                        "stepId": "rest_two_friendly_units"
+                      }
+                    ],
+                    "then": [
+                      {
+                        "action": "damage",
+                        "target": {
+                          "type": "unit",
+                          "scope": "opponent",
+                          "count": 1,
+                          "selection": {
+                            "type": "player_choice"
+                          }
+                        },
+                        "parameters": {
+                          "value": 3
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
           },
           {
             "effectId": "pilot_designation",

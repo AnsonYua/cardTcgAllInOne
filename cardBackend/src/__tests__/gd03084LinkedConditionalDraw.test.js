@@ -1,6 +1,7 @@
 const { GameEnvironment } = require('../models/GameEnvironment');
 const { PlayerCardManager } = require('../services/PlayerCardManager');
 const { SequenceEffectManager } = require('../services/effects/SequenceEffectManager');
+const { PairingEffectManager } = require('../services/PairingEffectManager');
 const gd03 = require('../data/gd03Card.json');
 
 function getLinkedEffect() {
@@ -66,6 +67,56 @@ describe('GD03-084 linked effect conditional draw', () => {
             'GD03-084_source_0002',
             linkedEffect
         );
+
+        expect(result.success).toBe(true);
+        expect(player.deck.handUids).toHaveLength(0);
+    });
+
+    test('does not draw when linked unit is Jupitris but only other selected unit is not', () => {
+        const gameEnv = new GameEnvironment();
+        gameEnv.addPlayer('playerId_1', 'P1');
+        gameEnv.addPlayer('playerId_2', 'P2');
+
+        const player = gameEnv.getPlayer('playerId_1');
+        player.deck.mainDeck = ['ST01-001_draw_0001'];
+
+        const linkedUnitUid = 'GD03-002_linked_0001'; // has trait: Jupitris
+        const otherUnitUid = 'GD03-001_other_0001'; // no Jupitris trait
+        const pilotUid = 'GD03-084_pilot_0001';
+
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', {
+            carduid: linkedUnitUid,
+            playAs: 'unit'
+        }).success).toBe(true);
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', {
+            carduid: otherUnitUid,
+            playAs: 'unit'
+        }).success).toBe(true);
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', {
+            carduid: pilotUid,
+            playAs: 'pilot',
+            targetUnit: linkedUnitUid
+        }).success).toBe(true);
+
+        const pairingEvent = PairingEffectManager.checkForPairingEffectsEvent(
+            {
+                playerId: 'playerId_1',
+                carduid: pilotUid,
+                playAs: 'pilot',
+                targetUnit: linkedUnitUid
+            },
+            gameEnv,
+            'playerId_1'
+        );
+        expect(pairingEvent).toBeTruthy();
+
+        const linkedEffect = pairingEvent.data.effects.find((effect) => effect.effectId === 'linked_effect');
+        expect(linkedEffect).toBeTruthy();
+
+        const result = PairingEffectManager.processPairingEffect(gameEnv, 'playerId_1', {
+            carduid: pilotUid,
+            effects: [linkedEffect]
+        });
 
         expect(result.success).toBe(true);
         expect(player.deck.handUids).toHaveLength(0);

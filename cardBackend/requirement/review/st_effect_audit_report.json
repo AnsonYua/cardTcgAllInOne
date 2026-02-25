@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-21T08:36:25.388Z",
+  "generatedAt": "2026-02-25T12:12:49.227Z",
   "files": [
     "st01Card.json",
     "st02Card.json",
@@ -951,7 +951,8 @@
         "type": "unit",
         "scope": "opponent",
         "filters": {
-          "hp": "<=2"
+          "hp": "<=2",
+          "status": "active"
         },
         "count": 1
       },
@@ -1071,7 +1072,7 @@
       "sourceConditions": [],
       "timing": {},
       "parameters": {
-        "restriction": "cannot_attack_player"
+        "disallow": "player"
       },
       "status": "PASS",
       "requiresChoice": false,
@@ -1119,7 +1120,8 @@
         "type": "unit",
         "scope": "opponent",
         "filters": {
-          "hp": "<=5"
+          "hp": "<=5",
+          "status": "active"
         },
         "count": 1
       },
@@ -1169,7 +1171,14 @@
       "hasMappedDescription": true,
       "descriptionCount": 2,
       "ruleCount": 2,
-      "target": null,
+      "target": {
+        "type": "energy",
+        "scope": "self_resource",
+        "count": 1,
+        "selection": {
+          "type": "player_choice"
+        }
+      },
       "conditions": [],
       "sourceConditions": [
         {
@@ -1183,7 +1192,7 @@
       "timing": {},
       "parameters": {},
       "status": "PASS",
-      "requiresChoice": false,
+      "requiresChoice": true,
       "findings": []
     },
     {
@@ -2056,7 +2065,8 @@
         "type": "unit",
         "scope": "opponent",
         "filters": {
-          "hp": "<=5"
+          "hp": "<=5",
+          "status": "active"
         },
         "count": 1
       },
@@ -2135,7 +2145,8 @@
             "parameters": {
               "count": 2,
               "keep": 1,
-              "bottom": 1
+              "choice": "top_or_bottom",
+              "rest": "bottom"
             }
           }
         ]
@@ -2768,7 +2779,8 @@
       },
       "parameters": {
         "maxEnemyAp": 2,
-        "notes": "Implemented: prevent_battle_damage supports maxEnemyAp filters."
+        "notes": "Implemented: prevent_battle_damage supports maxEnemyAp filters.",
+        "from": "enemy_units"
       },
       "status": "PASS",
       "requiresChoice": false,
@@ -3983,7 +3995,8 @@
         "type": "unit",
         "scope": "opponent",
         "filters": {
-          "ap": "<=4"
+          "ap": "<=4",
+          "status": "active"
         },
         "count": 1
       },
@@ -4271,7 +4284,8 @@
         "type": "unit",
         "scope": "opponent",
         "filters": {
-          "hp": "<=3"
+          "hp": "<=3",
+          "status": "active"
         },
         "count": 1
       },
@@ -4604,7 +4618,7 @@
       "ruleCount": 1,
       "target": {
         "type": "unit",
-        "scope": "self_all_unit",
+        "scope": "self",
         "selection": {
           "type": "player_choice"
         },
@@ -4862,13 +4876,11 @@
       ],
       "timing": {},
       "parameters": {
-        "lookCount": 1,
-        "choices": [
-          "top",
-          "bottom"
-        ],
+        "count": 1,
+        "keep": 1,
+        "choice": "top_or_bottom",
         "notes": "Implemented: scry supports top/bottom deck placement.",
-        "count": 1
+        "rest": "bottom"
       },
       "status": "PASS",
       "requiresChoice": false,

@@ -1,7 +1,6 @@
 const { GameEnvironment } = require('../models/GameEnvironment');
 const { createZoneCard } = require('../models/CardSystem');
 const { SequenceEffectManager } = require('../services/effects/SequenceEffectManager');
-const { DeployTargetManager } = require('../services/DeployTargetManager');
 const { EventType } = require('../models/GameEnums');
 const { createUnitZoneCard } = require('./helpers/zoneCardFactory');
 
@@ -100,29 +99,125 @@ describe('card data consistency regressions', () => {
         expect(p2.zones.slot1.unit.isRested).toBe(true);
     });
 
-    test('GD02-075 attack_rest: opponent unit target resolves with unit typing', () => {
-        const gameEnv = new GameEnvironment();
-        const p1 = gameEnv.addPlayer('playerId_1', 'P1');
-        const p2 = gameEnv.addPlayer('playerId_2', 'P2');
-        gameEnv.currentPlayer = p1.id;
-
-        const sourceUid = 'GD02-075_src_0001';
-        p1.zones.slot1.unit = createUnitZoneCard({
-            carduid: sourceUid,
-            cardId: 'GD02-075',
-            cardDataExtras: { level: 4 }
-        });
-        p2.zones.slot1.unit = createUnitZoneCard({
-            carduid: 'GD02-010_enemy_lv4_0001',
-            cardId: 'GD02-010',
-            cardDataExtras: { level: 4 }
-        });
-
+    test('GD02-075 attack_rest: rule keeps if-you-do sequence semantics (rest base -> AP-2 in battle)', () => {
         const effect = gd02.cards['GD02-075'].effects.rules.find((rule) => rule.effectId === 'attack_rest');
-        const result = DeployTargetManager.processEffectWithTargetChoice(gameEnv, p1.id, sourceUid, effect);
+        expect(effect).toBeTruthy();
+        expect(effect.action).toBe('sequence');
 
-        expect(result.success).toBe(true);
-        expect(p2.zones.slot1.unit.isRested).toBe(true);
+        const steps = effect.parameters?.steps;
+        expect(Array.isArray(steps)).toBe(true);
+        expect(steps).toHaveLength(2);
+
+        const restStep = steps[0];
+        expect(restStep.stepId).toBe('rest_friendly_base');
+        expect(restStep.action).toBe('rest');
+        expect(restStep.target).toMatchObject({
+            type: 'card',
+            scope: 'self_in_play',
+            count: 1,
+            filters: {
+                cardType: 'base',
+                isRested: false
+            }
+        });
+
+        const conditionalStep = steps[1];
+        expect(conditionalStep.action).toBe('conditional');
+        expect(conditionalStep.parameters?.if).toEqual(
+            expect.arrayContaining([{ type: 'stepResolved', stepId: 'rest_friendly_base' }])
+        );
+        const thenSteps = conditionalStep.parameters?.then;
+        expect(Array.isArray(thenSteps)).toBe(true);
+        expect(thenSteps[0]).toMatchObject({
+            action: 'modifyAP',
+            timing: { duration: 'UNTIL_END_OF_BATTLE' },
+            target: {
+                type: 'unit',
+                scope: 'opponent',
+                filters: { level: '<=4' },
+                count: 1
+            },
+            parameters: { value: -2 }
+        });
+    });
+
+    test('GD01-112 rest: rule keeps if-you-do sequence semantics (rest 2 friendly active units -> damage 3)', () => {
+        const effect = gd01.cards['GD01-112'].effects.rules.find((rule) => rule.effectId === 'rest');
+        expect(effect).toBeTruthy();
+        expect(effect.action).toBe('sequence');
+
+        const steps = effect.parameters?.steps;
+        expect(Array.isArray(steps)).toBe(true);
+        expect(steps).toHaveLength(2);
+
+        const restStep = steps[0];
+        expect(restStep.stepId).toBe('rest_two_friendly_units');
+        expect(restStep.action).toBe('rest');
+        expect(restStep.target).toMatchObject({
+            type: 'unit',
+            scope: 'self_all_unit',
+            count: 2,
+            filters: { status: 'active' }
+        });
+
+        const conditionalStep = steps[1];
+        expect(conditionalStep.action).toBe('conditional');
+        expect(conditionalStep.parameters?.if).toEqual(
+            expect.arrayContaining([{ type: 'stepResolved', stepId: 'rest_two_friendly_units' }])
+        );
+        const thenSteps = conditionalStep.parameters?.then;
+        expect(Array.isArray(thenSteps)).toBe(true);
+        expect(thenSteps[0]).toMatchObject({
+            action: 'damage',
+            target: {
+                type: 'unit',
+                scope: 'opponent',
+                count: 1
+            },
+            parameters: { value: 3 }
+        });
+    });
+
+    test('GD03-039 deploy_rest: rule keeps if-you-do sequence semantics (rest other friendly Clan -> damage 2 to AP<=2 enemy)', () => {
+        const effect = gd03.cards['GD03-039'].effects.rules.find((rule) => rule.effectId === 'deploy_rest');
+        expect(effect).toBeTruthy();
+        expect(effect.action).toBe('sequence');
+
+        const steps = effect.parameters?.steps;
+        expect(Array.isArray(steps)).toBe(true);
+        expect(steps).toHaveLength(2);
+
+        const restStep = steps[0];
+        expect(restStep.stepId).toBe('rest_other_friendly_clan_unit');
+        expect(restStep.action).toBe('rest');
+        expect(restStep.target).toMatchObject({
+            type: 'unit',
+            scope: 'self_all_unit',
+            count: 1,
+            filters: {
+                status: 'active',
+                traits: ['Clan'],
+                excludeSelf: true
+            }
+        });
+
+        const conditionalStep = steps[1];
+        expect(conditionalStep.action).toBe('conditional');
+        expect(conditionalStep.parameters?.if).toEqual(
+            expect.arrayContaining([{ type: 'stepResolved', stepId: 'rest_other_friendly_clan_unit' }])
+        );
+        const thenSteps = conditionalStep.parameters?.then;
+        expect(Array.isArray(thenSteps)).toBe(true);
+        expect(thenSteps[0]).toMatchObject({
+            action: 'damage',
+            target: {
+                type: 'unit',
+                scope: 'opponent',
+                filters: { ap: '<=2' },
+                count: 1
+            },
+            parameters: { value: 2 }
+        });
     });
 
     test('GD02-120 play_effect: unit path can be declined and base fallback can be selected', () => {

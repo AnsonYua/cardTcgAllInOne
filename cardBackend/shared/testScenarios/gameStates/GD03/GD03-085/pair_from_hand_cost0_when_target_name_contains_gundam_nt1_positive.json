@@ -105,9 +105,9 @@
           "base": [],
           "shieldArea": [],
           "energyArea": [
-            {"carduid": "energy_basic_gd03085_pos_p1_0001", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": true, "isExtraEnergy": false},
-            {"carduid": "energy_basic_gd03085_pos_p1_0002", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": true, "isExtraEnergy": false},
-            {"carduid": "energy_basic_gd03085_pos_p1_0003", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": true, "isExtraEnergy": false}
+            {"carduid": "energy_basic_gd03085_pos_p1_0001", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false},
+            {"carduid": "energy_basic_gd03085_pos_p1_0002", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false},
+            {"carduid": "energy_basic_gd03085_pos_p1_0003", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false}
           ],
           "trashArea": [],
           "repairAbilitiesCheckedThisCycle": false,

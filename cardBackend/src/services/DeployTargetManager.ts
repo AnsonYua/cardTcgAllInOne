@@ -41,6 +41,38 @@ import type { DeployTargetResult } from './DeployTargetResult';
 export type { DeployTargetResult } from './DeployTargetResult';
 
 export class DeployTargetManager {
+    private static resolvePairedUnitCarduidForExclusion(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        sourceCarduid: string,
+        effect: EffectDefinition
+    ): string | null {
+        const pairedSlot = typeof (effect as any).pairedSlot === 'string'
+            ? ((effect as any).pairedSlot as string)
+            : '';
+        const player = gameEnv.getPlayer(playerId);
+        if (!player?.zones) {
+            return null;
+        }
+
+        if (pairedSlot) {
+            const pairedUnitCarduid = (player.zones as any)[pairedSlot]?.unit?.carduid;
+            return typeof pairedUnitCarduid === 'string' && pairedUnitCarduid.length > 0
+                ? pairedUnitCarduid
+                : null;
+        }
+
+        const sourceLocation = SlotZoneUtils.findSlotByCarduid(player.zones, sourceCarduid);
+        if (sourceLocation?.slotName && sourceLocation?.pilot) {
+            const pairedUnitCarduid = (player.zones as any)[sourceLocation.slotName]?.unit?.carduid;
+            return typeof pairedUnitCarduid === 'string' && pairedUnitCarduid.length > 0
+                ? pairedUnitCarduid
+                : null;
+        }
+
+        return null;
+    }
+
     static evaluateImmediateResolution(
         gameEnv: GameEnvironment,
         playerId: string,
@@ -82,11 +114,14 @@ export class DeployTargetManager {
             );
 
             const excludePairedUnit = normalizedEffect.parameters?.excludePairedUnit === true;
-            const pairedSlot = typeof (normalizedEffect as any).pairedSlot === 'string' ? ((normalizedEffect as any).pairedSlot as string) : '';
-            if (excludePairedUnit && pairedSlot) {
-                const player = gameEnv.getPlayer(playerId);
-                const pairedUnitCarduid = player?.zones && (player.zones as any)[pairedSlot]?.unit?.carduid;
-                if (typeof pairedUnitCarduid === 'string' && pairedUnitCarduid.length > 0) {
+            if (excludePairedUnit) {
+                const pairedUnitCarduid = this.resolvePairedUnitCarduidForExclusion(
+                    gameEnv,
+                    playerId,
+                    sourceCarduid,
+                    normalizedEffect
+                );
+                if (pairedUnitCarduid) {
                     availableTargets = TargetSelectionUtils.excludeCarduid(availableTargets, pairedUnitCarduid);
                 }
             }
@@ -208,11 +243,14 @@ export class DeployTargetManager {
             );
 
             const excludePairedUnit = normalizedEffect.parameters?.excludePairedUnit === true;
-            const pairedSlot = typeof (normalizedEffect as any).pairedSlot === 'string' ? ((normalizedEffect as any).pairedSlot as string) : '';
-            if (excludePairedUnit && pairedSlot) {
-                const player = gameEnv.getPlayer(playerId);
-                const pairedUnitCarduid = player?.zones && (player.zones as any)[pairedSlot]?.unit?.carduid;
-                if (typeof pairedUnitCarduid === 'string' && pairedUnitCarduid.length > 0) {
+            if (excludePairedUnit) {
+                const pairedUnitCarduid = this.resolvePairedUnitCarduidForExclusion(
+                    gameEnv,
+                    playerId,
+                    sourceCarduid,
+                    normalizedEffect
+                );
+                if (pairedUnitCarduid) {
                     availableTargets = TargetSelectionUtils.excludeCarduid(availableTargets, pairedUnitCarduid);
                 }
             }

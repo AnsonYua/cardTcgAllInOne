@@ -1,6 +1,6 @@
 # ST01-ST08 Effect Audit Report
 
-Generated at: 2026-02-21T08:36:25.388Z
+Generated at: 2026-02-25T12:12:49.227Z
 Rows: 176 | PASS: 176 | WARN: 0 | FAIL: 0
 
 ## Card Summary
@@ -125,7 +125,7 @@ Rows: 176 | PASS: 176 | WARN: 0 | FAIL: 0
 | st01Card.json | ST01-010 | 0 | burst_add_to_hand | BURST_CONDITION | addToHand | PASS | yes | no | - |
 | st01Card.json | ST01-010 | 1 | paired_rest_medium_hp | PAIRING_COMPLETE | rest | PASS | yes | no | - |
 | st01Card.json | ST01-011 | 0 | burst_add_to_hand | BURST_CONDITION | addToHand | PASS | yes | no | - |
-| st01Card.json | ST01-011 | 1 | attack_activate_resource | ATTACK_PHASE | setActive | PASS | yes | no | - |
+| st01Card.json | ST01-011 | 1 | attack_activate_resource | ATTACK_PHASE | setActive | PASS | yes | yes | - |
 | st01Card.json | ST01-012 | 0 | main_damage_rested | - | damage | PASS | yes | no | - |
 | st01Card.json | ST01-012 | 1 | pilot_designation | - | designate_pilot | PASS | yes | no | - |
 | st01Card.json | ST01-013 | 0 | main_heal_friendly | - | heal | PASS | yes | no | - |
