@@ -51,6 +51,10 @@ Use this skill when a card effect appears correct in data but gameplay/UI behavi
 - Pair and Link are different:
   - `paired` = unit + pilot in same slot
   - `linked` = paired AND unit link rules match pilot identity/traits
+  - Slot legality invariant:
+    - no scenario slot may contain only a pilot card.
+    - if `slot.pilot` exists, `slot.unit` must also exist.
+    - `slot.unit` must reference a `cardType: "unit"` card (never a pilot id).
 - `allow_attack_target` dynamic filters must support:
   - `ap: "<=SOURCE_AP"`
   - `level: "<=SOURCE_LEVEL"`
@@ -66,6 +70,17 @@ Use this skill when a card effect appears correct in data but gameplay/UI behavi
   - For multi-step `sequence` effects, complete parent sequence target-choice flow first.
   - Reactive triggers caused by intermediate step damage (e.g., `EFFECT_DAMAGE_RECEIVED`) should resolve after sequence completion.
   - If sequence resolution spans multiple API calls, deferred reactive trigger buffers must survive `GameEnvironment.toJSON()/fromJSON()` persistence.
+- Pairing effect order dialog rule:
+  - Show `OPTION_CHOICE` only for effects that may require player decision now (interactive candidates).
+  - Hide deterministic non-interactive effects (for example, self/paired-unit `allow_attack_target` that auto-applies without chooser).
+  - Hidden auto effects must still resolve in deterministic effect-list order.
+  - When dialog options represent a filtered subset, option payload must include stable source index mapping (e.g., `payload.effectOrderIndex`) and backend resolution must use that mapping, not raw displayed index.
+- Forced attack target rule (`require_attack_target_if_available`):
+  - Treat this action as a battle-targeting constraint, not a normal target-choice effect.
+  - Extract it from nested `sequence` structures too, including `conditional -> then/else` branches.
+  - Conditional branch extraction must use current-state snapshot evaluation (same condition semantics as runtime checks).
+  - `chooser` controls who chooses among multiple forced candidates (`ATTACKER`/`DEFENDER`); it does not disable forced targeting itself.
+  - If exactly one forced candidate exists, backend must reject attacks to other targets with deterministic error (e.g., `FORCED_ATTACK_TARGET_REQUIRED`).
 
 ## Known Real-World Bugs Captured
 See `references/incident-gd03-035.md` for concrete bugs and fixes:
@@ -79,6 +94,8 @@ See `references/incident-gd03-035.md` for concrete bugs and fixes:
 - `GD03-084` "other Unit" leakage on linked pilot sequence: fixed by explicit target choice + `excludePairedUnit`, plus engine fallback resolution for paired-unit exclusion in sequence contexts without `pairedSlot`.
 - `GD03-081` deployed-this-turn restriction incorrectly ignored destroyed units moved to trash in the same turn; fixed by evaluating turn-history evidence from `trashArea` too.
 - `GD02-099` pairing order UX mismatch: options that were guaranteed no-op were still selectable; fixed with backend-disabled option metadata + backend rejection + frontend disabled handling.
+- `ST04-011` pairing order pollution: non-interactive `allow_attack_target` appeared as selectable order option alongside interactive linked effects; fixed by filtering dialog options to interactive candidates and preserving hidden auto-effect execution order via stable index mapping.
+- `GD03-074` forced-target miss on nested sequence/conditional: effect text says enemy must target this rested unit if possible, but attacks could target other units because extractor only handled top-level/direct sequence step actions. Fixed by recursive extraction + conditional branch evaluation for `require_attack_target_if_available`.
 
 ## Output Requirements
 - Provide:

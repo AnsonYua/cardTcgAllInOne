@@ -49,7 +49,7 @@ describe('Pairing effect order choice', () => {
                     optional: false,
                     pairedSlot: 'slot1',
                     sourceCarduid: 'p1',
-                    target: { type: 'unit', scope: 'opponent', count: 1 },
+                    target: { type: 'unit', scope: 'opponent', count: 1, selection: { type: 'player_choice' } },
                     parameters: { value: -2 }
                 }
             ]
@@ -513,5 +513,145 @@ describe('Pairing effect order choice', () => {
         const result = PairingEffectOrderManager.executeOptionChoice(optionChoice, gameEnv);
         expect(result.success).toBe(false);
         expect(result.error).toMatch(/disabled/i);
+    });
+
+    test('auto allow_attack_target pairing effect is hidden from order dialog and still resolves', () => {
+        const gameEnv = new GameEnvironment();
+        const player = gameEnv.addPlayer('playerId_1', 'P1');
+        const enemy = gameEnv.addPlayer('playerId_2', 'P2');
+
+        player.zones.slot1 = {
+            unit: {
+                carduid: 'GD03-077_unit_0001',
+                cardData: { id: 'GD03-077', name: 'Justice Gundam (METEOR)', cardType: 'unit', level: 8, ap: 6, hp: 6, effects: { description: [], rules: [] } },
+                isRested: false,
+                damageReceived: 0
+            },
+            pilot: {
+                carduid: 'ST04-011_pilot_0001',
+                cardData: { id: 'ST04-011', name: 'Athrun Zala', cardType: 'pilot', level: 4, ap: 1, hp: 2, effects: { description: [], rules: [] } },
+                isRested: false,
+                damageReceived: 0
+            }
+        };
+        enemy.zones.slot1 = { unit: createEnemyUnit('ENEMY_0003', 3) };
+
+        const eventData = {
+            carduid: 'ST04-011_pilot_0001',
+            effects: [
+                {
+                    effectId: 'attack_active_low_level_5',
+                    type: 'triggered',
+                    trigger: 'PAIRING_COMPLETE',
+                    action: 'allow_attack_target',
+                    sourceCarduid: 'ST04-011_pilot_0001',
+                    pairedSlot: 'slot1',
+                    target: { scope: 'source_paired_unit', type: 'unit', count: 1 },
+                    timing: { duration: 'UNTIL_END_OF_TURN' },
+                    parameters: { status: 'active', level: '<=5' },
+                    sourceConditions: [{ type: 'linked' }]
+                },
+                {
+                    effectId: 'linked_effect',
+                    type: 'triggered',
+                    trigger: 'PAIRING_COMPLETE',
+                    action: 'sequence',
+                    sourceCarduid: 'GD03-077_unit_0001',
+                    pairedSlot: 'slot1',
+                    parameters: {
+                        text: 'Choose 1 to 3 enemy Units with 3 or less HP. Return them to their owners hands.',
+                        version: 1,
+                        steps: [
+                            {
+                                action: 'returnToHand',
+                                target: {
+                                    type: 'unit',
+                                    scope: 'opponent',
+                                    count: { min: 1, max: 3 },
+                                    selection: { type: 'player_choice' },
+                                    filters: { hp: '<=3' }
+                                }
+                            }
+                        ]
+                    },
+                    sourceConditions: [{ type: 'linked' }]
+                }
+            ]
+        };
+
+        const result = PairingEffectManager.processPairingEffect(gameEnv, 'playerId_1', eventData);
+        expect(result.success).toBe(true);
+
+        const optionChoiceEvent = gameEnv.processingQueue.find((event) => event.type === EventType.OPTION_CHOICE);
+        expect(optionChoiceEvent).toBeFalsy();
+
+        const linkedUnit = player.zones.slot1.unit;
+        expect(Array.isArray(linkedUnit.temporaryEffects)).toBe(true);
+        expect(linkedUnit.temporaryEffects.some((effect) => effect?.allowAttackTarget?.level === '<=5')).toBe(true);
+    });
+
+    test('pairing_effect_order uses option payload effectOrderIndex and preserves hidden auto effects order', () => {
+        const gameEnv = new GameEnvironment();
+        gameEnv.addPlayer('playerId_1', 'P1');
+
+        const effects = [
+            {
+                effectId: 'auto_draw',
+                type: 'triggered',
+                trigger: 'PAIRING_COMPLETE',
+                action: 'draw',
+                sourceCarduid: 'unit_source_test_0001',
+                target: { scope: 'self' },
+                parameters: { value: 1 }
+            },
+            {
+                effectId: 'interactive_1',
+                type: 'triggered',
+                trigger: 'PAIRING_COMPLETE',
+                action: 'destroy',
+                optional: true,
+                sourceCarduid: 'pilot_source_test_0001',
+                target: { type: 'unit', scope: 'opponent', count: 1 }
+            },
+            {
+                effectId: 'interactive_2',
+                type: 'triggered',
+                trigger: 'PAIRING_COMPLETE',
+                action: 'rest',
+                optional: true,
+                sourceCarduid: 'pilot_source_test_0002',
+                target: { type: 'unit', scope: 'opponent', count: 1 }
+            }
+        ];
+
+        const optionChoice = EventFactory.createOptionChoiceEvent({
+            playerId: 'playerId_1',
+            sourceCarduid: 'some_pairing_source',
+            effect: { effectId: 'pairing_effect_order', type: 'internal', trigger: 'CHOICE', action: 'pairing_effect_order' },
+            availableOptions: [
+                { index: 0, label: 'interactive_1', payload: { effectOrderIndex: 1 } },
+                { index: 1, label: 'interactive_2', payload: { effectOrderIndex: 2 } }
+            ],
+            context: {
+                kind: 'PAIRING_EFFECT_ORDER',
+                pairingCarduid: 'some_pairing_source',
+                effects: [effects[1], effects[2]],
+                allEffects: effects
+            }
+        });
+
+        optionChoice.status = 'RESOLVING';
+        optionChoice.data.userDecisionMade = true;
+        optionChoice.data.selectedOptionIndex = 1;
+
+        const execResult = PairingEffectOrderManager.executeOptionChoice(optionChoice, gameEnv);
+        expect(execResult.success).toBe(true);
+
+        const queuedPairing = gameEnv.processingQueue.find((event) => event.type === EventType.PAIRING_EFFECT_TRIGGERED);
+        expect(queuedPairing).toBeTruthy();
+        expect(queuedPairing.data.effects[0].effectId).toBe('interactive_2');
+        expect(queuedPairing.data.remainingEffects).toHaveLength(2);
+        expect(queuedPairing.data.remainingEffects[0].effectId).toBe('auto_draw');
+        expect(queuedPairing.data.remainingEffects[1].effectId).toBe('interactive_1');
     });
 });

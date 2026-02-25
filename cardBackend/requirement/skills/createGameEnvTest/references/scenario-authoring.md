@@ -65,6 +65,10 @@ Required `initialGameEnv` fields:
 - Linked/paired terminology must match engine behavior:
   - `paired`: slot has both `unit` and `pilot`.
   - `linked`: `paired` + link match (`LinkUtils.isLinkedPair`) succeeds.
+  - Slot legality invariant: do not encode pilot-only slots.
+    - if a slot has `pilot`, that slot must also have `unit`.
+    - pilot-only slot setup is invalid test data and must be fixed.
+    - `slot.unit.cardId` must resolve to `cardType: "unit"` (never pilot ids like `GD03-099`).
   - For `sourceConditions: [{ "type": "linked" }]`, setup must satisfy true linked state, not just unit+pilot occupancy.
   - If unit link list requires a specific pilot identity (name/trait), use a matching pilot (or command played as pilot with `designate_pilot`).
   - Example mismatch: `GD03-099 + GD03-083` is paired only (`GD03-083` has `link: []`), so linked effects must not be expected.

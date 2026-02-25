@@ -13,7 +13,7 @@
   ],
   "notes": [
     "Action: Load scenario via getTestScenario and inject via injectGameState.",
-    "Setup: Player 1 slot1 has linked GD03-075 (unit + pilot). Player 2 has one unpaired enemy unit in slot1 and one paired enemy unit in slot2.",
+    "Setup: Player 1 slot1 has linked GD03-075 (unit + AEUG pilot GD03-099). Player 2 has one unpaired enemy unit in slot1 and one paired enemy unit in slot2.",
     "Action (manual): Player 1 declares attackUnit with GD03-075_unit_0001 targeting playerId_2 slot1.",
     "Expect: GD03-075 attack_effect triggers and target choice only allows enemy units with no paired Pilot.",
     "Action (manual): Select GD03-031_enemy_unpaired_0001 in slot1.",
@@ -96,8 +96,8 @@
               "isFirstPlay": false
             },
             "pilot": {
-              "carduid": "GD03-096_pilot_0001",
-              "cardId": "GD03-096",
+              "carduid": "GD03-099_pilot_0001",
+              "cardId": "GD03-099",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,

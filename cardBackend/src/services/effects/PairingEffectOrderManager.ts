@@ -10,6 +10,7 @@ type PairingEffectOrderContext = {
     kind: 'PAIRING_EFFECT_ORDER';
     pairingCarduid?: string;
     effects: PairingEffectDefinition[];
+    allEffects?: PairingEffectDefinition[];
 };
 
 export class PairingEffectOrderManager {
@@ -24,7 +25,8 @@ export class PairingEffectOrderManager {
         }
 
         const effects = Array.isArray(context.effects) ? (context.effects as PairingEffectDefinition[]) : [];
-        if (effects.length === 0) {
+        const allEffects = Array.isArray(context.allEffects) ? (context.allEffects as PairingEffectDefinition[]) : effects;
+        if (allEffects.length === 0) {
             return { success: false, error: 'PAIRING_EFFECT_ORDER has no effects to order' };
         }
 
@@ -36,6 +38,9 @@ export class PairingEffectOrderManager {
         const selectedOption = Array.isArray(event.data.availableOptions)
             ? event.data.availableOptions.find((option) => option.index === selectedIndex)
             : undefined;
+        if (Array.isArray(event.data.availableOptions) && event.data.availableOptions.length > 0 && !selectedOption) {
+            return { success: false, error: 'PAIRING_EFFECT_ORDER selected option is out of range' };
+        }
         if (selectedOption?.disabled === true) {
             const reason = typeof selectedOption.disabledReason === 'string' && selectedOption.disabledReason.length > 0
                 ? selectedOption.disabledReason
@@ -43,12 +48,15 @@ export class PairingEffectOrderManager {
             return { success: false, error: `PAIRING_EFFECT_ORDER selected option is disabled: ${reason}` };
         }
 
-        const selectedEffect = effects.find((_effect, idx) => idx === selectedIndex);
+        const selectedEffectOrderIndex = typeof (selectedOption as any)?.payload?.effectOrderIndex === 'number'
+            ? (selectedOption as any).payload.effectOrderIndex
+            : selectedIndex;
+        const selectedEffect = allEffects.find((_effect, idx) => idx === selectedEffectOrderIndex);
         if (!selectedEffect) {
             return { success: false, error: 'PAIRING_EFFECT_ORDER selected option is out of range' };
         }
 
-        const remainingEffects = effects.filter((_effect, idx) => idx !== selectedIndex);
+        const remainingEffects = allEffects.filter((_effect, idx) => idx !== selectedEffectOrderIndex);
         const pairingCarduid = typeof context.pairingCarduid === 'string' && context.pairingCarduid.length > 0
             ? context.pairingCarduid
             : event.data.sourceCarduid;

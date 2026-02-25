@@ -12,14 +12,14 @@
     "ATTACK_PHASE"
   ],
   "notes": [
-    "Setup: Player 1 has GD03-074 in slot1 (rested), paired with pilot, and another Superpower Bloc unit (GD03-098) in slot2. Player 2 has active unit ready to attack.",
+    "Setup: Player 1 has GD03-074 in slot1 (rested), paired with pilot, and another Superpower Bloc unit (GD03-082, active) in slot2 to satisfy the During Pair condition. Player 2 has active unit ready to attack.",
     "Action (manual): Player 2 initiates attack targeting Player 1's slot1 unit.",
     "Expect: Due to GD03-074's During Pair effect and rested state, Player 2's attack is forced to target GD03-074 (if possible). The attack targeting restriction is applied, preventing normal target selection.",
     "Action (manual): Player 2 resolves attack against GD03-074.",
     "Expect: Battle proceeds with GD03-074 as the forced target, validating that the During Pair condition (another Superpower Bloc unit in play) and rested state properly trigger the forced targeting mechanic."
   ],
   "initialGameEnv": {
-    "phase": "ATTACK_PHASE",
+    "phase": "MAIN_PHASE",
     "playerId_1": "playerId_1",
     "playerId_2": "playerId_2",
     "gameStarted": true,
@@ -103,18 +103,18 @@
           },
           "slot2": {
             "unit": {
-              "carduid": "GD03-098_unit_0001",
-              "cardId": "GD03-098",
+              "carduid": "GD03-082_unit_0001",
+              "cardId": "GD03-082",
               "placedAt": 0,
               "placedBy": "playerId_1",
-              "isRested": false,
+              "isRested": true,
               "damageReceived": 0,
               "modifyAP": 0,
               "modifyHP": 0,
               "continueModifyAP": 0,
               "continueModifyHP": 0,
-              "originalAP": 2,
-              "originalHP": 2,
+              "originalAP": 4,
+              "originalHP": 1,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,

@@ -25,6 +25,11 @@
     - `target.filters.level: "<=SOURCE_LEVEL"`
     - `conditions: [{ type: "sourceLevel", ... }]`
 - For link-dependent effects, validate scenario slot composition against unit `link` entries.
+- Validate slot legality before effect debugging:
+  - A slot must never contain only `pilot` without `unit`.
+  - If `slot.pilot` exists, `slot.unit` must also exist in the same slot.
+  - `slot.unit.cardId` must be a unit card id (not pilot/command card ids).
+  - Treat pilot-only slot fixtures as invalid test data and fix scenario first.
 - For text with `If you do` / `Then`, verify rule flow has explicit branch semantics:
   - preceding step has stable `stepId`
   - dependent branch checks `type: "stepResolved"` for that `stepId`
@@ -61,6 +66,20 @@
   - If an option is guaranteed no-op now, it should be disabled with a reason, not just allowed then no-op.
   - Backend must reject disabled option selections to prevent stale/manual invalid picks.
   - Frontend must map backend disabled state to non-selectable UI and timeout/default selection must skip disabled options.
+  - For pairing effect-order dialogs, do not include deterministic non-interactive effects as options.
+  - Resolve hidden auto effects in deterministic effect-list order while dialog options represent only interactive candidates.
+  - If options are filtered, include stable option-to-effect mapping (for example `payload.effectOrderIndex`) and enforce selection via mapped index.
+  - For forced-attack rules (`require_attack_target_if_available`), verify extractor supports nested `sequence` + `conditional` branches (not only top-level actions).
+  - Confirm conditional snapshot is evaluated before collecting branch actions (`if` true => `then`, otherwise `else`).
+  - Validate enforcement contract:
+    - one forced candidate => backend rejects attack to other unit (`FORCED_ATTACK_TARGET_REQUIRED`)
+    - multiple forced candidates => backend opens forced target chooser for configured `chooser`.
+
+## 4.1) Fast Debug Heuristic for Forced Target Bugs
+- If battle notification shows `UNIT_ATTACK_DECLARED` to a non-forced target while a continuous forced-target effect is active:
+  - inspect defending side continuous rule shape for nested `sequence/conditional`.
+  - inspect forced-target extractor path (`ForcedAttackTargetManager`) for recursion support.
+  - verify candidate resolution filters (`status: rested/active`) match current board state.
 
 ## 5) Fix Strategy
 - Centralize comparison parsing/evaluation in shared util.

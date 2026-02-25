@@ -8,6 +8,7 @@ import { ChoiceEventScheduler } from '../choices/ChoiceEventScheduler';
 import { TargetResolver } from '../targets/TargetResolver';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { GameNotificationManager } from '../GameNotificationManager';
+import { EffectConditionEvaluator } from '../conditions/EffectConditionEvaluator';
 
 type RequireAttackTargetParameters = {
     candidateTarget?: Record<string, unknown>;
@@ -161,8 +162,13 @@ export class ForcedAttackTargetManager {
             for (const rule of effects) {
                 const normalized = ensureEffectDefaults({ ...(rule as any) });
 
-                const extracted = this.extractRequireAttackTargetEffect(normalized);
-                if (!extracted) {
+                const extractedRequirements = this.extractRequireAttackTargetEffects(
+                    normalized,
+                    gameEnv,
+                    defendingPlayerId,
+                    unit as any
+                );
+                if (extractedRequirements.length === 0) {
                     continue;
                 }
 
@@ -170,56 +176,132 @@ export class ForcedAttackTargetManager {
                     continue;
                 }
 
-                const candidates = this.resolveCandidates(gameEnv, defendingPlayerId, unit.carduid, extracted.parameters);
-                if (candidates.length === 0) {
-                    continue;
-                }
+                for (const extracted of extractedRequirements) {
+                    const candidates = this.resolveCandidates(gameEnv, defendingPlayerId, unit.carduid, extracted.parameters);
+                    if (candidates.length === 0) {
+                        continue;
+                    }
 
-                requirements.push({
-                    sourceCarduid: unit.carduid,
-                    chooser: extracted.chooser,
-                    candidates
-                });
+                    requirements.push({
+                        sourceCarduid: unit.carduid,
+                        chooser: extracted.chooser,
+                        candidates
+                    });
+                }
             }
         }
 
         return requirements;
     }
 
-    private static extractRequireAttackTargetEffect(effect: EffectDefinition): { chooser: 'ATTACKER' | 'DEFENDER'; parameters: RequireAttackTargetParameters } | null {
+    private static extractRequireAttackTargetEffects(
+        effect: EffectDefinition,
+        gameEnv: GameEnvironment,
+        defendingPlayerId: string,
+        sourceUnit: Record<string, unknown>
+    ): Array<{ chooser: 'ATTACKER' | 'DEFENDER'; parameters: RequireAttackTargetParameters }> {
+        const extracted: Array<{ chooser: 'ATTACKER' | 'DEFENDER'; parameters: RequireAttackTargetParameters }> = [];
         const action = typeof effect.action === 'string' ? effect.action : '';
         if (action === 'require_attack_target_if_available') {
             const chooserRaw = typeof effect.parameters?.chooser === 'string'
                 ? String(effect.parameters.chooser).toUpperCase()
                 : 'DEFENDER';
-            return {
+            extracted.push({
                 chooser: chooserRaw === 'ATTACKER' ? 'ATTACKER' : 'DEFENDER',
                 parameters: effect.parameters as RequireAttackTargetParameters
-            };
+            });
+            return extracted;
         }
 
         if (action !== 'sequence') {
-            return null;
+            return extracted;
         }
 
         const steps = Array.isArray((effect.parameters as any)?.steps) ? ((effect.parameters as any).steps as any[]) : [];
+        this.collectFromSequenceSteps(extracted, steps, gameEnv, defendingPlayerId, sourceUnit);
+        return extracted;
+    }
+
+    private static collectFromSequenceSteps(
+        output: Array<{ chooser: 'ATTACKER' | 'DEFENDER'; parameters: RequireAttackTargetParameters }>,
+        steps: any[],
+        gameEnv: GameEnvironment,
+        defendingPlayerId: string,
+        sourceUnit: Record<string, unknown>
+    ): void {
         for (const step of steps) {
             if (!step || typeof step.action !== 'string') {
                 continue;
             }
-            if (step.action !== 'require_attack_target_if_available') {
+
+            if (step.action === 'require_attack_target_if_available') {
+                const chooserRaw = typeof step.parameters?.chooser === 'string'
+                    ? String(step.parameters.chooser).toUpperCase()
+                    : 'DEFENDER';
+                output.push({
+                    chooser: chooserRaw === 'ATTACKER' ? 'ATTACKER' : 'DEFENDER',
+                    parameters: step.parameters as RequireAttackTargetParameters
+                });
                 continue;
             }
-            const chooserRaw = typeof step.parameters?.chooser === 'string'
-                ? String(step.parameters.chooser).toUpperCase()
-                : 'DEFENDER';
-            return {
-                chooser: chooserRaw === 'ATTACKER' ? 'ATTACKER' : 'DEFENDER',
-                parameters: step.parameters as RequireAttackTargetParameters
-            };
+
+            if (step.action === 'conditional') {
+                const params = (step.parameters && typeof step.parameters === 'object')
+                    ? (step.parameters as Record<string, unknown>)
+                    : {};
+                const ifConditions = Array.isArray(params.if) ? (params.if as Array<Record<string, unknown>>) : [];
+                const conditionMet = this.evaluateConditionalStepSnapshot(
+                    gameEnv,
+                    defendingPlayerId,
+                    sourceUnit,
+                    ifConditions
+                );
+                const branchSteps = conditionMet
+                    ? (Array.isArray(params.then) ? (params.then as any[]) : [])
+                    : (Array.isArray(params.else) ? (params.else as any[]) : []);
+                if (branchSteps.length > 0) {
+                    this.collectFromSequenceSteps(output, branchSteps, gameEnv, defendingPlayerId, sourceUnit);
+                }
+                continue;
+            }
+
+            if (step.action === 'sequence') {
+                const nestedSteps = Array.isArray(step.parameters?.steps) ? (step.parameters.steps as any[]) : [];
+                if (nestedSteps.length > 0) {
+                    this.collectFromSequenceSteps(output, nestedSteps, gameEnv, defendingPlayerId, sourceUnit);
+                }
+            }
+        }
+    }
+
+    private static evaluateConditionalStepSnapshot(
+        gameEnv: GameEnvironment,
+        defendingPlayerId: string,
+        sourceUnit: Record<string, unknown>,
+        conditions: Array<Record<string, unknown>>
+    ): boolean {
+        if (!Array.isArray(conditions) || conditions.length === 0) {
+            return false;
         }
 
-        return null;
+        for (const condition of conditions) {
+            const isMet = EffectConditionEvaluator.validateEffectConditions(
+                ensureEffectDefaults({
+                    effectId: 'forced_attack_target_conditional_preview',
+                    type: 'internal',
+                    trigger: 'continuous',
+                    action: 'noop',
+                    conditions: [condition]
+                } as any),
+                gameEnv,
+                defendingPlayerId,
+                sourceUnit as any
+            );
+            if (!isMet) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static resolveCandidates(

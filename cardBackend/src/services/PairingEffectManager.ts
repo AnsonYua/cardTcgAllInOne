@@ -42,6 +42,7 @@ type PairingEffectOrderContext = {
     kind: 'PAIRING_EFFECT_ORDER';
     pairingCarduid: string;
     effects: PairingEffectDefinition[];
+    allEffects?: PairingEffectDefinition[];
 };
 
 export interface PairingEffectResult {
@@ -136,6 +137,12 @@ export class PairingEffectManager implements StandardEffectManager {
         'previousTargetHasTrait',
         'milledAnyCardHasTrait',
         'milledCardHasTraitsAny'
+    ]);
+
+    private static readonly DIRECT_CHOICE_ACTIONS = new Set([
+        'option_choice',
+        'prompt_choice',
+        'token_choice'
     ]);
     
     // ============ STANDARDIZED INTERFACE IMPLEMENTATION ============
@@ -490,8 +497,15 @@ export class PairingEffectManager implements StandardEffectManager {
             // If multiple effects are present, resolve them in card-text order when they are
             // non-conflicting; otherwise let the player pick which one resolves next.
             if (pairingEffects.length > 1) {
-                if (this.shouldPromptForPairingEffectOrder(pairingEffects)) {
-                    const options = pairingEffects.map((effect, index) => {
+                const interactiveOrderCandidates = this.collectInteractiveOrderCandidates(pairingEffects);
+                const shouldPromptOrder =
+                    this.isPairingEffectInteractiveCandidate(pairingEffects[0]) &&
+                    interactiveOrderCandidates.length > 1 &&
+                    this.shouldPromptForPairingEffectOrder(interactiveOrderCandidates.map((entry) => entry.effect));
+
+                if (shouldPromptOrder) {
+                    const options = interactiveOrderCandidates.map((entry, optionIndex) => {
+                        const effect = entry.effect;
                         const optionLabel = this.describePairingEffectOption(gameEnv, playerId, effect);
                         const optionAvailability = this.evaluatePairingEffectOptionAvailability(
                             gameEnv,
@@ -500,8 +514,9 @@ export class PairingEffectManager implements StandardEffectManager {
                             effect
                         );
                         return {
-                            index,
+                            index: optionIndex,
                             label: optionLabel,
+                            payload: { effectOrderIndex: entry.originalIndex },
                             ...(optionAvailability.disabled ? { disabled: true, disabledReason: optionAvailability.reason } : {}),
                             display: ChoiceDisplayBuilder.text(optionLabel)
                         };
@@ -517,7 +532,8 @@ export class PairingEffectManager implements StandardEffectManager {
                     const context: PairingEffectOrderContext = {
                         kind: 'PAIRING_EFFECT_ORDER',
                         pairingCarduid: eventData.carduid,
-                        effects: pairingEffects as unknown as PairingEffectDefinition[]
+                        effects: interactiveOrderCandidates.map((entry) => entry.effect) as unknown as PairingEffectDefinition[],
+                        allEffects: pairingEffects as unknown as PairingEffectDefinition[]
                     };
 
                     // Enqueue as an immediate choice and notify the frontend.
@@ -610,7 +626,13 @@ export class PairingEffectManager implements StandardEffectManager {
                     nextEvent.priority = EventPriority.NORMAL;
                     gameEnv.enqueueForProcessing(nextEvent);
                 } else {
-                    if (!this.shouldPromptForPairingEffectOrder(remainingEffects)) {
+                    const interactiveRemainingCandidates = this.collectInteractiveOrderCandidates(remainingEffects);
+                    const shouldPromptRemainingOrder =
+                        this.isPairingEffectInteractiveCandidate(remainingEffects[0]) &&
+                        interactiveRemainingCandidates.length > 1 &&
+                        this.shouldPromptForPairingEffectOrder(interactiveRemainingCandidates.map((entry) => entry.effect));
+
+                    if (!shouldPromptRemainingOrder) {
                         const nextEvent = EventFactory.createPairingEffectEvent(playerId, eventData.carduid, [
                             remainingEffects[0] as unknown as PairingEffectDefinition
                         ]);
@@ -618,7 +640,8 @@ export class PairingEffectManager implements StandardEffectManager {
                         nextEvent.priority = EventPriority.NORMAL;
                         gameEnv.enqueueForProcessing(nextEvent);
                     } else {
-                        const options = remainingEffects.map((remainingEffect, index) => {
+                        const options = interactiveRemainingCandidates.map((entry, optionIndex) => {
+                            const remainingEffect = entry.effect;
                             const optionLabel = this.describePairingEffectOption(gameEnv, playerId, remainingEffect);
                             const optionAvailability = this.evaluatePairingEffectOptionAvailability(
                                 gameEnv,
@@ -627,8 +650,9 @@ export class PairingEffectManager implements StandardEffectManager {
                                 remainingEffect
                             );
                             return {
-                                index,
+                                index: optionIndex,
                                 label: optionLabel,
+                                payload: { effectOrderIndex: entry.originalIndex },
                                 ...(optionAvailability.disabled ? { disabled: true, disabledReason: optionAvailability.reason } : {}),
                                 display: ChoiceDisplayBuilder.text(optionLabel)
                             };
@@ -644,7 +668,8 @@ export class PairingEffectManager implements StandardEffectManager {
                         const context: PairingEffectOrderContext = {
                             kind: 'PAIRING_EFFECT_ORDER',
                             pairingCarduid: eventData.carduid,
-                            effects: remainingEffects as unknown as PairingEffectDefinition[]
+                            effects: interactiveRemainingCandidates.map((entry) => entry.effect) as unknown as PairingEffectDefinition[],
+                            allEffects: remainingEffects as unknown as PairingEffectDefinition[]
                         };
 
                         const followUpChoice = EventFactory.createOptionChoiceEvent({
@@ -952,6 +977,107 @@ export class PairingEffectManager implements StandardEffectManager {
             return `Condition not met: requires${valueLabel} cards in trash${traitLabel}`;
         }
         return 'Condition not met';
+    }
+
+    private static collectInteractiveOrderCandidates(
+        effects: PairingEffect[]
+    ): Array<{ effect: PairingEffect; originalIndex: number }> {
+        const candidates: Array<{ effect: PairingEffect; originalIndex: number }> = [];
+        effects.forEach((effect, originalIndex) => {
+            if (this.isPairingEffectInteractiveCandidate(effect)) {
+                candidates.push({ effect, originalIndex });
+            }
+        });
+        return candidates;
+    }
+
+    private static isPairingEffectInteractiveCandidate(effect: PairingEffect | undefined): boolean {
+        if (!effect) {
+            return false;
+        }
+
+        if ((effect as any).optional === true) {
+            return true;
+        }
+
+        if (this.effectTargetMayRequirePlayerChoice((effect as any).target)) {
+            return true;
+        }
+
+        const normalizedEffect = ensureEffectDefaults({ ...effect } as any);
+        const action = EffectExecutor.getEffectAction(normalizedEffect);
+
+        if (action === 'sequence') {
+            const steps = Array.isArray(normalizedEffect.parameters?.steps)
+                ? (normalizedEffect.parameters!.steps as Array<Record<string, unknown>>)
+                : [];
+            return this.sequenceMayRequirePlayerDecision(steps);
+        }
+
+        return action ? this.DIRECT_CHOICE_ACTIONS.has(action) : false;
+    }
+
+    private static sequenceMayRequirePlayerDecision(steps: Array<Record<string, unknown>>): boolean {
+        for (const step of steps) {
+            if (!step || typeof step.action !== 'string') {
+                continue;
+            }
+
+            if (step.optional === true) {
+                return true;
+            }
+
+            if (step.action === 'conditional') {
+                const params = (step.parameters || {}) as Record<string, unknown>;
+                const thenSteps = Array.isArray(params.then) ? (params.then as Array<Record<string, unknown>>) : [];
+                const elseSteps = Array.isArray(params.else) ? (params.else as Array<Record<string, unknown>>) : [];
+                if (this.sequenceMayRequirePlayerDecision(thenSteps) || this.sequenceMayRequirePlayerDecision(elseSteps)) {
+                    return true;
+                }
+                continue;
+            }
+
+            if (this.effectTargetMayRequirePlayerChoice(step.target)) {
+                return true;
+            }
+
+            if (this.DIRECT_CHOICE_ACTIONS.has(step.action)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static effectTargetMayRequirePlayerChoice(target: unknown): boolean {
+        if (!target || typeof target !== 'object') {
+            return false;
+        }
+
+        const candidate = target as any;
+        const selectionType = typeof candidate?.selection?.type === 'string'
+            ? candidate.selection.type
+            : '';
+        if (selectionType === 'player_choice') {
+            return true;
+        }
+
+        if (candidate.selection && selectionType.length > 0) {
+            return true;
+        }
+
+        const count = candidate.count;
+        if (count && typeof count === 'object') {
+            const minRaw = (count as any).min;
+            const maxRaw = (count as any).max;
+            const min = Number.isFinite(Number(minRaw)) ? Number(minRaw) : 0;
+            const max = Number.isFinite(Number(maxRaw)) ? Number(maxRaw) : min;
+            if (max > min) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static partitionImmediatelyResolvableEffects(

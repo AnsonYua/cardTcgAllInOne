@@ -10,10 +10,12 @@
     "returnToHand",
     "TARGET_CHOICE",
     "HP_filter",
-    "opponent_units"
+    "opponent_units",
+    "no_pilot_only_slot"
   ],
   "notes": [
-    "Setup: Player 1 has GD03-077 in slot1 and Athrun Zala pilot in hand. Player 2 has 3 enemy units with HP ≤ 3 in slots 1, 2, and 3. Player 1 has sufficient energy to play pilot.",
+    "Setup: Player 1 has GD03-077 in slot1 and Athrun Zala pilot in hand. Player 2 has 3 enemy units with HP ≤ 3 in slots 1, 2, and 3 (all are unit cards, not pilots). Player 1 has sufficient energy to play pilot.",
+    "Setup rule: No slot contains only a pilot card. Any slot with a pilot must also contain a unit.",
     "Action (manual): Player 1 plays Athrun Zala pilot to GD03-077 (triggers PAIRING_COMPLETE).",
     "Expect: When Linked effect triggers, TARGET_CHOICE appears for 1-3 enemy units with HP ≤ 3. TARGET_CHOICE is enqueued to processingQueue and notification is appended to notificationQueue (frontend-driven).",
     "Action (manual): Player 1 selects 2 enemy units (Player 2's slot1 and slot2 units).",
@@ -187,8 +189,28 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD03-001_unit_0001",
-              "cardId": "GD03-001",
+              "carduid": "GD03-081_unit_0001",
+              "cardId": "GD03-081",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 1,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "GD03-082_unit_0001",
+              "cardId": "GD03-082",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -198,27 +220,7 @@
               "continueModifyAP": 0,
               "continueModifyHP": 0,
               "originalAP": 4,
-              "originalHP": 4,
-              "playedThisTurn": false,
-              "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false
-            }
-          },
-          "slot2": {
-            "unit": {
-              "carduid": "GD03-098_unit_0001",
-              "cardId": "GD03-098",
-              "placedAt": 0,
-              "placedBy": "playerId_2",
-              "isRested": false,
-              "damageReceived": 0,
-              "modifyAP": 0,
-              "modifyHP": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
-              "originalAP": 2,
-              "originalHP": 2,
+              "originalHP": 1,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
@@ -227,8 +229,8 @@
           },
           "slot3": {
             "unit": {
-              "carduid": "GD03-099_unit_0001",
-              "cardId": "GD03-099",
+              "carduid": "GD03-083_unit_0001",
+              "cardId": "GD03-083",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -237,8 +239,8 @@
               "modifyHP": 0,
               "continueModifyAP": 0,
               "continueModifyHP": 0,
-              "originalAP": 2,
-              "originalHP": 2,
+              "originalAP": 1,
+              "originalHP": 1,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,

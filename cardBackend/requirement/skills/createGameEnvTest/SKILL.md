@@ -39,6 +39,10 @@ Use this skill when you need to create or review a complete action scenario JSON
 - **CRITICAL: Linked vs Paired Definition (Engine-Accurate)**
   - `paired`: unit and pilot both exist in the same slot.
   - `linked`: paired **and** `LinkUtils.isLinkedPair(unit, pilot)` is true.
+  - Slot legality invariant: do not author pilot-only slots.
+    - If `slot.pilot` exists, `slot.unit` must exist in the same slot.
+    - A fixture with pilot-only slot is invalid and must be corrected before handoff.
+    - `slot.unit.cardId` must always be a `cardType: "unit"` card (do not place pilot ids in `slot.unit`).
   - Link match rule:
     - Unit `cardData.link` must include pilot identity.
     - Pilot identity is pilot `cardData.name` or (for command cards played as pilot) `designate_pilot.parameters.pilotName`.

@@ -24,6 +24,10 @@
   - verify setup is truly linked, not only paired
   - verify pilot identity matches unit `link` requirements (name/trait, or `designate_pilot` when command is played as pilot)
   - sanity example: `GD03-099 + GD03-083` is only paired; `GD03-099 + GD03-079` is linked
+- Slot legality:
+  - no slot may contain only a pilot card.
+  - if `zones.slotX.pilot` exists, `zones.slotX.unit` must also exist.
+  - `zones.slotX.unit.cardId` must be a unit card id (not pilot/command).
 - Both players include:
   - `deck.handUids`
   - `zones.slot1..slot6`
