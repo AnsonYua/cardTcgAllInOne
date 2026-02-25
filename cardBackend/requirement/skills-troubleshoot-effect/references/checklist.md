@@ -7,6 +7,9 @@
 - Confirm exact card/scenario path.
 - Confirm expected behavior from `effects.rules` and `effects.description`.
 - Capture current incorrect UI/backend behavior.
+- Verify whether expected trigger needs `paired` or `linked`:
+  - `paired`: same slot unit + pilot exists
+  - `linked`: paired and unit `link` matches pilot name/trait
 
 ## 2) Data Inventory (Backend Truth)
 - Scan all relevant set files in `cardBackend/src/data/*.json`.
@@ -16,6 +19,7 @@
   - related `conditions`/`sourceConditions`
 - Capture dynamic filters:
   - `<=SOURCE_AP`, `<=SOURCE_LEVEL`, etc.
+- For link-dependent effects, validate scenario slot composition against unit `link` entries.
 
 ## 3) Frontend Evaluator Inventory
 - Check local evaluator modules (not backend-driven execution):

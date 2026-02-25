@@ -41,6 +41,9 @@ Use this skill when a card effect appears correct in data but gameplay/UI behavi
 ## Canonical Rules (from recent fixes)
 - Backend is authoritative. Frontend local logic is only UX prediction/gating.
 - Do not parse comparison strings in multiple places; use one shared utility.
+- Pair and Link are different:
+  - `paired` = unit + pilot in same slot
+  - `linked` = paired AND unit link rules match pilot identity/traits
 - `allow_attack_target` dynamic filters must support:
   - `ap: "<=SOURCE_AP"`
   - `level: "<=SOURCE_LEVEL"`
@@ -52,6 +55,7 @@ Use this skill when a card effect appears correct in data but gameplay/UI behavi
 See `references/incident-gd03-035.md` for concrete bugs and fixes:
 - `GD03-035` active-target button missing because frontend could not parse `<=SOURCE_AP`.
 - Attack action gating mismatch for `restrict_attack` rule patterns.
+- `GD03-096` scenario had a paired-but-not-linked setup (`GD03-031 + GD03-096`), so `[During Link]` behavior could not trigger until unit changed to `GD03-051` (links `Jamil Neate`).
 
 ## Output Requirements
 - Provide:

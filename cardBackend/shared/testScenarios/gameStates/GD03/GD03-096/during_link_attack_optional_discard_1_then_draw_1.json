@@ -13,8 +13,8 @@
   ],
   "notes": [
     "Action: Load scenario via getTestScenario and inject via injectGameState.",
-    "Setup: Player 1 slot1 has linked unit (GD03-031 + GD03-096), with exactly 1 extra card in hand to pay discard cost and one known card on top of deck.",
-    "Action (manual): Player 1 declares attackUnit with GD03-031_unit_0001 targeting enemy slot1 unit.",
+    "Setup: Player 1 slot1 has linked unit (GD03-051 + GD03-096), with exactly 1 extra card in hand to pay discard cost and one known card on top of deck.",
+    "Action (manual): Player 1 declares attackUnit with GD03-051_unit_0001 targeting enemy slot1 unit.",
     "Expect: GD03-096 attack_effect appears as optional branch (During Link + Attack).",
     "Action (manual): Accept optional effect and discard GD01-001_discard_0001 from hand as cost.",
     "Expect: Cost is paid (discarded card moves to trash), then player draws 1 from top of deck (GD01-002_draw_0001) into hand."
@@ -87,8 +87,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD03-031_unit_0001",
-              "cardId": "GD03-031",
+              "carduid": "GD03-051_unit_0001",
+              "cardId": "GD03-051",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -98,7 +98,7 @@
               "continueModifyAP": 0,
               "continueModifyHP": 0,
               "originalAP": 4,
-              "originalHP": 3,
+              "originalHP": 4,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,

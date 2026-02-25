@@ -6,6 +6,16 @@
 - Rule intent:
   - `allow_attack_target` with `parameters.ap: "<=SOURCE_AP"` and `status: "active"`.
 
+## Additional Scenario Setup Incident (Pair vs Link)
+- Symptom: A `[During Link]` scenario for `GD03-096` did not trigger expected behavior.
+- Root setup bug:
+  - Scenario used `GD03-031 + GD03-096` in same slot.
+  - This is paired but not linked (`GD03-031` does not link to `Jamil Neate`).
+- Corrected setup:
+  - Switched slot unit to `GD03-051`, whose `link` includes `Jamil Neate`.
+  - Scenario file:
+    - `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/shared/testScenarios/gameStates/GD03/GD03-096/during_link_attack_optional_discard_1_then_draw_1.json`
+
 ## Root Cause 1 (P1)
 - Frontend `attackTargetPolicy` used local parser that only handled numeric RHS.
 - It failed on dynamic token expression `<=SOURCE_AP`.
