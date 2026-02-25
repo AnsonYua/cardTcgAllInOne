@@ -61,4 +61,29 @@ describe('Sequence step actionTurn gating', () => {
         expect(p1.deck.mainDeck).toHaveLength(0);
         expect(p1.deck.handUids).toHaveLength(1);
     });
+
+    test('fails fast when sequence contains unsupported step action', () => {
+        const gameEnv = new GameEnvironment();
+        gameEnv.addPlayer('playerId_1', 'P1');
+        gameEnv.addPlayer('playerId_2', 'P2');
+
+        const effect = {
+            effectId: 'test_sequence_action_unsupported_step',
+            type: 'internal',
+            trigger: 'TEST',
+            action: 'sequence',
+            parameters: {
+                steps: [
+                    {
+                        action: 'drawx',
+                        parameters: { value: 1 }
+                    }
+                ]
+            }
+        };
+
+        const result = SequenceEffectManager.processSequenceEffect(gameEnv, 'playerId_1', 'SRC', effect);
+        expect(result.success).toBe(false);
+        expect(result.error).toMatch(/Unsupported sequence step action 'drawx'/);
+    });
 });

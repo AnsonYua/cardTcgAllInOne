@@ -13,8 +13,8 @@
   ],
   "notes": [
     "Action: Load scenario via getTestScenario and inject via injectGameState.",
-    "Setup: Player 1 controls GD03-033 in slot1, has GD03-092 in hand, and top deck card is GD03-092 (trait Zeon) so conditional branch is guaranteed true.",
-    "Action (manual): Player 1 pairs GD03-092 from hand onto GD03-033 (PAIRING_COMPLETE).",
+    "Setup: Player 1 controls GD03-035 in slot1, has GD03-092 in hand, and top deck card is GD03-092 (trait Zeon) so conditional branch is guaranteed true.",
+    "Action (manual): Player 1 pairs GD03-092 from hand onto GD03-035 (PAIRING_COMPLETE).",
     "Expect: linked_effect mills top deck card to trash (reveal true).",
     "Expect: Because milled card has trait (Zeon)/(Clan), follow-up target choice appears for 1 enemy Unit to take 1 damage.",
     "Action (manual): Select enemy slot1 unit GD03-083_enemy_0001.",
@@ -88,8 +88,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD03-033_unit_0001",
-              "cardId": "GD03-033",
+              "carduid": "GD03-035_unit_0001",
+              "cardId": "GD03-035",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,

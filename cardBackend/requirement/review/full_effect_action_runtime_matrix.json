@@ -1,0 +1,323 @@
+{
+  "generatedAt": "2026-02-25T03:41:34.824Z",
+  "entries": [
+    {
+      "action": "activate_ability",
+      "count": 5,
+      "paths": [
+        "BurstEffectManager",
+        "burst subsystem (BurstEffectManager activate path)"
+      ]
+    },
+    {
+      "action": "addBasicEnergy",
+      "count": 1,
+      "paths": [
+        "EffectExecutor handler"
+      ]
+    },
+    {
+      "action": "addExtraEnergy",
+      "count": 2,
+      "paths": [
+        "EffectExecutor handler"
+      ]
+    },
+    {
+      "action": "addToHand",
+      "count": 85,
+      "paths": [
+        "EffectExecutor handler",
+        "BurstEffectManager"
+      ]
+    },
+    {
+      "action": "allow_attack_target",
+      "count": 10,
+      "paths": [
+        "EffectExecutor handler"
+      ]
+    },
+    {
+      "action": "choose_one_then_deploy_token",
+      "count": 1,
+      "paths": [
+        "EffectActionRouter specialized manager"
+      ]
+    },
+    {
+      "action": "conditional",
+      "count": 14,
+      "paths": [
+        "EffectActionRouter specialized manager"
+      ]
+    },
+    {
+      "action": "conditionalTokenDeploy",
+      "count": 15,
+      "paths": [
+        "EffectExecutor handler",
+        "EffectActionRouter specialized manager"
+      ]
+    },
+    {
+      "action": "damage",
+      "count": 39,
+      "paths": [
+        "EffectExecutor handler"
+      ]
+    },
+    {
+      "action": "damageShield",
+      "count": 13,
+      "paths": [
+        "EffectExecutor handler"
+      ]
+    },
+    {
+      "action": "deploy",
+      "count": 33,
+      "paths": [
+        "EffectExecutor handler",
+        "BurstEffectManager"
+      ]
+    },
+    {
+      "action": "deploy_from_hand",
+      "count": 2,
+      "paths": [
+        "EffectExecutor handler"
+      ]
+    },
+    {
+      "action": "deploy_from_top_deck",
+      "count": 2,
+      "paths": [
+        "EffectActionRouter specialized manager"
+      ]
+    },
+    {
+      "action": "designate_pilot",
+      "count": 40,
+      "paths": [
+        "card-play subsystem (command-as-pilot path)"
+      ]
+    },
+    {
+      "action": "destroy",
+      "count": 7,
+      "paths": [
+        "EffectExecutor handler"
+      ]
+    },
+    {
+      "action": "draw",
+      "count": 19,
+      "paths": [
+        "EffectExecutor handler"
+      ]
+    },
+    {
+      "action": "draw_then_discard",
+      "count": 5,
+      "paths": [
+        "EffectActionRouter specialized manager"
+      ]
+    },
+    {
+      "action": "grant_breach",
+      "count": 11,
+      "paths": [
+        "EffectExecutor handler",
+        "ContinuousActionRegistry"
+      ]
+    },
+    {
+      "action": "grant_keyword",
+      "count": 23,
+      "paths": [
+        "EffectExecutor handler",
+        "ContinuousActionRegistry"
+      ]
+    },
+    {
+      "action": "heal",
+      "count": 27,
+      "paths": [
+        "repair/heal subsystem"
+      ]
+    },
+    {
+      "action": "modifyAP",
+      "count": 68,
+      "paths": [
+        "continuous/effect stat applier"
+      ]
+    },
+    {
+      "action": "modifyCost",
+      "count": 7,
+      "paths": [
+        "hand continuous modifier / cost replacement subsystem"
+      ]
+    },
+    {
+      "action": "modifyHP",
+      "count": 3,
+      "paths": [
+        "continuous/effect stat applier"
+      ]
+    },
+    {
+      "action": "modifyLevel",
+      "count": 1,
+      "paths": [
+        "hand continuous modifier / attack permission resolver"
+      ]
+    },
+    {
+      "action": "pair_from_trash",
+      "count": 1,
+      "paths": [
+        "EffectExecutor handler"
+      ]
+    },
+    {
+      "action": "prevent_ap_reduction",
+      "count": 1,
+      "paths": [
+        "ContinuousActionRegistry"
+      ]
+    },
+    {
+      "action": "prevent_battle_damage",
+      "count": 8,
+      "paths": [
+        "EffectExecutor handler",
+        "ContinuousActionRegistry"
+      ]
+    },
+    {
+      "action": "prevent_damage",
+      "count": 2,
+      "paths": [
+        "EffectExecutor handler",
+        "ContinuousActionRegistry"
+      ]
+    },
+    {
+      "action": "prevent_set_active_next_turn",
+      "count": 2,
+      "paths": [
+        "EffectExecutor handler"
+      ]
+    },
+    {
+      "action": "prevent_shield_damage",
+      "count": 1,
+      "paths": [
+        "EffectExecutor handler"
+      ]
+    },
+    {
+      "action": "redirect_attack",
+      "count": 36,
+      "paths": [
+        "blocker subsystem (ATTACK_REDIRECT)"
+      ]
+    },
+    {
+      "action": "replace_cost",
+      "count": 3,
+      "paths": [
+        "cost replacement subsystem"
+      ]
+    },
+    {
+      "action": "require_attack_target_if_available",
+      "count": 1,
+      "paths": [
+        "forced attack target subsystem"
+      ]
+    },
+    {
+      "action": "rest",
+      "count": 22,
+      "paths": [
+        "EffectExecutor handler"
+      ]
+    },
+    {
+      "action": "restrict_attack",
+      "count": 5,
+      "paths": [
+        "EffectExecutor handler"
+      ]
+    },
+    {
+      "action": "restrict_pairing",
+      "count": 1,
+      "paths": [
+        "play restriction subsystem"
+      ]
+    },
+    {
+      "action": "restrict_set_active",
+      "count": 1,
+      "paths": [
+        "activation restriction subsystem"
+      ]
+    },
+    {
+      "action": "returnToHand",
+      "count": 10,
+      "paths": [
+        "EffectExecutor handler"
+      ]
+    },
+    {
+      "action": "scry_top_deck",
+      "count": 3,
+      "paths": [
+        "EffectExecutor handler"
+      ]
+    },
+    {
+      "action": "sequence",
+      "count": 153,
+      "paths": [
+        "EffectExecutor handler",
+        "EffectActionRouter specialized manager"
+      ]
+    },
+    {
+      "action": "set_name_alias",
+      "count": 1,
+      "paths": [
+        "EffectExecutor handler",
+        "ContinuousActionRegistry"
+      ]
+    },
+    {
+      "action": "setActive",
+      "count": 5,
+      "paths": [
+        "EffectExecutor handler"
+      ]
+    },
+    {
+      "action": "setActive_then_restrict_attack",
+      "count": 1,
+      "paths": [
+        "EffectExecutor handler"
+      ]
+    },
+    {
+      "action": "tutor_top_deck",
+      "count": 9,
+      "paths": [
+        "EffectActionRouter specialized manager"
+      ]
+    }
+  ]
+}

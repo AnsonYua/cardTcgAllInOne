@@ -553,4 +553,36 @@ describe('effectSchemaCanonicalValidation utilities', () => {
 
         expect(diagnostics.some((d) => d.severity === 'error' && /only allowed on base cards/.test(d.message))).toBe(true);
     });
+
+    test('rejects unsupported sequence step action', () => {
+        const diagnostics = [];
+        walkEffects(
+            {
+                effectId: 'sequence_bad_step',
+                type: 'play',
+                trigger: 'COST',
+                action: 'sequence',
+                parameters: {
+                    steps: [
+                        {
+                            action: 'drawx',
+                            parameters: {
+                                value: 1
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                cardId: 'MOCK-SEQ-BAD-STEP',
+                effectId: 'sequence_bad_step',
+                jsonPath: 'cards.MOCK-SEQ-BAD-STEP.effects.rules[0]'
+            },
+            diagnostics
+        );
+
+        expect(
+            diagnostics.some((d) => d.severity === 'error' && /unsupported sequence step action/i.test(d.message))
+        ).toBe(true);
+    });
 });

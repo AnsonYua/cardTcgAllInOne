@@ -13,6 +13,7 @@ import type { SequenceContinuationAfterChoiceContext } from './sequence/Sequence
 import { EffectSelfTargetNormalizer } from '../targets/EffectSelfTargetNormalizer';
 import { EffectConditionEvaluator } from '../conditions/EffectConditionEvaluator';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
+import { SEQUENCE_SUPPORTED_STEP_ACTIONS } from './schema/EffectSchema';
 
 export type SequenceStep = {
     action: string;
@@ -113,6 +114,13 @@ export class SequenceEffectManager {
             }
 
             const stepAction = step.action;
+            if (!SEQUENCE_SUPPORTED_STEP_ACTIONS.has(stepAction)) {
+                const sequenceId = ctx.sequenceEffectId || 'sequence';
+                return {
+                    success: false,
+                    error: `Unsupported sequence step action '${stepAction}' in ${sequenceId} at index ${index}`
+                };
+            }
             const params = (step.parameters || {}) as Record<string, unknown>;
             const stepId = typeof step.stepId === 'string' ? step.stepId : undefined;
             const stepEffect = this.buildStepEffect(step, stepId);

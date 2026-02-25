@@ -20,6 +20,7 @@ const {
   CANONICAL_TARGET_FILTER_KEYS,
   CANONICAL_SCALING_TYPES,
   SEQUENCE_INTERNAL_CONDITION_TYPES,
+  SEQUENCE_SUPPORTED_STEP_ACTIONS,
   normalizeEffectTriggerAlias,
   normalizeConditionTypeAlias,
   normalizeSelectionTypeAlias
@@ -287,6 +288,157 @@ function validateReturnToHandSemantics(node, context, diagnostics) {
   }
 }
 
+function validateSequenceStructure(node, context, diagnostics) {
+  if (!node || typeof node !== 'object' || node.action !== 'sequence') {
+    return;
+  }
+
+  const parameters = node.parameters && typeof node.parameters === 'object' ? node.parameters : null;
+  const paramsPath = `${context.jsonPath}.parameters`;
+  if (!parameters) {
+    diagnostics.push({
+      severity: 'error',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: paramsPath,
+      message: 'sequence requires parameters object'
+    });
+    return;
+  }
+
+  const steps = parameters.steps;
+  if (!Array.isArray(steps)) {
+    diagnostics.push({
+      severity: 'error',
+      cardId: context.cardId,
+      effectId: context.effectId || 'unknown',
+      jsonPath: `${paramsPath}.steps`,
+      message: 'sequence parameters.steps must be an array'
+    });
+    return;
+  }
+
+  steps.forEach((step, index) => {
+    const stepPath = `${paramsPath}.steps[${index}]`;
+    if (!step || typeof step !== 'object') {
+      diagnostics.push({
+        severity: 'error',
+        cardId: context.cardId,
+        effectId: context.effectId || 'unknown',
+        jsonPath: stepPath,
+        message: 'sequence step must be an object'
+      });
+      return;
+    }
+
+    const stepAction = typeof step.action === 'string' ? step.action : '';
+    if (!stepAction) {
+      diagnostics.push({
+        severity: 'error',
+        cardId: context.cardId,
+        effectId: context.effectId || 'unknown',
+        jsonPath: `${stepPath}.action`,
+        message: 'sequence step action must be a non-empty string'
+      });
+      return;
+    }
+
+    if (!SEQUENCE_SUPPORTED_STEP_ACTIONS.has(stepAction)) {
+      diagnostics.push({
+        severity: 'error',
+        cardId: context.cardId,
+        effectId: context.effectId || 'unknown',
+        jsonPath: `${stepPath}.action`,
+        message: `unsupported sequence step action ${stepAction}`
+      });
+      return;
+    }
+
+    const stepParams = step.parameters && typeof step.parameters === 'object' ? step.parameters : {};
+    if (stepAction === 'conditional') {
+      if (!Array.isArray(stepParams.then)) {
+        diagnostics.push({
+          severity: 'error',
+          cardId: context.cardId,
+          effectId: context.effectId || 'unknown',
+          jsonPath: `${stepPath}.parameters.then`,
+          message: 'conditional sequence step requires parameters.then array'
+        });
+      }
+      if (
+        Object.prototype.hasOwnProperty.call(stepParams, 'else') &&
+        !Array.isArray(stepParams.else)
+      ) {
+        diagnostics.push({
+          severity: 'error',
+          cardId: context.cardId,
+          effectId: context.effectId || 'unknown',
+          jsonPath: `${stepPath}.parameters.else`,
+          message: 'conditional sequence step parameters.else must be an array when provided'
+        });
+      }
+    }
+
+    if (stepAction === 'discard') {
+      const value = stepParams.value;
+      const count = step.target && typeof step.target === 'object' ? step.target.count : undefined;
+      const hasPositiveValue = typeof value === 'number' && value > 0;
+      const hasPositiveCount = typeof count === 'number' && count > 0;
+      if (!hasPositiveValue && !hasPositiveCount) {
+        diagnostics.push({
+          severity: 'error',
+          cardId: context.cardId,
+          effectId: context.effectId || 'unknown',
+          jsonPath: stepPath,
+          message: 'discard sequence step requires positive parameters.value or target.count'
+        });
+      }
+    }
+
+    if (stepAction === 'moveTopDeckToTrash') {
+      if (!(typeof stepParams.count === 'number' && stepParams.count > 0)) {
+        diagnostics.push({
+          severity: 'error',
+          cardId: context.cardId,
+          effectId: context.effectId || 'unknown',
+          jsonPath: `${stepPath}.parameters.count`,
+          message: 'moveTopDeckToTrash sequence step requires parameters.count > 0'
+        });
+      }
+    }
+
+    if (stepAction === 'registerDelayedTrigger') {
+      if (typeof stepParams.duration !== 'string' || stepParams.duration.length === 0) {
+        diagnostics.push({
+          severity: 'error',
+          cardId: context.cardId,
+          effectId: context.effectId || 'unknown',
+          jsonPath: `${stepPath}.parameters.duration`,
+          message: 'registerDelayedTrigger sequence step requires parameters.duration'
+        });
+      }
+      if (!stepParams.trigger || typeof stepParams.trigger !== 'object') {
+        diagnostics.push({
+          severity: 'error',
+          cardId: context.cardId,
+          effectId: context.effectId || 'unknown',
+          jsonPath: `${stepPath}.parameters.trigger`,
+          message: 'registerDelayedTrigger sequence step requires parameters.trigger object'
+        });
+      }
+      if (!Array.isArray(stepParams.then) || stepParams.then.length === 0) {
+        diagnostics.push({
+          severity: 'error',
+          cardId: context.cardId,
+          effectId: context.effectId || 'unknown',
+          jsonPath: `${stepPath}.parameters.then`,
+          message: 'registerDelayedTrigger sequence step requires non-empty parameters.then array'
+        });
+      }
+    }
+  });
+}
+
 function walkEffects(node, context, diagnostics) {
   if (Array.isArray(node)) {
     node.forEach((entry, index) => {
@@ -506,6 +658,11 @@ function walkEffects(node, context, diagnostics) {
     effectId: nextContext.effectId || 'unknown',
     jsonPath: context.jsonPath,
     cardType: context.cardType
+  }, diagnostics);
+  validateSequenceStructure(node, {
+    cardId: context.cardId,
+    effectId: nextContext.effectId || 'unknown',
+    jsonPath: context.jsonPath
   }, diagnostics);
 
   for (const [key, value] of Object.entries(node)) {
@@ -935,6 +1092,7 @@ module.exports = {
     validateScalingConfig,
     detectAlwaysOnTextRuleMismatches,
     validateReturnToHandSemantics,
+    validateSequenceStructure,
     detectSupportActivatedSchemaMismatches,
     detectDescriptionRuleContractMismatches,
     validateScryTopDeckParameters

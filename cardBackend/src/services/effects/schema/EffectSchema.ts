@@ -111,6 +111,36 @@ export const SEQUENCE_INTERNAL_CONDITION_TYPES = new Set<string>([
     'previousTargetHasTrait'
 ]);
 
+export const SEQUENCE_SUPPORTED_STEP_ACTIONS = new Set<string>([
+    'addBasicEnergy',
+    'addExtraEnergy',
+    'addToHand',
+    'allow_attack_target',
+    'conditional',
+    'conditionalTokenDeploy',
+    'damage',
+    'deploy',
+    'destroy',
+    'discard',
+    'draw',
+    'draw_if_moved_cards_match_traits',
+    'draw_then_discard',
+    'exileFromTrash',
+    'grant_keyword',
+    'heal',
+    'modifyAP',
+    'moveTopDeckToTrash',
+    'prevent_battle_damage',
+    'prevent_damage',
+    'registerDelayedTrigger',
+    'require_attack_target_if_available',
+    'rest',
+    'restrict_attack',
+    'returnToHand',
+    'scry_top_deck',
+    'setActive'
+]);
+
 export const CANONICAL_SELECTION_TYPES = new Set<string>([
     'player_choice',
     'HIGHEST_LEVEL',
