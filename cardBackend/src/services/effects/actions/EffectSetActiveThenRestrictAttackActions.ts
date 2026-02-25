@@ -54,6 +54,7 @@ export function applySetActiveThenRestrictAttackEffect(
             playerId: target.playerId,
             carduid: target.carduid,
             zone: target.zone,
+            wasRested,
             timestamp: Date.now()
         });
 

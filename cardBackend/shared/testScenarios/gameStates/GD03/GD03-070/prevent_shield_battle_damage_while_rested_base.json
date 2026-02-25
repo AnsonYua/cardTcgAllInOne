@@ -125,6 +125,10 @@
             {
               "carduid": "GD03-001_shield_0001",
               "cardId": "GD03-001"
+            },
+            {
+              "carduid": "GD03-002_shield_0002",
+              "cardId": "GD03-002"
             }
           ],
           "energyArea": [
@@ -205,7 +209,16 @@
           "slot5": {},
           "slot6": {},
           "base": [],
-          "shieldArea": [],
+          "shieldArea": [
+            {
+              "carduid": "GD03-001_shield_0001",
+              "cardId": "GD03-001"
+            },
+            {
+              "carduid": "GD03-002_shield_0002",
+              "cardId": "GD03-002"
+            }
+          ],
           "energyArea": [
             {
               "cardId": "energy_basic",

@@ -73,9 +73,8 @@ export class SourceAndSpecialConditionEvaluator {
             }
 
             case 'sourcePairedWithPilot': {
-                if (scope !== 'source') {
-                    return false;
-                }
+                // Many card data entries omit scope for source-specific conditions.
+                // Treat omitted/default scopes as source-scoped for sourcePairedWithPilot.
                 const sourceCarduid = typeof sourceCard?.carduid === 'string' ? sourceCard.carduid : '';
                 const expected = typeof typedCondition.value === 'boolean' ? typedCondition.value : true;
                 const paired = SlotCardStateUtils.isCardPaired(gameEnv, sourceCarduid);

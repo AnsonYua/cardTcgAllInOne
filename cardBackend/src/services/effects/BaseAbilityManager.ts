@@ -18,6 +18,7 @@ import { SlotCardStateUtils } from '../conditions/SlotCardStateUtils';
 import { effectRequiresLinkedSource } from '../../utils/ImplicitEffectConditionUtils';
 import { ActivatedAbilityEffectRunner } from './ActivatedAbilityEffectRunner';
 import { UnitRestedByEffectTriggeredEffectManager } from './UnitRestedByEffectTriggeredEffectManager';
+import { BattlePhaseManager } from '../BattlePhaseManager';
 
 export class BaseAbilityManager {
 
@@ -32,7 +33,9 @@ export class BaseAbilityManager {
             return { success: false, error: 'activateCardAbility requires playerId' };
         }
 
-        const turnCheck = GameActionValidator.ensureTurn(gameEnv, actingPlayerId, fromBurst);
+        const turnCheck = GameActionValidator.ensureTurn(gameEnv, actingPlayerId, fromBurst, {
+            actionType: 'activateCardAbility'
+        });
         if (!turnCheck.success) {
             return turnCheck;
         }
@@ -249,6 +252,13 @@ export class BaseAbilityManager {
             BaseAbilityManager.markEffectUsed(sourceCard, normalizedEffect.effectId, gameEnv.currentTurn);
         }
 
+        if (!requiresSelection && !requiresTriggeredSelection) {
+            const postActionStepResult = BaseAbilityManager.handlePostActionStepActivatedAbility(gameEnv, actingPlayerId);
+            if (!postActionStepResult.success) {
+                return postActionStepResult;
+            }
+        }
+
         console.log(`🏰 Activated ability ${normalizedEffect.effectId} from ${sourceCard.carduid}`);
         return (requiresSelection || requiresTriggeredSelection)
             ? { success: true, requiresSelection: true }
@@ -299,6 +309,38 @@ export class BaseAbilityManager {
             baseCard.effectUsage = {};
         }
         baseCard.effectUsage[effectId] = { lastUsedTurn: currentTurn };
+    }
+
+    private static handlePostActionStepActivatedAbility(gameEnv: GameEnvironment, actingPlayerId: string): ExecutionResult {
+        if (!BattlePhaseManager.isActionWindowOpen(gameEnv)) {
+            return { success: true };
+        }
+
+        if (!BattlePhaseManager.playerInActiveBattle(gameEnv, actingPlayerId)) {
+            return { success: true };
+        }
+
+        const battle = gameEnv.currentBattle;
+        if (!battle) {
+            return { success: true };
+        }
+
+        // Some unit tests and low-level call sites construct partial battle contexts directly.
+        // Only run ACTION_STEP progression when the battle context has been fully initialized.
+        if (!battle.confirmations || !battle.actionTargets) {
+            return { success: true };
+        }
+
+        // Re-open the acting player's action-step response window before refreshing legal targets.
+        battle.confirmations[actingPlayerId] = false;
+        gameEnv.refreshBattleActionTargets();
+
+        const remainingTargets = battle.actionTargets?.[actingPlayerId] || [];
+        if (remainingTargets.length > 0) {
+            return { success: true };
+        }
+
+        return BattlePhaseManager.handleBattleConfirmation(gameEnv, actingPlayerId);
     }
 
 }

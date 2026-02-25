@@ -29,6 +29,7 @@ import { EffectSourceConditionEvaluator } from './conditions/EffectSourceConditi
 import { EffectScalingResolver } from './effects/scaling/EffectScalingResolver';
 import { EffectCompiler } from './effects/canonical/EffectCompiler';
 import { EffectOperationRegistry } from './effects/canonical/EffectOperationRegistry';
+import { DeployTargetManager } from './DeployTargetManager';
 
 export interface EffectResult {
     success: boolean;
@@ -263,6 +264,8 @@ export class ContinuousEffectManager {
             action: effectAction,
             value: value,
             conditions: effectRule.conditions || [],
+            eventReactiveContinuous: Boolean((effectRule as any).__eventReactiveContinuous),
+            lastReactiveEventKey: undefined,
             active: true,
             timestamp: Date.now()
         };
@@ -302,6 +305,10 @@ export class ContinuousEffectManager {
                     gameEnv,
                     typedEntry.sourcePlayerId
                 )) {
+                    continue;
+                }
+
+                if (typedEntry.eventReactiveContinuous === true) {
                     continue;
                 }
 
@@ -431,6 +438,11 @@ export class ContinuousEffectManager {
                 typedEntry.sourcePlayerId,
                 sourceCard
             )) {
+                if (typedEntry.eventReactiveContinuous === true) {
+                    // Keep event-reactive continuous entries registered between events; they should
+                    // be evaluated only when an event context exists, not during registry cleanup.
+                    continue;
+                }
                 effectsToRemove.push(effectKey);
                 console.log(`  🗑️ Removing effect ${typedEntry.effectId} from player ${playerId} - conditions no longer met`);
                 EffectExecutor.removeTemporaryEffectsFromSource(gameEnv, typedEntry.sourceCarduid);
@@ -487,6 +499,87 @@ export class ContinuousEffectManager {
             console.error(`❌ Error processing continuous effects:`, error);
             return { success: false, effectsProcessed: 0, effectsActivated: 0, effectsDeactivated: 0, error: String(error) };
         }
+    }
+
+    static processReactiveContinuousEffects(gameEnv: GameEnvironment): { success: boolean; error?: string; executed?: number } {
+        const currentEvent = gameEnv.processingQueue[0] as any;
+        const eventKey = currentEvent?.id && currentEvent?.type
+            ? `${String(currentEvent.type)}:${String(currentEvent.id)}`
+            : '';
+        if (!eventKey) {
+            return { success: true, executed: 0 };
+        }
+
+        let executed = 0;
+        let pass = 0;
+        let executedThisPass = false;
+
+        do {
+            executedThisPass = false;
+            pass += 1;
+
+            for (const [playerId, player] of Object.entries(gameEnv.players)) {
+                if (!player.effectRegistry) {
+                    continue;
+                }
+
+                for (const effectEntry of Object.values(player.effectRegistry)) {
+                    const typedEntry = effectEntry as any;
+                    if (!typedEntry?.active || typedEntry.eventReactiveContinuous !== true) {
+                        continue;
+                    }
+                    if (typedEntry.lastReactiveEventKey === eventKey) {
+                        continue;
+                    }
+
+                    const sourceCard = ContinuousEffectManager.getSourceCardByUid(
+                        gameEnv,
+                        typedEntry.sourceCarduid,
+                        typedEntry.sourcePlayerId
+                    );
+                    if (!sourceCard) {
+                        continue;
+                    }
+
+                    if (!ContinuousEffectManager.sourceConditionsMet(
+                        typedEntry.effectData as EffectDefinition,
+                        sourceCard,
+                        gameEnv,
+                        typedEntry.sourcePlayerId
+                    )) {
+                        continue;
+                    }
+
+                    if (!ContinuousEffectManager.validateEffectConditions(
+                        typedEntry.effectData as EffectDefinition,
+                        gameEnv,
+                        typedEntry.sourcePlayerId,
+                        sourceCard
+                    )) {
+                        continue;
+                    }
+
+                    const result = DeployTargetManager.processEffectWithTargetChoice(
+                        gameEnv,
+                        playerId,
+                        typedEntry.sourceCarduid,
+                        typedEntry.effectData as EffectDefinition
+                    );
+                    if (!result.success) {
+                        return {
+                            success: false,
+                            error: result.error || `Failed to resolve reactive continuous effect ${typedEntry.effectId}`
+                        };
+                    }
+
+                    typedEntry.lastReactiveEventKey = eventKey;
+                    executed += 1;
+                    executedThisPass = true;
+                }
+            }
+        } while (executedThisPass && pass < 3);
+
+        return { success: true, executed };
     }
 
 

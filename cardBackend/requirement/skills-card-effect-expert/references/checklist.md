@@ -25,6 +25,13 @@
     - `target.filters.level: "<=SOURCE_LEVEL"`
     - `conditions: [{ type: "sourceLevel", ... }]`
 - For link-dependent effects, validate scenario slot composition against unit `link` entries.
+- For link-dependent effects with command cards used as pilots:
+  - verify runtime `slot.pilot` payload may omit `playedAs`
+  - verify link resolution falls back to `designate_pilot.parameters.pilotName` (not command card name) when card is in `slot.pilot`
+- For `type: "continuous"` sequence/conditional effects:
+  - inspect `conditional.parameters.if` for `eventType` conditions
+  - inspect `conditional.parameters.then` for non-continuous actions (`setActive`, `returnToHand`, `rest`, `draw`, `damage`, etc.)
+  - verify backend continuous expansion does not silently drop these `then` actions
 - Validate slot legality before effect debugging:
   - A slot must never contain only `pilot` without `unit`.
   - If `slot.pilot` exists, `slot.unit` must also exist in the same slot.
@@ -38,6 +45,14 @@
   - do not rely on implicit `scope: "self"` normalization
   - require explicit selection + exclusion (`excludePairedUnit`, `excludeSource`, or `filters.excludeSelf` as appropriate)
   - if later steps use `previousTarget*` conditions, confirm step-1 target cannot leak to linked/paired source by default.
+- For text containing "Pay its cost to deploy it" (or equivalent deploy-cost wording):
+  - verify deploy rule/sequence step includes `parameters.payCost: true`
+  - verify chooser `availableTargets` are filtered by current affordability, not only target filters
+  - verify affordability uses effective cost/level (including applicable self-zone `modifyCost`/`modifyLevel`, e.g. `self_trash`)
+  - verify target-choice behavior still follows standard policy after filtering:
+    - 1 affordable target => auto-apply (no dialog)
+    - >1 affordable targets => chooser
+    - 0 affordable targets => no misleading chooser
 
 ## 3) Frontend Evaluator Inventory
 - Check local evaluator modules (not backend-driven execution):
@@ -65,10 +80,26 @@
   - Ensure slot-level UI gating and button rendering use the same shared helper to avoid drift.
   - Normalize phase names before timing-window comparisons (e.g. `ACTION_STEP_PHASE` vs `ACTION_STEP`).
   - Verify both activated-effect checks and command play timing checks use the same phase normalization.
+  - Verify backend turn validation also allows legal off-turn responses:
+    - `activateCardAbility` / `useCommandCard` may be valid while `currentPlayer !== playerId`
+    - only during actionable `currentBattle.status = ACTION_STEP` windows where `confirmations[playerId] === false` and `actionTargets[playerId]` is non-empty
+  - After a successful ACTION_STEP ability, verify battle flow advances (or at least re-computes targets/confirmations):
+    - avoid stuck state: `currentBattle.status = ACTION_STEP`, `confirmations` all true, `actionTargets` empty
 - Source-level parity:
   - pilot-sourced `"this Unit"` logic should use effective source-level semantics.
   - if rule sets `sourceLevelScope: "source_card"`, verify pilot-level is used even when paired.
   - if omitted, verify default `paired_unit` and unpaired fallback behavior.
+- Event-condition parity:
+  - verify `eventType` conditions are evaluated in a real event context (queue event and/or notification state)
+  - for pilot/command sources, verify `eventTarget = self` resolves to the effective paired unit when card text says "this Unit"
+  - for state-change conditions (`eventTargetWasRested`, etc.), verify event payload includes prior-state metadata or evaluator has another reliable source
+- Source-special condition defaults:
+  - if card data omits `scope` on source-specific conditions (e.g. `sourcePairedWithPilot`), verify evaluator default scope does not accidentally invalidate the condition
+  - prefer one centralized fallback rule for all `source*` condition types (default omitted scope to `source`) and add regression coverage for at least one non-`sourcePairedWithPilot` case (e.g. `sourceColor`, `sourceDeployedFrom`)
+  - audit card data for omitted `scope` on `source*` conditions before patching per-card JSON
+- Deploy provenance conditions:
+  - if rules use `sourceDeployedFrom` (or similar source-origin checks), verify deploy flow persists the origin on the runtime source card (`deployedFrom`) instead of only emitting `fromZone` in notifications
+  - test both positive and negative origins (e.g. deploy from `trash` vs `hand`)
 - Choice parity:
   - For `OPTION_CHOICE` flows (especially pairing/deploy effect order), ensure options include explicit availability flags.
   - If an option is guaranteed no-op now, it should be disabled with a reason, not just allowed then no-op.
@@ -79,12 +110,31 @@
   - If options are filtered, include stable option-to-effect mapping (for example `payload.effectOrderIndex`) and enforce selection via mapped index.
   - For forced-attack rules (`require_attack_target_if_available`), verify extractor supports nested `sequence` + `conditional` branches (not only top-level actions).
   - Confirm conditional snapshot is evaluated before collecting branch actions (`if` true => `then`, otherwise `else`).
-  - For custom target scopes (e.g., `opponent_battling_source`), verify:
+  - For `deploy + payCost` choice flows, distinguish:
+    - target eligibility (scope/filters)
+    - deploy legality right now (energy + effective cost/level)
+    - dialog candidates must reflect deploy legality, not just target eligibility.
+- For custom target scopes (e.g., `opponent_battling_source`), verify:
     - a specialized resolver exists in `TargetScopeResolverRegistry`
     - resolver `[]` remains a terminal no-target result (no accidental fallback to generic `TargetResolver`)
   - Validate enforcement contract:
     - one forced candidate => backend rejects attack to other unit (`FORCED_ATTACK_TARGET_REQUIRED`)
     - multiple forced candidates => backend opens forced target chooser for configured `chooser`.
+- Dynamic stat-modifier parity:
+  - `modifyAP` / `modifyHP` may use direct `value` OR computed `parameters.valuePer`
+  - if `valuePer` is present, verify backend stat applier resolves it (not just condition evaluators)
+  - confirm nested `per` filters (e.g. `cardsInTrashWithTraitsAny` + `filters.cardType`) are honored
+
+## 4.2) Fast Debug Heuristic for Deploy `payCost` Chooser Bugs
+- Symptom: a deploy target appears in `TARGET_CHOICE` dialog but selecting it fails on energy payment.
+- Check in order:
+  - `effects.description` says "Pay its cost to deploy it"
+  - `effects.rules` deploy action/step has `parameters.payCost: true`
+  - chooser `availableTargets` generation path filters only by target scope/filters (missing affordability filter)
+  - deploy resolution path uses raw `cardData.cost` instead of effective cost/level
+- Classify:
+  - `P2` if backend safely rejects invalid selection at resolution time
+  - `P1` if backend also deploys illegally / charges wrong energy
 
 ## 4.1) Fast Debug Heuristic for Forced Target Bugs
 - If battle notification shows `UNIT_ATTACK_DECLARED` to a non-forced target while a continuous forced-target effect is active:
@@ -109,6 +159,12 @@
   - restore via `fromJSON`
   - resolve remaining choice(s)
   - assert deferred trigger choice appears only after sequence completion
+- For ACTION_STEP response incidents, include at least one backend API-path regression covering:
+  - off-turn activation accepted when in `currentBattle.actionTargets[playerId]`
+  - post-activation battle progression does not leave stale actionable state
+- For event-gated continuous incidents, include at least:
+  - one direct trigger test (e.g. `END_OF_TURN` => `setActive`)
+  - one chained reaction test where the first reactive action emits an event consumed by another continuous conditional effect (e.g. `SET_ACTIVE_BY_EFFECT` => `returnToHand`)
 - Run:
   - `npm test`
   - `npm run build`

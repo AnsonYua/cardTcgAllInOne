@@ -159,7 +159,8 @@ export class EventConditionEvaluator {
         }
 
         if (expected === 'self') {
-            return typeof sourceCard?.carduid === 'string' && sourceCard.carduid === targetCarduid;
+            const effectiveSelfTarget = this.getEffectiveSelfAttackerCarduid(gameEnv, sourceCard);
+            return Boolean(effectiveSelfTarget) && effectiveSelfTarget === targetCarduid;
         }
 
         return false;
@@ -237,6 +238,9 @@ export class EventConditionEvaluator {
         const carduid = typeof latestNotification?.payload?.carduid === 'string'
             ? latestNotification.payload.carduid
             : targetCarduid;
+        if (typeof latestNotification?.payload?.wasRested === 'boolean') {
+            return latestNotification.payload.wasRested === expected;
+        }
         if (!carduid) {
             return false;
         }

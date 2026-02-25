@@ -37,10 +37,93 @@ import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { EffectConditionEvaluator } from './conditions/EffectConditionEvaluator';
 import { TriggeredEffectProcessor } from './effects/TriggeredEffectProcessor';
 import type { DeployTargetResult } from './DeployTargetResult';
+import { DeployAffordabilityEvaluator } from './deploy/DeployAffordabilityEvaluator';
 
 export type { DeployTargetResult } from './DeployTargetResult';
 
 export class DeployTargetManager {
+    private static buildAvailableTargetsForEffect(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        sourceCarduid: string,
+        effect: EffectDefinition,
+        selectionContext?: {
+            justLinkedUnitCarduid?: string;
+        },
+        dynamicFilterContext?: {
+            previousTargets?: TargetReference[];
+        }
+    ): { targetConfig: ReturnType<typeof TargetResolver.resolveTargetConfig>; availableTargets: TargetReference[] } {
+        const targetConfig = TargetResolver.resolveTargetConfig(effect);
+
+        let availableTargets = TargetScopeResolverRegistry.resolve(gameEnv, sourceCarduid, effect);
+        if (!availableTargets) {
+            availableTargets = TargetResolver.generateAvailableTargets(
+                gameEnv,
+                playerId,
+                targetConfig,
+                sourceCarduid,
+                dynamicFilterContext
+            );
+        }
+
+        availableTargets = TargetSelectionPipeline.apply(
+            gameEnv,
+            availableTargets,
+            effect,
+            sourceCarduid,
+            selectionContext
+        );
+
+        const excludePairedUnit = effect.parameters?.excludePairedUnit === true;
+        if (excludePairedUnit) {
+            const pairedUnitCarduid = this.resolvePairedUnitCarduidForExclusion(
+                gameEnv,
+                playerId,
+                sourceCarduid,
+                effect
+            );
+            if (pairedUnitCarduid) {
+                availableTargets = TargetSelectionUtils.excludeCarduid(availableTargets, pairedUnitCarduid);
+            }
+        }
+
+        availableTargets = CostReplacementManager.augmentRestBaseTargets(
+            gameEnv,
+            playerId,
+            sourceCarduid,
+            effect,
+            availableTargets
+        );
+
+        availableTargets = this.filterDeployTargetsByAffordabilityIfNeeded(
+            gameEnv,
+            playerId,
+            sourceCarduid,
+            effect,
+            availableTargets
+        );
+
+        return { targetConfig, availableTargets };
+    }
+
+    private static filterDeployTargetsByAffordabilityIfNeeded(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        sourceCarduid: string,
+        effect: EffectDefinition,
+        availableTargets: TargetReference[]
+    ): TargetReference[] {
+        const action = typeof effect.action === 'string' ? effect.action.toLowerCase() : '';
+        if (action !== 'deploy' || effect.parameters?.payCost !== true) {
+            return availableTargets;
+        }
+
+        return availableTargets.filter((target) =>
+            DeployAffordabilityEvaluator.evaluate(gameEnv, playerId, target, effect, sourceCarduid).isAffordable
+        );
+    }
+
     private static resolvePairedUnitCarduidForExclusion(
         gameEnv: GameEnvironment,
         playerId: string,
@@ -93,45 +176,13 @@ export class DeployTargetManager {
         }
 
         try {
-            const targetConfig = TargetResolver.resolveTargetConfig(normalizedEffect);
-            let availableTargets = TargetScopeResolverRegistry.resolve(gameEnv, sourceCarduid, normalizedEffect);
-            if (!availableTargets) {
-                availableTargets = TargetResolver.generateAvailableTargets(
-                    gameEnv,
-                    playerId,
-                    targetConfig,
-                    sourceCarduid,
-                    dynamicFilterContext
-                );
-            }
-
-            availableTargets = TargetSelectionPipeline.apply(
-                gameEnv,
-                availableTargets,
-                normalizedEffect,
-                sourceCarduid,
-                selectionContext
-            );
-
-            const excludePairedUnit = normalizedEffect.parameters?.excludePairedUnit === true;
-            if (excludePairedUnit) {
-                const pairedUnitCarduid = this.resolvePairedUnitCarduidForExclusion(
-                    gameEnv,
-                    playerId,
-                    sourceCarduid,
-                    normalizedEffect
-                );
-                if (pairedUnitCarduid) {
-                    availableTargets = TargetSelectionUtils.excludeCarduid(availableTargets, pairedUnitCarduid);
-                }
-            }
-
-            availableTargets = CostReplacementManager.augmentRestBaseTargets(
+            const { availableTargets } = this.buildAvailableTargetsForEffect(
                 gameEnv,
                 playerId,
                 sourceCarduid,
                 normalizedEffect,
-                availableTargets
+                selectionContext,
+                dynamicFilterContext
             );
 
             if (availableTargets.length > 0) {
@@ -222,45 +273,13 @@ export class DeployTargetManager {
                 };
             }
 
-            const targetConfig = TargetResolver.resolveTargetConfig(normalizedEffect);
-            // Generate available targets based on config
-            let availableTargets = TargetScopeResolverRegistry.resolve(gameEnv, sourceCarduid, normalizedEffect);
-            if (!availableTargets) {
-                availableTargets = TargetResolver.generateAvailableTargets(
-                    gameEnv,
-                    playerId,
-                    targetConfig,
-                    sourceCarduid,
-                    dynamicFilterContext
-                );
-            }
-            availableTargets = TargetSelectionPipeline.apply(
-                gameEnv,
-                availableTargets,
-                normalizedEffect,
-                sourceCarduid,
-                selectionContext
-            );
-
-            const excludePairedUnit = normalizedEffect.parameters?.excludePairedUnit === true;
-            if (excludePairedUnit) {
-                const pairedUnitCarduid = this.resolvePairedUnitCarduidForExclusion(
-                    gameEnv,
-                    playerId,
-                    sourceCarduid,
-                    normalizedEffect
-                );
-                if (pairedUnitCarduid) {
-                    availableTargets = TargetSelectionUtils.excludeCarduid(availableTargets, pairedUnitCarduid);
-                }
-            }
-
-            availableTargets = CostReplacementManager.augmentRestBaseTargets(
+            const { targetConfig, availableTargets } = this.buildAvailableTargetsForEffect(
                 gameEnv,
                 playerId,
                 sourceCarduid,
                 normalizedEffect,
-                availableTargets
+                selectionContext,
+                dynamicFilterContext
             );
             
             if (availableTargets.length === 0) {

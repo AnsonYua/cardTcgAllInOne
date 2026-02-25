@@ -27,7 +27,7 @@ export class LinkUtils {
     }
 
     private static resolvePilotIdentityForLink(pilot: PilotZoneCard): { name: string | null; traits: string[] } {
-        if (pilot.playedAs === 'pilot' && pilot.cardData?.cardType === 'command') {
+        if (pilot.cardData?.cardType === 'command') {
             const designatePilotEffect = pilot.cardData?.effects?.rules?.find((rule: any) =>
                 rule.action === 'designate_pilot'
             );
@@ -42,4 +42,3 @@ export class LinkUtils {
         };
     }
 }
-

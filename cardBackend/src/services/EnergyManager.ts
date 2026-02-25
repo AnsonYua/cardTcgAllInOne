@@ -34,6 +34,64 @@ export interface EnergyCheckResult {
 }
 
 export class EnergyManager {
+    private static validateEnergyForRequirementsInternal(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        requirements: EnergyRequirement,
+        options: EnergyValidationOptions = {},
+        treatAsEnergyCard: boolean = false
+    ): EnergyValidationResult {
+        const player = gameEnv.players[playerId];
+        const energyArea = player?.zones?.energyArea || [];
+        const totalEnergy = energyArea.length;
+        const activeEnergyCards = energyArea.filter((card: EnergyZoneCard) => !card.isRested);
+        const availableEnergy = activeEnergyCards.length;
+        const safeRequirements: EnergyRequirement = {
+            level: Number.isFinite(Number(requirements?.level)) ? Math.max(0, Number(requirements.level)) : 0,
+            cost: Number.isFinite(Number(requirements?.cost)) ? Math.max(0, Number(requirements.cost)) : 0
+        };
+        const shouldConsume = !options.fromBurst && !treatAsEnergyCard && safeRequirements.cost > 0;
+
+        if (options.fromBurst || treatAsEnergyCard) {
+            return {
+                isValid: true,
+                requirements: safeRequirements,
+                availableEnergy,
+                totalEnergy,
+                shouldConsume: false
+            };
+        }
+
+        if (safeRequirements.level > 0 && totalEnergy < safeRequirements.level) {
+            return {
+                isValid: false,
+                error: `Not enough energy to meet level ${safeRequirements.level} (have ${totalEnergy})`,
+                requirements: safeRequirements,
+                availableEnergy,
+                totalEnergy,
+                shouldConsume
+            };
+        }
+
+        if (safeRequirements.cost > 0 && availableEnergy < safeRequirements.cost) {
+            return {
+                isValid: false,
+                error: `Not enough active energy to pay cost ${safeRequirements.cost} (available ${availableEnergy})`,
+                requirements: safeRequirements,
+                availableEnergy,
+                totalEnergy,
+                shouldConsume
+            };
+        }
+
+        return {
+            isValid: true,
+            requirements: safeRequirements,
+            availableEnergy,
+            totalEnergy,
+            shouldConsume
+        };
+    }
     
     /**
      * Add basic energy card to player
@@ -297,52 +355,22 @@ export class EnergyManager {
         options: EnergyValidationOptions = {}
     ): EnergyValidationResult {
         const requirements = getEnergyRequirement(cardData);
-        const player = gameEnv.players[playerId];
-        const energyArea = player?.zones?.energyArea || [];
-        const totalEnergy = energyArea.length;
-        const activeEnergyCards = energyArea.filter((card: EnergyZoneCard) => !card.isRested);
-        const availableEnergy = activeEnergyCards.length;
-        const shouldConsume = !options.fromBurst && !isEnergyCard(cardData) && requirements.cost > 0;
-
-        if (options.fromBurst || isEnergyCard(cardData)) {
-            return {
-                isValid: true,
-                requirements,
-                availableEnergy,
-                totalEnergy,
-                shouldConsume: false
-            };
-        }
-
-        if (requirements.level > 0 && totalEnergy < requirements.level) {
-            return {
-                isValid: false,
-                error: `Not enough energy to meet level ${requirements.level} (have ${totalEnergy})`,
-                requirements,
-                availableEnergy,
-                totalEnergy,
-                shouldConsume
-            };
-        }
-
-        if (requirements.cost > 0 && availableEnergy < requirements.cost) {
-            return {
-                isValid: false,
-                error: `Not enough active energy to pay cost ${requirements.cost} (available ${availableEnergy})`,
-                requirements,
-                availableEnergy,
-                totalEnergy,
-                shouldConsume
-            };
-        }
-
-        return {
-            isValid: true,
+        return this.validateEnergyForRequirementsInternal(
+            gameEnv,
+            playerId,
             requirements,
-            availableEnergy,
-            totalEnergy,
-            shouldConsume
-        };
+            options,
+            isEnergyCard(cardData)
+        );
+    }
+
+    static validateEnergyForRequirements(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        requirements: EnergyRequirement,
+        options: EnergyValidationOptions = {}
+    ): EnergyValidationResult {
+        return this.validateEnergyForRequirementsInternal(gameEnv, playerId, requirements, options, false);
     }
 
     static payEnergyCost(
@@ -387,6 +415,51 @@ export class EnergyManager {
         options: EnergyValidationOptions = {}
     ): EnergyCheckResult {
         const validation = this.validateEnergyForCard(gameEnv, playerId, cardData, options);
+        if (!validation.isValid) {
+            return {
+                success: false,
+                error: validation.error,
+                tapped: [],
+                requirements: validation.requirements,
+                consumedExtras: []
+            };
+        }
+
+        if (!validation.shouldConsume) {
+            return {
+                success: true,
+                tapped: [],
+                requirements: validation.requirements,
+                consumedExtras: []
+            };
+        }
+
+        const payment = this.payEnergyCost(gameEnv, playerId, validation.requirements.cost, options);
+        if (!payment.success) {
+            return {
+                success: false,
+                error: payment.error,
+                tapped: payment.tapped,
+                requirements: validation.requirements,
+                consumedExtras: payment.consumedExtras || []
+            };
+        }
+
+        return {
+            success: true,
+            tapped: payment.tapped,
+            requirements: validation.requirements,
+            consumedExtras: payment.consumedExtras || []
+        };
+    }
+
+    static validateAndPayEnergyForRequirements(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        requirements: EnergyRequirement,
+        options: EnergyValidationOptions = {}
+    ): EnergyCheckResult {
+        const validation = this.validateEnergyForRequirements(gameEnv, playerId, requirements, options);
         if (!validation.isValid) {
             return {
                 success: false,

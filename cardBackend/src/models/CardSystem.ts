@@ -167,6 +167,7 @@ export interface UnitZoneCard extends ZoneCard {
     cardData: UnitCardData;  // Required for units
     originalHP?: number;
     originalAP?: number;
+    deployedFrom?: string; // Runtime provenance for deploy-condition checks (e.g. sourceDeployedFrom)
     playedThisTurn?: boolean;   // Whether this unit entered play this turn
     canAttackOnPlayTurn?: boolean; // Whether the unit may attack on its play turn
     canAttackThisTurn?: boolean; // Response-only: current attack eligibility

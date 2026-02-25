@@ -2,11 +2,12 @@ import { GameEnvironment } from '../../models/GameEnvironment';
 import { UnitZoneCard, PilotZoneCard } from '../../models/CardSystem';
 import { TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { EffectNotifier } from './EffectNotifier';
-import { extractNumericValue } from './actions/EffectActionUtils';
+import { extractNumericValue, resolvePlayerIdsForScope } from './actions/EffectActionUtils';
 import { SlotHealthService } from '../health/SlotHealthService';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { EffectApReductionPreventionUtils } from './EffectApReductionPreventionUtils';
 import { TriggeredEffectProcessor } from './TriggeredEffectProcessor';
+import { TrashConditionUtils } from '../conditions/TrashConditionUtils';
 
 type StatApplicationContext = {
     sourcePlayerId?: string;
@@ -51,7 +52,7 @@ export class EffectStatApplier {
         target: TargetReference,
         context?: StatApplicationContext
     ): { success: boolean; error?: string } {
-        const value = extractNumericValue(parameters);
+        const value = this.resolveModifyStatValue(gameEnv, parameters, context);
         if (value === undefined) {
             return {
                 success: false,
@@ -87,6 +88,86 @@ export class EffectStatApplier {
             (targetCard as any)[property]
         );
         return { success: true };
+    }
+
+    private static resolveModifyStatValue(
+        gameEnv: GameEnvironment,
+        parameters: Record<string, unknown> | undefined,
+        context?: StatApplicationContext
+    ): number | undefined {
+        const directValue = extractNumericValue(parameters);
+        if (directValue !== undefined) {
+            return directValue;
+        }
+
+        const sourcePlayerId = typeof context?.sourcePlayerId === 'string' ? context.sourcePlayerId : '';
+        if (!sourcePlayerId || !parameters) {
+            return undefined;
+        }
+
+        return this.resolveValuePerModifier(gameEnv, sourcePlayerId, parameters);
+    }
+
+    private static resolveValuePerModifier(
+        gameEnv: GameEnvironment,
+        sourcePlayerId: string,
+        parameters: Record<string, unknown>
+    ): number | undefined {
+        const valuePer = parameters['valuePer'];
+        if (!valuePer || typeof valuePer !== 'object') {
+            return undefined;
+        }
+
+        const amount = extractNumericValue(valuePer as Record<string, unknown>);
+        if (amount === undefined) {
+            return undefined;
+        }
+
+        const per = (valuePer as Record<string, unknown>)['per'];
+        if (!per || typeof per !== 'object') {
+            return undefined;
+        }
+
+        const perConfig = per as Record<string, unknown>;
+        const perType = typeof perConfig.type === 'string' ? perConfig.type : '';
+        if (perType !== 'cardsInTrashWithTraitsAny' && perType !== 'cardsInTrash') {
+            return undefined;
+        }
+
+        const playerIds = resolvePlayerIdsForScope(gameEnv, sourcePlayerId, perConfig.scope as string | undefined);
+        if (playerIds.length === 0) {
+            return undefined;
+        }
+
+        const traitsAny = Array.isArray(perConfig.traitsAny)
+            ? perConfig.traitsAny.filter((entry): entry is string => typeof entry === 'string')
+            : Array.isArray(perConfig.traits)
+                ? perConfig.traits.filter((entry): entry is string => typeof entry === 'string')
+                : [];
+
+        const nestedFilters = perConfig.filters && typeof perConfig.filters === 'object'
+            ? (perConfig.filters as Record<string, unknown>)
+            : undefined;
+
+        const cardType = typeof nestedFilters?.cardType === 'string'
+            ? nestedFilters.cardType
+            : typeof perConfig.cardType === 'string'
+                ? perConfig.cardType
+                : undefined;
+
+        let totalCount = 0;
+        for (const playerId of playerIds) {
+            const count = TrashConditionUtils.countMatching(gameEnv, playerId, {
+                traitsAny,
+                cardType
+            });
+            if (count === null) {
+                return undefined;
+            }
+            totalCount += count;
+        }
+
+        return amount * totalCount;
     }
 
     static applyHealToCard(

@@ -115,7 +115,8 @@ export class EffectConditionEvaluator {
         const typedCondition = condition as Record<string, unknown>;
         const rawType = typeof typedCondition.type === 'string' ? typedCondition.type : '';
         const type = normalizeConditionTypeAlias(rawType) || '';
-        const scope = (typedCondition.scope as string) || 'player';
+        const rawScope = typeof typedCondition.scope === 'string' ? typedCondition.scope : '';
+        const scope = rawScope || (type.startsWith('source') ? 'source' : 'player');
 
         switch (type) {
             case 'turnPlayer': {

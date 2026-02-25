@@ -4,6 +4,7 @@ import { EffectDefinition, TargetReference } from '../../EventQueue/interfaces/G
 import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
 import { UnitDeployService } from '../../deploy/UnitDeployService';
 import { EnergyManager } from '../../EnergyManager';
+import { DeployAffordabilityEvaluator } from '../../deploy/DeployAffordabilityEvaluator';
 
 function rollbackEnergy(
     gameEnv: GameEnvironment,
@@ -136,10 +137,26 @@ export function applyDeployEffect(
         let tappedEnergy: EnergyZoneCard[] = [];
         let consumedExtras: EnergyZoneCard[] = [];
         if (payCost) {
-            const energyResult = EnergyManager.validateAndPayEnergyForCard(
+            const affordability = DeployAffordabilityEvaluator.evaluate(
                 gameEnv,
                 sourcePlayerId,
-                cardData,
+                target,
+                effect,
+                sourceCarduid
+            );
+            if (!affordability.isAffordable) {
+                return {
+                    success: false,
+                    error: typeof affordability.reason === 'string'
+                        ? affordability.reason
+                        : `Failed to pay deploy cost for ${cardId}`
+                };
+            }
+
+            const energyResult = EnergyManager.validateAndPayEnergyForRequirements(
+                gameEnv,
+                sourcePlayerId,
+                affordability.effectiveRequirements,
                 { fromBurst: false }
             );
             if (!energyResult.success) {
@@ -179,4 +196,3 @@ export function applyDeployEffect(
 
     return { success: true };
 }
-

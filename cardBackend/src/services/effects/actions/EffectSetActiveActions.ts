@@ -45,6 +45,7 @@ export function applySetActiveEffect(
             playerId: target.playerId,
             carduid: target.carduid,
             zone: target.zone,
+            wasRested,
             timestamp: Date.now()
         });
 

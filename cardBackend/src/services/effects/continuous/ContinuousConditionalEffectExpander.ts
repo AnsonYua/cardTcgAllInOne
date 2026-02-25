@@ -4,7 +4,7 @@
 import type { GameEnvironment } from '../../../models/GameEnvironment';
 import type { EffectDefinition } from '../../EventQueue/interfaces/GameEvent';
 import { ensureEffectDefaults } from '../../../utils/EffectNormalizationUtils';
-import { isSupportedContinuousAction, normalizeContinuousStep } from './ContinuousEffectExpansionUtils';
+import { hasEventTypeCondition, isSupportedContinuousAction, normalizeContinuousStep } from './ContinuousEffectExpansionUtils';
 
 type ExpandContext = {
     gameEnv: GameEnvironment;
@@ -36,10 +36,6 @@ export class ContinuousConditionalEffectExpander {
                 continue;
             }
 
-            if (!isSupportedContinuousAction(normalizedStep.action)) {
-                continue;
-            }
-
             const derived: EffectDefinition = ensureEffectDefaults({
                 effectId: `${ctx.effectRule.effectId}_then_${index}`,
                 type: ctx.effectRule.type,
@@ -52,8 +48,21 @@ export class ContinuousConditionalEffectExpander {
                 sourceConditions: ctx.effectRule.sourceConditions || []
             } as any);
 
-            if (!ctx.validateEffectConditions(derived, ctx.gameEnv, ctx.sourcePlayerId, ctx.sourceCard)) {
+            const eventReactiveConditional = hasEventTypeCondition(ifConditions);
+            const supportedContinuous = isSupportedContinuousAction(normalizedStep.action);
+
+            if (!supportedContinuous && !eventReactiveConditional) {
                 continue;
+            }
+
+            if (eventReactiveConditional) {
+                (derived as any).__eventReactiveContinuous = true;
+            }
+
+            if (!eventReactiveConditional) {
+                if (!ctx.validateEffectConditions(derived, ctx.gameEnv, ctx.sourcePlayerId, ctx.sourceCard)) {
+                    continue;
+                }
             }
 
             const key = `${derived.effectId}_${ctx.sourceCard.carduid}`;

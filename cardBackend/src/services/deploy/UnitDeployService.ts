@@ -49,6 +49,9 @@ export class UnitDeployService {
             params.playerId,
             'unit'
         ) as UnitZoneCard;
+        if (typeof params.fromZone === 'string' && params.fromZone.trim()) {
+            unitCard.deployedFrom = params.fromZone.trim().toLowerCase();
+        }
         if (params.isRested === true) {
             unitCard.isRested = true;
         }

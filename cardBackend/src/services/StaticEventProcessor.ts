@@ -9,6 +9,7 @@ import { EventType } from '../models/GameEnums';
 import { TriggerEngine } from './EventQueue/TriggerEngine';
 import { StateBasedActionEngine } from './EventQueue/StateBasedActionEngine';
 import { validateEventExecution } from './validation/EventValidator';
+import { ContinuousEffectManager } from './ContinuousEffectManager';
 
 export class StaticEventProcessor {
     // No need for GameEngine instance - all methods are static now
@@ -97,6 +98,20 @@ export class StaticEventProcessor {
                     
                     const executionResult = GameEngine.execute(event, gameEnv);
                     if (executionResult.success) {
+                        const reactiveResult = ContinuousEffectManager.processReactiveContinuousEffects(gameEnv);
+                        if (!reactiveResult.success) {
+                            console.error(`❌ Reactive continuous effect execution failed: ${reactiveResult.error}`);
+                            lastError = reactiveResult.error || 'Reactive continuous effect execution failed';
+                            event.status = EventStatus.RESOLVED;
+                            const removed = gameEnv.dequeueFromProcessing(event);
+                            if (removed) {
+                                eventsProcessed++;
+                            } else {
+                                gameEnv.processingQueue.shift();
+                                eventsProcessed++;
+                            }
+                            break;
+                        }
                         event.status = EventStatus.RESOLVED;
                     } else {
                         console.error(`❌ Event execution failed: ${executionResult.error}`);

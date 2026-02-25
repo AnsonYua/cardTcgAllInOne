@@ -49,6 +49,26 @@ Use this skill when a card effect appears correct in data but gameplay/UI behavi
 - Do not parse comparison strings in multiple places; use one shared utility.
 - Prefer engine-level semantic fixes over card-by-card data hacks when behavior is cross-card.
 - Custom `target.scope` strings (for example battle-relative scopes like `opponent_battling_source`) require explicit resolver support in `TargetScopeResolverRegistry`; resolver `[]` must remain `[]` (no fallback to generic target generation).
+- `ACTION_STEP` off-turn response legality is a backend concern too:
+  - frontend may correctly show a legal response target, but backend turn validators must allow off-turn `activateCardAbility` / `useCommandCard` only during actionable response windows (`currentBattle.status === "ACTION_STEP"`, awaiting player confirmation, and non-empty `actionTargets[playerId]`).
+- After resolving an activated effect during `ACTION_STEP`, backend must refresh action-step targets and advance/confirm battle flow when no actions remain; otherwise the game can stall with `confirmations = true/true` and empty `actionTargets`.
+- Link detection for command cards used as pilots must not depend solely on runtime `playedAs === "pilot"` flags:
+  - if a card in `slot.pilot` has `designate_pilot.parameters.pilotName`, use that pilot identity for link checks even when `playedAs` is missing in persisted/runtime payloads.
+- Stat modifiers may be dynamic:
+  - `modifyAP` / `modifyHP` can use `parameters.valuePer` (for example trash-count scaling) instead of direct `value`.
+  - Stat-effect execution must resolve `valuePer` with the same condition/counting semantics used elsewhere (e.g. `cardsInTrashWithTraitsAny` + `filters.cardType`).
+- `type: "continuous"` effects can encode event-gated reactive behavior via `sequence/conditional` (e.g. `eventType = END_OF_TURN`, `SET_ACTIVE_BY_EFFECT`):
+  - do not assume continuous-effect expanders should only keep stat/keyword-like actions.
+  - unsupported `then` actions (e.g. `setActive`, `returnToHand`, `rest`, `draw`, `damage`) must not be silently dropped if gated by `eventType`.
+  - register them as event-reactive continuous entries and execute them only in matching event contexts.
+- Event-condition semantics for linked pilot reactions:
+  - `eventTarget = self` may need effective self resolution to the paired unit for pilot/command sources (not literal pilot carduid).
+  - state-change event notifications (e.g. `CARD_SET_ACTIVE`) should include enough prior-state metadata (e.g. `wasRested`) for conditions like `eventTargetWasRested`.
+- Source-special conditions may omit `scope` in card data:
+  - source-specific conditions like `sourcePairedWithPilot` should treat omitted scope as source-scoped unless card data explicitly requires otherwise.
+  - prefer a centralized default in condition evaluation (`type.startsWith("source") => scope: "source"`) instead of patching each source condition handler ad hoc.
+- Deploy provenance conditions require runtime metadata:
+  - conditions like `sourceDeployedFrom` depend on source card instance state (e.g. `sourceCard.deployedFrom`), so deploy flows must persist `fromZone` onto the deployed runtime card, not only in notifications.
 - Schema-valid does not always mean text-complete:
   - For descriptions containing `If you do` / `Then`, verify rules include matching `stepId` + `stepResolved` + `conditional` flow.
 - Pair and Link are different:
@@ -84,6 +104,16 @@ Use this skill when a card effect appears correct in data but gameplay/UI behavi
   - Conditional branch extraction must use current-state snapshot evaluation (same condition semantics as runtime checks).
   - `chooser` controls who chooses among multiple forced candidates (`ATTACKER`/`DEFENDER`); it does not disable forced targeting itself.
   - If exactly one forced candidate exists, backend must reject attacks to other targets with deterministic error (e.g., `FORCED_ATTACK_TARGET_REQUIRED`).
+- Deploy `payCost` target-choice UX rule:
+  - For `deploy` effects with `parameters.payCost = true`, target lists should be filtered by current affordability (effective level/cost after applicable modifiers), not just target filters (`cardType`, `level`, traits, etc.).
+  - Keep existing target-choice policy behavior after filtering:
+    - `0` affordable targets => no-op / optional flow handling (no misleading chooser)
+    - `1` affordable target => auto-apply (no dialog)
+    - `>1` affordable targets => create `TARGET_CHOICE`
+  - Use one shared affordability/effective-cost path for both:
+    - pre-choice `availableTargets` filtering
+    - deploy resolution/payment validation
+  - For trash deploys, review self-scoped continuous modifiers on the target card (e.g. `modifyCost` with `target.scope = self_trash`) when computing affordability.
 
 ## Known Real-World Bugs Captured
 See `references/incident-gd03-035.md` for concrete bugs and fixes:
@@ -101,6 +131,21 @@ See `references/incident-gd03-035.md` for concrete bugs and fixes:
 - `GD03-074` forced-target miss on nested sequence/conditional: effect text says enemy must target this rested unit if possible, but attacks could target other units because extractor only handled top-level/direct sequence step actions. Fixed by recursive extraction + conditional branch evaluation for `require_attack_target_if_available`.
 - `GD03-073` action-step parity + battle-target scope gap: frontend falsely showed `Trigger Pilot Effect` by checking raw `ACTION_STEP` timing windows instead of activated-effect eligibility + backend `effectIds`; backend also lacked explicit `opponent_battling_source` resolver and incorrectly fell back to generic opponent targeting when specialized resolver produced no targets.
 - `GD03-073` follow-up phase-token mismatch: frontend hid a valid activated effect during unit battle because `gameEnv.phase` used `ACTION_STEP_PHASE` while rule `timing.windows` used `ACTION_STEP`; fixed by central phase-name normalization in frontend timing matching.
+- `GD03-073` follow-up backend turn/flow/link issues:
+  - backend initially rejected valid off-turn `ACTION_STEP` `activateCardAbility` with `Not your turn`; fixed by narrow response-window exception in action validation.
+  - command-as-pilot link checks could fail when runtime `slot.pilot` payload omitted `playedAs`; fixed by deriving pilot identity from `designate_pilot.pilotName` for cards in pilot slots.
+  - battle could stall after successful `ACTION_STEP` activated ability (`confirmations` all true, `actionTargets` empty, still in `ACTION_STEP`); fixed by post-ability action-step target refresh + confirmation/auto-progress handling.
+- `GD03-071` dynamic AP reduction gap: card used `modifyAP.parameters.valuePer` (per `(AEUG)` unit card in trash) but backend stat applier only accepted flat numeric `value`; fixed by adding `valuePer` resolution in stat modifier execution and regression test coverage.
+- `GD03-069` / `GD03-098` reactive continuous conditional gap: end-turn set-active and linked bounce were encoded as `type: continuous` + `conditional(eventType...)`, but backend continuous expansion dropped unsupported `then` actions (`setActive`, `returnToHand`). Fixed by introducing event-reactive continuous registry handling, plus event-condition fixes (`sourcePairedWithPilot` omitted scope, pilot effective-self event target, `wasRested` metadata on `CARD_SET_ACTIVE`).
+- `GD03-062` / `GD02-091` source-condition default/provenance gap:
+  - `GD03-062` (`sourceDeployedFrom`) silently failed because deploy flow did not persist `deployedFrom` onto the deployed unit and card data omitted `scope`.
+  - `GD02-091` (`sourceColor`) omitted `scope`, but backend defaulted missing scope to `player`, causing source-color conditional failure.
+  - Fixed by persisting `UnitZoneCard.deployedFrom` in deploy service and defaulting missing `scope` to `"source"` for `source*` conditions in `EffectConditionEvaluator`.
+- `GD03-051` linked deploy chooser affordability UX gap (and same pattern for `GD02-096`/`GD02-110`/`GD03-130`):
+  - text/rules correctly encoded `Pay its cost to deploy it` (`payCost: true`), but chooser `availableTargets` was generated from target filters only and did not exclude unaffordable deploy candidates.
+  - Result: backend could show a target in dialog that would fail at resolution-time energy payment (`P2` UX/backend-parity mismatch).
+  - Fixed by shared deploy affordability evaluator used for both chooser pre-filtering and deploy payment (effective cost/level, including self-trash cost modifiers).
+  - Preserve target-choice policy after affordability filtering: single remaining target auto-applies (no dialog).
 
 ## Output Requirements
 - Provide:

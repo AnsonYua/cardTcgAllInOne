@@ -12,6 +12,17 @@ export function isSupportedContinuousAction(action: string): boolean {
         || action === 'prevent_ap_reduction';
 }
 
+export function hasEventTypeCondition(conditions: unknown[]): boolean {
+    if (!Array.isArray(conditions)) {
+        return false;
+    }
+    return conditions.some((condition) =>
+        Boolean(condition)
+        && typeof condition === 'object'
+        && (condition as any).type === 'eventType'
+    );
+}
+
 export function normalizeContinuousStep(step: any): any {
     if (!step || typeof step.action !== 'string') {
         return step;
