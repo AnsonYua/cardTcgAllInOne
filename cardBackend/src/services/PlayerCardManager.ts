@@ -648,6 +648,9 @@ export class PlayerCardManager {
 
             // Create trash card with card data
             const trashCard = createZoneCard(carduid, cardId, cardData, playerId);
+            if (Array.isArray((cardData as any)?.nameAliases) && (cardData as any).nameAliases.length > 0) {
+                trashCard.nameAliases = [...(cardData as any).nameAliases];
+            }
             player.zones.trashArea.push(trashCard);
 
             console.log(`🗑️ Card ${carduid} moved to trash`);
