@@ -4,7 +4,8 @@ const {
   hasAlwaysOnKeywordText,
   hasRepairRule,
   hasBlockerRule,
-  hasBreachRule
+  hasBreachRule,
+  hasRuleCapability
 } = require('./alwaysOnEffectUtils');
 const {
   validateActionSemantics,
@@ -329,6 +330,18 @@ function walkEffects(node, context, diagnostics) {
     }
   }
 
+  if (node.action === 'restrict_attack' && node.parameters && typeof node.parameters === 'object') {
+    if (Object.prototype.hasOwnProperty.call(node.parameters, 'restriction')) {
+      diagnostics.push({
+        severity: 'error',
+        cardId: context.cardId,
+        effectId: nextContext.effectId || 'unknown',
+        jsonPath: `${context.jsonPath}.parameters.restriction`,
+        message: 'restrict_attack.parameters.restriction is deprecated; use parameters.disallow'
+      });
+    }
+  }
+
   if (Array.isArray(node.conditions)) {
     node.conditions.forEach((condition, index) => {
       const conditionPath = `${context.jsonPath}.conditions[${index}]`;
@@ -543,6 +556,8 @@ function detectAlwaysOnTextRuleMismatches(fileName, cards, diagnostics) {
     const hasRepairRuleCapability = hasRepairRule(rules);
     const hasBlockerRuleCapability = hasBlockerRule(rules);
     const hasBreachRuleCapability = hasBreachRule(rules);
+    const hasHealRuleCapability = hasRuleCapability(rules, (rule) => String(rule?.action || '').toLowerCase() === 'heal');
+    const hasRedirectRuleCapability = hasRuleCapability(rules, (rule) => String(rule?.trigger || '').toUpperCase() === 'ATTACK_REDIRECT');
 
     if (hasAlwaysOnRepairText && !hasRepairRuleCapability) {
       diagnostics.push({
@@ -572,6 +587,28 @@ function detectAlwaysOnTextRuleMismatches(fileName, cards, diagnostics) {
       });
     }
 
+    const hasIntrinsicRepairLine = descriptions.some((line) => typeof line === 'string' && /^\s*<\s*repair\s*\d+\s*>/i.test(line));
+    if (hasIntrinsicRepairLine && !hasHealRuleCapability) {
+      diagnostics.push({
+        severity: 'warning',
+        cardId,
+        effectId: 'effects.description',
+        jsonPath: `cards.${cardId}.effects.description`,
+        message: `${fileName}: intrinsic <Repair N> text should use heal-capable behavior encoding`
+      });
+    }
+
+    const hasIntrinsicBlockerLine = descriptions.some((line) => typeof line === 'string' && /^\s*<\s*blocker\s*>/i.test(line));
+    if (hasIntrinsicBlockerLine && !hasRedirectRuleCapability) {
+      diagnostics.push({
+        severity: 'warning',
+        cardId,
+        effectId: 'effects.description',
+        jsonPath: `cards.${cardId}.effects.description`,
+        message: `${fileName}: intrinsic <Blocker> text should use ATTACK_REDIRECT-capable behavior encoding`
+      });
+    }
+
     const hasBurstLine = descriptions.some((line) => typeof line === 'string' && /^(?:\[Burst\]|【Burst】)/i.test(line.trim()));
     const hasPlayFromHandPairingLine = descriptions.some(
       (line) => typeof line === 'string' && /^When playing this card from your hand\b/i.test(line.trim())
@@ -592,6 +629,62 @@ function detectAlwaysOnTextRuleMismatches(fileName, cards, diagnostics) {
         message: `${fileName}: play-from-hand pairing cost text present but no pair_target_unit replace_cost rule found`
       });
     }
+  }
+}
+
+function detectDescriptionRuleContractMismatches(fileName, cards, diagnostics) {
+  for (const [cardId, card] of Object.entries(cards)) {
+    const descriptions = Array.isArray(card?.effects?.description) ? card.effects.description : [];
+    const rules = Array.isArray(card?.effects?.rules) ? card.effects.rules : [];
+    if (descriptions.length === 0 || rules.length === 0) {
+      continue;
+    }
+
+    const pairedByIndex = descriptions.length === rules.length;
+    const cardText = descriptions.filter((line) => typeof line === 'string').join(' ');
+
+    rules.forEach((rule, index) => {
+      if (!rule || typeof rule !== 'object') {
+        return;
+      }
+
+      const effectId = typeof rule.effectId === 'string' ? rule.effectId : 'unknown';
+      const rulePath = `cards.${cardId}.effects.rules[${index}]`;
+      const lineText = pairedByIndex && typeof descriptions[index] === 'string' ? descriptions[index] : cardText;
+
+      if (rule.action === 'setActive') {
+        const mentionsSelection = /choose\s+1/i.test(lineText);
+        if (mentionsSelection) {
+          const target = rule.target;
+          const hasType = typeof target?.type === 'string' && target.type.length > 0;
+          const hasScope = typeof target?.scope === 'string' && target.scope.length > 0;
+          const hasCount = target && Object.prototype.hasOwnProperty.call(target, 'count');
+          if (!hasType || !hasScope || !hasCount) {
+            diagnostics.push({
+              severity: 'error',
+              cardId,
+              effectId,
+              jsonPath: `${rulePath}.target`,
+              message: `${fileName}: setActive effects with explicit selection text must define target.type/scope/count`
+            });
+          }
+        }
+      }
+
+      if (rule.action === 'prevent_battle_damage') {
+        const referencesEnemyUnits = /enemy Units/i.test(lineText);
+        const parameters = rule.parameters && typeof rule.parameters === 'object' ? rule.parameters : {};
+        if (referencesEnemyUnits && !Object.prototype.hasOwnProperty.call(parameters, 'from')) {
+          diagnostics.push({
+            severity: 'error',
+            cardId,
+            effectId,
+            jsonPath: `${rulePath}.parameters.from`,
+            message: `${fileName}: prevent_battle_damage text references enemy Units but parameters.from is missing`
+          });
+        }
+      }
+    });
   }
 }
 
@@ -746,6 +839,7 @@ function validateEffectSchemaCanonical() {
     validateCardLinks(fileName, cards, diagnostics);
     detectAlwaysOnTextRuleMismatches(fileName, cards, diagnostics);
     detectSupportActivatedSchemaMismatches(fileName, cards, diagnostics);
+    detectDescriptionRuleContractMismatches(fileName, cards, diagnostics);
 
     for (const [cardId, card] of Object.entries(cards)) {
       const rules = card && card.effects && Array.isArray(card.effects.rules) ? card.effects.rules : [];
@@ -782,6 +876,7 @@ module.exports = {
     detectAlwaysOnTextRuleMismatches,
     validateReturnToHandSemantics,
     detectSupportActivatedSchemaMismatches,
+    detectDescriptionRuleContractMismatches,
     validateScryTopDeckParameters
   }
 };

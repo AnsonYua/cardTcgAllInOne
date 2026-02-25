@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-02-24T16:28:32.704Z",
+  "generatedAt": "2026-02-25T02:40:56.401Z",
   "fileCount": 11,
   "cardCount": 538,
   "ruleTypeSummary": {
-    "continuous": 88,
-    "triggered": 443,
+    "continuous": 89,
+    "triggered": 442,
     "play": 90,
     "activated": 38,
     "special": 40
@@ -299,10 +299,9 @@
       "name": "Gundam Deathscythe",
       "cardType": "unit",
       "descriptionCount": 1,
-      "ruleCount": 2,
+      "ruleCount": 1,
       "effectIds": [
-        "pair_place_rested_resource",
-        "pair_grant_first_strike"
+        "pair_operation_meteor_place_resource_then_gain_first_strike"
       ],
       "alwaysOnStatus": "complete"
     },
@@ -898,7 +897,7 @@
       "cardId": "GD01-076",
       "name": "Michaelis",
       "cardType": "unit",
-      "descriptionCount": 1,
+      "descriptionCount": 2,
       "ruleCount": 2,
       "effectIds": [
         "ap_boost_if_trash_commands_ge_4",
@@ -955,7 +954,7 @@
       "cardId": "GD01-081",
       "name": "M1 Astray",
       "cardType": "unit",
-      "descriptionCount": 1,
+      "descriptionCount": 2,
       "ruleCount": 2,
       "effectIds": [
         "ap_boost_if_another_tsa_unit",
@@ -1684,7 +1683,7 @@
       "cardId": "GD02-006",
       "name": "Forbidden Gundam",
       "cardType": "unit",
-      "descriptionCount": 1,
+      "descriptionCount": 2,
       "ruleCount": 2,
       "effectIds": [
         "blocker",
@@ -2771,8 +2770,9 @@
       "name": "Quattro Bajeena",
       "cardType": "pilot",
       "descriptionCount": 3,
-      "ruleCount": 2,
+      "ruleCount": 3,
       "effectIds": [
+        "name_alias_char_aznable",
         "burst_add_to_hand",
         "linked_draw_then_discard_if_aeug_unit"
       ],
@@ -3353,7 +3353,7 @@
       "cardId": "GD03-013",
       "name": "Hizack",
       "cardType": "unit",
-      "descriptionCount": 1,
+      "descriptionCount": 2,
       "ruleCount": 2,
       "effectIds": [
         "conditional_ap_plus_1_if_jupitris_ge_2",
@@ -3439,7 +3439,7 @@
       "cardId": "GD03-020",
       "name": "Zaku Ⅱ FZ",
       "cardType": "unit",
-      "descriptionCount": 1,
+      "descriptionCount": 2,
       "ruleCount": 2,
       "effectIds": [
         "pair_deploy_2_ad_balloon_tokens_if_cyclops_trash_ge_4",
@@ -3782,7 +3782,7 @@
       "cardId": "GD03-049",
       "name": "Gundam Exia (Trans-Am)",
       "cardType": "unit",
-      "descriptionCount": 1,
+      "descriptionCount": 2,
       "ruleCount": 2,
       "effectIds": [
         "suppression_2",
@@ -4909,7 +4909,7 @@
       "cardId": "T-014",
       "name": "Ad Balloon",
       "cardType": "unit",
-      "descriptionCount": 1,
+      "descriptionCount": 2,
       "ruleCount": 2,
       "effectIds": [
         "cannot_be_set_active",

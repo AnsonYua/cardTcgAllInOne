@@ -97,6 +97,60 @@ function validatePreventBattleDamageParameters(node, context, diagnostics) {
       'prevent_battle_damage enemyLevel must be a comparison string'
     );
   }
+
+  const hasEnemyFilter =
+    Object.prototype.hasOwnProperty.call(parameters, 'enemyLevel') ||
+    Object.prototype.hasOwnProperty.call(parameters, 'enemyAp') ||
+    Object.prototype.hasOwnProperty.call(parameters, 'maxEnemyAp') ||
+    Object.prototype.hasOwnProperty.call(parameters, 'enemyHp');
+  if (hasEnemyFilter && !Object.prototype.hasOwnProperty.call(parameters, 'from')) {
+    pushDiagnostic(
+      diagnostics,
+      context,
+      `${paramsPath}.from`,
+      'prevent_battle_damage requires parameters.from when enemy filter keys are present'
+    );
+  }
+}
+
+function validateSetNameAliasParameters(node, context, diagnostics) {
+  if (!node || typeof node !== 'object' || node.action !== 'set_name_alias') {
+    return;
+  }
+
+  const parameters = node.parameters && typeof node.parameters === 'object' ? node.parameters : null;
+  const aliasPath = `${context.jsonPath}.parameters.alsoTreatedAs`;
+  if (!parameters) {
+    pushDiagnostic(
+      diagnostics,
+      context,
+      `${context.jsonPath}.parameters`,
+      'set_name_alias requires parameters'
+    );
+    return;
+  }
+
+  const aliases = parameters.alsoTreatedAs;
+  if (!Array.isArray(aliases) || aliases.length === 0) {
+    pushDiagnostic(
+      diagnostics,
+      context,
+      aliasPath,
+      'set_name_alias requires a non-empty parameters.alsoTreatedAs array'
+    );
+    return;
+  }
+
+  aliases.forEach((entry, index) => {
+    if (typeof entry !== 'string' || entry.trim().length === 0) {
+      pushDiagnostic(
+        diagnostics,
+        context,
+        `${aliasPath}[${index}]`,
+        'set_name_alias alias entries must be non-empty strings'
+      );
+    }
+  });
 }
 
 function validateScryTopDeckParameters(node, context, diagnostics) {
@@ -229,6 +283,7 @@ function validateScryTopDeckParameters(node, context, diagnostics) {
 
 const ACTION_SEMANTIC_VALIDATORS = [
   validatePreventBattleDamageParameters,
+  validateSetNameAliasParameters,
   validateScryTopDeckParameters
 ];
 
@@ -241,5 +296,6 @@ function validateActionSemantics(node, context, diagnostics) {
 module.exports = {
   validateActionSemantics,
   validatePreventBattleDamageParameters,
+  validateSetNameAliasParameters,
   validateScryTopDeckParameters
 };

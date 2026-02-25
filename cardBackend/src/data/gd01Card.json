@@ -1166,15 +1166,14 @@
       "hp": 4,
       "effects": {
         "description": [
-          "[When Paired-(Operation Meteor) Pilot]Place 1 rested Resource.",
-          "Then, this Unit gains <First Strike> during this turn. (While this Unit is attacking, it deals damage before the enemy Unit.)"
+          "[When Paired-(Operation Meteor) Pilot]Place 1 rested Resource. Then, this Unit gains <First Strike> during this turn. (While this Unit is attacking, it deals damage before the enemy Unit.)"
         ],
         "rules": [
           {
-            "effectId": "pair_place_rested_resource",
+            "effectId": "pair_operation_meteor_place_resource_then_gain_first_strike",
             "type": "triggered",
             "trigger": "PAIRING_COMPLETE",
-            "action": "addBasicEnergy",
+            "action": "sequence",
             "sourceConditions": [
               {
                 "type": "paired"
@@ -1188,37 +1187,29 @@
               }
             ],
             "parameters": {
-              "value": 1,
-              "rested": true
-            }
-          },
-          {
-            "effectId": "pair_grant_first_strike",
-            "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
-            "action": "grant_keyword",
-            "sourceConditions": [
-              {
-                "type": "paired"
-              }
-            ],
-            "conditions": [
-              {
-                "type": "pairedPilotTrait",
-                "scope": "source",
-                "value": "Operation Meteor"
-              }
-            ],
-            "target": {
-              "type": "unit",
-              "scope": "self",
-              "count": 1
-            },
-            "timing": {
-              "duration": "UNTIL_END_OF_TURN"
-            },
-            "parameters": {
-              "keyword": "First Strike"
+              "steps": [
+                {
+                  "action": "addBasicEnergy",
+                  "parameters": {
+                    "value": 1,
+                    "rested": true
+                  }
+                },
+                {
+                  "action": "grant_keyword",
+                  "target": {
+                    "type": "unit",
+                    "scope": "self",
+                    "count": 1
+                  },
+                  "timing": {
+                    "duration": "UNTIL_END_OF_TURN"
+                  },
+                  "parameters": {
+                    "keyword": "First Strike"
+                  }
+                }
+              ]
             }
           }
         ]
