@@ -29,6 +29,10 @@
   - preceding step has stable `stepId`
   - dependent branch checks `type: "stepResolved"` for that `stepId`
   - resulting steps are encoded in `conditional.parameters.then` (not only in free-text `parameters.text`)
+- For text with "choose ... your other Unit(s)" on pair/link effects:
+  - do not rely on implicit `scope: "self"` normalization
+  - require explicit selection + exclusion (`excludePairedUnit`, `excludeSource`, or `filters.excludeSelf` as appropriate)
+  - if later steps use `previousTarget*` conditions, confirm step-1 target cannot leak to linked/paired source by default.
 
 ## 3) Frontend Evaluator Inventory
 - Check local evaluator modules (not backend-driven execution):
@@ -46,10 +50,17 @@
   - Use field totals when required (e.g., `fieldCardValue.totalAP`).
 - Restriction parity:
   - `restrict_attack` must gate UI actions consistently.
+  - For `requires.type = "friendly_unit_deployed_this_turn"`, treat as turn-history semantics:
+    verify evaluator includes same-turn deployed units even if they moved zones (e.g., destroyed to trash).
 - Source-level parity:
   - pilot-sourced `"this Unit"` logic should use effective source-level semantics.
   - if rule sets `sourceLevelScope: "source_card"`, verify pilot-level is used even when paired.
   - if omitted, verify default `paired_unit` and unpaired fallback behavior.
+- Choice parity:
+  - For `OPTION_CHOICE` flows (especially pairing/deploy effect order), ensure options include explicit availability flags.
+  - If an option is guaranteed no-op now, it should be disabled with a reason, not just allowed then no-op.
+  - Backend must reject disabled option selections to prevent stale/manual invalid picks.
+  - Frontend must map backend disabled state to non-selectable UI and timeout/default selection must skip disabled options.
 
 ## 5) Fix Strategy
 - Centralize comparison parsing/evaluation in shared util.

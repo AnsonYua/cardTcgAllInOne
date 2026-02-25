@@ -77,4 +77,25 @@ describe('GD03-081 deployed-this-turn attack requirement', () => {
 
         expect(result.success).toBe(true);
     });
+
+    test('allows attack when matching unit was deployed this turn and then destroyed', () => {
+        const gameEnv = new GameEnvironment();
+        const p1 = gameEnv.addPlayer('player1', 'P1');
+        gameEnv.addPlayer('player2', 'P2');
+
+        const attacker = makeUnit('GD03-081_1', ['Superpower Bloc'], [restrictionRule]);
+        const deadAlly = makeUnit('ALLY_1', ['UN']);
+        deadAlly.playedThisTurn = true;
+
+        p1.zones.slot1.unit = attacker;
+        p1.zones.trashArea.push(deadAlly);
+
+        const result = AttackPreparationManager.prepareBaseAttack(
+            gameEnv,
+            'player1',
+            attacker.carduid
+        );
+
+        expect(result.success).toBe(true);
+    });
 });

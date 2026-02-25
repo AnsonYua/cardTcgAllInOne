@@ -57,6 +57,7 @@ Use this skill when a card effect appears correct in data but gameplay/UI behavi
 - Frontend slot action bar must reflect `restrict_attack` semantics:
   - `disallow: "player"` => block Attack Shield button
   - `requires.type: "friendly_unit_deployed_this_turn"` => disable attack if unmet
+  - turn-history requirements must include valid same-turn history zones (not just currently-in-play slots)
 - Source-level semantics must be explicit and consistent:
   - `sourceLevelScope: "paired_unit"` (default) uses paired unit level for pilot-sourced checks, then safely falls back to source-card level.
   - `sourceLevelScope: "source_card"` forces source-card level (pilot level for pilot source).
@@ -75,6 +76,9 @@ See `references/incident-gd03-035.md` for concrete bugs and fixes:
 - `GD03-095` trigger disappeared after sequence completion in API flow because deferred entries were stored only in transient runtime keys and lost across save/load between target-choice confirmations; fixed by persisting deferred entries on `GameEnvironment`.
 - `GD02-021` and `GD03-064` were schema-valid but sequence-incomplete (text said multi-step `If you do`, rules encoded only a subset of steps); fixed by adding explicit conditional branch semantics.
 - `GD03-086`/`GD01-093`/`GD02-095` source-level mismatch: fixed by introducing global effective source-level semantics and explicit `sourceLevelScope` override support (`paired_unit` vs `source_card`).
+- `GD03-084` "other Unit" leakage on linked pilot sequence: fixed by explicit target choice + `excludePairedUnit`, plus engine fallback resolution for paired-unit exclusion in sequence contexts without `pairedSlot`.
+- `GD03-081` deployed-this-turn restriction incorrectly ignored destroyed units moved to trash in the same turn; fixed by evaluating turn-history evidence from `trashArea` too.
+- `GD02-099` pairing order UX mismatch: options that were guaranteed no-op were still selectable; fixed with backend-disabled option metadata + backend rejection + frontend disabled handling.
 
 ## Output Requirements
 - Provide:

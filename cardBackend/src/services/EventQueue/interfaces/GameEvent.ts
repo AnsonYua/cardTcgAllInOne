@@ -565,6 +565,8 @@ export interface OptionChoiceOption {
     index: number;
     label: string;
     payload?: Record<string, unknown>;
+    disabled?: boolean;
+    disabledReason?: string;
     display?: {
         mode: 'card' | 'text';
         cardId?: string;

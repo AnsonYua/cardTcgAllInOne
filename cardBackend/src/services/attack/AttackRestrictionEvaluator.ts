@@ -112,6 +112,31 @@ export class AttackRestrictionEvaluator {
                 }
             }
 
+            // "deployed this turn" is a turn-history condition, not "currently in play".
+            // A matching unit that was deployed this turn and later destroyed still satisfies it.
+            if (!matched) {
+                const trashUnits = Array.isArray(player.zones?.trashArea)
+                    ? (player.zones.trashArea as UnitZoneCard[])
+                    : [];
+
+                for (const unit of trashUnits) {
+                    if (!unit || unit.playedThisTurn !== true) {
+                        continue;
+                    }
+
+                    if (requiredTraits.length === 0) {
+                        matched = true;
+                        break;
+                    }
+
+                    const unitTraits = Array.isArray(unit.cardData?.traits) ? unit.cardData.traits : [];
+                    if (requiredTraits.some((trait: string) => unitTraits.includes(trait))) {
+                        matched = true;
+                        break;
+                    }
+                }
+            }
+
             if (!matched) {
                 const cardName = attackingUnit.cardData?.name || attackingUnit.cardId || 'This unit';
                 return `${cardName} can only attack during a turn when one of your required units was deployed`;

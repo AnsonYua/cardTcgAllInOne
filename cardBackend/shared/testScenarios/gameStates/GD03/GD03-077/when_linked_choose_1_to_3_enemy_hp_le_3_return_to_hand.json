@@ -68,12 +68,12 @@
         "deck": {
           "hand": [
             {
-              "carduid": "GD03-082_pilot_0001",
-              "cardId": "GD03-082"
+              "carduid": "ST04-011_pilot_0001",
+              "cardId": "ST04-011"
             }
           ],
           "handUids": [
-            "GD03-082_pilot_0001"
+            "ST04-011_pilot_0001"
           ],
           "mainDeck": []
         },

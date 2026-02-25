@@ -5,6 +5,7 @@ import { GameEnvironment } from '../models/GameEnvironment';
 import { DeployTargetManager } from './DeployTargetManager';
 import { EffectExecutor } from './effects/EffectExecutor';
 import {
+    EffectDefinition,
     PlayCardEventData,
     PairingEffectEvent,
     PairingEffectEventData,
@@ -35,6 +36,7 @@ import { EventPriority } from './EventQueue/interfaces/GameEvent';
 import { ChoiceNotificationEmitter } from './notifications/ChoiceNotificationEmitter';
 import { GameNotificationManager } from './GameNotificationManager';
 import { EffectSelfTargetNormalizer } from './targets/EffectSelfTargetNormalizer';
+import { EffectConditionEvaluator } from './conditions/EffectConditionEvaluator';
 
 type PairingEffectOrderContext = {
     kind: 'PAIRING_EFFECT_ORDER';
@@ -129,6 +131,12 @@ export interface CardInfo {
 }
 
 export class PairingEffectManager implements StandardEffectManager {
+    private static readonly SEQUENCE_CONTEXT_ONLY_CONDITION_TYPES = new Set([
+        'stepResolved',
+        'previousTargetHasTrait',
+        'milledAnyCardHasTrait',
+        'milledCardHasTraitsAny'
+    ]);
     
     // ============ STANDARDIZED INTERFACE IMPLEMENTATION ============
     
@@ -485,9 +493,16 @@ export class PairingEffectManager implements StandardEffectManager {
                 if (this.shouldPromptForPairingEffectOrder(pairingEffects)) {
                     const options = pairingEffects.map((effect, index) => {
                         const optionLabel = this.describePairingEffectOption(gameEnv, playerId, effect);
+                        const optionAvailability = this.evaluatePairingEffectOptionAvailability(
+                            gameEnv,
+                            playerId,
+                            eventData.carduid,
+                            effect
+                        );
                         return {
                             index,
                             label: optionLabel,
+                            ...(optionAvailability.disabled ? { disabled: true, disabledReason: optionAvailability.reason } : {}),
                             display: ChoiceDisplayBuilder.text(optionLabel)
                         };
                     });
@@ -605,9 +620,16 @@ export class PairingEffectManager implements StandardEffectManager {
                     } else {
                         const options = remainingEffects.map((remainingEffect, index) => {
                             const optionLabel = this.describePairingEffectOption(gameEnv, playerId, remainingEffect);
+                            const optionAvailability = this.evaluatePairingEffectOptionAvailability(
+                                gameEnv,
+                                playerId,
+                                eventData.carduid,
+                                remainingEffect
+                            );
                             return {
                                 index,
                                 label: optionLabel,
+                                ...(optionAvailability.disabled ? { disabled: true, disabledReason: optionAvailability.reason } : {}),
                                 display: ChoiceDisplayBuilder.text(optionLabel)
                             };
                         });
@@ -689,6 +711,247 @@ export class PairingEffectManager implements StandardEffectManager {
         const sourceName = this.findCardName(gameEnv, playerId, sourceCarduid);
         const prefix = sourceName ? `${sourceName}: ` : '';
         return `${prefix}${effectId} (${action})`;
+    }
+
+    private static evaluatePairingEffectOptionAvailability(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        pairingCarduid: string,
+        effect: PairingEffect
+    ): { disabled: boolean; reason?: string } {
+        const sourceCarduid = typeof effect?.sourceCarduid === 'string' && effect.sourceCarduid.length > 0
+            ? effect.sourceCarduid
+            : pairingCarduid;
+        const sourceCard = SlotZoneUtils.getCardByUid(gameEnv, sourceCarduid) as any;
+
+        if (Array.isArray(effect.sourceConditions) && effect.sourceConditions.length > 0) {
+            const sourceConditionMet = sourceCard
+                ? ContinuousEffectManager.sourceConditionsMet(effect as any, sourceCard, gameEnv, playerId)
+                : false;
+            if (!sourceConditionMet) {
+                return { disabled: true, reason: 'Source condition not met' };
+            }
+        }
+
+        const pairingCards = this.resolvePairingCardsForEffect(gameEnv, playerId, effect, pairingCarduid);
+        if (
+            pairingCards &&
+            Array.isArray(effect.conditions) &&
+            effect.conditions.length > 0 &&
+            !this.validatePairingConditions(effect.conditions as any, pairingCards.unit, pairingCards.pilot, gameEnv, playerId)
+        ) {
+            return { disabled: true, reason: 'Condition not met' };
+        }
+
+        const normalizedEffect = EffectSelfTargetNormalizer.normalizeWithSourceCarduid(
+            gameEnv,
+            ensureEffectDefaults({ ...effect } as any),
+            sourceCarduid
+        );
+        const preview = DeployTargetManager.evaluateImmediateResolution(
+            gameEnv,
+            playerId,
+            sourceCarduid,
+            normalizedEffect
+        );
+
+        if (preview.noOpNoTargets) {
+            return { disabled: true, reason: 'No legal targets' };
+        }
+
+        if (EffectExecutor.getEffectAction(normalizedEffect) === 'sequence') {
+            const noOpReason = this.getGuaranteedNoOpSequenceReason(gameEnv, playerId, sourceCarduid, normalizedEffect);
+            if (noOpReason) {
+                return { disabled: true, reason: noOpReason };
+            }
+        }
+
+        return { disabled: false };
+    }
+
+    private static resolvePairingCardsForEffect(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        effect: PairingEffect,
+        fallbackCarduid: string
+    ): { unit: UnitCard; pilot: PilotCard } | null {
+        const player = gameEnv.getPlayer(playerId);
+        if (!player?.zones) {
+            return null;
+        }
+
+        let slotName = typeof (effect as any).pairedSlot === 'string' ? (effect as any).pairedSlot : '';
+        if (!slotName) {
+            const sourceCarduid = typeof effect.sourceCarduid === 'string' && effect.sourceCarduid.length > 0
+                ? effect.sourceCarduid
+                : fallbackCarduid;
+            const slotResult = SlotZoneUtils.findSlotByCarduid(player.zones, sourceCarduid);
+            slotName = slotResult.slotName || '';
+        }
+
+        if (!slotName) {
+            return null;
+        }
+
+        const slotZone = (player.zones as any)[slotName];
+        const unit = slotZone?.unit as UnitCard | undefined;
+        const pilot = slotZone?.pilot as PilotCard | undefined;
+        if (!unit || !pilot) {
+            return null;
+        }
+
+        return { unit, pilot };
+    }
+
+    private static getGuaranteedNoOpSequenceReason(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        sourceCarduid: string,
+        effect: EffectDefinition
+    ): string | null {
+        const steps = Array.isArray(effect.parameters?.steps) ? (effect.parameters!.steps as any[]) : [];
+        if (steps.length === 0) {
+            return 'No executable sequence steps';
+        }
+
+        const branch = this.sequenceHasActionableStep(gameEnv, playerId, sourceCarduid, steps);
+        if (branch.actionable) {
+            return null;
+        }
+        return branch.reason || 'Condition not met';
+    }
+
+    private static sequenceHasActionableStep(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        sourceCarduid: string,
+        steps: Array<Record<string, unknown>>
+    ): { actionable: boolean; reason?: string } {
+        for (const step of steps) {
+            if (!step || typeof step.action !== 'string') {
+                continue;
+            }
+
+            if (step.action === 'conditional') {
+                const params = (step.parameters || {}) as Record<string, unknown>;
+                const conditions = Array.isArray(params.if) ? (params.if as Array<Record<string, unknown>>) : [];
+                const evalResult = this.evaluateConditionalSnapshot(gameEnv, playerId, sourceCarduid, conditions);
+                if (evalResult === 'unknown') {
+                    return { actionable: true };
+                }
+
+                const branchSteps = evalResult
+                    ? (Array.isArray(params.then) ? (params.then as Array<Record<string, unknown>>) : [])
+                    : (Array.isArray(params.else) ? (params.else as Array<Record<string, unknown>>) : []);
+
+                if (branchSteps.length === 0) {
+                    const reason = evalResult
+                        ? undefined
+                        : this.buildConditionalNotMetReason(conditions[0]);
+                    if (reason) {
+                        return { actionable: false, reason };
+                    }
+                    continue;
+                }
+
+                const branchResult = this.sequenceHasActionableStep(gameEnv, playerId, sourceCarduid, branchSteps);
+                if (branchResult.actionable) {
+                    return branchResult;
+                }
+                return branchResult;
+            }
+
+            const stepEffect = ensureEffectDefaults({
+                effectId: typeof step.effectId === 'string' ? step.effectId : (typeof step.action === 'string' ? step.action : 'sequence_step'),
+                type: 'internal',
+                trigger: 'SEQUENCE_STEP',
+                optional: Boolean(step.optional),
+                action: step.action,
+                ...(step.target ? { target: step.target as any } : {}),
+                ...(step.timing ? { timing: step.timing as any } : {}),
+                ...(step.parameters ? { parameters: step.parameters as any } : {}),
+                ...(Array.isArray(step.conditions) ? { conditions: step.conditions as any } : {})
+            } as any);
+            const sourceCard = sourceCarduid ? SlotZoneUtils.getCardByUid(gameEnv, sourceCarduid) : null;
+            if (!EffectConditionEvaluator.validateEffectConditions(stepEffect, gameEnv, playerId, sourceCard as any)) {
+                continue;
+            }
+
+            if (EffectExecutor.actionSupportsNoTargets(EffectExecutor.getEffectAction(stepEffect))) {
+                return { actionable: true };
+            }
+
+            const normalizedStep = EffectSelfTargetNormalizer.normalizeWithSourceCarduid(
+                gameEnv,
+                stepEffect,
+                sourceCarduid
+            );
+            const preview = DeployTargetManager.evaluateImmediateResolution(
+                gameEnv,
+                playerId,
+                sourceCarduid,
+                normalizedStep
+            );
+            if (!preview.noOpNoTargets) {
+                return { actionable: true };
+            }
+        }
+
+        return { actionable: false, reason: 'No legal targets' };
+    }
+
+    private static evaluateConditionalSnapshot(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        sourceCarduid: string,
+        conditions: Array<Record<string, unknown>>
+    ): boolean | 'unknown' {
+        if (conditions.length === 0) {
+            return false;
+        }
+
+        const sourceCard = sourceCarduid ? SlotZoneUtils.getCardByUid(gameEnv, sourceCarduid) : null;
+        for (const condition of conditions) {
+            const type = typeof condition?.type === 'string' ? condition.type : '';
+            if (this.SEQUENCE_CONTEXT_ONLY_CONDITION_TYPES.has(type)) {
+                return 'unknown';
+            }
+
+            const supported = EffectConditionEvaluator.validateEffectConditions(
+                ensureEffectDefaults({
+                    effectId: 'pairing_option_condition_preview',
+                    type: 'internal',
+                    trigger: 'SEQUENCE_STEP',
+                    action: 'noop',
+                    conditions: [condition]
+                } as any),
+                gameEnv,
+                playerId,
+                sourceCard as any
+            );
+
+            if (!supported) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static buildConditionalNotMetReason(condition: Record<string, unknown> | undefined): string {
+        const type = typeof condition?.type === 'string' ? condition.type : '';
+        if (type === 'cardsInTrashWithTraitsAny' || type === 'cardsInTrash') {
+            const traits = Array.isArray((condition as any)?.traits)
+                ? (condition as any).traits.filter((trait: unknown): trait is string => typeof trait === 'string')
+                : Array.isArray((condition as any)?.traitsAny)
+                    ? (condition as any).traitsAny.filter((trait: unknown): trait is string => typeof trait === 'string')
+                    : [];
+            const rawValue = typeof (condition as any)?.value === 'string' ? (condition as any).value : '';
+            const traitLabel = traits.length > 0 ? ` (${traits.join('/')})` : '';
+            const valueLabel = rawValue.length > 0 ? ` ${rawValue}` : '';
+            return `Condition not met: requires${valueLabel} cards in trash${traitLabel}`;
+        }
+        return 'Condition not met';
     }
 
     private static partitionImmediatelyResolvableEffects(

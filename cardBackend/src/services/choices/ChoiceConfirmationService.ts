@@ -230,6 +230,12 @@ export class ChoiceConfirmationService {
                 if (!selectedOption) {
                     return { success: false, error: 'Selected option is not available' };
                 }
+                if (selectedOption.disabled === true) {
+                    const reason = typeof selectedOption.disabledReason === 'string' && selectedOption.disabledReason.length > 0
+                        ? selectedOption.disabledReason
+                        : 'Option is currently unavailable';
+                    return { success: false, error: `Selected option is disabled: ${reason}` };
+                }
 
                 optionEvent.data.selectedOptionIndex = selectedOptionIndex;
                 optionEvent.data.userDecisionMade = true;

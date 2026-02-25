@@ -33,6 +33,16 @@ export class PairingEffectOrderManager {
             return { success: false, error: 'PAIRING_EFFECT_ORDER missing selected option' };
         }
 
+        const selectedOption = Array.isArray(event.data.availableOptions)
+            ? event.data.availableOptions.find((option) => option.index === selectedIndex)
+            : undefined;
+        if (selectedOption?.disabled === true) {
+            const reason = typeof selectedOption.disabledReason === 'string' && selectedOption.disabledReason.length > 0
+                ? selectedOption.disabledReason
+                : 'Option is currently unavailable';
+            return { success: false, error: `PAIRING_EFFECT_ORDER selected option is disabled: ${reason}` };
+        }
+
         const selectedEffect = effects.find((_effect, idx) => idx === selectedIndex);
         if (!selectedEffect) {
             return { success: false, error: 'PAIRING_EFFECT_ORDER selected option is out of range' };
@@ -55,4 +65,3 @@ export class PairingEffectOrderManager {
         return { success: true };
     }
 }
-

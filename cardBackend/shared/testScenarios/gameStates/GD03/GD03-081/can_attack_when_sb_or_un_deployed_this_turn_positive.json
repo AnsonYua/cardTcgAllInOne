@@ -67,8 +67,13 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": [],
-          "handUids": [],
+          "hand": [ 
+              { 
+                "carduid": "GD03-083_unit_0001",
+                "cardId": "GD03-083"
+              }
+            ],
+          "handUids": [ "GD03-083_unit_0001"],
           "mainDeck": []
         },
         "confirmIsRedraw": false,
@@ -107,7 +112,7 @@
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
               "isFirstPlay": false,
-              "damageReceived": 0,
+              "damageReceived": 2,
               "modifyAP": 0,
               "modifyHP": 0,
               "continueModifyAP": 0,
