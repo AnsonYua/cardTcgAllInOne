@@ -1,5 +1,6 @@
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { EffectDefinition, TargetReference } from '../EventQueue/interfaces/GameEvent';
+import { BattleOpponentOfSourceTargetResolver } from './BattleOpponentOfSourceTargetResolver';
 import { SourcePairedTargetResolver } from './SourcePairedTargetResolver';
 import { SourceCardTargetResolver } from './SourceCardTargetResolver';
 
@@ -9,6 +10,8 @@ export class TargetScopeResolverRegistry {
         (gameEnv: GameEnvironment, sourceCarduid: string, effect: EffectDefinition) => TargetReference[] | null
     > = {
         source: (gameEnv, sourceCarduid, effect) => SourceCardTargetResolver.resolve(gameEnv, sourceCarduid, effect),
+        opponent_battling_source: (gameEnv, sourceCarduid, effect) =>
+            BattleOpponentOfSourceTargetResolver.resolve(gameEnv, sourceCarduid, effect),
         source_paired_pilot: (gameEnv, sourceCarduid) =>
             SourcePairedTargetResolver.resolve(gameEnv, sourceCarduid, 'source_paired_pilot'),
         source_paired_unit: (gameEnv, sourceCarduid) =>
@@ -22,7 +25,9 @@ export class TargetScopeResolverRegistry {
     ): TargetReference[] | null {
         const scope = typeof effect.target?.scope === 'string' ? effect.target.scope.toLowerCase() : '';
         const resolver = scope ? this.RESOLVERS[scope] : undefined;
-        const resolved = resolver ? resolver(gameEnv, sourceCarduid, effect) : null;
-        return resolved && resolved.length > 0 ? resolved : null;
+        if (!resolver) {
+            return null;
+        }
+        return resolver(gameEnv, sourceCarduid, effect) ?? [];
     }
 }

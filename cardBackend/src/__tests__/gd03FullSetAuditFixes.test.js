@@ -4,7 +4,7 @@ const { PlayerCardManager } = require('../services/PlayerCardManager');
 const { PairingEffectManager } = require('../services/PairingEffectManager');
 const { AllowAttackTargetPermissionResolver } = require('../services/attack/AllowAttackTargetPermissionResolver');
 const { BaseAbilityManager } = require('../services/effects/BaseAbilityManager');
-const { createUnitZoneCard, createPilotZoneCard, findUnit } = require('./helpers/zoneCardFactory');
+const { createUnitZoneCard, createPilotZoneCard, findUnit, findSlotByUnit } = require('./helpers/zoneCardFactory');
 
 describe('GD03 full-set audit fixes', () => {
     test('card data contains fixed rules for GD03-017/052/053/073/097', () => {
@@ -172,5 +172,163 @@ describe('GD03 full-set audit fixes', () => {
             }
         });
         expect(linkedResult.success).toBe(true);
+    });
+
+    test('GD03-073 activated effect targets only the enemy unit battling source', () => {
+        const gameEnv = new GameEnvironment();
+        const p1 = gameEnv.addPlayer('playerId_1', 'P1');
+        const p2 = gameEnv.addPlayer('playerId_2', 'P2');
+
+        gameEnv.currentTurn = 1;
+        gameEnv.currentPlayer = 'playerId_1';
+        gameEnv.phase = 'ACTION_STEP';
+
+        const activateEffect = gd03.cards['GD03-073'].effects.rules.find((rule) => rule.effectId === 'activate_effect');
+        expect(activateEffect).toBeTruthy();
+
+        p1.zones.slot1.unit = createUnitZoneCard({
+            carduid: 'GD03-073_source_0001',
+            cardId: 'GD03-073',
+            name: 'Graze Ein',
+            ap: 6,
+            hp: 4,
+            traits: ['Gjallarhorn'],
+            link: ['Ein Dalton'],
+            effectsRules: [activateEffect]
+        });
+        p1.zones.slot1.pilot = createPilotZoneCard({
+            carduid: 'pilot_ein_dalton_0001',
+            cardId: 'custom-ein-dalton',
+            name: 'Ein Dalton'
+        });
+
+        p2.zones.slot1.unit = createUnitZoneCard({
+            carduid: 'enemy_battling_unit_0001',
+            cardId: 'ST01-001',
+            name: 'Enemy Battling',
+            ap: 5,
+            hp: 4
+        });
+        p2.zones.slot2.unit = createUnitZoneCard({
+            carduid: 'enemy_other_unit_0001',
+            cardId: 'ST01-002',
+            name: 'Enemy Other',
+            ap: 4,
+            hp: 4
+        });
+
+        for (let i = 0; i < 6; i++) {
+            p1.zones.trashArea.push({
+                carduid: `gj_target_${i}`,
+                cardId: `GJ-T-${i}`,
+                cardData: { id: `GJ-T-${i}`, name: `Gj ${i}`, cardType: 'unit', traits: ['Gjallarhorn'] }
+            });
+        }
+
+        gameEnv.currentBattle = {
+            attackerCarduid: 'enemy_battling_unit_0001',
+            targetCarduid: 'GD03-073_source_0001',
+            attackingPlayerId: 'playerId_2',
+            defendingPlayerId: 'playerId_1',
+            actionType: 'attackUnit',
+            status: 'ACTION_STEP'
+        };
+
+        const linkedResult = BaseAbilityManager.executeBaseAbility(gameEnv, {
+            id: 'ability_linked_targeting_1',
+            type: 'PLAYER_ACTION',
+            status: 'DECLARED',
+            priority: 1,
+            playerId: 'playerId_1',
+            timestamp: Date.now(),
+            data: {
+                playerId: 'playerId_1',
+                actionType: 'activateCardAbility',
+                carduid: 'GD03-073_source_0001',
+                effectId: 'activate_effect'
+            }
+        });
+        expect(linkedResult.success).toBe(true);
+
+        const battlingUnit = findUnit(gameEnv, 'playerId_2', 'enemy_battling_unit_0001');
+        const otherUnit = findUnit(gameEnv, 'playerId_2', 'enemy_other_unit_0001');
+        expect(battlingUnit).toBeTruthy();
+        expect(otherUnit).toBeTruthy();
+        expect(battlingUnit.modifyAP || 0).toBe(-3);
+        expect(otherUnit.modifyAP || 0).toBe(0);
+    });
+
+    test('GD03-073 activated effect no-ops on shield attack (no battling enemy unit target)', () => {
+        const gameEnv = new GameEnvironment();
+        const p1 = gameEnv.addPlayer('playerId_1', 'P1');
+        const p2 = gameEnv.addPlayer('playerId_2', 'P2');
+
+        gameEnv.currentTurn = 1;
+        gameEnv.currentPlayer = 'playerId_1';
+        gameEnv.phase = 'ACTION_STEP';
+
+        const activateEffect = gd03.cards['GD03-073'].effects.rules.find((rule) => rule.effectId === 'activate_effect');
+        expect(activateEffect).toBeTruthy();
+
+        p1.zones.slot1.unit = createUnitZoneCard({
+            carduid: 'GD03-073_source_0001',
+            cardId: 'GD03-073',
+            name: 'Graze Ein',
+            ap: 6,
+            hp: 4,
+            traits: ['Gjallarhorn'],
+            link: ['Ein Dalton'],
+            effectsRules: [activateEffect]
+        });
+        p1.zones.slot1.pilot = createPilotZoneCard({
+            carduid: 'pilot_ein_dalton_0001',
+            cardId: 'custom-ein-dalton',
+            name: 'Ein Dalton'
+        });
+
+        p2.zones.slot1.unit = createUnitZoneCard({
+            carduid: 'enemy_nonbattle_0001',
+            cardId: 'ST01-003',
+            name: 'Enemy Nonbattle',
+            ap: 5,
+            hp: 4
+        });
+
+        for (let i = 0; i < 6; i++) {
+            p1.zones.trashArea.push({
+                carduid: `gj_shield_${i}`,
+                cardId: `GJ-S-${i}`,
+                cardData: { id: `GJ-S-${i}`, name: `Gj ${i}`, cardType: 'unit', traits: ['Gjallarhorn'] }
+            });
+        }
+
+        gameEnv.currentBattle = {
+            attackerCarduid: 'enemy_nonbattle_0001',
+            attackingPlayerId: 'playerId_2',
+            defendingPlayerId: 'playerId_1',
+            actionType: 'attackShieldArea',
+            status: 'ACTION_STEP'
+        };
+
+        const result = BaseAbilityManager.executeBaseAbility(gameEnv, {
+            id: 'ability_linked_shield_1',
+            type: 'PLAYER_ACTION',
+            status: 'DECLARED',
+            priority: 1,
+            playerId: 'playerId_1',
+            timestamp: Date.now(),
+            data: {
+                playerId: 'playerId_1',
+                actionType: 'activateCardAbility',
+                carduid: 'GD03-073_source_0001',
+                effectId: 'activate_effect'
+            }
+        });
+        expect(result.success).toBe(true);
+
+        const sourceSlot = findSlotByUnit(gameEnv, 'playerId_1', 'GD03-073_source_0001');
+        const enemyUnit = findUnit(gameEnv, 'playerId_2', 'enemy_nonbattle_0001');
+        expect(sourceSlot?.unit?.effectUsage?.activate_effect?.lastUsedTurn).toBe(1);
+        expect(enemyUnit.modifyAP || 0).toBe(0);
     });
 });

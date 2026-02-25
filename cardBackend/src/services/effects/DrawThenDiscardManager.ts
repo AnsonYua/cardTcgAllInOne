@@ -32,10 +32,15 @@ export class DrawThenDiscardManager {
             return { success: false, error: 'Player deck not found for draw_then_discard' };
         }
 
-        if (drawCount > 0) {
-            EffectExecutor.drawCardsIntoHand(gameEnv, playerId, player.deck as any, drawCount, {
+        const actualDrawn = drawCount > 0
+            ? EffectExecutor.drawCardsIntoHand(gameEnv, playerId, player.deck as any, drawCount, {
                 drawContext: sourceCarduid ? `draw_then_discard:${sourceCarduid}` : 'draw_then_discard'
-            });
+            })
+            : 0;
+
+        // "If you do, discard..." should only proceed if the draw step actually drew at least one card.
+        if (drawCount > 0 && actualDrawn <= 0) {
+            return { success: true, autoApplied: true };
         }
 
         if (discardCount <= 0) {

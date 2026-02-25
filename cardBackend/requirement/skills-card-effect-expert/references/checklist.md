@@ -43,6 +43,8 @@
 - Check local evaluator modules (not backend-driven execution):
   - `src/phaser/controllers/attackTargetPolicy.ts`
   - `src/phaser/controllers/actionBar/slotAttackProvider.ts`
+  - `src/phaser/controllers/ActionStepCoordinator.ts`
+  - `src/phaser/controllers/ActionStepTriggerHandler.ts`
   - `src/phaser/game/actionEligibility.ts`
   - `src/phaser/game/activatedEffectAvailability.ts`
   - any module discovered by `rg` for parser/comparison logic.
@@ -57,6 +59,12 @@
   - `restrict_attack` must gate UI actions consistently.
   - For `requires.type = "friendly_unit_deployed_this_turn"`, treat as turn-history semantics:
     verify evaluator includes same-turn deployed units even if they moved zones (e.g., destroyed to trash).
+- `ACTION_STEP` parity:
+  - Do not infer "triggerable effect" from `timing.windows` alone.
+  - Intersect frontend activated-effect options with backend `currentBattle.actionTargets[playerId][].effectIds` when present.
+  - Ensure slot-level UI gating and button rendering use the same shared helper to avoid drift.
+  - Normalize phase names before timing-window comparisons (e.g. `ACTION_STEP_PHASE` vs `ACTION_STEP`).
+  - Verify both activated-effect checks and command play timing checks use the same phase normalization.
 - Source-level parity:
   - pilot-sourced `"this Unit"` logic should use effective source-level semantics.
   - if rule sets `sourceLevelScope: "source_card"`, verify pilot-level is used even when paired.
@@ -71,6 +79,9 @@
   - If options are filtered, include stable option-to-effect mapping (for example `payload.effectOrderIndex`) and enforce selection via mapped index.
   - For forced-attack rules (`require_attack_target_if_available`), verify extractor supports nested `sequence` + `conditional` branches (not only top-level actions).
   - Confirm conditional snapshot is evaluated before collecting branch actions (`if` true => `then`, otherwise `else`).
+  - For custom target scopes (e.g., `opponent_battling_source`), verify:
+    - a specialized resolver exists in `TargetScopeResolverRegistry`
+    - resolver `[]` remains a terminal no-target result (no accidental fallback to generic `TargetResolver`)
   - Validate enforcement contract:
     - one forced candidate => backend rejects attack to other unit (`FORCED_ATTACK_TARGET_REQUIRED`)
     - multiple forced candidates => backend opens forced target chooser for configured `chooser`.

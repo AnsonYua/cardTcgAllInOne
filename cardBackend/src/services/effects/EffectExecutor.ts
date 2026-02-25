@@ -504,7 +504,7 @@ export class EffectExecutor {
         deck: any,
         count: number,
         options: { notify?: boolean; drawContext?: string; sourceCarduid?: string } = {}
-    ): void {
+    ): number {
         if (!deck || !Array.isArray(deck.mainDeck)) {
             throw new Error('Deck structure invalid for draw effect');
         }
@@ -553,6 +553,7 @@ export class EffectExecutor {
 
         const handSize = Array.isArray(deck.handUids) ? deck.handUids.length : deck._handUids?.length || 0;
         console.log(`🃏 Deck draw complete. Hand size: ${handSize}`);
+        return drawnUids.length;
     }
 
 }

@@ -44,8 +44,11 @@ Use this skill when a card effect appears correct in data but gameplay/UI behavi
 
 ## Canonical Rules (from recent fixes)
 - Backend is authoritative. Frontend local logic is only UX prediction/gating.
+- For `ACTION_STEP` response UI, frontend must prefer backend `currentBattle.actionTargets[].effectIds` and intersect with local activated-effect eligibility.
+- Frontend timing checks must normalize phase enum variants (e.g. `ACTION_STEP_PHASE`) to canonical rule tokens (e.g. `ACTION_STEP`) before matching `timing.windows`.
 - Do not parse comparison strings in multiple places; use one shared utility.
 - Prefer engine-level semantic fixes over card-by-card data hacks when behavior is cross-card.
+- Custom `target.scope` strings (for example battle-relative scopes like `opponent_battling_source`) require explicit resolver support in `TargetScopeResolverRegistry`; resolver `[]` must remain `[]` (no fallback to generic target generation).
 - Schema-valid does not always mean text-complete:
   - For descriptions containing `If you do` / `Then`, verify rules include matching `stepId` + `stepResolved` + `conditional` flow.
 - Pair and Link are different:
@@ -96,6 +99,8 @@ See `references/incident-gd03-035.md` for concrete bugs and fixes:
 - `GD02-099` pairing order UX mismatch: options that were guaranteed no-op were still selectable; fixed with backend-disabled option metadata + backend rejection + frontend disabled handling.
 - `ST04-011` pairing order pollution: non-interactive `allow_attack_target` appeared as selectable order option alongside interactive linked effects; fixed by filtering dialog options to interactive candidates and preserving hidden auto-effect execution order via stable index mapping.
 - `GD03-074` forced-target miss on nested sequence/conditional: effect text says enemy must target this rested unit if possible, but attacks could target other units because extractor only handled top-level/direct sequence step actions. Fixed by recursive extraction + conditional branch evaluation for `require_attack_target_if_available`.
+- `GD03-073` action-step parity + battle-target scope gap: frontend falsely showed `Trigger Pilot Effect` by checking raw `ACTION_STEP` timing windows instead of activated-effect eligibility + backend `effectIds`; backend also lacked explicit `opponent_battling_source` resolver and incorrectly fell back to generic opponent targeting when specialized resolver produced no targets.
+- `GD03-073` follow-up phase-token mismatch: frontend hid a valid activated effect during unit battle because `gameEnv.phase` used `ACTION_STEP_PHASE` while rule `timing.windows` used `ACTION_STEP`; fixed by central phase-name normalization in frontend timing matching.
 
 ## Output Requirements
 - Provide:
