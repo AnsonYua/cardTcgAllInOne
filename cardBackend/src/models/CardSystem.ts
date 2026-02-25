@@ -155,6 +155,7 @@ export interface ZoneCard {
     carduid: string;            // Unique game instance ID
     cardId: string;             // Base card ID
     cardData?: CardData;        // Complete card data from JSON (optional for energy cards)
+    nameAliases?: string[];     // Runtime name aliases (e.g. treated-as names)
     placedAt?: number;          // Timestamp when placed
     placedBy?: string;          // Player ID who placed card
     isRested?: boolean;         // Whether the card is rested/tapped (common field)

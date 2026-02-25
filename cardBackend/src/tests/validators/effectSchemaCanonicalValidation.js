@@ -342,6 +342,60 @@ function walkEffects(node, context, diagnostics) {
     }
   }
 
+  if (node.action === 'restrict_attack') {
+    if (!node.parameters || typeof node.parameters !== 'object') {
+      diagnostics.push({
+        severity: 'error',
+        cardId: context.cardId,
+        effectId: nextContext.effectId || 'unknown',
+        jsonPath: `${context.jsonPath}.parameters`,
+        message: 'restrict_attack requires a parameters object'
+      });
+    } else {
+      const hasDisallow = Object.prototype.hasOwnProperty.call(node.parameters, 'disallow');
+      const hasRequires = Object.prototype.hasOwnProperty.call(node.parameters, 'requires');
+      if (!hasDisallow && !hasRequires) {
+        diagnostics.push({
+          severity: 'error',
+          cardId: context.cardId,
+          effectId: nextContext.effectId || 'unknown',
+          jsonPath: `${context.jsonPath}.parameters`,
+          message: 'restrict_attack must use parameters.disallow or parameters.requires'
+        });
+      }
+      if (hasDisallow && hasRequires) {
+        diagnostics.push({
+          severity: 'error',
+          cardId: context.cardId,
+          effectId: nextContext.effectId || 'unknown',
+          jsonPath: `${context.jsonPath}.parameters`,
+          message: 'restrict_attack cannot define both disallow and requires'
+        });
+      }
+      if (hasDisallow && typeof node.parameters.disallow !== 'string' && typeof node.parameters.disallow !== 'boolean') {
+        diagnostics.push({
+          severity: 'error',
+          cardId: context.cardId,
+          effectId: nextContext.effectId || 'unknown',
+          jsonPath: `${context.jsonPath}.parameters.disallow`,
+          message: 'restrict_attack parameters.disallow must be string or boolean'
+        });
+      }
+      if (hasRequires) {
+        const requires = node.parameters.requires;
+        if (!requires || typeof requires !== 'object' || typeof requires.type !== 'string') {
+          diagnostics.push({
+            severity: 'error',
+            cardId: context.cardId,
+            effectId: nextContext.effectId || 'unknown',
+            jsonPath: `${context.jsonPath}.parameters.requires`,
+            message: 'restrict_attack parameters.requires must be an object with a string type'
+          });
+        }
+      }
+    }
+  }
+
   if (Array.isArray(node.conditions)) {
     node.conditions.forEach((condition, index) => {
       const conditionPath = `${context.jsonPath}.conditions[${index}]`;
@@ -450,7 +504,8 @@ function walkEffects(node, context, diagnostics) {
   validateActionSemantics(node, {
     cardId: context.cardId,
     effectId: nextContext.effectId || 'unknown',
-    jsonPath: context.jsonPath
+    jsonPath: context.jsonPath,
+    cardType: context.cardType
   }, diagnostics);
 
   for (const [key, value] of Object.entries(node)) {
@@ -843,7 +898,12 @@ function validateEffectSchemaCanonical() {
 
     for (const [cardId, card] of Object.entries(cards)) {
       const rules = card && card.effects && Array.isArray(card.effects.rules) ? card.effects.rules : [];
-      walkEffects(rules, { cardId, effectId: 'unknown', jsonPath: `cards.${cardId}.effects.rules` }, diagnostics);
+      walkEffects(rules, {
+        cardId,
+        cardType: card?.cardType,
+        effectId: 'unknown',
+        jsonPath: `cards.${cardId}.effects.rules`
+      }, diagnostics);
     }
   }
 

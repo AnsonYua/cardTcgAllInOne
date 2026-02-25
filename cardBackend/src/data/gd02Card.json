@@ -3744,14 +3744,8 @@
         "rules": [
           {
             "effectId": "gain_blocker_if_ap_ge_5",
-            "type": "continuous",
-            "trigger": "continuous",
-            "action": "grant_keyword",
-            "target": {
-              "type": "unit",
-              "scope": "self",
-              "count": 1
-            },
+            "type": "triggered",
+            "trigger": "ATTACK_REDIRECT",
             "conditions": [
               {
                 "type": "sourceAp",
@@ -3759,8 +3753,14 @@
                 "value": ">=5"
               }
             ],
+            "target": {
+              "type": "unit",
+              "scope": "self",
+              "count": 1
+            },
+            "action": "redirect_attack",
             "parameters": {
-              "keyword": "Blocker"
+              "cost": "rest_self"
             }
           }
         ]
@@ -3968,14 +3968,8 @@
         "rules": [
           {
             "effectId": "gain_blocker_if_another_gjallarhorn_unit",
-            "type": "continuous",
-            "trigger": "continuous",
-            "action": "grant_keyword",
-            "target": {
-              "type": "unit",
-              "scope": "self",
-              "count": 1
-            },
+            "type": "triggered",
+            "trigger": "ATTACK_REDIRECT",
             "conditions": [
               {
                 "type": "hasAnotherUnitWithTrait",
@@ -3985,8 +3979,14 @@
                 ]
               }
             ],
+            "target": {
+              "type": "unit",
+              "scope": "self",
+              "count": 1
+            },
+            "action": "redirect_attack",
             "parameters": {
-              "keyword": "Blocker"
+              "cost": "rest_self"
             }
           }
         ]

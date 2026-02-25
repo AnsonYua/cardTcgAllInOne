@@ -8,6 +8,7 @@ import { ContinuousBattleDamagePreventionManager } from './ContinuousBattleDamag
 import { ContinuousEffectDamagePreventionManager } from './ContinuousEffectDamagePreventionManager';
 import { ContinuousBreachGrantManager } from './ContinuousBreachGrantManager';
 import { ContinuousApReductionPreventionManager } from './ContinuousApReductionPreventionManager';
+import { applySetNameAliasEffect } from '../actions/EffectNameAliasActions';
 
 export type ContinuousEffectEntry = {
     sourceCarduid: string;
@@ -33,6 +34,10 @@ export class ContinuousActionRegistry {
                 return ContinuousEffectDamagePreventionManager.applyToTargets(gameEnv, entry, targets);
             case 'prevent_ap_reduction':
                 return ContinuousApReductionPreventionManager.applyToTargets(gameEnv, entry, targets);
+            case 'set_name_alias': {
+                const result = applySetNameAliasEffect(gameEnv, entry.sourceCarduid, entry.effectData);
+                return result.success ? 1 : 0;
+            }
             default:
                 return null;
         }

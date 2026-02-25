@@ -5,6 +5,7 @@ import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 import { LinkUtils } from '../../utils/LinkUtils';
 import { KeywordUtils } from '../../utils/KeywordUtils';
+import { hasNameIncludes } from '../../utils/CardNameMatcher';
 import { LinkConditionEvaluator } from './LinkConditionEvaluator';
 import { PairedSlotConditionEvaluator } from './PairedSlotConditionEvaluator';
 import { TrashConditionUtils } from './TrashConditionUtils';
@@ -411,8 +412,7 @@ export class ConditionEvaluators {
 
             const nameIncludesFilter = filters['nameIncludes'];
             if (typeof nameIncludesFilter === 'string' && nameIncludesFilter.length > 0) {
-                const cardName = typeof cardData.name === 'string' ? cardData.name.toLowerCase() : '';
-                if (!cardName.includes(nameIncludesFilter.toLowerCase())) {
+                if (!hasNameIncludes(unit, nameIncludesFilter)) {
                     return total;
                 }
             }

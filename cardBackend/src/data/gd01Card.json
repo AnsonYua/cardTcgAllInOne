@@ -911,14 +911,8 @@
         "rules": [
           {
             "effectId": "gain_blocker_if_enemy_units_ge_4",
-            "type": "continuous",
-            "trigger": "continuous",
-            "action": "grant_keyword",
-            "target": {
-              "type": "unit",
-              "scope": "self",
-              "count": 1
-            },
+            "type": "triggered",
+            "trigger": "ATTACK_REDIRECT",
             "conditions": [
               {
                 "type": "unitsInPlay",
@@ -926,9 +920,14 @@
                 "value": ">=4"
               }
             ],
+            "target": {
+              "type": "unit",
+              "scope": "self",
+              "count": 1
+            },
+            "action": "redirect_attack",
             "parameters": {
-              "notes": "Implements conditional <Blocker> without exposing ATTACK_REDIRECT until keyword-based redirection is implemented.",
-              "keyword": "Blocker"
+              "cost": "rest_self"
             }
           }
         ]
@@ -3766,14 +3765,8 @@
           },
           {
             "effectId": "gain_blocker_if_another_tsa_unit",
-            "type": "continuous",
-            "trigger": "continuous",
-            "action": "grant_keyword",
-            "target": {
-              "type": "unit",
-              "scope": "self",
-              "count": 1
-            },
+            "type": "triggered",
+            "trigger": "ATTACK_REDIRECT",
             "conditions": [
               {
                 "type": "hasAnotherUnitWithTrait",
@@ -3783,8 +3776,14 @@
                 ]
               }
             ],
+            "target": {
+              "type": "unit",
+              "scope": "self",
+              "count": 1
+            },
+            "action": "redirect_attack",
             "parameters": {
-              "keyword": "Blocker"
+              "cost": "rest_self"
             }
           }
         ]
@@ -4532,8 +4531,8 @@
           },
           {
             "effectId": "continuous_gain_blocker_if_white_unit",
-            "type": "continuous",
-            "trigger": "continuous",
+            "type": "triggered",
+            "trigger": "ATTACK_REDIRECT",
             "sourceConditions": [
               {
                 "type": "paired"
@@ -4546,14 +4545,14 @@
                 "value": "White"
               }
             ],
-            "action": "grant_keyword",
             "target": {
               "type": "unit",
               "scope": "self",
               "count": 1
             },
+            "action": "redirect_attack",
             "parameters": {
-              "keyword": "Blocker"
+              "cost": "rest_self"
             }
           }
         ]

@@ -52,7 +52,12 @@ export class AttackRestrictionEvaluator {
             }
 
             const parameters = rule.parameters || {};
-            return matchesRestriction(parameters.restriction || parameters.restrictions);
+            const normalized = typeof parameters.disallow === 'string'
+                ? (parameters.disallow === 'player' ? 'cannot_attack_player' : parameters.disallow)
+                : parameters.disallow === true
+                    ? 'cannot_attack'
+                    : (parameters.restriction || parameters.restrictions);
+            return matchesRestriction(normalized);
         });
     }
 

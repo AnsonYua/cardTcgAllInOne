@@ -3,7 +3,6 @@ const { EventType } = require('../models/GameEnums');
 const { PlayerCardManager } = require('../services/PlayerCardManager');
 const { ContinuousEffectManager } = require('../services/ContinuousEffectManager');
 const { BlockerChoiceManager } = require('../services/BlockerChoiceManager');
-const { KeywordUtils } = require('../utils/KeywordUtils');
 
 function findUnit(gameEnv, playerId, carduid) {
     const player = gameEnv.getPlayer(playerId);
@@ -44,7 +43,6 @@ describe('GD01-019 Byarlant Custom (conditional Blocker)', () => {
 
         const blockerUnit = findUnit(gameEnv, 'playerId_1', blockerUid);
         expect(blockerUnit).toBeTruthy();
-        expect(KeywordUtils.hasKeyword(blockerUnit, 'Blocker')).toBe(true);
 
         const attackEvent = {
             playerId: 'playerId_2',
@@ -90,7 +88,6 @@ describe('GD01-019 Byarlant Custom (conditional Blocker)', () => {
 
         const blockerUnit = findUnit(gameEnv, 'playerId_1', blockerUid);
         expect(blockerUnit).toBeTruthy();
-        expect(KeywordUtils.hasKeyword(blockerUnit, 'Blocker')).toBe(false);
 
         const attackEvent = {
             playerId: 'playerId_2',
@@ -112,4 +109,3 @@ describe('GD01-019 Byarlant Custom (conditional Blocker)', () => {
         expect(choiceEvent).toBeFalsy();
     });
 });
-

@@ -393,4 +393,164 @@ describe('effectSchemaCanonicalValidation utilities', () => {
         ).toBe(true);
         expect(diagnostics.some((d) => d.severity === 'error')).toBe(false);
     });
+
+    test('accepts restrict_attack canonical requires variant', () => {
+        const diagnostics = [];
+        walkEffects(
+            {
+                effectId: 'restrict_requires_ok',
+                type: 'continuous',
+                trigger: 'continuous',
+                action: 'restrict_attack',
+                parameters: {
+                    requires: {
+                        type: 'friendly_unit_deployed_this_turn',
+                        traitsAny: ['UN']
+                    }
+                }
+            },
+            { cardId: 'MOCK-RESTRICT-REQ-OK', effectId: 'restrict_requires_ok', jsonPath: 'cards.MOCK-RESTRICT-REQ-OK.effects.rules[0]' },
+            diagnostics
+        );
+
+        expect(diagnostics.some((d) => d.severity === 'error')).toBe(false);
+    });
+
+    test('accepts restrict_attack canonical disallow variant', () => {
+        const diagnostics = [];
+        walkEffects(
+            {
+                effectId: 'restrict_disallow_ok',
+                type: 'continuous',
+                trigger: 'continuous',
+                action: 'restrict_attack',
+                parameters: {
+                    disallow: 'player'
+                }
+            },
+            { cardId: 'MOCK-RESTRICT-DISALLOW-OK', effectId: 'restrict_disallow_ok', jsonPath: 'cards.MOCK-RESTRICT-DISALLOW-OK.effects.rules[0]' },
+            diagnostics
+        );
+
+        expect(diagnostics.some((d) => d.severity === 'error')).toBe(false);
+    });
+
+    test('rejects restrict_attack deprecated restriction variant', () => {
+        const diagnostics = [];
+        walkEffects(
+            {
+                effectId: 'restrict_deprecated_bad',
+                type: 'continuous',
+                trigger: 'continuous',
+                action: 'restrict_attack',
+                parameters: {
+                    restriction: 'cannot_attack_player'
+                }
+            },
+            { cardId: 'MOCK-RESTRICT-DEPRECATED-BAD', effectId: 'restrict_deprecated_bad', jsonPath: 'cards.MOCK-RESTRICT-DEPRECATED-BAD.effects.rules[0]' },
+            diagnostics
+        );
+
+        expect(diagnostics.some((d) => d.severity === 'error' && /deprecated/.test(d.message))).toBe(true);
+    });
+
+    test('accepts prevent_damage effect-damage variant', () => {
+        const diagnostics = [];
+        walkEffects(
+            {
+                effectId: 'prevent_damage_effect_variant_ok',
+                type: 'continuous',
+                trigger: 'continuous',
+                action: 'prevent_damage',
+                parameters: {
+                    sourceCardType: 'command',
+                    sourceController: 'opponent'
+                }
+            },
+            {
+                cardId: 'MOCK-PREVENT-DAMAGE-EFFECT-OK',
+                cardType: 'unit',
+                effectId: 'prevent_damage_effect_variant_ok',
+                jsonPath: 'cards.MOCK-PREVENT-DAMAGE-EFFECT-OK.effects.rules[0]'
+            },
+            diagnostics
+        );
+
+        expect(diagnostics.some((d) => d.severity === 'error')).toBe(false);
+    });
+
+    test('accepts prevent_damage base-battle variant on base card', () => {
+        const diagnostics = [];
+        walkEffects(
+            {
+                effectId: 'prevent_damage_base_variant_ok',
+                type: 'continuous',
+                trigger: 'continuous',
+                action: 'prevent_damage',
+                parameters: {
+                    from: 'enemy_units',
+                    enemyLevel: '<=3'
+                }
+            },
+            {
+                cardId: 'MOCK-PREVENT-DAMAGE-BASE-OK',
+                cardType: 'base',
+                effectId: 'prevent_damage_base_variant_ok',
+                jsonPath: 'cards.MOCK-PREVENT-DAMAGE-BASE-OK.effects.rules[0]'
+            },
+            diagnostics
+        );
+
+        expect(diagnostics.some((d) => d.severity === 'error')).toBe(false);
+    });
+
+    test('rejects prevent_damage mixed variant parameters', () => {
+        const diagnostics = [];
+        walkEffects(
+            {
+                effectId: 'prevent_damage_mixed_bad',
+                type: 'continuous',
+                trigger: 'continuous',
+                action: 'prevent_damage',
+                parameters: {
+                    sourceController: 'opponent',
+                    from: 'enemy_units'
+                }
+            },
+            {
+                cardId: 'MOCK-PREVENT-DAMAGE-MIXED-BAD',
+                cardType: 'base',
+                effectId: 'prevent_damage_mixed_bad',
+                jsonPath: 'cards.MOCK-PREVENT-DAMAGE-MIXED-BAD.effects.rules[0]'
+            },
+            diagnostics
+        );
+
+        expect(diagnostics.some((d) => d.severity === 'error' && /cannot mix/.test(d.message))).toBe(true);
+    });
+
+    test('rejects prevent_damage base-battle variant on non-base cards', () => {
+        const diagnostics = [];
+        walkEffects(
+            {
+                effectId: 'prevent_damage_base_non_base_bad',
+                type: 'continuous',
+                trigger: 'continuous',
+                action: 'prevent_damage',
+                parameters: {
+                    from: 'enemy_units',
+                    enemyLevel: '<=3'
+                }
+            },
+            {
+                cardId: 'MOCK-PREVENT-DAMAGE-NONBASE-BAD',
+                cardType: 'unit',
+                effectId: 'prevent_damage_base_non_base_bad',
+                jsonPath: 'cards.MOCK-PREVENT-DAMAGE-NONBASE-BAD.effects.rules[0]'
+            },
+            diagnostics
+        );
+
+        expect(diagnostics.some((d) => d.severity === 'error' && /only allowed on base cards/.test(d.message))).toBe(true);
+    });
 });

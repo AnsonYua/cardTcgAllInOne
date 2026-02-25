@@ -20,6 +20,7 @@ import { SLOT_ZONES } from '../config/gameConstants';
 import { SlotCardStateUtils } from './conditions/SlotCardStateUtils';
 import { ensureEffectDefaults, validateComparisonFilter } from '../utils/EffectNormalizationUtils';
 import { EffectTimingWindowUtils } from '../utils/EffectTimingWindowUtils';
+import { hasNameIncludes } from '../utils/CardNameMatcher';
 import { TargetResolver } from './targets/TargetResolver';
 import { TargetSelectionPipeline } from './targets/TargetSelectionPipeline';
 import { TargetScopeResolverRegistry } from './targets/TargetScopeResolverRegistry';
@@ -490,10 +491,7 @@ export class PlayCardPreparationManager {
             return null;
         }
 
-        const targetUnitName = typeof targetUnit?.cardData?.name === 'string'
-            ? String(targetUnit.cardData.name).toLowerCase()
-            : '';
-        if (!targetUnitName.includes(requiredNameIncludes)) {
+        if (!hasNameIncludes(targetUnit, requiredNameIncludes)) {
             return null;
         }
 
@@ -550,10 +548,7 @@ export class PlayCardPreparationManager {
                 continue;
             }
 
-            const name = typeof unit.cardData.name === 'string'
-                ? String(unit.cardData.name).toLowerCase()
-                : '';
-            if (requiredNameIncludes && !name.includes(requiredNameIncludes)) {
+            if (requiredNameIncludes && !hasNameIncludes(unit, requiredNameIncludes)) {
                 continue;
             }
 

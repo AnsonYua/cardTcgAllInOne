@@ -16,11 +16,16 @@ export function applyRestrictAttackEffect(
         return { success: true };
     }
 
-    const restriction = typeof effect.parameters?.restriction === 'string'
-        ? effect.parameters.restriction
-        : typeof effect.parameters?.restrictions === 'string'
-            ? effect.parameters.restrictions
-            : 'cannot_attack';
+    const disallow = effect.parameters?.disallow;
+    const restriction = typeof disallow === 'string'
+        ? (disallow === 'player' ? 'cannot_attack_player' : disallow)
+        : disallow === true
+            ? 'cannot_attack'
+            : typeof effect.parameters?.restriction === 'string'
+                ? effect.parameters.restriction
+                : typeof effect.parameters?.restrictions === 'string'
+                    ? effect.parameters.restrictions
+                    : 'cannot_attack';
 
     const duration = typeof effect.timing?.duration === 'string'
         ? effect.timing.duration

@@ -2,6 +2,7 @@ const { GameEnvironment } = require('../models/GameEnvironment');
 const { PlayerCardManager } = require('../services/PlayerCardManager');
 const { ContinuousEffectManager } = require('../services/ContinuousEffectManager');
 const { KeywordUtils } = require('../utils/KeywordUtils');
+const { BlockerEffectManager } = require('../services/effects/BlockerEffectManager');
 
 function findUnit(gameEnv, playerId, carduid) {
     const player = gameEnv.getPlayer(playerId);
@@ -84,9 +85,9 @@ describe('GD01 pilot always-on keyword completion', () => {
 
         ContinuousEffectManager.processAllContinuousEffects(gameEnv);
 
-        const whiteUnit = findUnit(gameEnv, 'playerId_1', whiteUnitUid);
-        const blueUnit = findUnit(gameEnv, 'playerId_1', blueUnitUid);
-        expect(KeywordUtils.hasKeyword(whiteUnit, 'Blocker')).toBe(true);
-        expect(KeywordUtils.hasKeyword(blueUnit, 'Blocker')).toBe(false);
+        const blockerTargets = BlockerEffectManager.getAvailableBlockerTargets(gameEnv, 'playerId_1');
+        const blockerUids = blockerTargets.map((target) => target.carduid);
+        expect(blockerUids).toContain(whiteUnitUid);
+        expect(blockerUids).not.toContain(blueUnitUid);
     });
 });

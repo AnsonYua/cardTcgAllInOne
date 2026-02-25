@@ -31,6 +31,7 @@ import { applyPairFromHandEffect, applyPairFromTrashEffect } from './actions/Eff
 import { applyRestEffect } from './actions/EffectRestActions';
 import { applyDamageEffect } from './actions/EffectDamageActions';
 import { applyAllowAttackTargetEffect } from './actions/EffectAllowAttackTargetActions';
+import { applySetNameAliasEffect } from './actions/EffectNameAliasActions';
 import { extractNumericValue, resolvePlayerIdsForScope } from './actions/EffectActionUtils';
 import { HandZoneManager } from '../zones/HandZoneManager';
 import type { AddToHandOptions } from '../zones/HandZoneManager';
@@ -108,7 +109,9 @@ export class EffectExecutor {
         damage: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyDamageEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         allow_attack_target: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
-            applyAllowAttackTargetEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets)
+            applyAllowAttackTargetEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        set_name_alias: ({ gameEnv, effect, sourceCarduid }) =>
+            applySetNameAliasEffect(gameEnv, sourceCarduid, effect)
     };
 
     /**

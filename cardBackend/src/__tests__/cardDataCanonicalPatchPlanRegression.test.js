@@ -9,6 +9,12 @@ const st05 = require('../data/st05Card.json');
 const st06 = require('../data/st06Card.json');
 const st07 = require('../data/st07Card.json');
 const st08 = require('../data/st08Card.json');
+const { CardDatabaseManager } = require('../models/CardSystem');
+const { GameEnvironment } = require('../models/GameEnvironment');
+const { PlayerCardManager } = require('../services/PlayerCardManager');
+const { ContinuousEffectManager } = require('../services/ContinuousEffectManager');
+const { applyPreventEffectDamageEffect } = require('../services/effects/actions/EffectEffectDamagePreventionActions');
+const { EffectExecutor } = require('../services/effects/EffectExecutor');
 
 const CARD_FILES = [
   ['gd01Card.json', gd01],
@@ -110,5 +116,141 @@ describe('card data canonical patch plan regression', () => {
     }
 
     expect(violations).toEqual([]);
+  });
+
+  test('GD02-098 set_name_alias rule is executable and idempotent at runtime', () => {
+    const gameEnv = new GameEnvironment();
+    gameEnv.addPlayer('playerId_1', 'P1');
+    gameEnv.addPlayer('playerId_2', 'P2');
+
+    const unitUid = 'GD01-001_runtime_alias_unit_0001';
+    const pilotUid = 'GD02-098_runtime_alias_pilot_0001';
+    expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: unitUid, playAs: 'unit' }).success).toBe(true);
+    expect(
+      PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', {
+        carduid: pilotUid,
+        playAs: 'pilot',
+        targetUnit: unitUid
+      }).success
+    ).toBe(true);
+
+    const aliasRule = gd02.cards['GD02-098'].effects.rules.find((rule) => rule.effectId === 'name_alias_char_aznable');
+    expect(aliasRule).toBeTruthy();
+
+    const first = EffectExecutor.applyEffectToTargets(gameEnv, aliasRule, [], 'playerId_1', pilotUid);
+    expect(first.success).toBe(true);
+    const second = EffectExecutor.applyEffectToTargets(gameEnv, aliasRule, [], 'playerId_1', pilotUid);
+    expect(second.success).toBe(true);
+
+    const player = gameEnv.getPlayer('playerId_1');
+    const pilot = player.zones.slot1?.pilot;
+    expect(pilot).toBeTruthy();
+    expect(Array.isArray(pilot.nameAliases)).toBe(true);
+    expect(pilot.nameAliases).toContain('Char Aznable');
+    expect(pilot.nameAliases.filter((entry) => entry === 'Char Aznable')).toHaveLength(1);
+  });
+
+  test('GD02-098 set_name_alias is executable in continuous processing without duplicate aliases', () => {
+    const gameEnv = new GameEnvironment();
+    gameEnv.addPlayer('playerId_1', 'P1');
+    gameEnv.addPlayer('playerId_2', 'P2');
+
+    const unitUid = 'GD01-001_alias_continuous_unit_0001';
+    const pilotUid = 'GD02-098_alias_continuous_pilot_0001';
+    expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: unitUid, playAs: 'unit' }).success).toBe(true);
+    expect(
+      PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', {
+        carduid: pilotUid,
+        playAs: 'pilot',
+        targetUnit: unitUid
+      }).success
+    ).toBe(true);
+
+    const first = ContinuousEffectManager.processAllContinuousEffects(gameEnv);
+    expect(first.success).toBe(true);
+    const second = ContinuousEffectManager.processAllContinuousEffects(gameEnv);
+    expect(second.success).toBe(true);
+
+    const pilot = gameEnv.getPlayer('playerId_1').zones.slot1?.pilot;
+    expect(Array.isArray(pilot?.nameAliases)).toBe(true);
+    expect(pilot.nameAliases.filter((entry) => entry === 'Char Aznable')).toHaveLength(1);
+  });
+
+  test('set_name_alias does not mutate shared CardDatabase cardData', () => {
+    CardDatabaseManager.reloadDatabase();
+    const before = CardDatabaseManager.getCardDetails('GD02-098');
+    expect(before?.nameAliases).toBeUndefined();
+
+    const gameEnv = new GameEnvironment();
+    gameEnv.addPlayer('playerId_1', 'P1');
+    gameEnv.addPlayer('playerId_2', 'P2');
+
+    const unitUid = 'GD01-001_alias_db_unit_0001';
+    const pilotUid = 'GD02-098_alias_db_pilot_0001';
+    expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: unitUid, playAs: 'unit' }).success).toBe(true);
+    expect(
+      PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', {
+        carduid: pilotUid,
+        playAs: 'pilot',
+        targetUnit: unitUid
+      }).success
+    ).toBe(true);
+
+    const aliasRule = gd02.cards['GD02-098'].effects.rules.find((rule) => rule.effectId === 'name_alias_char_aznable');
+    expect(aliasRule).toBeTruthy();
+    expect(EffectExecutor.applyEffectToTargets(gameEnv, aliasRule, [], 'playerId_1', pilotUid).success).toBe(true);
+
+    const after = CardDatabaseManager.getCardDetails('GD02-098');
+    expect(after?.nameAliases).toBeUndefined();
+  });
+
+  test('prevent_damage generic effect-damage handler rejects base-battle variant keys', () => {
+    const gameEnv = new GameEnvironment();
+    gameEnv.addPlayer('playerId_1', 'P1');
+    gameEnv.addPlayer('playerId_2', 'P2');
+
+    const unitUid = 'GD01-001_prevent_damage_variant_unit_0001';
+    expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: unitUid, playAs: 'unit' }).success).toBe(true);
+
+    const invalidBaseVariant = {
+      effectId: 'prevent_damage_invalid_variant',
+      type: 'triggered',
+      trigger: 'PLAY_CARD',
+      action: 'prevent_damage',
+      parameters: {
+        from: 'enemy_units',
+        enemyLevel: '<=3'
+      }
+    };
+
+    const result = applyPreventEffectDamageEffect(
+      gameEnv,
+      'playerId_1',
+      unitUid,
+      invalidBaseVariant,
+      [{ carduid: unitUid, zone: 'slot1', playerId: 'playerId_1' }]
+    );
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/base-battle semantics/);
+  });
+
+  test('all blocker drift cards now use redirect_attack blocker schema', () => {
+    const checks = [
+      ['GD01-019', gd01.cards['GD01-019']],
+      ['GD01-081', gd01.cards['GD01-081']],
+      ['GD01-096', gd01.cards['GD01-096']],
+      ['GD02-076', gd02.cards['GD02-076']],
+      ['GD02-082', gd02.cards['GD02-082']]
+    ];
+
+    checks.forEach(([cardId, card]) => {
+      const blockerRule = card.effects.rules.find((rule) => /blocker/i.test(rule.effectId));
+      expect(blockerRule).toBeTruthy();
+      expect(blockerRule.action).toBe('redirect_attack');
+      expect(blockerRule.trigger).toBe('ATTACK_REDIRECT');
+      expect(blockerRule.parameters?.cost).toBe('rest_self');
+      expect(blockerRule.parameters?.keyword).toBeUndefined();
+      expect(cardId).toMatch(/GD0[12]-/);
+    });
   });
 });

@@ -5,8 +5,9 @@ import { GameEnvironment } from '../../models/GameEnvironment';
 import { scanForBlockerUnits, type BlockerUnit } from '../../utils/BlockerScannerUtils';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { TargetReference } from '../EventQueue/interfaces/GameEvent';
-import { ConditionEvaluators } from '../conditions/ConditionEvaluators';
-import { evaluateCardsInPlayCondition } from '../conditions/CardsInPlayCondition';
+import { EffectConditionEvaluator } from '../conditions/EffectConditionEvaluator';
+import { EffectSourceConditionEvaluator } from '../conditions/EffectSourceConditionEvaluator';
+import { SlotSearchUtils } from '../../utils/SlotSearchUtils';
 
 /**
  * BlockerEffectManager handles blocker unit detection
@@ -27,7 +28,7 @@ export class BlockerEffectManager {
         console.log(`🛡️ Checking for blocker units for player ${defendingPlayerId}`);
         
         let blockers = scanForBlockerUnits(gameEnv, defendingPlayerId);
-        blockers = blockers.filter(blocker => this.conditionsSatisfied(gameEnv, defendingPlayerId, blocker.effect?.conditions));
+        blockers = blockers.filter(blocker => this.conditionsSatisfied(gameEnv, defendingPlayerId, blocker.carduid, blocker.effect));
 
         if (options?.excludeCarduid) {
             const before = blockers.length;
@@ -119,42 +120,24 @@ export class BlockerEffectManager {
     private static conditionsSatisfied(
         gameEnv: GameEnvironment,
         defendingPlayerId: string,
-        conditions: unknown
+        sourceCarduid: string,
+        effect: unknown
     ): boolean {
-        if (!Array.isArray(conditions) || conditions.length === 0) {
+        const typedEffect = effect as any;
+        if (!typedEffect || typeof typedEffect !== 'object') {
             return true;
         }
 
-        return conditions.every((condition: any) => {
-            if (!condition || typeof condition !== 'object') {
-                return true;
-            }
+        const sourceLookup = SlotSearchUtils.findCardByUidAcrossPlayers(gameEnv, sourceCarduid);
+        const sourceCard = sourceLookup.found ? (sourceLookup.card || sourceLookup.unit || sourceLookup.pilot) : null;
+        if (!sourceCard) {
+            return false;
+        }
 
-            const type = typeof condition.type === 'string' ? condition.type : '';
-            switch (type) {
-                case 'cardsInPlay':
-                    return evaluateCardsInPlayCondition(gameEnv, defendingPlayerId, condition);
-                case 'unitsInPlayWithFilter':
-                    return ConditionEvaluators.evaluateUnitsInPlayWithFilterCondition(gameEnv, defendingPlayerId, condition);
-                case 'unitsInPlayWithTrait':
-                    return ConditionEvaluators.unitsInPlayWithTrait(
-                        gameEnv,
-                        defendingPlayerId,
-                        Array.isArray(condition.traits) ? condition.traits : [],
-                        condition.value
-                    );
-                case 'cardsInTrash':
-                case 'cardsInTrashWithTraitsAny':
-                    return ConditionEvaluators.cardsInTrashWithTraitsAny(
-                        gameEnv,
-                        defendingPlayerId,
-                        Array.isArray(condition.traitsAny) ? condition.traitsAny : [],
-                        condition.value
-                    );
-                default:
-                    console.log(`⚠️ Blocker condition type not supported: ${type}`);
-                    return true;
-            }
-        });
+        if (!EffectSourceConditionEvaluator.sourceConditionsMet(typedEffect, sourceCard as any, gameEnv, defendingPlayerId)) {
+            return false;
+        }
+
+        return EffectConditionEvaluator.validateEffectConditions(typedEffect, gameEnv, defendingPlayerId, sourceCard as any);
     }
 }

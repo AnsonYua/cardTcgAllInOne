@@ -17,11 +17,28 @@ export class ContinuousEffectDamagePreventionManager {
         },
         targets: any[]
     ): number {
-        const sourceCardType = typeof effectEntry.effectData?.parameters?.sourceCardType === 'string'
-            ? effectEntry.effectData.parameters.sourceCardType
+        const parameters = effectEntry.effectData?.parameters && typeof effectEntry.effectData.parameters === 'object'
+            ? effectEntry.effectData.parameters
+            : {};
+        const hasEffectDamageVariant = typeof parameters.sourceCardType === 'string'
+            || typeof parameters.sourceController === 'string';
+        const hasBaseBattleVariant = typeof parameters.from === 'string'
+            || typeof parameters.enemyLevel === 'string';
+
+        if (hasEffectDamageVariant && hasBaseBattleVariant) {
+            return 0;
+        }
+
+        if (!hasEffectDamageVariant) {
+            // Base battle prevention variant is evaluated in BattleBaseDamagePreventionUtils.
+            return 0;
+        }
+
+        const sourceCardType = typeof parameters.sourceCardType === 'string'
+            ? parameters.sourceCardType
             : undefined;
-        const sourceController = typeof effectEntry.effectData?.parameters?.sourceController === 'string'
-            ? effectEntry.effectData.parameters.sourceController
+        const sourceController = typeof parameters.sourceController === 'string'
+            ? parameters.sourceController
             : undefined;
 
         if (!sourceCardType && !sourceController) {

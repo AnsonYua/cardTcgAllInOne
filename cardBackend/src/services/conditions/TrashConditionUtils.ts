@@ -1,6 +1,7 @@
 import { CardDatabaseManager } from '../../models/CardSystem';
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
+import { getEffectiveCardNames, hasNameIncludes } from '../../utils/CardNameMatcher';
 
 export interface TrashCountOptions {
     traitsAny?: string[];
@@ -69,20 +70,22 @@ export class TrashConditionUtils {
             }
 
             if (nameIncludes) {
-                const name = typeof cardData.name === 'string'
-                    ? cardData.name
-                    : typeof card?.name === 'string'
-                        ? card.name
-                        : '';
-                if (!name.toLowerCase().includes(nameIncludes)) {
+                if (!hasNameIncludes({
+                    cardData,
+                    name: card?.name,
+                    nameAliases: card?.nameAliases
+                }, nameIncludes)) {
                     return total;
                 }
             }
 
             if (uniqueNames) {
-                const name = typeof cardData.name === 'string'
-                    ? cardData.name.trim().toLowerCase()
-                    : '';
+                const primaryName = getEffectiveCardNames({
+                    cardData,
+                    name: card?.name,
+                    nameAliases: card?.nameAliases
+                })[0] || '';
+                const name = primaryName.trim().toLowerCase();
                 if (!name || uniqueSet.has(name)) {
                     return total;
                 }

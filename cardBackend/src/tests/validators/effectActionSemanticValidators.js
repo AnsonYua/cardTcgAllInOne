@@ -13,6 +13,16 @@ const PREVENT_BATTLE_DAMAGE_ALLOWED_PARAM_KEYS = new Set([
   'enemyHp',
   'notes'
 ]);
+const PREVENT_DAMAGE_EFFECT_ALLOWED_PARAM_KEYS = new Set([
+  'sourceCardType',
+  'sourceController',
+  'notes'
+]);
+const PREVENT_DAMAGE_BASE_ALLOWED_PARAM_KEYS = new Set([
+  'from',
+  'enemyLevel',
+  'notes'
+]);
 const SCRY_TOP_DECK_LEGACY_ALLOWED_CHOICES = new Set([
   'top',
   'bottom',
@@ -153,6 +163,134 @@ function validateSetNameAliasParameters(node, context, diagnostics) {
   });
 }
 
+function validatePreventDamageParameters(node, context, diagnostics) {
+  if (!node || typeof node !== 'object' || node.action !== 'prevent_damage') {
+    return;
+  }
+
+  const parameters = node.parameters && typeof node.parameters === 'object' ? node.parameters : {};
+  const paramsPath = `${context.jsonPath}.parameters`;
+  const hasEffectVariant =
+    Object.prototype.hasOwnProperty.call(parameters, 'sourceCardType') ||
+    Object.prototype.hasOwnProperty.call(parameters, 'sourceController');
+  const hasBaseVariant =
+    Object.prototype.hasOwnProperty.call(parameters, 'from') ||
+    Object.prototype.hasOwnProperty.call(parameters, 'enemyLevel');
+
+  if (!hasEffectVariant && !hasBaseVariant) {
+    pushDiagnostic(
+      diagnostics,
+      context,
+      paramsPath,
+      'prevent_damage requires sourceCardType/sourceController (effect-damage variant) or from/enemyLevel (base-battle variant)'
+    );
+    return;
+  }
+
+  if (hasEffectVariant && hasBaseVariant) {
+    pushDiagnostic(
+      diagnostics,
+      context,
+      paramsPath,
+      'prevent_damage cannot mix sourceCardType/sourceController with from/enemyLevel'
+    );
+    return;
+  }
+
+  if (hasEffectVariant) {
+    for (const key of Object.keys(parameters)) {
+      if (!PREVENT_DAMAGE_EFFECT_ALLOWED_PARAM_KEYS.has(key)) {
+        pushDiagnostic(
+          diagnostics,
+          context,
+          `${paramsPath}.${key}`,
+          `prevent_damage effect-damage variant uses unsupported parameter key ${key}`
+        );
+      }
+    }
+
+    if (
+      Object.prototype.hasOwnProperty.call(parameters, 'sourceCardType') &&
+      typeof parameters.sourceCardType !== 'string'
+    ) {
+      pushDiagnostic(
+        diagnostics,
+        context,
+        `${paramsPath}.sourceCardType`,
+        'prevent_damage sourceCardType must be a string'
+      );
+    }
+
+    if (
+      Object.prototype.hasOwnProperty.call(parameters, 'sourceController') &&
+      typeof parameters.sourceController !== 'string'
+    ) {
+      pushDiagnostic(
+        diagnostics,
+        context,
+        `${paramsPath}.sourceController`,
+        'prevent_damage sourceController must be a string'
+      );
+    }
+
+    return;
+  }
+
+  for (const key of Object.keys(parameters)) {
+    if (!PREVENT_DAMAGE_BASE_ALLOWED_PARAM_KEYS.has(key)) {
+      pushDiagnostic(
+        diagnostics,
+        context,
+        `${paramsPath}.${key}`,
+        `prevent_damage base-battle variant uses unsupported parameter key ${key}`
+      );
+    }
+  }
+
+  if (
+    Object.prototype.hasOwnProperty.call(parameters, 'enemyLevel') &&
+    typeof parameters.enemyLevel !== 'string'
+  ) {
+    pushDiagnostic(
+      diagnostics,
+      context,
+      `${paramsPath}.enemyLevel`,
+      'prevent_damage enemyLevel must be a comparison string'
+    );
+  } else if (
+    typeof parameters.enemyLevel === 'string' &&
+    !NUMERIC_COMPARISON_LITERAL_REGEX.test(parameters.enemyLevel)
+  ) {
+    pushDiagnostic(
+      diagnostics,
+      context,
+      `${paramsPath}.enemyLevel`,
+      `prevent_damage enemyLevel must match comparison format (got ${parameters.enemyLevel})`
+    );
+  }
+
+  if (
+    Object.prototype.hasOwnProperty.call(parameters, 'from') &&
+    typeof parameters.from !== 'string'
+  ) {
+    pushDiagnostic(
+      diagnostics,
+      context,
+      `${paramsPath}.from`,
+      'prevent_damage from must be a string'
+    );
+  }
+
+  if (context.cardType && String(context.cardType).toLowerCase() !== 'base') {
+    pushDiagnostic(
+      diagnostics,
+      context,
+      paramsPath,
+      'prevent_damage base-battle variant is only allowed on base cards'
+    );
+  }
+}
+
 function validateScryTopDeckParameters(node, context, diagnostics) {
   if (!node || typeof node !== 'object' || node.action !== 'scry_top_deck') {
     return;
@@ -283,6 +421,7 @@ function validateScryTopDeckParameters(node, context, diagnostics) {
 
 const ACTION_SEMANTIC_VALIDATORS = [
   validatePreventBattleDamageParameters,
+  validatePreventDamageParameters,
   validateSetNameAliasParameters,
   validateScryTopDeckParameters
 ];
@@ -296,6 +435,7 @@ function validateActionSemantics(node, context, diagnostics) {
 module.exports = {
   validateActionSemantics,
   validatePreventBattleDamageParameters,
+  validatePreventDamageParameters,
   validateSetNameAliasParameters,
   validateScryTopDeckParameters
 };
