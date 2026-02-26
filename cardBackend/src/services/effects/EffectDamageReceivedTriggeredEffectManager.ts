@@ -1,18 +1,15 @@
 import type { GameEnvironment } from '../../models/GameEnvironment';
+import type { EffectDamageReceivedTriggerContext } from '../../models/EffectDamageReceivedTriggerContext';
 import { InPlayTriggeredEffectManager } from './InPlayTriggeredEffectManager';
+import { resolveEffectDamageReceivedNotificationContext } from './EffectDamageReceivedNotificationContext';
 
 export class EffectDamageReceivedTriggeredEffectManager {
     static execute(
         gameEnv: GameEnvironment,
-        params: {
-            damagedPlayerId: string;
-            sourcePlayerId: string;
-        }
+        params: EffectDamageReceivedTriggerContext
     ): { success: boolean; error?: string; requiresSelection?: boolean } {
-        const { damagedPlayerId, sourcePlayerId } = params;
-
-        const queue = Array.isArray((gameEnv as any)?.notificationQueue) ? (gameEnv as any).notificationQueue : [];
-        const latestNotification = queue.length > 0 ? queue[queue.length - 1] : null;
+        const { damagedPlayerId, sourcePlayerId, damagedCarduid, notificationOverride } = params;
+        const latestNotification = resolveEffectDamageReceivedNotificationContext(gameEnv, { damagedCarduid, notificationOverride });
         const hadOverride = Object.prototype.hasOwnProperty.call(gameEnv as any, 'eventConditionNotificationOverride');
         const previousOverride = (gameEnv as any).eventConditionNotificationOverride;
 

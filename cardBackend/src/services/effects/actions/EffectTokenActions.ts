@@ -35,11 +35,11 @@ export function applyConditionalTokenDeployEffect(
         }
     }
 
-    if (!ConditionalTokenDeployManager.conditionsSatisfied(effect, gameEnv, sourcePlayerId)) {
+    if (!ConditionalTokenDeployManager.conditionsSatisfied(effect, gameEnv, sourcePlayerId, sourceCarduid)) {
         return { success: true };
     }
 
-    const planResult = ConditionalTokenDeployManager.buildPlan(gameEnv, sourcePlayerId, effect);
+    const planResult = ConditionalTokenDeployManager.buildPlan(gameEnv, sourcePlayerId, effect, sourceCarduid);
     if (!planResult.success) {
         if (planResult.error === 'No matching token condition found for board state') {
             return { success: true };

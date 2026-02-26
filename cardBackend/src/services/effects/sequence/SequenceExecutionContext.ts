@@ -1,10 +1,6 @@
 import type { GameEnvironment } from '../../../models/GameEnvironment';
+import type { DeferredEffectDamageReceivedEntry } from '../../../models/EffectDamageReceivedTriggerContext';
 import { EffectDamageReceivedTriggeredEffectManager } from '../EffectDamageReceivedTriggeredEffectManager';
-
-type DeferredEffectDamageReceivedEntry = {
-    damagedPlayerId: string;
-    sourcePlayerId: string;
-};
 
 const DEPTH_KEY = '__sequenceExecutionDepth';
 const DEFERRED_DAMAGE_KEY = '__deferredEffectDamageReceivedEntries';
@@ -68,7 +64,9 @@ export function flushDeferredEffectDamageReceivedTriggers(
     for (const entry of list) {
         const result = EffectDamageReceivedTriggeredEffectManager.execute(gameEnv, {
             damagedPlayerId: entry.damagedPlayerId,
-            sourcePlayerId: entry.sourcePlayerId
+            sourcePlayerId: entry.sourcePlayerId,
+            damagedCarduid: entry.damagedCarduid,
+            notificationOverride: entry.notificationOverride
         });
         if (!result.success) {
             return { success: false, error: result.error || 'Failed to process deferred EFFECT_DAMAGE_RECEIVED trigger' };

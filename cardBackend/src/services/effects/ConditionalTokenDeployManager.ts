@@ -21,9 +21,10 @@ export class ConditionalTokenDeployManager {
     static resolveMatchingConditionConfig(
         gameEnv: GameEnvironment,
         playerId: string,
-        effect: EffectDefinition
+        effect: EffectDefinition,
+        sourceCarduid?: string
     ): { success: true; config: { tokenData: any; count: number; rested: boolean } } | { success: false; error: string } {
-        if (!this.conditionsSatisfied(effect, gameEnv, playerId)) {
+        if (!this.conditionsSatisfied(effect, gameEnv, playerId, sourceCarduid)) {
             return { success: false, error: 'Conditions not met for token deploy' };
         }
 
@@ -87,9 +88,11 @@ export class ConditionalTokenDeployManager {
     static conditionsSatisfied(
         effect: EffectDefinition,
         gameEnv: GameEnvironment,
-        playerId: string
+        playerId: string,
+        sourceCarduid?: string
     ): boolean {
-        return ContinuousEffectManager.validateEffectConditions(effect, gameEnv, playerId);
+        const sourceCard = sourceCarduid ? SlotZoneUtils.getCardByUid(gameEnv, sourceCarduid) : undefined;
+        return ContinuousEffectManager.validateEffectConditions(effect, gameEnv, playerId, sourceCard || undefined);
     }
 
     static buildPlanForTokenChoice(
@@ -127,13 +130,14 @@ export class ConditionalTokenDeployManager {
     static buildPlan(
         gameEnv: GameEnvironment,
         playerId: string,
-        effect: EffectDefinition
+        effect: EffectDefinition,
+        sourceCarduid?: string
     ): { success: true; plan: ConditionalTokenPlan } | { success: false; error: string } {
         const player = gameEnv.players[playerId];
         if (!player?.zones) {
             return { success: false, error: 'Player zones unavailable for token deploy' };
         }
-        const configResult = this.resolveMatchingConditionConfig(gameEnv, playerId, effect);
+        const configResult = this.resolveMatchingConditionConfig(gameEnv, playerId, effect, sourceCarduid);
         if (!configResult.success) {
             return { success: false, error: configResult.error };
         }

@@ -8,6 +8,7 @@ import { TargetCardResolver } from '../../targets/TargetCardResolver';
 import { EffectDamagePreventionUtils } from '../EffectDamagePreventionUtils';
 import { EffectStatApplier } from '../EffectStatApplier';
 import { EffectDamageReceivedTriggeredEffectManager } from '../EffectDamageReceivedTriggeredEffectManager';
+import { snapshotLatestCardDamagedNotification } from '../EffectDamageReceivedNotificationContext';
 import { SlotHpDestructionChecker } from '../../destruction/SlotHpDestructionChecker';
 import { SlotHealthService } from '../../health/SlotHealthService';
 import { resolveEffectDamageValue } from './EffectDamageValueResolver';
@@ -147,15 +148,20 @@ export function applyDamageEffect(
             return applyResult;
         }
 
+        const damageNotificationSnapshot = snapshotLatestCardDamagedNotification(gameEnv, target.carduid);
         if (isSequenceExecutionActive(gameEnv)) {
             deferEffectDamageReceivedTrigger(gameEnv, {
                 damagedPlayerId: target.playerId,
-                sourcePlayerId
+                sourcePlayerId,
+                damagedCarduid: target.carduid,
+                notificationOverride: damageNotificationSnapshot
             });
         } else {
             const triggerResult = EffectDamageReceivedTriggeredEffectManager.execute(gameEnv, {
                 damagedPlayerId: target.playerId,
-                sourcePlayerId
+                sourcePlayerId,
+                damagedCarduid: target.carduid,
+                notificationOverride: damageNotificationSnapshot
             });
             if (!triggerResult.success) {
                 return { success: false, error: triggerResult.error || 'Failed to process EFFECT_DAMAGE_RECEIVED triggers' };

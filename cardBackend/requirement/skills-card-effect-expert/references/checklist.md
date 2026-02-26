@@ -92,6 +92,8 @@
 - Event-condition parity:
   - verify `eventType` conditions are evaluated in a real event context (queue event and/or notification state)
   - for pilot/command sources, verify `eventTarget = self` resolves to the effective paired unit when card text says "this Unit"
+  - for `EFFECT_DAMAGE_RECEIVED` deferred flows, verify replay uses the original per-damage notification payload (or equivalent snapshot), not the latest notification queue tail
+  - if multiple files now depend on the same deferred event context shape, extract a shared typed context + helper module instead of repeating payload fields and queue scans
   - for state-change conditions (`eventTargetWasRested`, etc.), verify event payload includes prior-state metadata or evaluator has another reliable source
 - Source-special condition defaults:
   - if card data omits `scope` on source-specific conditions (e.g. `sourcePairedWithPilot`), verify evaluator default scope does not accidentally invalidate the condition
@@ -114,6 +116,7 @@
     - target eligibility (scope/filters)
     - deploy legality right now (energy + effective cost/level)
     - dialog candidates must reflect deploy legality, not just target eligibility.
+  - For `conditionalTokenDeploy`, if card data includes `conditions` (especially event/source conditions), verify runtime condition evaluation passes source-card context (not player-only evaluation).
 - For custom target scopes (e.g., `opponent_battling_source`), verify:
     - a specialized resolver exists in `TargetScopeResolverRegistry`
     - resolver `[]` remains a terminal no-target result (no accidental fallback to generic `TargetResolver`)
@@ -159,6 +162,7 @@
   - restore via `fromJSON`
   - resolve remaining choice(s)
   - assert deferred trigger choice appears only after sequence completion
+  - if trigger semantics depend on event target (`eventTarget=*`), assert serialized deferred entries preserve event notification snapshot/target carduid and replay still resolves exactly once for the correct source
 - For ACTION_STEP response incidents, include at least one backend API-path regression covering:
   - off-turn activation accepted when in `currentBattle.actionTargets[playerId]`
   - post-activation battle progression does not leave stale actionable state

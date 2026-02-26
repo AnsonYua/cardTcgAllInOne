@@ -3533,6 +3533,12 @@
             "effectId": "effect",
             "type": "triggered",
             "trigger": "EFFECT_DAMAGE_RECEIVED",
+            "conditions": [
+              {
+                "type": "eventTarget",
+                "value": "self"
+              }
+            ],
             "restrictions": [
               "once_per_turn"
             ],
@@ -5729,6 +5735,12 @@
             "effectId": "effect",
             "type": "triggered",
             "trigger": "EFFECT_DAMAGE_RECEIVED",
+            "conditions": [
+              {
+                "type": "eventTarget",
+                "value": "self"
+              }
+            ],
             "restrictions": [
               "once_per_turn"
             ],

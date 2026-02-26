@@ -546,6 +546,12 @@
             "effectId": "draw_when_effect_damage_received",
             "type": "triggered",
             "trigger": "EFFECT_DAMAGE_RECEIVED",
+            "conditions": [
+              {
+                "type": "eventTarget",
+                "value": "self"
+              }
+            ],
             "restrictions": [
               "once_per_turn"
             ],

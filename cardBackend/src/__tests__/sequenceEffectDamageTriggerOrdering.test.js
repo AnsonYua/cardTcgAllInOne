@@ -134,7 +134,7 @@ describe('sequence effect ordering for EFFECT_DAMAGE_RECEIVED triggers', () => {
             e?.status === 'DECLARED' &&
             e?.data?.sourceCarduid === 'GD03-095_pilot_0001'
         );
-        expect(gd03095Choices.length).toBeGreaterThan(0);
+        expect(gd03095Choices.length).toBe(1);
     });
 
     test('GD03-095 deferred trigger survives GameEnvironment serialization between sequence choices', () => {
@@ -210,6 +210,8 @@ describe('sequence effect ordering for EFFECT_DAMAGE_RECEIVED triggers', () => {
         const serialized = gameEnv.toJSON();
         expect(Array.isArray(serialized.deferredEffectDamageReceivedEntries)).toBe(true);
         expect(serialized.deferredEffectDamageReceivedEntries.length).toBeGreaterThan(0);
+        expect(serialized.deferredEffectDamageReceivedEntries[0]?.notificationOverride?.type).toBe('CARD_DAMAGED');
+        expect(serialized.deferredEffectDamageReceivedEntries[0]?.notificationOverride?.payload?.carduid).toBe('GD03-050_unit_0001');
         gameEnv = GameEnvironment.fromJSON(serialized);
 
         const opponentChoice = latestDeclaredTargetChoice(gameEnv, 'GD03-056_hand_0001');
@@ -234,6 +236,6 @@ describe('sequence effect ordering for EFFECT_DAMAGE_RECEIVED triggers', () => {
             e?.status === 'DECLARED' &&
             e?.data?.sourceCarduid === 'GD03-095_pilot_0001'
         );
-        expect(gd03095Choices.length).toBeGreaterThan(0);
+        expect(gd03095Choices.length).toBe(1);
     });
 });

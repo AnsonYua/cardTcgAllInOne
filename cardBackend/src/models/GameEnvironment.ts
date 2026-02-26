@@ -10,6 +10,7 @@ import { BattleContext, ActionStepTargetSummary } from './BattleContext';
 import { EffectScannerUtils } from '../utils/EffectScannerUtils';
 import { HandContinuousModifier } from '../services/effects/HandContinuousModifier';
 import type { PendingDestruction } from '../services/destruction/DestructionTypes';
+import type { DeferredEffectDamageReceivedEntry } from './EffectDamageReceivedTriggerContext';
 
 // Forward declaration to avoid circular dependency
 declare class StaticEventProcessor {
@@ -72,7 +73,7 @@ export class GameEnvironment {
     // Phase transition guard to avoid duplicate SBA enqueues
     public pendingPhaseTransition: EventType | null;
     public pendingDestructions: PendingDestruction[];
-    public deferredEffectDamageReceivedEntries?: Array<{ damagedPlayerId: string; sourcePlayerId: string }>;
+    public deferredEffectDamageReceivedEntries?: DeferredEffectDamageReceivedEntry[];
     
     // Card selection system - REMOVED: pendingCardSelections no longer needed
     // Deploy effects now process automatically with smart target selection
@@ -778,7 +779,11 @@ export class GameEnvironment {
                 )
                 .map((entry: any) => ({
                     damagedPlayerId: entry.damagedPlayerId,
-                    sourcePlayerId: entry.sourcePlayerId
+                    sourcePlayerId: entry.sourcePlayerId,
+                    ...(typeof entry.damagedCarduid === 'string' ? { damagedCarduid: entry.damagedCarduid } : {}),
+                    ...(entry.notificationOverride && typeof entry.notificationOverride === 'object'
+                        ? { notificationOverride: entry.notificationOverride }
+                        : {})
                 }))
             : undefined;
         
