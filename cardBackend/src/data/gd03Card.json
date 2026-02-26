@@ -2809,9 +2809,10 @@
             "parameters": {
               "source": "battle_damage",
               "defenseAreas": [
-                "shield"
+                "shield",
+                "base"
               ],
-              "notes": "Implemented: DEFENSE_AREA_BATTLE_DAMAGE trigger supports shield-area checks and LOWEST_HP selection with controller choice tie-break."
+              "notes": "Implemented: DEFENSE_AREA_BATTLE_DAMAGE trigger supports shield/base defense-area checks and LOWEST_HP selection with controller choice tie-break."
             }
           }
         ]
@@ -3902,11 +3903,8 @@
                         },
                         "target": {
                           "type": "unit",
-                          "scope": "self",
-                          "count": 1,
-                          "selection": {
-                            "type": "player_choice"
-                          }
+                          "scope": "previous_target",
+                          "count": 1
                         },
                         "parameters": {
                           "value": 1

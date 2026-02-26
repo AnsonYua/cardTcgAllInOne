@@ -45,7 +45,17 @@ export class ContinuousConditionalEffectExpander {
                 timing: normalizedStep.timing || ctx.effectRule.timing,
                 parameters: normalizedStep.parameters || {},
                 conditions: [...(ctx.effectRule.conditions || []), ...ifConditions],
-                sourceConditions: ctx.effectRule.sourceConditions || []
+                sourceConditions: ctx.effectRule.sourceConditions || [],
+                restrictions: Array.isArray((ctx.effectRule as any).restrictions)
+                    ? [ ...((ctx.effectRule as any).restrictions as unknown[]) ]
+                    : undefined,
+                optional: (ctx.effectRule as any).optional,
+                windows: Array.isArray((ctx.effectRule as any).windows)
+                    ? [ ...((ctx.effectRule as any).windows as unknown[]) ]
+                    : undefined,
+                cost: (ctx.effectRule as any).cost && typeof (ctx.effectRule as any).cost === 'object'
+                    ? { ...((ctx.effectRule as any).cost as Record<string, unknown>) }
+                    : (ctx.effectRule as any).cost
             } as any);
 
             const eventReactiveConditional = hasEventTypeCondition(ifConditions);

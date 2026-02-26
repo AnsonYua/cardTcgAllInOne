@@ -94,6 +94,10 @@ Use this skill when a card effect appears correct in data but gameplay/UI behavi
   - Reactive triggers caused by intermediate step damage (e.g., `EFFECT_DAMAGE_RECEIVED`) should resolve after sequence completion.
   - If sequence resolution spans multiple API calls, deferred reactive trigger buffers must survive `GameEnvironment.toJSON()/fromJSON()` persistence.
   - Deferred reactive buffers that depend on event-target conditions must persist per-event notification context (not just player ids), or later flush may evaluate against the wrong notification queue tail.
+- Sequence target continuity rule:
+  - If later sequence text refers to the same chosen target from an earlier step ("it", "that Unit"), encode dependent steps with `target.scope = "previous_target"` rather than a second `player_choice`.
+- Reactive continuous expansion metadata rule:
+  - When expanding `type: "continuous"` `conditional(eventType...) -> then(...)` branches into derived reactive effects, preserve runtime-governing metadata from the parent effect (at minimum `restrictions`, especially `once_per_turn`).
 - `EFFECT_DAMAGE_RECEIVED` data scoping rule:
   - Text like "when this Unit receives effect damage" should encode explicit `conditions: [{ type: "eventTarget", value: "self" }]`.
   - Do not narrow engine dispatch to source-self globally; observer cards (e.g. "one of your friendly Units receives effect damage") rely on broader event dispatch plus explicit event-target conditions.
@@ -102,6 +106,12 @@ Use this skill when a card effect appears correct in data but gameplay/UI behavi
 - Trigger-context architecture rule:
   - When adding deferred/reactive trigger metadata (e.g. damaged card uid + notification snapshot), centralize the payload type and notification lookup/snapshot helpers in shared modules.
   - Avoid duplicating payload shapes and queue-tail scanning logic across action handlers, trigger managers, sequence buffers, and `GameEnvironment` serialization.
+- Multi-shield shield-damage timing rule:
+  - If card text/effect semantics treat multiple shield hits as simultaneous (e.g. `<Suppression>` hitting first 2 shields), do not fire per-shield follow-up triggers immediately inside the shield-resolution loop.
+  - Batch shield outcomes first (including burst-choice-delayed shields), then flush `SHIELD_AREA_CARD_DAMAGED` / `DEFENSE_AREA_BATTLE_DAMAGE` in deterministic order after the batch completes.
+- `shield-area card` coverage rule:
+  - Card text referring to enemy "shield-area card" may map to `shield` and `base` in engine semantics.
+  - Encode the intended coverage explicitly in `parameters.defenseAreas` (for example `['shield']` vs `['shield', 'base']`) and test both paths when base should qualify.
 - Pairing effect order dialog rule:
   - Show `OPTION_CHOICE` only for effects that may require player decision now (interactive candidates).
   - Hide deterministic non-interactive effects (for example, self/paired-unit `allow_attack_target` that auto-applies without chooser).
@@ -148,6 +158,9 @@ See `references/incident-gd03-035.md` for concrete bugs and fixes:
   - battle could stall after successful `ACTION_STEP` activated ability (`confirmations` all true, `actionTargets` empty, still in `ACTION_STEP`); fixed by post-ability action-step target refresh + confirmation/auto-progress handling.
 - `GD03-071` dynamic AP reduction gap: card used `modifyAP.parameters.valuePer` (per `(AEUG)` unit card in trash) but backend stat applier only accepted flat numeric `value`; fixed by adding `valuePer` resolution in stat modifier execution and regression test coverage.
 - `GD03-069` / `GD03-098` reactive continuous conditional gap: end-turn set-active and linked bounce were encoded as `type: continuous` + `conditional(eventType...)`, but backend continuous expansion dropped unsupported `then` actions (`setActive`, `returnToHand`). Fixed by introducing event-reactive continuous registry handling, plus event-condition fixes (`sourcePairedWithPilot` omitted scope, pilot effective-self event target, `wasRested` metadata on `CARD_SET_ACTIVE`).
+- `GD03-053` / `GD03-067` sequence/reactive metadata parity gap:
+  - `GD03-067` deploy text required buffing the same unit damaged in step 1, but rule data used a second `player_choice`; fixed by `target.scope = "previous_target"` on the `modifyAP` step.
+  - `GD03-053` `[Once per Turn]` reactive continuous trigger risked losing `once_per_turn` because `ContinuousConditionalEffectExpander` did not propagate `restrictions` to derived `then` effects; fixed by metadata propagation on derived reactive effects.
 - `GD03-062` / `GD02-091` source-condition default/provenance gap:
   - `GD03-062` (`sourceDeployedFrom`) silently failed because deploy flow did not persist `deployedFrom` onto the deployed unit and card data omitted `scope`.
   - `GD02-091` (`sourceColor`) omitted `scope`, but backend defaulted missing scope to `player`, causing source-color conditional failure.
@@ -157,6 +170,11 @@ See `references/incident-gd03-035.md` for concrete bugs and fixes:
   - Result: backend could show a target in dialog that would fail at resolution-time energy payment (`P2` UX/backend-parity mismatch).
   - Fixed by shared deploy affordability evaluator used for both chooser pre-filtering and deploy payment (effective cost/level, including self-trash cost modifiers).
   - Preserve target-choice policy after affordability filtering: single remaining target auto-applies (no dialog).
+- `GD03-049` suppression shield-damage timing mismatch:
+  - `<Suppression>` text implies first 2 shield hits are simultaneous, but backend processed shield follow-up triggers sequentially per shield (`SHIELD_AREA_CARD_DAMAGED` / `DEFENSE_AREA_BATTLE_DAMAGE`) inside the loop.
+  - Fixed by batching shield outcomes per `SHIELD_CARD_ATTACKED` event (including burst-choice-delayed shields), then flushing all shield-damage notifications first and effect triggers second after batch completion.
+  - Follow-up data alignment: `GD03-049` `DEFENSE_AREA_BATTLE_DAMAGE` rule now explicitly encodes `parameters.defenseAreas = ['shield', 'base']` so base qualifies as a shield-area card per intended semantics.
+  - See `references/incident-gd03-049-suppression-batch-shield-damage.md`.
 
 ## Output Requirements
 - Provide:

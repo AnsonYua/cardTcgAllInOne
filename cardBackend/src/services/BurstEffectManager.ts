@@ -30,7 +30,18 @@ export interface BurstEffectSummary {
     triggerType?: string; // original rule.type for logging/debugging
 }
 
+type ShieldDamageBatchState = {
+    sourceEventId: string;
+    attackedShieldCarduids: string[];
+    resolvedShieldCarduids: Set<string>;
+    destroyedShieldCarduids: Set<string>;
+    attackingPlayerId: string;
+    attackerSlot: string;
+    defendingPlayerId: string;
+};
+
 export class BurstEffectManager {
+    private static readonly shieldDamageBatches = new Map<string, ShieldDamageBatchState>();
 
     static processShieldCardAttack(event: ShieldCardAttackedEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`🛡️ Executing SHIELD_CARD_ATTACKED event: ${event.id}`);
@@ -47,6 +58,10 @@ export class BurstEffectManager {
             }
 
             const burstChoiceTargets: any[] = [];
+            const hasAttackContext = Boolean(attackingPlayerId && attackerSlot);
+            if (hasAttackContext) {
+                this.initializeShieldDamageBatch(event);
+            }
 
             for (const shieldCard of shieldCards) {
                 const shieldCardId = getCardIdFromUid(shieldCard.carduid);
@@ -94,21 +109,12 @@ export class BurstEffectManager {
                         );
 
                         if (attackingPlayerId && attackerSlot) {
-                            ShieldAreaCardDamagedTriggerDispatcher.dispatch({
-                                gameEnv,
-                                attackingPlayerId,
-                                attackerSlot,
-                                defendingPlayerId,
-                                defenseArea: 'shield',
-                                damagedCarduid: shieldCard.carduid
+                            const batchRecordResult = this.recordShieldDamageBatchResolution(gameEnv, event.id, {
+                                carduid: shieldCard.carduid,
+                                destroyedByBattleDamage: true
                             });
-
-                            const triggerResult = DefenseAreaBattleDamageTriggeredEffectManager.handleShieldCardDestroyed(gameEnv, {
-                                attackingPlayerId,
-                                attackerSlot
-                            });
-                            if (!triggerResult.success) {
-                                return { success: false, error: triggerResult.error || 'Failed to process DEFENSE_AREA_BATTLE_DAMAGE triggers' };
+                            if (!batchRecordResult.success) {
+                                return { success: false, error: batchRecordResult.error || 'Failed to process DEFENSE_AREA_BATTLE_DAMAGE triggers' };
                             }
                         }
                     } else {
@@ -121,6 +127,13 @@ export class BurstEffectManager {
                 BurstChoiceService.enqueueBurstChoices(gameEnv, defendingPlayerId, burstChoiceTargets, {
                     sourceEventId: event.id
                 });
+            }
+
+            if (hasAttackContext) {
+                const flushResult = this.flushShieldDamageBatchIfComplete(gameEnv, event.id);
+                if (!flushResult.success) {
+                    return { success: false, error: flushResult.error || 'Failed to process DEFENSE_AREA_BATTLE_DAMAGE triggers' };
+                }
             }
 
             return { success: true };
@@ -159,7 +172,7 @@ export class BurstEffectManager {
                 const declineResult = this.handleBurstDecline(gameEnv, playerId, target.carduid, target.cardData, target.cardId);
                 if (declineResult.success) {
                     ChoiceNotificationEmitter.emitBurstChoiceResolved(gameEnv, event, 'DECLINE');
-                    this.maybeTriggerDefenseAreaBattleDamageFromBurstTarget(gameEnv, target);
+                    this.maybeTriggerDefenseAreaBattleDamageFromBurstTarget(gameEnv, event, target);
                 }
                 return declineResult;
             }
@@ -188,7 +201,7 @@ export class BurstEffectManager {
 
                 console.log(`✅ Burst effect ${burstEffect.type} executed successfully`);
                 ChoiceNotificationEmitter.emitBurstChoiceResolved(gameEnv, event, 'ACTIVATE');
-                this.maybeTriggerDefenseAreaBattleDamageFromBurstTarget(gameEnv, target);
+                this.maybeTriggerDefenseAreaBattleDamageFromBurstTarget(gameEnv, event, target);
                 return { success: true };
             }
 
@@ -573,9 +586,117 @@ export class BurstEffectManager {
         return result.success;
     }
 
-    private static maybeTriggerDefenseAreaBattleDamageFromBurstTarget(gameEnv: GameEnvironment, target: any): void {
+    private static initializeShieldDamageBatch(event: ShieldCardAttackedEvent): void {
+        const { attackingPlayerId, attackerSlot, defendingPlayerId, shieldCards } = event.data;
+        if (!attackingPlayerId || !attackerSlot || !defendingPlayerId) {
+            return;
+        }
+
+        const attackedShieldCarduids = Array.isArray(shieldCards)
+            ? shieldCards
+                .map((shield) => (typeof shield?.carduid === 'string' ? shield.carduid : ''))
+                .filter((carduid): carduid is string => carduid.length > 0)
+            : [];
+
+        this.shieldDamageBatches.set(event.id, {
+            sourceEventId: event.id,
+            attackedShieldCarduids,
+            resolvedShieldCarduids: new Set<string>(),
+            destroyedShieldCarduids: new Set<string>(),
+            attackingPlayerId,
+            attackerSlot,
+            defendingPlayerId
+        });
+    }
+
+    private static recordShieldDamageBatchResolution(
+        gameEnv: GameEnvironment,
+        sourceEventId: string,
+        params: {
+            carduid: string;
+            destroyedByBattleDamage: boolean;
+        }
+    ): { success: boolean; error?: string } {
+        const batch = this.shieldDamageBatches.get(sourceEventId);
+        if (!batch) {
+            return { success: true };
+        }
+
+        if (!params.carduid || !batch.attackedShieldCarduids.includes(params.carduid)) {
+            return { success: true };
+        }
+
+        batch.resolvedShieldCarduids.add(params.carduid);
+        if (params.destroyedByBattleDamage) {
+            batch.destroyedShieldCarduids.add(params.carduid);
+        }
+
+        return this.flushShieldDamageBatchIfComplete(gameEnv, sourceEventId);
+    }
+
+    private static flushShieldDamageBatchIfComplete(
+        gameEnv: GameEnvironment,
+        sourceEventId: string
+    ): { success: boolean; error?: string } {
+        const batch = this.shieldDamageBatches.get(sourceEventId);
+        if (!batch) {
+            return { success: true };
+        }
+
+        if (batch.resolvedShieldCarduids.size < batch.attackedShieldCarduids.length) {
+            return { success: true };
+        }
+
+        const destroyedInOrder = batch.attackedShieldCarduids.filter((carduid) => batch.destroyedShieldCarduids.has(carduid));
+
+        for (const carduid of destroyedInOrder) {
+            ShieldAreaCardDamagedTriggerDispatcher.dispatch({
+                gameEnv,
+                attackingPlayerId: batch.attackingPlayerId,
+                attackerSlot: batch.attackerSlot,
+                defendingPlayerId: batch.defendingPlayerId,
+                defenseArea: 'shield',
+                damagedCarduid: carduid
+            });
+        }
+
+        for (const carduid of destroyedInOrder) {
+            const triggerResult = DefenseAreaBattleDamageTriggeredEffectManager.handleShieldCardDestroyed(gameEnv, {
+                attackingPlayerId: batch.attackingPlayerId,
+                attackerSlot: batch.attackerSlot
+            });
+            if (!triggerResult.success) {
+                return { success: false, error: triggerResult.error || 'Failed to process DEFENSE_AREA_BATTLE_DAMAGE triggers' };
+            }
+        }
+
+        this.shieldDamageBatches.delete(sourceEventId);
+        return { success: true };
+    }
+
+    private static maybeTriggerDefenseAreaBattleDamageFromBurstTarget(
+        gameEnv: GameEnvironment,
+        event: BurstEffectChoiceEvent,
+        target: any
+    ): void {
         const context = target?.attackContext;
         if (!context || typeof context.attackingPlayerId !== 'string' || typeof context.attackerSlot !== 'string') {
+            return;
+        }
+
+        const sourceEventId = typeof (event.data as any)?.shieldAttackSourceEventId === 'string'
+            ? ((event.data as any).shieldAttackSourceEventId as string)
+            : undefined;
+        const carduid = typeof target?.carduid === 'string' ? target.carduid : undefined;
+
+        if (sourceEventId && carduid) {
+            const batchResult = this.recordShieldDamageBatchResolution(gameEnv, sourceEventId, {
+                carduid,
+                destroyedByBattleDamage: true
+            });
+            if (!batchResult.success) {
+                console.error(batchResult.error || 'Failed to process DEFENSE_AREA_BATTLE_DAMAGE triggers');
+            }
             return;
         }
 
@@ -585,7 +706,7 @@ export class BurstEffectManager {
             attackerSlot: context.attackerSlot,
             defendingPlayerId: typeof target?.ownerPlayerId === 'string' ? target.ownerPlayerId : '',
             defenseArea: 'shield',
-            damagedCarduid: typeof target?.carduid === 'string' ? target.carduid : undefined
+            damagedCarduid: carduid
         });
 
         const triggerResult = DefenseAreaBattleDamageTriggeredEffectManager.handleShieldCardDestroyed(gameEnv, {

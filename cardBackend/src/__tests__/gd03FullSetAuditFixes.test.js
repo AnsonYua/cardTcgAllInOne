@@ -37,6 +37,12 @@ describe('GD03 full-set audit fixes', () => {
         expect(oncePerTurnPairRule).toBeTruthy();
         expect(oncePerTurnPairRule.restrictions).toContain('once_per_turn');
 
+        const gd03067 = gd03.cards['GD03-067'];
+        const gd03067Deploy = gd03067.effects.rules.find((rule) => rule.effectId === 'deploy_effect');
+        const gd03067ModifyApStep = gd03067Deploy?.parameters?.steps?.[1]?.parameters?.then?.[0];
+        expect(gd03067ModifyApStep?.action).toBe('modifyAP');
+        expect(gd03067ModifyApStep?.target?.scope).toBe('previous_target');
+
         const gd03073 = gd03.cards['GD03-073'];
         const linkedActivateRule = gd03073.effects.rules.find((rule) => rule.effectId === 'activate_effect');
         expect(linkedActivateRule).toBeTruthy();

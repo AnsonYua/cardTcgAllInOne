@@ -11,10 +11,10 @@
     "Suppression"
   ],
   "notes": [
-    "Setup: Player A is currentPlayer in ATTACK_PHASE with GD03-049 in slot1 (active). Player B has at least 1 shield and 2 units in play, one with the lowest remaining HP.",
+    "Setup: Player A is currentPlayer and can initiate attackShieldArea with GD03-049 in slot1 (active). Player B has at least 1 shield (or a base as defense area) and 2 units in play, one with the lowest remaining HP.",
     "Setup: Player A has 10+ (CB) cards in trash.",
     "Action (manual): Player A initiates attackShieldArea with attackerCarduid=GD03-049_unit_0001 targeting Player B.",
-    "Expect: SHIELD_CARD_ATTACKED resolves and triggers GD03-049 DEFENSE_AREA_BATTLE_DAMAGE effect (YOUR_TURN + CB trash>=10).",
+    "Expect: SHIELD_CARD_ATTACKED (or base battle damage) resolves and triggers GD03-049 DEFENSE_AREA_BATTLE_DAMAGE effect for enemy defense-area cards (shield/base) when YOUR_TURN + CB trash>=10.",
     "Expect: Engine filters enemy targets to LOWEST_HP (tie => TARGET_CHOICE), then destroys that unit (DESTROYED notification) and updates processingQueue/notificationQueue accordingly."
   ],
   "initialGameEnv": {
@@ -215,7 +215,16 @@
           "slot4": {},
           "slot5": {},
           "slot6": {},
-          "base": [],
+          "base": [
+              {
+                "carduid": "GD01-125_base_0001",
+                "cardId": "GD01-125",
+                "placedAt": 0,
+                "placedBy": "playerId_2",
+                "isRested": false,
+                "damageReceived": 0
+              }
+          ],
           "shieldArea": [
             {
               "carduid": "shield_0001",

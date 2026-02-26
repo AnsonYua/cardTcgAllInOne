@@ -15,8 +15,8 @@
     "Expect: GD03-053 is paired in slot1 and GD03-067 is in Player 1 hand.",
     "Action: Player 1 plays GD03-067 and resolves its deploy effect by choosing GD03-053 as friendly damage target.",
     "Expect: GD03-053 during-pair once-per-turn trigger activates after effect damage and prompts enemy target choice (Lv.4 or lower).",
-    "Action: Select enemy Lv.4 unit in slot1 as target.",
-    "Expect: Enemy slot1 unit becomes rested."
+    "Action: Select enemy Lv.4 unit in slot3 as target.",
+    "Expect: Enemy slot3 unit becomes rested."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -181,21 +181,7 @@
         "playerPoint": 0,
         "isReady": true,
         "zones": {
-          "slot1": {
-            "unit": {
-              "carduid": "GD03-056_enemy_0001",
-              "cardId": "GD03-056",
-              "placedAt": 0,
-              "placedBy": "playerId_2",
-              "isRested": false,
-              "playedThisTurn": false,
-              "canAttackOnPlayTurn": false,
-              "isFirstPlay": false,
-              "damageReceived": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0
-            }
-          },
+          "slot1": {},
           "slot2": {
             "unit": {
               "carduid": "GD03-061_enemy_0002",
@@ -211,7 +197,21 @@
               "continueModifyHP": 0
             }
           },
-          "slot3": {},
+          "slot3": {
+            "unit": {
+              "carduid": "GD03-056_enemy_0001",
+              "cardId": "GD03-056",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
           "slot4": {},
           "slot5": {},
           "slot6": {},

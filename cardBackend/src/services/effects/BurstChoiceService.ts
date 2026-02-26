@@ -56,6 +56,9 @@ export class BurstChoiceService {
 
             ChoiceTurnSnapshot.attach(gameEnv, choiceEvent.data);
             (choiceEvent.data as any).burstSource = BurstChoiceService.buildBurstSourceSummary(target);
+            if (typeof options.sourceEventId === 'string' && options.sourceEventId.length > 0) {
+                (choiceEvent.data as any).shieldAttackSourceEventId = options.sourceEventId;
+            }
             gameEnv.enqueueForProcessing(choiceEvent);
             createdEvents.push(choiceEvent);
             console.log(`📤 Enqueued burst choice event: ${choiceEvent.id}`);

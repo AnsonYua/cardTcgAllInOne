@@ -41,6 +41,9 @@
   - preceding step has stable `stepId`
   - dependent branch checks `type: "stepResolved"` for that `stepId`
   - resulting steps are encoded in `conditional.parameters.then` (not only in free-text `parameters.text`)
+- For sequence text using pronouns like "it" / "that Unit" after a player choice:
+  - verify later dependent step targets use `target.scope = "previous_target"` (or equivalent carry-over), not a second fresh `player_choice`
+  - add regression coverage that no second target chooser appears for the dependent step
 - For text with "choose ... your other Unit(s)" on pair/link effects:
   - do not rely on implicit `scope: "self"` normalization
   - require explicit selection + exclusion (`excludePairedUnit`, `excludeSource`, or `filters.excludeSelf` as appropriate)
@@ -169,6 +172,7 @@
 - For event-gated continuous incidents, include at least:
   - one direct trigger test (e.g. `END_OF_TURN` => `setActive`)
   - one chained reaction test where the first reactive action emits an event consumed by another continuous conditional effect (e.g. `SET_ACTIVE_BY_EFFECT` => `returnToHand`)
+  - if parent effect has `restrictions` (e.g. `once_per_turn`), assert the derived reactive effect still enforces them at runtime after expansion
 - Run:
   - `npm test`
   - `npm run build`
