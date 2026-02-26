@@ -253,7 +253,15 @@ export class AttackPhaseEffectManager {
             effect,
             typeof (attackEvent.data as any)?.attackNotificationId === 'string'
                 ? ((attackEvent.data as any).attackNotificationId as string)
-                : undefined
+                : undefined,
+            undefined,
+            undefined,
+            {
+                // ATTACK_PHASE effects already passed AttackConditionEvaluator (event-aware).
+                // Generic condition validation can incorrectly reject battle-scoped attack conditions
+                // (e.g. attackTargetCardType) before currentBattle is opened.
+                skipConditionValidation: true
+            }
         );
 
         if (!result.success) {

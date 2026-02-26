@@ -41,6 +41,10 @@ import { DeployAffordabilityEvaluator } from './deploy/DeployAffordabilityEvalua
 
 export type { DeployTargetResult } from './DeployTargetResult';
 
+type ProcessEffectWithTargetChoiceOptions = {
+    skipConditionValidation?: boolean;
+};
+
 export class DeployTargetManager {
     private static buildAvailableTargetsForEffect(
         gameEnv: GameEnvironment,
@@ -224,7 +228,8 @@ export class DeployTargetManager {
         },
         dynamicFilterContext?: {
             previousTargets?: TargetReference[];
-        }
+        },
+        options?: ProcessEffectWithTargetChoiceOptions
     ): DeployTargetResult {
         const normalizedEffect = ensureEffectDefaults(effect);
         const effectAction = EffectExecutor.getEffectAction(normalizedEffect);
@@ -233,7 +238,11 @@ export class DeployTargetManager {
 
         try {
             const sourceCard = sourceCarduid ? SlotZoneUtils.getCardByUid(gameEnv, sourceCarduid) : null;
-            if (!EffectConditionEvaluator.validateEffectConditions(normalizedEffect, gameEnv, playerId, sourceCard as any)) {
+            const shouldValidateConditions = options?.skipConditionValidation !== true;
+            if (
+                shouldValidateConditions &&
+                !EffectConditionEvaluator.validateEffectConditions(normalizedEffect, gameEnv, playerId, sourceCard as any)
+            ) {
                 console.log(`⏭️ Skipping ineligible effect ${effectLabel} (timing/conditions not met)`);
                 return {
                     success: true,

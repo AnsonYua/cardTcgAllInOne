@@ -187,7 +187,11 @@ export class EffectExecutor {
                 successfullyApplied.push(target);
             }
 
-            if (timing?.duration === 'UNTIL_END_OF_TURN' && sourceCarduid && successfullyApplied.length > 0) {
+            if (
+                this.shouldRegisterTemporaryStatEffect(action, timing) &&
+                sourceCarduid &&
+                successfullyApplied.length > 0
+            ) {
                 EffectTemporaryManager.createTemporaryEffect(gameEnv, effect, successfullyApplied, sourcePlayerId, sourceCarduid);
             }
 
@@ -214,6 +218,18 @@ export class EffectExecutor {
         sourceCarduid: string
     ): { success: boolean; error?: string } {
         return this.applyEffectToTargets(gameEnv, effect, targets, sourcePlayerId, sourceCarduid);
+    }
+
+    private static shouldRegisterTemporaryStatEffect(
+        action: string,
+        timing: EffectTiming | undefined
+    ): boolean {
+        if (action !== 'modifyAP' && action !== 'modifyHP') {
+            return false;
+        }
+
+        const duration = timing?.duration;
+        return duration === 'UNTIL_END_OF_TURN' || duration === 'UNTIL_END_OF_BATTLE';
     }
 
      static applyAddToHandEffect(gameEnv: GameEnvironment, 

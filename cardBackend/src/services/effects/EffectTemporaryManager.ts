@@ -13,7 +13,9 @@ export class EffectTemporaryManager {
         sourcePlayerId: string,
         sourceCarduid: string
     ): void {
-        console.log(`⏰ Creating temporary effect: ${effect.effectId} until end of turn`);
+        console.log(
+            `⏰ Creating temporary effect: ${effect.effectId} duration=${effect.timing?.duration || 'UNTIL_END_OF_TURN'}`
+        );
 
         for (const target of selectedTargets) {
             const resolvedTarget = SlotZoneUtils.resolveTargetReference(gameEnv, target);
