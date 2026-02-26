@@ -112,7 +112,8 @@
           "slot5": {},
           "slot6": {},
           "base": [],
-          "shieldArea": [],
+          "shieldArea": [ 
+          ],
           "energyArea": [
             {
               "carduid": "energy_basic_p1_0001",
@@ -164,7 +165,24 @@
           "slot5": {},
           "slot6": {},
           "base": [],
-          "shieldArea": [],
+          "shieldArea": [
+                       {
+              "carduid": "ST01-004_f625d0b5-7621-469d-a67f-47a2a18dcdbb",
+              "cardId": "ST01-004",
+              "placedAt": 1757854884783,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalCardType": "unit"
+            },
+            {
+              "carduid": "ST01-006_122ee43d-d63a-4745-ac2d-d1221d4cf7c1",
+              "cardId": "ST01-006",
+              "placedAt": 1757854884783,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalCardType": "unit"
+            }
+          ],
           "energyArea": [],
           "trashArea": [],
           "repairAbilitiesCheckedThisCycle": false,

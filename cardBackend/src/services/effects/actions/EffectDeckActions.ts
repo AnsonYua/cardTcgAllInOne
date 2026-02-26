@@ -38,6 +38,8 @@ export function applyMoveTopDeckToTrash(
     }
 
     const moved: any[] = [];
+    // Intentionally a legal no-op when the deck is empty so sequence effects like
+    // "mill, then if milled card matches..." can fizzle without failing card play.
     for (let i = 0; i < count && deck.mainDeck.length > 0; i++) {
         const carduid = deck.mainDeck.shift();
         if (!carduid || typeof carduid !== 'string') {

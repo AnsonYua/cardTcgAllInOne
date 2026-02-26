@@ -173,21 +173,6 @@
         "isReady": true,
         "zones": {
           "slot1": {
-            "unit": {
-              "carduid": "enemy_unit_0001",
-              "cardId": "enemy_unit_basic",
-              "placedAt": 0,
-              "placedBy": "playerId_2",
-              "isRested": false,
-              "playedThisTurn": false,
-              "canAttackOnPlayTurn": false,
-              "isFirstPlay": false,
-              "damageReceived": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
-              "ap": 3,
-              "hp": 4
-            }
           },
           "slot2": {},
           "slot3": {},

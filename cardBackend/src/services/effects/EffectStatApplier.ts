@@ -234,6 +234,13 @@ export class EffectStatApplier {
         value: number,
         mode: 'heal' | 'damage'
     ): { success: boolean; error?: string; healedAmount?: number } {
+        const slotState = SlotHealthService.getSlotHealthStateByTarget(gameEnv, target);
+        if (slotState && slotState.maxHp <= 0 && (slotState.unitCarduid || slotState.pilotCarduid)) {
+            const error = `Invalid slot health state for ${target.carduid} at ${slotState.playerId}:${slotState.slotName} (maxHp=0). Fixture/unit data is non-canonical (missing originalHP/cardData.hp).`;
+            console.error(`❌ ${error}`);
+            return { success: false, error };
+        }
+
         const change = mode === 'heal'
             ? SlotHealthService.applyHealToTarget(gameEnv, target, value)
             : SlotHealthService.applyDamageToTarget(gameEnv, target, value);

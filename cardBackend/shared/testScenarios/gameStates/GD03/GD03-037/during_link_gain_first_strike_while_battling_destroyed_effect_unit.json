@@ -96,8 +96,8 @@
               "isFirstPlay": false
             },
             "pilot": {
-              "carduid": "GD03-096_pilot_0001",
-              "cardId": "GD03-096",
+              "carduid": "GD03-084_pilot_0001",
+              "cardId": "GD03-084",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,

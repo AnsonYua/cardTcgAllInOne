@@ -42,6 +42,28 @@ interface DeployQueueResult {
  * Effects are normalized into EffectDefinition objects so downstream managers avoid `any` usage.
  */
 export class DeployEffectManager {
+    private static emitDeployDiagnostic(
+        gameEnv: GameEnvironment,
+        event: DeployEffectEvent,
+        effect: EffectDefinition | undefined,
+        outcome: 'triggered' | 'no_targets' | 'invalid_target_state' | 'resolved',
+        extra: Record<string, unknown> = {}
+    ): void {
+        const notificationManager = new GameNotificationManager(gameEnv);
+        notificationManager.addNotificationEvent(
+            'DEPLOY_EFFECT_DIAGNOSTIC',
+            {
+                playerId: event.playerId,
+                sourceCarduid: event.data.carduid,
+                effectId: effect?.effectId || 'deploy_effect',
+                trigger: effect?.trigger || 'ENTERS_PLAY',
+                outcome,
+                timestamp: Date.now(),
+                ...extra
+            },
+            'low'
+        );
+    }
 
     /**
      * Inspect a played card for deploy effects and enqueue a typed event when present.
@@ -132,6 +154,9 @@ export class DeployEffectManager {
             sourceCard,
             effect
         }));
+        console.log(
+            `🚀 Deploy effect eligibility for ${event.data.carduid}: ${eligibleEffects.length}/${normalizedEffects.length} eligible`
+        );
 
         // If multiple deploy effects are eligible, pause and let the player choose which effect resolves next.
         if (eligibleEffects.length > 1) {
@@ -166,6 +191,9 @@ export class DeployEffectManager {
 
         // Resolve exactly one effect per event to avoid auto-executing multiple effects in a fixed order.
         const normalizedEffect = eligibleEffects[0];
+        this.emitDeployDiagnostic(gameEnv, event, normalizedEffect, 'triggered', {
+            eligibleEffects: eligibleEffects.length
+        });
 
         const result: DeployTargetResult = DeployTargetManager.processEffectWithTargetChoice(
             gameEnv,
@@ -173,6 +201,17 @@ export class DeployEffectManager {
             event.data.carduid,
             normalizedEffect,
             event.data.cardPlayNotificationId
+        );
+        console.log(
+            `🚀 Deploy effect result ${normalizedEffect.effectId || 'deploy_effect'}: ` +
+            JSON.stringify({
+                success: result.success,
+                requiresSelection: !!result.requiresSelection,
+                autoApplied: !!(result as any).autoApplied,
+                failureKind: result.failureKind || null,
+                affectedTargets: Array.isArray((result as any).affectedTargets) ? (result as any).affectedTargets.length : 0,
+                error: result.error || null
+            })
         );
 
         if (!result.success && !result.requiresSelection) {
@@ -182,13 +221,34 @@ export class DeployEffectManager {
                 console.log(
                     `ℹ️ Deploy effect ${normalizedEffect.effectId || 'deploy_effect'} fizzled: no required targets available`
                 );
+                this.emitDeployDiagnostic(gameEnv, event, normalizedEffect, 'no_targets', {
+                    failureKind: result.failureKind || 'NO_TARGETS_REQUIRED'
+                });
             } else {
                 const errorMessage = result.error || `Effect ${normalizedEffect.effectId} failed`;
+                const invalidTargetState =
+                    typeof errorMessage === 'string' &&
+                    errorMessage.toLowerCase().includes('invalid slot health state');
+                if (invalidTargetState) {
+                    this.emitDeployDiagnostic(gameEnv, event, normalizedEffect, 'invalid_target_state', {
+                        error: errorMessage
+                    });
+                }
                 failures.push(errorMessage);
             }
         }
         if (result.requiresSelection) {
             requiresTargetChoice = true;
+            this.emitDeployDiagnostic(gameEnv, event, normalizedEffect, 'triggered', {
+                awaitingTargetChoice: true
+            });
+        } else if (result.success) {
+            this.emitDeployDiagnostic(gameEnv, event, normalizedEffect, 'resolved', {
+                autoApplied: !!(result as any).autoApplied,
+                affectedTargets: Array.isArray((result as any).affectedTargets)
+                    ? (result as any).affectedTargets.map((target: any) => target?.carduid).filter(Boolean)
+                    : []
+            });
         }
 
         if (failures.length > 0) {
