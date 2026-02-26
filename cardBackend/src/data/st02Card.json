@@ -544,13 +544,33 @@
               ],
               "duration": "UNTIL_END_OF_BATTLE"
             },
-            "target": {
-              "type": "shield",
-              "scope": "self_shield"
-            },
-            "action": "prevent_shield_damage",
+            "action": "sequence",
             "parameters": {
-              "maxEnemyLevel": 4
+              "text": "During this battle, your shield-area cards can't receive damage from enemy Units that are Lv.4 or lower.",
+              "version": 1,
+              "steps": [
+                {
+                  "action": "prevent_shield_damage",
+                  "parameters": {
+                    "maxEnemyLevel": 4
+                  }
+                },
+                {
+                  "action": "prevent_battle_damage",
+                  "timing": {
+                    "duration": "UNTIL_END_OF_BATTLE"
+                  },
+                  "target": {
+                    "type": "base",
+                    "scope": "self"
+                  },
+                  "parameters": {
+                    "from": "enemy_units",
+                    "enemyLevel": "<=4"
+                  }
+                }
+              ],
+              "notes": "Shield-area wording includes both shields and base: step1 applies shield prevention, step2 applies base battle-damage prevention."
             }
           },
           {
