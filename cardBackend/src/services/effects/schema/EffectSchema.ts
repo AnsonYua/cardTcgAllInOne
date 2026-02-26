@@ -131,6 +131,7 @@ export const SEQUENCE_SUPPORTED_STEP_ACTIONS = new Set<string>([
     'modifyAP',
     'moveTopDeckToTrash',
     'prevent_battle_damage',
+    'prevent_shield_damage',
     'prevent_damage',
     'registerDelayedTrigger',
     'require_attack_target_if_available',

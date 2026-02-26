@@ -1,5 +1,6 @@
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { Player } from '../../models/Player';
+import { HandContinuousModifier } from '../effects/HandContinuousModifier';
 
 type FacedownShieldStub = {
     facedown: true;
@@ -12,7 +13,12 @@ export class GameEnvViewBuilder {
         const aiPlayerSet = new Set(Array.isArray(gameEnv.aiPlayerIds) ? gameEnv.aiPlayerIds : []);
         const players: Record<string, unknown> = {};
         for (const [playerId, player] of Object.entries(gameEnv.players || {})) {
-            players[playerId] = this.buildPlayerView(player as Player, viewerPlayerId, aiPlayerSet.has(playerId));
+            players[playerId] = this.buildPlayerView(
+                gameEnv,
+                player as Player,
+                viewerPlayerId,
+                aiPlayerSet.has(playerId)
+            );
         }
 
         return {
@@ -44,7 +50,12 @@ export class GameEnvViewBuilder {
         };
     }
 
-    private static buildPlayerView(player: Player, viewerPlayerId: string, isAiPlayer: boolean): Record<string, unknown> {
+    private static buildPlayerView(
+        gameEnv: GameEnvironment,
+        player: Player,
+        viewerPlayerId: string,
+        isAiPlayer: boolean
+    ): Record<string, unknown> {
         const isViewer = player.id === viewerPlayerId;
 
         const handUids = Array.isArray(player.deck?._handUids) ? player.deck._handUids : [];
@@ -58,6 +69,7 @@ export class GameEnvViewBuilder {
         }));
 
         const zones = player.zones || ({} as any);
+        const viewerHand = isViewer ? this.buildViewerHand(gameEnv, player.id, player.deck?.hand) : [];
 
         return {
             id: player.id,
@@ -68,7 +80,7 @@ export class GameEnvViewBuilder {
             playerPoint: player.playerPoint,
             isReady: player.isReady,
             deck: {
-                hand: isViewer ? player.deck.hand : [],
+                hand: viewerHand,
                 handUids: isViewer ? handUids : [],
                 handCount: handUids.length,
                 deckCount: mainDeck.length
@@ -89,5 +101,49 @@ export class GameEnvViewBuilder {
             effectRegistry: player.effectRegistry,
             delayedTriggers: player.delayedTriggers
         };
+    }
+
+    private static buildViewerHand(gameEnv: GameEnvironment, playerId: string, hand: any[]): any[] {
+        if (!Array.isArray(hand)) {
+            return [];
+        }
+
+        return hand.map((handCard: any) => {
+            const baseCardData = handCard?.cardData;
+            if (!baseCardData) {
+                return handCard;
+            }
+
+            const baseCostRaw = Number(baseCardData.cost);
+            const baseLevelRaw = Number(baseCardData.level);
+            const baseCost = Number.isFinite(baseCostRaw) ? baseCostRaw : 0;
+            const baseLevel = Number.isFinite(baseLevelRaw) ? baseLevelRaw : 0;
+
+            const modifiedCardData = HandContinuousModifier.applyModifiersForHandCardPlay(
+                gameEnv,
+                playerId,
+                {
+                    ...baseCardData,
+                    cost: baseCost,
+                    level: baseLevel
+                }
+            );
+
+            const effectiveCostRaw = Number(modifiedCardData?.cost);
+            const effectiveLevelRaw = Number(modifiedCardData?.level);
+            const effectiveCost = Number.isFinite(effectiveCostRaw) ? effectiveCostRaw : baseCost;
+            const effectiveLevel = Number.isFinite(effectiveLevelRaw) ? effectiveLevelRaw : baseLevel;
+
+            return {
+                ...handCard,
+                cardData: {
+                    ...baseCardData,
+                    baseCost,
+                    baseLevel,
+                    effectiveCost,
+                    effectiveLevel
+                }
+            };
+        });
     }
 }

@@ -369,6 +369,10 @@ export default class CardActionPolicy {
                     return gameContext.baseZoneAvailable !== false;
 
                 case 'play':
+                case 'playUnit':
+                case 'playPilot':
+                case 'playCommand':
+                case 'playBase':
                     return gameContext.canPlayNormally !== false;
 
                 default:

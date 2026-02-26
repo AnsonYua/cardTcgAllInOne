@@ -154,7 +154,7 @@ export default class CardActionHandler {
                     this.updatePlayerHand();
                 } else {
                     console.error(`❌ Failed to play ${playAs} card:`, response?.error);
-                    this.showErrorMessage(response?.error || `Failed to play ${playAs} card`);
+                    this.showErrorMessage(this.buildPlayFailureMessage(response?.error || `Failed to play ${playAs} card`, selectedCard));
                 }
             } else {
                 console.log('Demo mode: Would call backend playCard API');
@@ -207,6 +207,23 @@ export default class CardActionHandler {
      */
     showErrorMessage(message) {
         this.gameScene.showErrorMessage(message);
+    }
+
+
+    buildPlayFailureMessage(baseError, selectedCard) {
+        const message = baseError || 'Failed to play card';
+        const cardData = selectedCard?.fullCardData?.cardData || selectedCard?.cardData;
+        if (!cardData) {
+            return message;
+        }
+
+        const effectiveLevel = Number.isFinite(Number(cardData.effectiveLevel)) ? Number(cardData.effectiveLevel) : Number(cardData.level || 0);
+        const effectiveCost = Number.isFinite(Number(cardData.effectiveCost)) ? Number(cardData.effectiveCost) : Number(cardData.cost || 0);
+        const energyArea = this.gameStateManager?.getMyEnergyAreaCard?.() || [];
+        const totalEnergy = Array.isArray(energyArea) ? energyArea.length : 0;
+        const activeEnergy = Array.isArray(energyArea) ? energyArea.filter(card => !card?.isRested).length : 0;
+
+        return `${message} (need Lv${effectiveLevel}/Cost${effectiveCost}, have ${activeEnergy} active / ${totalEnergy} total energy)`;
     }
 
     /**

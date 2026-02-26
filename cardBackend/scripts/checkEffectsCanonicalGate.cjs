@@ -1,6 +1,15 @@
 const fs = require('fs');
 const path = require('path');
 
+// Maintainer workflow (effect schema alignment):
+// 1) `npm run review:effects` to generate drift reports/fix map
+// 2) `npm run review:effects:apply` for supported canonicalization transforms
+// 3) `npm run validate:effects:canonical` to regenerate inventory + canonical checks
+// 4) `npm run validate:effects:strict` (this script) as the final gate
+// If a divergence is intentional and semantics would change, add a narrowly scoped
+// entry to `src/tests/review/effectCanonicalizationManifest.json` -> intentionalDivergenceAllowlist
+// with file/cardId/status/reason instead of broad exceptions.
+
 const CARD_FILES = [
   'gd01Card.json',
   'gd02Card.json',

@@ -1,4 +1,5 @@
 import { GAME_CONFIG } from '../config/gameConfig.js';
+import { evaluateHandPlayRequirements } from '../utils/HandPlayRequirementEvaluator.js';
 
 export default class GameStateManager {
   constructor() {
@@ -101,9 +102,42 @@ export default class GameStateManager {
     if(playerId == null) {
       playerId = currentPlayerId;
     }
-    
+
     const player = this.getPlayer(playerId);
-    return player ? player.deck.hand : [];
+    const hand = player?.deck?.hand;
+    if (!Array.isArray(hand)) {
+      return [];
+    }
+
+    return hand.map((entry) => this.withComputedHandPlayRequirements(entry, playerId));
+  }
+
+  withComputedHandPlayRequirements(handEntry, playerId) {
+    if (!handEntry || typeof handEntry !== 'object') {
+      return handEntry;
+    }
+
+    const cardData = handEntry.cardData;
+    if (!cardData || typeof cardData !== 'object') {
+      return handEntry;
+    }
+
+    const cardType = cardData.cardType;
+    if (cardType !== 'unit' && cardType !== 'pilot' && cardType !== 'command' && cardType !== 'base') {
+      return handEntry;
+    }
+
+    const evaluated = evaluateHandPlayRequirements(this.gameState.gameEnv, playerId, handEntry);
+
+    return {
+      ...handEntry,
+      cardData: {
+        ...cardData,
+        effectiveCost: evaluated.effectiveCost,
+        effectiveLevel: evaluated.effectiveLevel,
+        frontendHandModifiersApplied: evaluated.appliedModifiers
+      }
+    };
   }
 
 

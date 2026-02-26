@@ -1004,8 +1004,46 @@ export default class GameScene extends Phaser.Scene {
    * Helper: Check if card can be played normally in current context
    */
   canPlayCardNormally(selectedCard) {
-    // TODO: Check phase restrictions, zone availability, etc.
-    return true; // Placeholder
+    if (!selectedCard || !this.gameStateManager) {
+      return false;
+    }
+
+    const gameState = this.gameStateManager.getGameState();
+    const gameEnv = gameState?.gameEnv;
+    const playerId = gameState?.playerId;
+    if (!gameEnv || !playerId) {
+      return false;
+    }
+
+    if (gameEnv.currentPlayer !== playerId) {
+      return false;
+    }
+
+    const cardData = selectedCard?.fullCardData?.cardData || selectedCard?.cardData;
+    if (!cardData) {
+      return false;
+    }
+
+    const cardType = cardData.cardType;
+    const phase = String(gameEnv.phase || '').toUpperCase();
+    if (cardType === 'command') {
+      if (phase !== 'MAIN_PHASE' && phase !== 'ACTION_STEP_PHASE') {
+        return false;
+      }
+    } else if (phase !== 'MAIN_PHASE') {
+      return false;
+    }
+
+    const effectiveLevel = Number.isFinite(Number(cardData.effectiveLevel)) ? Number(cardData.effectiveLevel) : Number(cardData.level || 0);
+    const effectiveCost = Number.isFinite(Number(cardData.effectiveCost)) ? Number(cardData.effectiveCost) : Number(cardData.cost || 0);
+
+    const energyArea = this.gameStateManager.getMyEnergyAreaCard(playerId) || [];
+    const totalEnergy = Array.isArray(energyArea) ? energyArea.length : 0;
+    const activeEnergy = Array.isArray(energyArea)
+      ? energyArea.filter(card => !card?.isRested).length
+      : 0;
+
+    return totalEnergy >= Math.max(0, effectiveLevel) && activeEnergy >= Math.max(0, effectiveCost);
   }
 
   handleActionButtonClick(action, effectData = null) {

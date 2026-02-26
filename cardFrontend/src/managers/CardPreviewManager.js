@@ -12,11 +12,61 @@ export default class CardPreviewManager {
     this.gameStateManager = gameScene.gameStateManager;
     this.previewCard = null;
     this.previewPilotCard = null;
+    this.previewDebugText = null;
+  }
+
+
+  _clearPreviewDebugText() {
+    if (this.previewDebugText) {
+      this.previewDebugText.destroy();
+      this.previewDebugText = null;
+    }
+  }
+
+  _showHandModifierDebug(cardData) {
+    this._clearPreviewDebugText();
+
+    const fullCardData = cardData?.cardData ? cardData : null;
+    const rawCardData = fullCardData?.cardData || cardData?.cardData || cardData;
+    const modifiers = rawCardData?.frontendHandModifiersApplied;
+    if (!Array.isArray(modifiers) || modifiers.length === 0) {
+      return;
+    }
+
+    if (!this.scene?.cardPreviewZone) {
+      return;
+    }
+
+    const lines = modifiers.slice(0, 2).map((m) => {
+      const effectId = m?.effectId || 'hand_modifier';
+      const before = Number.isFinite(Number(m?.before)) ? Number(m.before) : '?';
+      const after = Number.isFinite(Number(m?.after)) ? Number(m.after) : '?';
+      const action = typeof m?.action === 'string' ? m.action : 'modify';
+      return `${effectId}: ${action} ${before}->${after}`;
+    });
+
+    this.previewDebugText = this.scene.add.text(
+      this.scene.cardPreviewZone.x,
+      this.scene.cardPreviewZone.y + 205,
+      `FE Debug: ${lines.join(' | ')}`,
+      {
+        fontSize: '11px',
+        fontFamily: 'Arial',
+        fill: '#9ef7b5',
+        backgroundColor: '#112018',
+        padding: { x: 6, y: 4 },
+        wordWrap: { width: 260, useAdvancedWrap: true },
+        align: 'center'
+      }
+    );
+    this.previewDebugText.setOrigin(0.5, 0);
+    this.previewDebugText.setDepth(2001);
   }
 
 
   showCardPreviewWithZone(cardData, _zoneType) {
     this.hideCardPreview();
+    this._clearPreviewDebugText();
     if (this.previewPilotCard) {
       this.previewPilotCard.destroy();
       this.previewPilotCard = null;
@@ -85,12 +135,14 @@ export default class CardPreviewManager {
         slotFieldValue,
         zone: 'base'
       });
+      this._showHandModifierDebug(cardData);
       return;
     }
 
     this.previewCard = this._createPreviewCard(cardData, this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y, 2000, false);
     this.previewCard.fullCardData = cardData;
     this.previewPilotCard = null;
+    this._showHandModifierDebug(cardData);
   }
  
 
@@ -98,6 +150,7 @@ export default class CardPreviewManager {
    * Hide card preview
    */
   hideCardPreview() {
+    this._clearPreviewDebugText();
     if (this.previewCard) {
       this.previewCard.destroy();
       this.previewCard = null;
@@ -169,6 +222,7 @@ export default class CardPreviewManager {
    * Hide slot card preview (includes dual preview)
    */
   hideSlotCardPreview() {
+    this._clearPreviewDebugText();
     // Hide main preview card
     if (this.previewCard) {
       this.previewCard.destroy();

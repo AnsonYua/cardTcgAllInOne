@@ -37,6 +37,9 @@
   - If `slot.pilot` exists, `slot.unit` must also exist in the same slot.
   - `slot.unit.cardId` must be a unit card id (not pilot/command card ids).
   - Treat pilot-only slot fixtures as invalid test data and fix scenario first.
+- Validate slot fixture canonicality for damage/heal debugging:
+  - in-play `slot.unit` / `slot.pilot` should include canonical runtime fields (`cardData`, `originalAP`, `originalHP`)
+  - malformed placeholder units can produce `maxHp = 0` and make Deploy/triggered damage look like a trigger failure
 - For text with `If you do` / `Then`, verify rule flow has explicit branch semantics:
   - preceding step has stable `stepId`
   - dependent branch checks `type: "stepResolved"` for that `stepId`
@@ -47,6 +50,9 @@
     - card enters play and effect fizzles on no target
   - do not infer this only from nested step metadata; verify the timing handler (`DeployEffectManager`) policy
   - if the effect is encoded as `sequence`, verify wrapper layers preserve nested failure classification (e.g. `failureKind`) so timing-specific policy can be applied at the top level
+- For "effect didn't trigger" reports on sequence/pair/link cards:
+  - verify whether the effect actually triggered but resolved as a legal no-op (example: empty-deck `moveTopDeckToTrash` leading to false conditional branch)
+  - inspect notifications/logs for trigger creation vs no-op step resolution before changing card data
 - For sequence text using pronouns like "it" / "that Unit" after a player choice:
   - verify later dependent step targets use `target.scope = "previous_target"` (or equivalent carry-over), not a second fresh `player_choice`
   - add regression coverage that no second target chooser appears for the dependent step
@@ -182,4 +188,10 @@
 - Run:
   - `npm test`
   - `npm run build`
+- For effect-schema alignment incidents, also run:
+  - `npm run review:effects`
+  - `npm run validate:effects:canonical`
+  - `npm run validate:effects:strict`
+- If `review:effects` shows `Issues: 0` but canonical validation still fails:
+  - inspect `/src/services/effects/schema/EffectSchema.ts` canonical sets (e.g. `SEQUENCE_SUPPORTED_STEP_ACTIONS`) for missing engine-supported actions before editing card JSON
 - Document findings and fix status in `EFFECT_PARITY_AUDIT.md`.

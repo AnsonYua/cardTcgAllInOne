@@ -180,6 +180,11 @@ See `references/incident-gd03-035.md` for concrete bugs and fixes:
   - Fixed by batching shield outcomes per `SHIELD_CARD_ATTACKED` event (including burst-choice-delayed shields), then flushing all shield-damage notifications first and effect triggers second after batch completion.
   - Follow-up data alignment: `GD03-049` `DEFENSE_AREA_BATTLE_DAMAGE` rule now explicitly encodes `parameters.defenseAreas = ['shield', 'base']` so base qualifies as a shield-area card per intended semantics.
   - See `references/incident-gd03-049-suppression-batch-shield-damage.md`.
+- Deploy diagnostics / fixture canonicality / schema-validator-gap pattern:
+  - apparent "Deploy / Pair / Link effect didn't trigger" can be caused by legal no-op sequence resolution (e.g. empty-deck `moveTopDeckToTrash`) or malformed in-play fixture cards missing canonical runtime fields (`cardData`, `originalAP`, `originalHP`), not card data bugs.
+  - add/inspect deploy diagnostics (`triggered`, `resolved`, `no_targets`, `invalid_target_state`) before changing `effects.rules`.
+  - if `npm run review:effects` reports `Issues: 0` but `validate:effects:canonical` fails, inspect canonical schema definitions in `src/services/effects/schema/EffectSchema.ts` (for example missing sequence step actions like `prevent_shield_damage`) before patching card JSON.
+  - See `references/incident-deploy-diagnostics-fixture-canonicality-and-schema-validator-gap.md`.
 
 ## Output Requirements
 - Provide:

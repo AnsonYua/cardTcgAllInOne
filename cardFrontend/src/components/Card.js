@@ -244,6 +244,65 @@ export default class Card extends Phaser.GameObjects.Container {
     if (this.powerOverlay && this.powerOverlay.setOverlayVisible) {
       this.powerOverlay.setOverlayVisible(overlayVisible);
     }
+
+    this.updateHandRequirementBadge();
+  }
+
+  updateHandRequirementBadge() {
+    const inHand = this.zoneType === 'hand' && !this.isInZone;
+    const cardData = this.cardData || {};
+    const cardType = cardData.cardType;
+    const supported = cardType === 'unit' || cardType === 'pilot' || cardType === 'command' || cardType === 'base';
+
+    if (!inHand || !supported) {
+      if (this.handRequirementBadge) this.handRequirementBadge.setVisible(false);
+      if (this.handRequirementBadgeBg) this.handRequirementBadgeBg.setVisible(false);
+      return;
+    }
+
+    const baseLevel = Number.isFinite(Number(cardData.level)) ? Number(cardData.level) : 0;
+    const baseCost = Number.isFinite(Number(cardData.cost)) ? Number(cardData.cost) : 0;
+    const effectiveLevel = Number.isFinite(Number(cardData.effectiveLevel)) ? Number(cardData.effectiveLevel) : baseLevel;
+    const effectiveCost = Number.isFinite(Number(cardData.effectiveCost)) ? Number(cardData.effectiveCost) : baseCost;
+
+    const levelText = effectiveLevel !== baseLevel ? `L${baseLevel}->${effectiveLevel}` : `L${effectiveLevel}`;
+    const costText = effectiveCost !== baseCost ? `C${baseCost}->${effectiveCost}` : `C${effectiveCost}`;
+    const label = `${levelText} ${costText}`;
+
+    if (!this.handRequirementBadgeBg) {
+      this.handRequirementBadgeBg = this.scene.add.rectangle(0, 0, 106, 18, 0x000000, 0.75);
+      this.handRequirementBadgeBg.setOrigin(0.5);
+      this.add(this.handRequirementBadgeBg);
+    }
+
+    if (!this.handRequirementBadge) {
+      this.handRequirementBadge = this.scene.add.text(0, 0, '', {
+        fontSize: '10px',
+        fontFamily: 'Arial',
+        fill: '#ffffff',
+        align: 'center'
+      });
+      this.handRequirementBadge.setOrigin(0.5);
+      this.add(this.handRequirementBadge);
+    }
+
+    this.handRequirementBadge.setText(label);
+    const width = Math.min(112, Math.max(58, this.handRequirementBadge.width + 8));
+    this.handRequirementBadgeBg.setSize(width, 18);
+    this.handRequirementBadgeBg.setPosition(0, -78);
+    this.handRequirementBadge.setPosition(0, -78);
+
+    const modified = effectiveLevel !== baseLevel || effectiveCost !== baseCost;
+    if (modified) {
+      this.handRequirementBadge.setColor('#8df7a5');
+      this.handRequirementBadgeBg.setFillStyle(0x0b2c12, 0.85);
+    } else {
+      this.handRequirementBadge.setColor('#ffffff');
+      this.handRequirementBadgeBg.setFillStyle(0x000000, 0.75);
+    }
+
+    this.handRequirementBadge.setVisible(true);
+    this.handRequirementBadgeBg.setVisible(true);
   }
 
   createZoneIcons() {
@@ -781,6 +840,8 @@ export default class Card extends Phaser.GameObjects.Container {
     
     // Clear disabled flag
     this.isInteractionDisabled = false;
+    this.handRequirementBadge = null;
+    this.handRequirementBadgeBg = null;
     
     // Re-enable Phaser interactivity
     this.setInteractive();
