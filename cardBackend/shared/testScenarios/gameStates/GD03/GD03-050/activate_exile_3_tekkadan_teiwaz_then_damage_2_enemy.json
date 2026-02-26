@@ -170,6 +170,30 @@
             {
               "carduid": "GD03-067_trash_0001",
               "cardId": "GD03-067"
+            },
+            {
+              "carduid": "GD03-056_trash_0002",
+              "cardId": "GD03-056"
+            },
+            {
+              "carduid": "GD03-060_trash_0002",
+              "cardId": "GD03-060"
+            },
+            {
+              "carduid": "GD03-067_trash_0002",
+              "cardId": "GD03-067"
+            },
+            {
+              "carduid": "GD03-056_trash_0003",
+              "cardId": "GD03-056"
+            },
+            {
+              "carduid": "GD03-060_trash_0003",
+              "cardId": "GD03-060"
+            },
+            {
+              "carduid": "GD03-067_trash_0003",
+              "cardId": "GD03-067"
             }
           ],
           "repairAbilitiesCheckedThisCycle": false
@@ -203,7 +227,21 @@
               "continueModifyHP": 0
             }
           },
-          "slot2": {},
+          "slot2": {
+            "unit": {
+              "carduid": "GD03-007_enemy_0001",
+              "cardId": "GD03-007",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
           "slot3": {},
           "slot4": {},
           "slot5": {},
