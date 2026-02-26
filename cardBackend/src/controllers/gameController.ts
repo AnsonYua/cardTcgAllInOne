@@ -1678,7 +1678,8 @@ export class GameController {
                     }
                     uniqueResources = GameController.buildResourcesFromFullGameEnv(gameEnv);
                 } else {
-                    uniqueResources = combined.resources;
+                    const envResources = GameController.buildResourcesFromFullGameEnv(gameEnv);
+                    uniqueResources = Array.from(new Set<string>([...combined.resources, ...envResources]));
                 }
             } else {
                 const viewerEnv = GameEnvViewBuilder.toPlayerView(gameEnv as any, playerId);

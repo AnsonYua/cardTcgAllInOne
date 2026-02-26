@@ -93,6 +93,31 @@ export class BattlePhaseManager {
 
         if (!skipAttackDeclaration) {
             this.recordAttackDeclaration(gameEnv, event, defendingPlayerId);
+
+            // Refresh continuous effects before declaration-time reactive checks so dynamically granted
+            // keywords (e.g. Repair from a paired pilot) are present for eventAttackerHasKeyword.
+            try {
+                ContinuousEffectManager.processAllContinuousEffects(gameEnv);
+            } catch (error) {
+                console.error('❌ Error refreshing continuous effects before attack declaration reactive checks:', error);
+                return {
+                    success: false,
+                    error: error instanceof Error ? error.message : 'Failed to refresh continuous effects'
+                };
+            }
+
+            const reactiveResult = ContinuousEffectManager.processReactiveContinuousEffects(gameEnv);
+            if (!reactiveResult.success) {
+                return { success: false, error: reactiveResult.error };
+            }
+
+            if (gameEnv.needsPlayerInput()) {
+                const choiceEvent = gameEnv.getCurrentPlayerChoice();
+                if (choiceEvent?.id) {
+                    AttackResumeScheduler.enqueueResumeAttackAfterChoice(gameEnv, event, choiceEvent.id);
+                }
+                return { success: true, requiresSelection: true };
+            }
         }
 
         if (!skipAttackPhaseEffects) {

@@ -80,11 +80,18 @@ export class DynamicComparisonFilterResolver {
     }
 
     private static getEventAttackerCarduid(gameEnv: GameEnvironment): string | null {
+        const overrideNotification = (gameEnv as any)?.eventConditionNotificationOverride;
         const queue = Array.isArray((gameEnv as any).notificationQueue) ? ((gameEnv as any).notificationQueue as any[]) : [];
         const latest = queue.length > 0 ? queue[queue.length - 1] : null;
-        const fromNotification = typeof latest?.payload?.attackerCarduid === 'string'
-            ? latest.payload.attackerCarduid
-            : null;
+        const candidateNotification = overrideNotification && typeof overrideNotification === 'object'
+            ? overrideNotification
+            : latest;
+
+        const fromNotification = typeof (candidateNotification as any)?.payload?.attackerCarduid === 'string'
+            ? (candidateNotification as any).payload.attackerCarduid
+            : typeof (candidateNotification as any)?.payload?.attacker?.unit?.carduid === 'string'
+                ? (candidateNotification as any).payload.attacker.unit.carduid
+                : null;
         if (fromNotification) {
             return fromNotification;
         }

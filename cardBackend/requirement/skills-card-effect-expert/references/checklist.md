@@ -10,6 +10,22 @@
 - Verify whether expected trigger needs `paired` or `linked`:
   - `paired`: same slot unit + pilot exists
   - `linked`: paired and unit `link` matches pilot name/trait
+- Classify the ask before editing:
+  - implementation review only (no mutation)
+  - backend runtime bug
+  - frontend/backend parity bug
+
+## 1.1) Implementation Review (No-Change) Audit Pass
+- Use this path when the user asks whether a card effect is "properly implemented."
+- Build a clause-by-clause mapping table:
+  - `effects.description` clause
+  - `effects.rules` encoding
+  - evaluator/resolver path
+  - runtime execution path
+- For cards with multiple effects (e.g. keyword + triggered/pair effect), review each effect separately and report pass/fail per effect.
+- If no card-specific automated test exists:
+  - run the closest engine-surface regression tests (keyword semantics, reactive continuous processing, dynamic target filters)
+  - state residual risk explicitly instead of assuming full runtime coverage
 
 ## 2) Data Inventory (Backend Truth)
 - Scan all relevant set files in `cardBackend/src/data/*.json`.
@@ -32,6 +48,45 @@
   - inspect `conditional.parameters.if` for `eventType` conditions
   - inspect `conditional.parameters.then` for non-continuous actions (`setActive`, `returnToHand`, `rest`, `draw`, `damage`, etc.)
   - verify backend continuous expansion does not silently drop these `then` actions
+  - if `eventType = "BATTLE_DESTROY"` and text means "this Unit destroys an enemy Unit":
+    - do not treat `eventAttacker = self` as sufficient
+    - require explicit `eventDefenderDestroyed = true` (otherwise mutual-destruction / attacker-death cases can over-trigger)
+    - if source may die in the same battle, review whether reactive continuous timing loses the trigger after source leaves play; prefer `triggered` `BATTLE_DESTROY` for post-battle destroy text on the battle source
+- For `type: "continuous"` `sequence -> conditional(eventType=...)` pair/link effects:
+  - verify `sourceConditions` (`paired`/`linked`) gate registration before event checks
+  - verify the conditional branch expands into an event-reactive continuous entry (not a dropped unsupported `then` action)
+  - verify runtime executes it through `ContinuousEffectManager.processReactiveContinuousEffects(...)`
+  - verify same-event dedupe exists (`lastReactiveEventKey`) when evaluating repeated attack/battle notifications
+- For attack-trigger timing bugs, classify the pipeline before debugging:
+  - declaration-reactive continuous (`eventType = UNIT_ATTACK_DECLARED`)
+  - `triggered` `ATTACK_PHASE`
+  - attack-targeting permission/restriction (`allow_attack_target`, `restrict_attack`, `require_attack_target_if_available`, `redirect_attack`)
+  - battle-result-dependent triggers (`BATTLE_DESTROY`, `BATTLE_RESOLVED`-conditioned)
+- For declaration-reactive attack effects (`UNIT_ATTACK_DECLARED`) specifically:
+  - verify backend ordering: declaration notification -> reactive continuous -> `ATTACK_PHASE` effects -> blocker/battle/game-end
+  - verify continuous refresh happens before reactive evaluation when attacker keyword grants may be dynamic (`temporaryEffects`)
+  - verify attacker/event context is read from the exact attack declaration notification (`attackNotificationId`) rather than queue-tail heuristics
+  - verify `TARGET_CHOICE` (if any) pauses attack progression before battle opens
+  - verify auto-applied state change notifications (`CARD_RESTED`, etc.) happen before `BATTLE_RESOLVED` / `GAME_ENDED`
+- For `ATTACK_PHASE` triggered effects specifically:
+  - verify they execute after attack declaration and before blocker/battle resolution
+  - verify sourceConditions (`linked`/`paired`) are enforced through runtime source condition evaluation
+  - verify target choice path enqueues chooser/resume before battle resolution
+  - verify auto-apply path emits state-change notifications before `BATTLE_RESOLVED`
+  - verify no-valid-target path is a clean no-op (no stray state-change notifications)
+- For "one of your other Units ..." attack-trigger text:
+  - confirm explicit non-self condition exists (e.g. `eventAttackerIsNotSource = true`)
+  - do not infer "other" from target scope alone
+- For target clauses like "Lv. equal to or lower than that Unit":
+  - confirm card data uses a dynamic comparator token (e.g. `<=eventAttackerLevel`, `<=SOURCE_LEVEL`)
+  - confirm resolver support exists for that exact token/casing in `DynamicComparisonFilterResolver`
+- For `<Repair>` interaction audits:
+  - check both card data keyword/rule shape and event keyword detection semantics (`eventAttackerHasKeyword = Repair`)
+  - remember Repair may be inferred from end-turn `heal` rule shape, not only explicit keyword list entries
+- For `type: "continuous"` `prevent_battle_damage` effects:
+  - check whether the rule is an unconditional enemy-unit prevention shape (`parameters.from = "enemy_units"` only).
+  - verify the continuous runtime path accepts that shape (continuous manager / continuous action registry), not just direct effect execution tests.
+  - when debugging from snapshots, remember pre-battle `MAIN_PHASE` state may legitimately show no `temporaryEffects`; confirm after `ACTION_STEP` opens and continuous refresh runs.
 - Validate slot legality before effect debugging:
   - A slot must never contain only `pilot` without `unit`.
   - If `slot.pilot` exists, `slot.unit` must also exist in the same slot.
@@ -106,6 +161,9 @@
   - if omitted, verify default `paired_unit` and unpaired fallback behavior.
 - Event-condition parity:
   - verify `eventType` conditions are evaluated in a real event context (queue event and/or notification state)
+  - for `BATTLE_DESTROY`, verify evaluator semantics match card text:
+    - engine event may represent "any unit destroyed in battle"
+    - card text "this Unit destroys an enemy Unit" needs explicit attacker/defender result checks (not attacker identity only)
   - for pilot/command sources, verify `eventTarget = self` resolves to the effective paired unit when card text says "this Unit"
   - for `EFFECT_DAMAGE_RECEIVED` deferred flows, verify replay uses the original per-damage notification payload (or equivalent snapshot), not the latest notification queue tail
   - if multiple files now depend on the same deferred event context shape, extract a shared typed context + helper module instead of repeating payload fields and queue scans
@@ -167,6 +225,17 @@
 
 ## 6) Validation
 - Add focused tests for each mismatch class.
+- For review-only (non-mutating) requests, run targeted existing tests and report what they cover vs what remains unproven.
+- For cross-set attack-effect audits (risk-ranked sweep):
+  - build a static inventory across requested set files and classify each rule by attack pipeline
+  - prioritize runtime checks for high-risk attack rules:
+    - pre-battle state changes (`rest`, `damage`, `destroy`, `returnToHand`)
+    - `player_choice` attack triggers
+    - dynamic event comparator filters (`<=eventAttackerLevel`, etc.)
+    - sourceConditions (`linked`/`paired`) on attack-triggered rules
+  - include at least one explicit runtime check for:
+    - declaration-reactive continuous attack effect (e.g. `GD03-002` class)
+    - `ATTACK_PHASE` triggered pre-battle state-change effect (e.g. `GD02-005` class)
 - For source-level incidents, include both modes:
   - default omitted scope (`paired_unit`)
   - explicit `source_card`
@@ -185,6 +254,10 @@
   - one direct trigger test (e.g. `END_OF_TURN` => `setActive`)
   - one chained reaction test where the first reactive action emits an event consumed by another continuous conditional effect (e.g. `SET_ACTIVE_BY_EFFECT` => `returnToHand`)
   - if parent effect has `restrictions` (e.g. `once_per_turn`), assert the derived reactive effect still enforces them at runtime after expansion
+- For `BATTLE_DESTROY` "source destroys enemy unit" incidents, include:
+  - defender-destroyed positive case
+  - attacker-only-destroyed negative case (must not trigger)
+  - mutual-destruction case (`attackerDestroyed=true` and `defenderDestroyed=true`) to ensure trigger still fires when text conditions are satisfied
 - Run:
   - `npm test`
   - `npm run build`

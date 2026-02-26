@@ -488,6 +488,9 @@ export class EffectConditionEvaluator {
             case 'eventTargetLinkStatus':
                 return EventConditionEvaluator.eventTargetLinkStatus(gameEnv, typedCondition);
 
+            case 'eventDefenderDestroyed':
+                return EventConditionEvaluator.eventDefenderDestroyed(gameEnv, typedCondition);
+
             default:
                 const specialConditionResult = SourceAndSpecialConditionEvaluator.evaluate({
                     gameEnv,

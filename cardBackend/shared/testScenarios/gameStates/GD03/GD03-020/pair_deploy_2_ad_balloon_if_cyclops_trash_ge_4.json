@@ -121,6 +121,22 @@
               "placedBy": "playerId_1",
               "isRested": false,
               "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd03020_a_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd03020_a_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [
@@ -131,6 +147,26 @@
             {
               "carduid": "GD03-091_trash_0002",
               "cardId": "GD03-091"
+            },
+
+            {
+              "carduid": "GD03-020_trash_0004",
+              "cardId": "GD03-020"
+            },
+
+            {
+              "carduid": "GD03-020_trash_0005",
+              "cardId": "GD03-020"
+            },
+
+            {
+              "carduid": "GD03-020_trash_0006",
+              "cardId": "GD03-020"
+            },
+
+            {
+              "carduid": "GD03-020_trash_00027",
+              "cardId": "GD03-020"
             },
             {
               "carduid": "GD03-092_trash_0003",

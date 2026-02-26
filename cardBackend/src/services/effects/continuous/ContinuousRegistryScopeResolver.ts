@@ -2,6 +2,8 @@ import type { GameEnvironment } from '../../../models/GameEnvironment';
 import { ContinuousScopeUtils } from './ContinuousScopeUtils';
 import { ContinuousRegistryTargetResolver } from './ContinuousRegistryTargetResolver';
 import { ContinuousTargetFilter } from './ContinuousTargetFilter';
+import { SourcePairedTargetResolver } from '../../targets/SourcePairedTargetResolver';
+import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
 
 export class ContinuousRegistryScopeResolver {
     static resolve(effectEntry: any, gameEnv: GameEnvironment, getAllPlayerUnitsInSlot: (playerId: string, env: GameEnvironment) => any[]): any[] {
@@ -39,6 +41,18 @@ export class ContinuousRegistryScopeResolver {
             case 'battle_opponent': {
                 const targets = ContinuousRegistryTargetResolver.resolveBattleOpponent(effectEntry, gameEnv);
                 return ContinuousTargetFilter.apply(targets, effectEntry.effectData?.target, effectEntry.sourceCarduid);
+            }
+            case 'source_paired_unit':
+            case 'source_paired_pilot': {
+                const refs = SourcePairedTargetResolver.resolve(gameEnv, effectEntry.sourceCarduid, scope);
+                const cards: any[] = [];
+                for (const ref of refs) {
+                    const resolved = SlotZoneUtils.resolveTargetReference(gameEnv, ref);
+                    if (resolved?.card) {
+                        cards.push(resolved.card);
+                    }
+                }
+                return ContinuousTargetFilter.apply(cards, effectEntry.effectData?.target, effectEntry.sourceCarduid);
             }
             default:
                 console.log(`⚠️ Unknown scope: ${scope}`);

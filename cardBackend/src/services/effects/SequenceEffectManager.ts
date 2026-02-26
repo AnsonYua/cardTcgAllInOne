@@ -592,6 +592,18 @@ export class SequenceEffectManager {
                 });
             }
 
+            if (type === 'previousTargetDestroyed') {
+                const expected = typeof condition.value === 'boolean' ? condition.value : true;
+                const anyDestroyed = Array.isArray(ctx.previousTargets) && ctx.previousTargets.some((target) => {
+                    if (!target || typeof target.carduid !== 'string' || target.carduid.length === 0) {
+                        return false;
+                    }
+                    const inPlay = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, target.carduid);
+                    return !inPlay?.found;
+                });
+                return anyDestroyed === expected;
+            }
+
             return EffectConditionEvaluator.validateEffectConditions(
                 ensureEffectDefaults({
                     effectId: 'sequence_conditional_runtime_check',

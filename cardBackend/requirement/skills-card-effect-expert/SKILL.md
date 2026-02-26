@@ -28,7 +28,11 @@ Use this skill when a card effect appears correct in data but gameplay/UI behavi
 
 ## Required Workflow
 1. Read `references/checklist.md`.
-2. Build a quick inventory from backend card data for suspect actions/filters.
+2. Classify the task first:
+   - implementation review (verify card text -> rule JSON -> runtime path)
+   - behavior bug (runtime mismatch)
+   - frontend/backend parity bug (UI prediction mismatch)
+3. Build a quick inventory from backend card data for suspect actions/filters.
 3. Identify frontend modules that locally evaluate those rules.
 4. Compare backend semantics and frontend semantics for:
    - operators: `<`, `<=`, `>`, `>=`, `==`, `=`, `!=`
@@ -42,12 +46,31 @@ Use this skill when a card effect appears correct in data but gameplay/UI behavi
 7. Add focused regression tests and run frontend tests/build.
 8. Update `EFFECT_PARITY_AUDIT.md` with findings and fix status.
 
+## Review-Only Audit Pattern (Implementation Correctness)
+Use this when the user asks "is this effect properly implemented?" and does not request a code change yet.
+
+1. Rule-to-text mapping (backend truth):
+   - Map every clause in `effects.description` to a specific `effects.rules` field.
+   - Confirm hidden semantics are encoded explicitly (`other`, `paired`, target count, dynamic comparator).
+2. Runtime path trace (static):
+   - Trace rule shape through condition evaluators, target filter resolvers, and the final executor path.
+   - For `type: "continuous"` `sequence/conditional(eventType...)`, verify expansion into reactive continuous entries (not dropped during continuous registry build).
+3. Targeted runtime evidence (non-mutating):
+   - Prefer existing tests + existing fixtures/scenarios.
+   - If no card-specific test exists, use nearby regression tests to validate the relevant engine surfaces and report residual risk.
+4. Findings format:
+   - If no mismatch found, explicitly say "No functional mismatch found" and list coverage gaps.
+   - If mismatch found, report file + line + repro + minimal fix direction.
+
 ## Canonical Rules (from recent fixes)
 - Backend is authoritative. Frontend local logic is only UX prediction/gating.
 - For `ACTION_STEP` response UI, frontend must prefer backend `currentBattle.actionTargets[].effectIds` and intersect with local activated-effect eligibility.
 - Frontend timing checks must normalize phase enum variants (e.g. `ACTION_STEP_PHASE`) to canonical rule tokens (e.g. `ACTION_STEP`) before matching `timing.windows`.
 - Do not parse comparison strings in multiple places; use one shared utility.
 - Prefer engine-level semantic fixes over card-by-card data hacks when behavior is cross-card.
+- `prevent_battle_damage` continuous-application guardrail:
+  - unit-targeted continuous prevention with `parameters.from = "enemy_units"` is a valid unconditional shape even without `enemyLevel` / `enemyAp` / `maxEnemyAp` / `enemyHp`.
+  - do not require comparator filters before applying continuous temporary prevention, or effects can register but silently never apply (e.g. `GD03-020`).
 - Custom `target.scope` strings (for example battle-relative scopes like `opponent_battling_source`) require explicit resolver support in `TargetScopeResolverRegistry`; resolver `[]` must remain `[]` (no fallback to generic target generation).
 - `ACTION_STEP` off-turn response legality is a backend concern too:
   - frontend may correctly show a legal response target, but backend turn validators must allow off-turn `activateCardAbility` / `useCommandCard` only during actionable response windows (`currentBattle.status === "ACTION_STEP"`, awaiting player confirmation, and non-empty `actionTargets[playerId]`).
@@ -61,6 +84,38 @@ Use this skill when a card effect appears correct in data but gameplay/UI behavi
   - do not assume continuous-effect expanders should only keep stat/keyword-like actions.
   - unsupported `then` actions (e.g. `setActive`, `returnToHand`, `rest`, `draw`, `damage`) must not be silently dropped if gated by `eventType`.
   - register them as event-reactive continuous entries and execute them only in matching event contexts.
+- `During Pair` / `During Link` text audit rule:
+  - treat pair/link wording as a source-state requirement first (`sourceConditions`) before debugging event conditions.
+  - `paired` and `linked` are not interchangeable; verify the card text matches the encoded source condition exactly.
+  - for "one of your other Units ..." wording, require explicit non-self event/source exclusion (e.g. `eventAttackerIsNotSource = true`), not an implicit assumption from target scope.
+- Event-reactive continuous review rule:
+  - For `continuous -> sequence -> conditional(eventType=...) -> then(action)` designs, verify the branch becomes a derived reactive registry entry and is executed through `processReactiveContinuousEffects`, not only present in static card JSON.
+  - Confirm duplicate suppression for the same event (`lastReactiveEventKey`) when reviewing once-per-event triggers.
+- Attack-trigger pipeline split rule:
+  - Do not audit all "attack" text through one path.
+  - There are two distinct backend pipelines with different timing risks:
+    - declaration-reactive continuous effects (event-gated via `eventType = UNIT_ATTACK_DECLARED`, executed by `ContinuousEffectManager.processReactiveContinuousEffects`)
+    - `triggered` `ATTACK_PHASE` effects (executed by `AttackPhaseEffectManager.processAttackPhaseEffects`)
+  - When debugging timing/order bugs, identify which pipeline the card uses before tracing notifications.
+- Attack declaration ordering rule (backend timing):
+  - Attack declaration flow should be reviewed in this order:
+    1. `recordAttackDeclaration(...)`
+    2. refresh continuous effects (so dynamic grants like `<Repair>` exist on attacker)
+    3. immediate reactive continuous pass
+    4. `ATTACK_PHASE` triggered effects
+    5. blocker/battle/game-end resolution
+  - If a declaration/reactive or `ATTACK_PHASE` effect creates `TARGET_CHOICE`, attack resolution must pause and resume later (no battle/game-end first).
+- Attack auto-apply ordering rule:
+  - For attack-triggered effects that auto-apply (exactly one valid target, no chooser), state-change notifications (e.g. `CARD_RESTED`, damage/destroy notifications) should be emitted before `BATTLE_RESOLVED` / `GAME_ENDED`.
+  - If backend notification order is correct but frontend visuals are late, check whether the frontend animation queue drops the state-change notification (missing handler) before changing backend timing.
+- Dynamic comparator review rule:
+  - When card text compares target stats/level to the attacking/triggering unit ("Lv equal to or lower than that Unit"), verify the rule uses a dynamic comparator token (e.g. `<=eventAttackerLevel`) and the resolver supports that token in runtime target generation.
+- Attack notification context rule:
+  - For attack-triggered condition/target evaluation during `PLAYER_ACTION`, prefer the exact `UNIT_ATTACK_DECLARED` notification context (via `attackNotificationId`) over "latest notification" heuristics.
+  - This is especially important when later notifications (`PHASE_CHANGED`, `BATTLE_RESOLVED`, `GAME_ENDED`) exist in the same queue and can hide attacker context.
+- Repair keyword review rule:
+  - Backend `eventAttackerHasKeyword = Repair` may be satisfied by keyword text OR by semantic detection of an end-turn `heal` rule; when auditing Repair interactions, verify both the card data and keyword detection path.
+  - Also verify runtime keyword detection includes temporary granted keywords (`temporaryEffects.grantedKeywords`), not only base card keyword text/rule shape.
 - Event-condition semantics for linked pilot reactions:
   - `eventTarget = self` may need effective self resolution to the paired unit for pilot/command sources (not literal pilot carduid).
   - state-change event notifications (e.g. `CARD_SET_ACTIVE`) should include enough prior-state metadata (e.g. `wasRested`) for conditions like `eventTargetWasRested`.
@@ -101,6 +156,10 @@ Use this skill when a card effect appears correct in data but gameplay/UI behavi
 - `EFFECT_DAMAGE_RECEIVED` data scoping rule:
   - Text like "when this Unit receives effect damage" should encode explicit `conditions: [{ type: "eventTarget", value: "self" }]`.
   - Do not narrow engine dispatch to source-self globally; observer cards (e.g. "one of your friendly Units receives effect damage") rely on broader event dispatch plus explicit event-target conditions.
+- `BATTLE_DESTROY` semantics rule:
+  - `eventType = BATTLE_DESTROY` currently means a battle resolved with at least one unit destroyed (attacker or defender), not automatically "this unit destroyed an enemy unit".
+  - For text like "when this Unit destroys an enemy Unit with battle damage", require explicit attacker + defender checks (for example `eventAttacker = self` and `eventDefenderDestroyed = true`).
+  - If the source can be removed during the same battle (mutual destruction), prefer a `triggered` `BATTLE_DESTROY` effect over reactive `continuous + conditional(eventType=BATTLE_DESTROY)` so the effect resolves before post-battle destruction flush removes the source.
 - `conditionalTokenDeploy` condition-evaluation rule:
   - If a `conditionalTokenDeploy` effect uses event/source conditions (e.g. `eventTarget=self`), runtime condition checks must pass the source card context into `validateEffectConditions`; evaluating with only `playerId` can silently fail valid self-target triggers.
 - Trigger-context architecture rule:
@@ -180,11 +239,27 @@ See `references/incident-gd03-035.md` for concrete bugs and fixes:
   - Fixed by batching shield outcomes per `SHIELD_CARD_ATTACKED` event (including burst-choice-delayed shields), then flushing all shield-damage notifications first and effect triggers second after batch completion.
   - Follow-up data alignment: `GD03-049` `DEFENSE_AREA_BATTLE_DAMAGE` rule now explicitly encodes `parameters.defenseAreas = ['shield', 'base']` so base qualifies as a shield-area card per intended semantics.
   - See `references/incident-gd03-049-suppression-batch-shield-damage.md`.
+- `GD03-022` / `GD02-093` / `GD03-097` `BATTLE_DESTROY` over-trigger + mutual-destruction timing gap:
+  - cards with text "when this Unit destroys an enemy Unit with battle damage" were encoded with `eventAttacker=self` only, but `BATTLE_DESTROY` semantics also include attacker death; this can over-trigger when the source attacks and dies without destroying the defender.
+  - fix data by adding `conditions: [{ type: "eventDefenderDestroyed", value: true }]` alongside `eventAttacker=self`.
+  - for `GD03-022`, reactive continuous encoding also missed valid mutual-destruction triggers because source left play before reactive continuous pass; fixed by converting to `triggered` `BATTLE_DESTROY`.
+- `GD03-020` continuous battle-damage prevention silent no-op:
+  - data was correct (`continuous prevent_battle_damage` + `parameters.from = "enemy_units"` with Ad Balloon name-in-play condition), but runtime continuous application rejected the unconditional shape because no comparator filter keys were present.
+  - direct `EffectExecutor.applyEffectToTargets(...)` tests still passed, masking the issue; the bug existed only in the continuous manager guard path.
+  - fix at engine level (continuous manager guard), plus add regression tests for both direct continuous-manager invocation and end-to-end `GD03-020` action-step battle resolution.
 - Deploy diagnostics / fixture canonicality / schema-validator-gap pattern:
   - apparent "Deploy / Pair / Link effect didn't trigger" can be caused by legal no-op sequence resolution (e.g. empty-deck `moveTopDeckToTrash`) or malformed in-play fixture cards missing canonical runtime fields (`cardData`, `originalAP`, `originalHP`), not card data bugs.
   - add/inspect deploy diagnostics (`triggered`, `resolved`, `no_targets`, `invalid_target_state`) before changing `effects.rules`.
   - if `npm run review:effects` reports `Issues: 0` but `validate:effects:canonical` fails, inspect canonical schema definitions in `src/services/effects/schema/EffectSchema.ts` (for example missing sequence step actions like `prevent_shield_damage`) before patching card JSON.
   - See `references/incident-deploy-diagnostics-fixture-canonicality-and-schema-validator-gap.md`.
+- `GD03-002` / `GD02-005` attack-trigger timing and ordering pattern:
+  - `GD03-002` (`During Pair`, reactive continuous on `UNIT_ATTACK_DECLARED`) and `GD02-005` (`ATTACK_PHASE` rest while linked) exposed that "attack text" spans two backend trigger pipelines with different timing/context risks.
+  - Fixes/lessons:
+    - refresh continuous effects before declaration-time reactive checks so dynamically granted attacker keywords (e.g. `<Repair>`) are available
+    - resolve reactive event context from the exact `attackNotificationId` / `UNIT_ATTACK_DECLARED` notification during attack `PLAYER_ACTION`
+    - ensure auto-applied attack-triggered effects emit state-change notifications before `BATTLE_RESOLVED`/`GAME_ENDED`
+    - treat `TARGET_CHOICE` from attack triggers as an interrupt that pauses attack progression before battle opens
+  - Review takeaway: always classify the card as declaration-reactive vs `ATTACK_PHASE` first, then verify ordering with notification timestamps/types.
 
 ## Output Requirements
 - Provide:

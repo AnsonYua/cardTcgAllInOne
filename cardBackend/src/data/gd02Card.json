@@ -4762,13 +4762,17 @@
                 "type": "turnPlayer",
                 "scope": "self"
               },
-              {
-                "type": "eventAttacker",
-                "value": "self"
-              },
-              {
-                "type": "eventTargetController",
-                "value": "opponent"
+          {
+            "type": "eventAttacker",
+            "value": "self"
+          },
+          {
+            "type": "eventDefenderDestroyed",
+            "value": true
+          },
+          {
+            "type": "eventTargetController",
+            "value": "opponent"
               },
               {
                 "type": "eventTargetPairedPilotTrait",

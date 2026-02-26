@@ -33,6 +33,34 @@ export default class DialogManager {
   }
 
   /**
+   * Returns true when a blocking gameplay dialog is currently open.
+   * Used by GameFlowManager to prevent notification-driven UI from preempting player decisions.
+   */
+  hasActiveBlockingDialog() {
+    const blockingTypes = new Set([
+      this.dialogTypes.TARGET_CHOICE,
+      this.dialogTypes.BURST_EFFECT_CHOICE,
+      'BLOCKER_CHOICE'
+    ]);
+
+    for (const dialog of this.activeDialogs.values()) {
+      const type = dialog?.type;
+      if (type && blockingTypes.has(type)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Debug helper: inspect currently active dialog types.
+   */
+  getActiveDialogTypes() {
+    return Array.from(this.activeDialogs.values()).map((dialog) => dialog?.type).filter(Boolean);
+  }
+
+  /**
    * Helper function to create slot items based on filter conditions
    * @param {Object} playerData - Player data from game state
    * @param {string} playerId - Player ID

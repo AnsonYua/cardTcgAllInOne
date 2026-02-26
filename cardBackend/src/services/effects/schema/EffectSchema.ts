@@ -89,6 +89,7 @@ export const CANONICAL_CONDITION_TYPES = new Set<string>([
     'eventTargetTraitsAny',
     'eventTargetWasRested',
     'eventTargetLinkStatus',
+    'eventDefenderDestroyed',
     'sourceStatus',
     'sourceDamaged',
     'sourceLevel',
@@ -108,7 +109,8 @@ export const SEQUENCE_INTERNAL_CONDITION_TYPES = new Set<string>([
     'stepResolved',
     'milledAnyCardHasTrait',
     'milledCardHasTraitsAny',
-    'previousTargetHasTrait'
+    'previousTargetHasTrait',
+    'previousTargetDestroyed'
 ]);
 
 export const SEQUENCE_SUPPORTED_STEP_ACTIONS = new Set<string>([

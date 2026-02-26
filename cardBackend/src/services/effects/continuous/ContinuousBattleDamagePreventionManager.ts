@@ -53,9 +53,10 @@ export class ContinuousBattleDamagePreventionManager {
             ? effectEntry.effectData.target.scope.toLowerCase()
             : '';
         const shieldScope = targetScope.includes('shield');
+        const hasEnemyUnitPreventionSource = from === 'enemy_units';
         const hasUnitFilters = typeof enemyLevel === 'string' || typeof enemyAp === 'string'
             || typeof maxEnemyAp === 'number' || typeof enemyHp === 'string';
-        if (!shieldScope && !hasUnitFilters) {
+        if (!shieldScope && !hasEnemyUnitPreventionSource && !hasUnitFilters) {
             return 0;
         }
 

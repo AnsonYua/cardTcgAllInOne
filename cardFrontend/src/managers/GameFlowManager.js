@@ -21,14 +21,21 @@ export default class GameFlowManager {
       this.scene.updatePlayerHand();
     }
 
-    // Process unprocessed events
-    if (this.handleUnprocessedEvents()) {
-      return; // Stop if events are being processed
-    }
-
-    // Process event queue
+    // Process blocking frontend queue events first (TARGET_CHOICE / BLOCKER_CHOICE / BURST_EFFECT_CHOICE)
     if (this.handleEventQueue()) {
       return; // Stop if blocking event was processed
+    }
+
+    // If a blocking decision is pending/open, do not process notification-driven events yet.
+    // This preserves interrupt timing: user must resolve the dialog before later UI flow continues.
+    if (this.hasBlockingFrontQueueEvent() || this.hasActiveBlockingDialog()) {
+      console.log('[GameFlowManager] Skipping notification processing due to pending blocking decision/dialog');
+      return;
+    }
+
+    // Process unprocessed notification events only when no blocking decision is pending
+    if (this.handleUnprocessedEvents()) {
+      return; // Stop if events are being processed
     }
 
     // Handle phase-specific logic
@@ -69,6 +76,42 @@ export default class GameFlowManager {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Returns true if there is a blocking decision event pending in processingQueue.
+   */
+  hasBlockingFrontQueueEvent() {
+    const processor = this.scene.frontEventProcessor;
+    if (!processor) return false;
+
+    const blockingTypes = ['TARGET_CHOICE', 'BLOCKER_CHOICE', 'BURST_EFFECT_CHOICE'];
+    const pendingTypes = blockingTypes.filter((type) => {
+      try {
+        return processor.hasEventsOfType(type);
+      } catch (error) {
+        console.warn(`[GameFlowManager] Failed checking pending ${type}:`, error);
+        return false;
+      }
+    });
+
+    if (pendingTypes.length > 0) {
+      console.log(`[GameFlowManager] Pending blocking processingQueue events: ${pendingTypes.join(', ')}`);
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Returns true when a blocking dialog is already open (prevents notification/UI churn during polling).
+   */
+  hasActiveBlockingDialog() {
+    const dialogManager = this.scene.dialogManager;
+    if (!dialogManager || typeof dialogManager.hasActiveBlockingDialog !== 'function') {
+      return false;
+    }
+    return dialogManager.hasActiveBlockingDialog();
   }
 
   /**

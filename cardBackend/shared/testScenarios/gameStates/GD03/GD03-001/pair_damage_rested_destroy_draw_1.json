@@ -17,7 +17,7 @@
     "Action: Player A plays GD03-085 as a pilot onto GD03-001 (PAIRING_COMPLETE).",
     "Expect: GD03-001 pairing effect enqueues TARGET_CHOICE with only rested enemy Unit targets.",
     "Action: Player A resolves TARGET_CHOICE selecting Player B slot1 Unit.",
-    "Expect: Selected Unit takes 1 damage and is destroyed. If destroy->draw rider is implemented, Player A then draws 1."
+    "Expect: Selected Unit takes 1 damage and is destroyed. Player A then draws 1."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",

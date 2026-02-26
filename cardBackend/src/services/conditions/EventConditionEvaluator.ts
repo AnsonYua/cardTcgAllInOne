@@ -33,7 +33,10 @@ export class EventConditionEvaluator {
             return gameEnv.phase === GamePhase.END_PHASE || String(currentEvent?.type || '').toUpperCase() === 'TRIGGER_END_OF_TURN_EFFECT';
         }
         if (expected === 'BATTLE_DESTROY') {
-            return latestType === 'BATTLE_RESOLVED';
+            if (latestType !== 'BATTLE_RESOLVED') {
+                return false;
+            }
+            return this.isBattleDestroyNotification(latestNotification as any);
         }
 
         return latestType === expected || String(currentEvent?.type || '').toUpperCase() === expected;
@@ -113,15 +116,11 @@ export class EventConditionEvaluator {
         if (keywords.some((entry: unknown) => typeof entry === 'string' && entry.toLowerCase() === normalizedKeyword)) {
             return true;
         }
-        if (normalizedKeyword === 'blocker') {
-            return KeywordUtils.hasBlocker(attackerCard);
-        }
-        if (normalizedKeyword === 'repair') {
-            const rules = Array.isArray(attackerCard.cardData?.effects?.rules) ? attackerCard.cardData.effects.rules : [];
-            return rules.some((rule: any) =>
-                String(rule?.trigger || '').toUpperCase() === 'END_OF_TURN' &&
-                String(rule?.action || '').toLowerCase() === 'heal'
-            );
+
+        // Use shared runtime keyword semantics so event checks honor temporary granted keywords.
+        const canonicalKeyword = this.toCanonicalKeywordName(normalizedKeyword);
+        if (canonicalKeyword) {
+            return KeywordUtils.hasKeyword(attackerCard, canonicalKeyword as any);
         }
 
         return false;
@@ -271,6 +270,17 @@ export class EventConditionEvaluator {
         return false;
     }
 
+    static eventDefenderDestroyed(gameEnv: GameEnvironment, condition: Record<string, unknown>): boolean {
+        const expected = typeof condition.value === 'boolean' ? condition.value : true;
+        const latestNotification = this.getLatestNotification(gameEnv) as any;
+        if (String(latestNotification?.type || '').toUpperCase() !== 'BATTLE_RESOLVED') {
+            return false;
+        }
+
+        const actual = latestNotification?.payload?.result?.defenderDestroyed === true;
+        return actual === expected;
+    }
+
     private static getLatestNotification(gameEnv: GameEnvironment): Record<string, unknown> | null {
         const overrideNotification = (gameEnv as any)?.eventConditionNotificationOverride;
         if (overrideNotification && typeof overrideNotification === 'object') {
@@ -289,6 +299,9 @@ export class EventConditionEvaluator {
         if (typeof latestNotification?.payload?.attackerCarduid === 'string') {
             return latestNotification.payload.attackerCarduid;
         }
+        if (typeof latestNotification?.payload?.attacker?.unit?.carduid === 'string') {
+            return latestNotification.payload.attacker.unit.carduid;
+        }
         const battle = gameEnv.currentBattle;
         if (battle?.attackerCarduid) {
             return battle.attackerCarduid;
@@ -300,6 +313,9 @@ export class EventConditionEvaluator {
         const latestNotification = this.getLatestNotification(gameEnv) as any;
         if (typeof latestNotification?.payload?.targetCarduid === 'string') {
             return latestNotification.payload.targetCarduid;
+        }
+        if (typeof latestNotification?.payload?.target?.unit?.carduid === 'string') {
+            return latestNotification.payload.target.unit.carduid;
         }
         if (typeof latestNotification?.payload?.carduid === 'string') {
             return latestNotification.payload.carduid;
@@ -337,6 +353,29 @@ export class EventConditionEvaluator {
         return sourceCarduid;
     }
 
+    private static isBattleDestroyNotification(notification: any): boolean {
+        if (!notification || typeof notification !== 'object') {
+            return false;
+        }
+
+        const payload = notification.payload;
+        if (!payload || typeof payload !== 'object') {
+            return false;
+        }
+
+        const result = (payload as any).result;
+        if (!result || typeof result !== 'object') {
+            return false;
+        }
+
+        const targetType = String((result as any).targetType || '').toLowerCase();
+        if (targetType !== 'unit') {
+            return false;
+        }
+
+        return (result as any).defenderDestroyed === true || (result as any).attackerDestroyed === true;
+    }
+
     private static findSlotByCarduid(
         gameEnv: GameEnvironment,
         carduid: string
@@ -358,5 +397,18 @@ export class EventConditionEvaluator {
         }
 
         return null;
+    }
+
+    private static toCanonicalKeywordName(normalizedKeyword: string): string | null {
+        switch (normalizedKeyword) {
+            case 'repair':
+                return 'Repair';
+            case 'blocker':
+                return 'Blocker';
+            case 'breach':
+                return 'Breach';
+            default:
+                return null;
+        }
     }
 }

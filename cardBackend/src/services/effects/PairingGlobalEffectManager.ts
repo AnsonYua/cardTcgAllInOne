@@ -22,7 +22,8 @@ export class PairingGlobalEffectManager {
     static enqueueGlobalPairingTriggeredEffects(
         gameEnv: GameEnvironment,
         playerId: string,
-        pairingContext: PairingGlobalContext
+        pairingContext: PairingGlobalContext,
+        options?: { effectFilter?: (effect: EffectDefinition) => boolean }
     ): { success: boolean; error?: string; effectsQueued?: number } {
         try {
             if (!playerId) {
@@ -72,6 +73,9 @@ export class PairingGlobalEffectManager {
                     }
 
                     const normalizedEffect = ensureEffectDefaults({ ...effect }) as EffectWithRestrictions;
+                    if (options?.effectFilter && !options.effectFilter(normalizedEffect)) {
+                        continue;
+                    }
                     const usageKey = EffectUsageTracker.getUsageKey(normalizedEffect, 'pairing_complete_global');
 
                     if (!this.sourceConditionsSatisfied(normalizedEffect, sourceCard, gameEnv, playerId)) {

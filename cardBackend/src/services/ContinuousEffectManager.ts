@@ -513,73 +513,140 @@ export class ContinuousEffectManager {
         let executed = 0;
         let pass = 0;
         let executedThisPass = false;
+        const previousOverride = (gameEnv as any).eventConditionNotificationOverride;
+        const reactiveOverride = this.buildReactiveEventConditionNotificationOverride(gameEnv, currentEvent);
 
-        do {
-            executedThisPass = false;
-            pass += 1;
-
-            for (const [playerId, player] of Object.entries(gameEnv.players)) {
-                if (!player.effectRegistry) {
-                    continue;
-                }
-
-                for (const effectEntry of Object.values(player.effectRegistry)) {
-                    const typedEntry = effectEntry as any;
-                    if (!typedEntry?.active || typedEntry.eventReactiveContinuous !== true) {
-                        continue;
-                    }
-                    if (typedEntry.lastReactiveEventKey === eventKey) {
-                        continue;
-                    }
-
-                    const sourceCard = ContinuousEffectManager.getSourceCardByUid(
-                        gameEnv,
-                        typedEntry.sourceCarduid,
-                        typedEntry.sourcePlayerId
-                    );
-                    if (!sourceCard) {
-                        continue;
-                    }
-
-                    if (!ContinuousEffectManager.sourceConditionsMet(
-                        typedEntry.effectData as EffectDefinition,
-                        sourceCard,
-                        gameEnv,
-                        typedEntry.sourcePlayerId
-                    )) {
-                        continue;
-                    }
-
-                    if (!ContinuousEffectManager.validateEffectConditions(
-                        typedEntry.effectData as EffectDefinition,
-                        gameEnv,
-                        typedEntry.sourcePlayerId,
-                        sourceCard
-                    )) {
-                        continue;
-                    }
-
-                    const result = DeployTargetManager.processEffectWithTargetChoice(
-                        gameEnv,
-                        playerId,
-                        typedEntry.sourceCarduid,
-                        typedEntry.effectData as EffectDefinition
-                    );
-                    if (!result.success) {
-                        return {
-                            success: false,
-                            error: result.error || `Failed to resolve reactive continuous effect ${typedEntry.effectId}`
-                        };
-                    }
-
-                    typedEntry.lastReactiveEventKey = eventKey;
-                    executed += 1;
-                    executedThisPass = true;
-                }
+        try {
+            if (reactiveOverride) {
+                (gameEnv as any).eventConditionNotificationOverride = reactiveOverride;
+            } else {
+                delete (gameEnv as any).eventConditionNotificationOverride;
             }
-        } while (executedThisPass && pass < 3);
+
+            do {
+                executedThisPass = false;
+                pass += 1;
+
+                for (const [playerId, player] of Object.entries(gameEnv.players)) {
+                    if (!player.effectRegistry) {
+                        continue;
+                    }
+
+                    for (const effectEntry of Object.values(player.effectRegistry)) {
+                        const typedEntry = effectEntry as any;
+                        if (!typedEntry?.active || typedEntry.eventReactiveContinuous !== true) {
+                            continue;
+                        }
+                        if (typedEntry.lastReactiveEventKey === eventKey) {
+                            continue;
+                        }
+
+                        const sourceCard = ContinuousEffectManager.getSourceCardByUid(
+                            gameEnv,
+                            typedEntry.sourceCarduid,
+                            typedEntry.sourcePlayerId
+                        );
+                        if (!sourceCard) {
+                            continue;
+                        }
+
+                        if (!ContinuousEffectManager.sourceConditionsMet(
+                            typedEntry.effectData as EffectDefinition,
+                            sourceCard,
+                            gameEnv,
+                            typedEntry.sourcePlayerId
+                        )) {
+                            continue;
+                        }
+
+                        if (!ContinuousEffectManager.validateEffectConditions(
+                            typedEntry.effectData as EffectDefinition,
+                            gameEnv,
+                            typedEntry.sourcePlayerId,
+                            sourceCard
+                        )) {
+                            continue;
+                        }
+
+                        const result = DeployTargetManager.processEffectWithTargetChoice(
+                            gameEnv,
+                            playerId,
+                            typedEntry.sourceCarduid,
+                            typedEntry.effectData as EffectDefinition
+                        );
+                        if (!result.success) {
+                            return {
+                                success: false,
+                                error: result.error || `Failed to resolve reactive continuous effect ${typedEntry.effectId}`
+                            };
+                        }
+
+                        typedEntry.lastReactiveEventKey = eventKey;
+                        executed += 1;
+                        executedThisPass = true;
+                    }
+                }
+            } while (executedThisPass && pass < 3);
+        } finally {
+            if (previousOverride && typeof previousOverride === 'object') {
+                (gameEnv as any).eventConditionNotificationOverride = previousOverride;
+            } else {
+                delete (gameEnv as any).eventConditionNotificationOverride;
+            }
+        }
 
         return { success: true, executed };
+    }
+
+    private static buildReactiveEventConditionNotificationOverride(gameEnv: GameEnvironment, currentEvent: any): Record<string, unknown> | null {
+        const currentType = String(currentEvent?.type || '').toUpperCase();
+        if (!currentType) {
+            return null;
+        }
+
+        const queue = Array.isArray(gameEnv.notificationQueue) ? gameEnv.notificationQueue : [];
+        if (queue.length === 0) {
+            return null;
+        }
+
+        if (currentType === 'TRIGGER_EFFECT_DAMAGE_RECEIVED') {
+            return null; // latest CARD_DAMAGED notification is usually the correct source of truth
+        }
+
+        const actionType = String(currentEvent?.data?.actionType || '').toLowerCase();
+        if (
+            currentType === 'PLAYER_ACTION' &&
+            (
+                actionType === 'attackunit' ||
+                actionType === 'attackshieldarea' ||
+                actionType === 'resolvebattle' ||
+                actionType === 'confirmbattle'
+            )
+        ) {
+            for (let i = queue.length - 1; i >= 0; i--) {
+                const notification = queue[i] as any;
+                if (String(notification?.type || '').toUpperCase() !== 'BATTLE_RESOLVED') {
+                    continue;
+                }
+                return notification;
+            }
+
+            const attackNotificationId = String(currentEvent?.data?.attackNotificationId || '').trim();
+            if (attackNotificationId) {
+                for (let i = queue.length - 1; i >= 0; i--) {
+                    const notification = queue[i] as any;
+                    if (String(notification?.id || '') !== attackNotificationId) {
+                        continue;
+                    }
+                    if (String(notification?.type || '').toUpperCase() !== 'UNIT_ATTACK_DECLARED') {
+                        continue;
+                    }
+                    return notification;
+                }
+            }
+        }
+
+        return null;
     }
 
 

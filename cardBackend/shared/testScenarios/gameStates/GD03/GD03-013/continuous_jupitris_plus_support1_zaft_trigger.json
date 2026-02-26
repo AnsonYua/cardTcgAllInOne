@@ -14,13 +14,7 @@
   ],
   "notes": [
     "Action: Verify initial board has GD03-013 in slot1 and another friendly (Jupitris) Unit in slot2.",
-    "Expect: GD03-013 satisfies its continuous condition and should have AP+1 while another (Jupitris) Unit is in play.",
-    "Action: Play GD03-038 from hand to slot4 during MAIN_PHASE.",
-    "Expect: GD03-038 enters play successfully (enough active energy available).",
-    "Action: Activate GD03-038 Support 1 (rest self and give AP+1 to another friendly Unit), then choose a target for UNIT_RESTED_BY_EFFECT trigger.",
-    "Expect: Because GD03-038 was rested by its effect, UNIT_RESTED_BY_EFFECT triggers and a friendly (ZAFT) Unit can be selected to gain AP+2 until end of turn.",
-    "Action: End turn as Player 1.",
-    "Expect: GD03-013 resolves conditional Repair 1 at END_OF_TURN if another (Jupitris) Unit is still in play."
+    "Expect: GD03-013 satisfies its continuous condition and should have AP+1 while another (Jupitris) Unit is in play."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",

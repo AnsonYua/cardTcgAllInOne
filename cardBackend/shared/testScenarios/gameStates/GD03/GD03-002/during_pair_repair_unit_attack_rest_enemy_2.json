@@ -91,8 +91,8 @@
           },
           "slot2": {
             "unit": {
-              "carduid": "GD01-001_unit_0001",
-              "cardId": "GD01-001",
+              "carduid": "GD03-007_unit_0001",
+              "cardId": "GD03-007",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -209,7 +209,7 @@
             }
           },
           "slot2": {
-            "unit": {
+             "unit": {
               "carduid": "GD03-007_unit_0001",
               "cardId": "GD03-007",
               "placedAt": 0,

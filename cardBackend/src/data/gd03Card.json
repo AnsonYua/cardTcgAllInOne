@@ -70,6 +70,30 @@
                   "parameters": {
                     "value": 1
                   }
+                },
+                {
+                  "action": "conditional",
+                  "parameters": {
+                    "if": [
+                      {
+                        "type": "previousTargetDestroyed",
+                        "value": true
+                      }
+                    ],
+                    "then": [
+                      {
+                        "action": "draw",
+                        "target": {
+                          "type": "player",
+                          "scope": "self",
+                          "count": 1
+                        },
+                        "parameters": {
+                          "value": 1
+                        }
+                      }
+                    ]
+                  }
                 }
               ]
             }
@@ -1271,49 +1295,33 @@
         "rules": [
           {
             "effectId": "during_link_effect",
-            "type": "continuous",
-            "trigger": "continuous",
-            "action": "sequence",
+            "type": "triggered",
+            "trigger": "BATTLE_DESTROY",
+            "conditions": [
+              {
+                "type": "turnPlayer",
+                "scope": "self"
+              },
+              {
+                "type": "eventAttacker",
+                "value": "self"
+              },
+              {
+                "type": "eventDefenderDestroyed",
+                "value": true
+              }
+            ],
+            "action": "damage",
+            "target": {
+              "type": "unit",
+              "scope": "opponent_all",
+              "count": 99,
+              "filters": {
+                "level": "<=3"
+              }
+            },
             "parameters": {
-              "text": "During your turn, when this Unit destroys an enemy Unit with battle damage, deal 1 damage to all enemy Units that are Lv.3 or lower.",
-              "version": 1,
-              "steps": [
-                {
-                  "action": "conditional",
-                  "parameters": {
-                    "if": [
-                      {
-                        "type": "turnPlayer",
-                        "scope": "self"
-                      },
-                      {
-                        "type": "eventType",
-                        "value": "BATTLE_DESTROY"
-                      },
-                      {
-                        "type": "eventAttacker",
-                        "value": "self"
-                      }
-                    ],
-                    "then": [
-                      {
-                        "action": "damage",
-                        "target": {
-                          "type": "unit",
-                          "scope": "opponent_all",
-                          "count": 99,
-                          "filters": {
-                            "level": "<=3"
-                          }
-                        },
-                        "parameters": {
-                          "value": 1
-                        }
-                      }
-                    ]
-                  }
-                }
-              ]
+              "value": 1
             },
             "sourceConditions": [
               {
@@ -1425,7 +1433,7 @@
             "parameters": {
               "condition1": {
                 "token": {
-                  "cardId": "T-022"
+                  "cardId": "T-013"
                 },
                 "count": 1,
                 "rested": true,
@@ -5857,11 +5865,15 @@
                 "type": "turnPlayer",
                 "scope": "self"
               },
-              {
-                "type": "eventAttacker",
-                "value": "self"
-              }
-            ],
+          {
+            "type": "eventAttacker",
+            "value": "self"
+          },
+          {
+            "type": "eventDefenderDestroyed",
+            "value": true
+          }
+        ],
             "parameters": {
               "text": "During your turn, when this Unit destroys an enemy Unit with battle damage, look at the top 2 cards of your deck and return 1 to the top. Place the remaining card into your trash.",
               "version": 1,
@@ -6675,7 +6687,7 @@
             "parameters": {
               "condition1": {
                 "token": {
-                  "cardId": "T-022"
+                  "cardId": "T-013"
                 },
                 "count": 1
               }
@@ -9152,8 +9164,8 @@
         ]
       }
     },
-    "T-022": {
-      "id": "T-022",
+    "T-013": {
+      "id": "T-013",
       "name": "Hy-Gogg",
       "cardType": "unit",
       "color": "Token",

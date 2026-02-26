@@ -18,6 +18,7 @@ import { processAction } from './actions/ActionProcessor';
 import { ChoiceConfirmationService } from './choices/ChoiceConfirmationService';
 import { CardDatabaseManager } from '../models/CardSystem';
 import { BattlePhaseManager } from './BattlePhaseManager';
+import { TestStatePairingRehydrationService } from './testState/TestStatePairingRehydrationService';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -767,6 +768,14 @@ export class GameLogic {
             } else {
                 // Create GameEnvironment from JSON data
                 gameEnvironment = GameEnvironment.fromJSON(gameEnv);
+            }
+
+            const rehydration = TestStatePairingRehydrationService.rehydratePairingDerivedEffects(gameEnvironment);
+            console.log(
+                `🧪 Pairing rehydration (inject): scanned=${rehydration.pairedSlotsScanned}, applied=${rehydration.applied}, warnings=${rehydration.warnings.length}`
+            );
+            for (const warning of rehydration.warnings) {
+                console.warn(`⚠️ ${warning}`);
             }
             
             // Save the injected game state
