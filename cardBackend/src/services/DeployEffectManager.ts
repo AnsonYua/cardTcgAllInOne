@@ -176,8 +176,16 @@ export class DeployEffectManager {
         );
 
         if (!result.success && !result.requiresSelection) {
-            const errorMessage = result.error || `Effect ${normalizedEffect.effectId} failed`;
-            failures.push(errorMessage);
+            const isEnterPlayDeploy =
+                typeof normalizedEffect.trigger === 'string' && normalizedEffect.trigger === 'ENTERS_PLAY';
+            if (isEnterPlayDeploy && result.failureKind === 'NO_TARGETS_REQUIRED') {
+                console.log(
+                    `ℹ️ Deploy effect ${normalizedEffect.effectId || 'deploy_effect'} fizzled: no required targets available`
+                );
+            } else {
+                const errorMessage = result.error || `Effect ${normalizedEffect.effectId} failed`;
+                failures.push(errorMessage);
+            }
         }
         if (result.requiresSelection) {
             requiresTargetChoice = true;

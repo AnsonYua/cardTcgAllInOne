@@ -9,6 +9,7 @@ import { EffectExecutor } from './EffectExecutor';
 import { DelayedTriggerManager } from './DelayedTriggerManager';
 import { DeployTargetManager } from '../DeployTargetManager';
 import { ChoiceNotificationEmitter } from '../notifications/ChoiceNotificationEmitter';
+import type { DeployTargetFailureKind } from '../DeployTargetResult';
 import type { SequenceContinuationAfterChoiceContext } from './sequence/SequenceContinuationContext';
 import { EffectSelfTargetNormalizer } from '../targets/EffectSelfTargetNormalizer';
 import { EffectConditionEvaluator } from '../conditions/EffectConditionEvaluator';
@@ -53,6 +54,7 @@ export type SequenceContinuationPayload = {
 export interface SequenceProcessResult {
     success: boolean;
     error?: string;
+    failureKind?: DeployTargetFailureKind;
     requiresSelection?: boolean;
 }
 
@@ -289,7 +291,11 @@ export class SequenceEffectManager {
             );
 
             if (!result.success) {
-                return { success: false, error: result.error || `Sequence step ${stepAction} failed` };
+                return {
+                    success: false,
+                    error: result.error || `Sequence step ${stepAction} failed`,
+                    ...(result.failureKind ? { failureKind: result.failureKind } : {})
+                };
             }
 
             if (result.requiresSelection) {
@@ -412,7 +418,11 @@ export class SequenceEffectManager {
         );
 
         if (!result.success) {
-            return { success: false, error: result.error || 'discard failed' };
+            return {
+                success: false,
+                error: result.error || 'discard failed',
+                ...(result.failureKind ? { failureKind: result.failureKind } : {})
+            };
         }
 
         if (result.requiresSelection) {

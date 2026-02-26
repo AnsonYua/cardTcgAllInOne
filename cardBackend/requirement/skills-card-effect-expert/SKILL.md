@@ -165,6 +165,11 @@ See `references/incident-gd03-035.md` for concrete bugs and fixes:
   - `GD03-062` (`sourceDeployedFrom`) silently failed because deploy flow did not persist `deployedFrom` onto the deployed unit and card data omitted `scope`.
   - `GD02-091` (`sourceColor`) omitted `scope`, but backend defaulted missing scope to `player`, causing source-color conditional failure.
   - Fixed by persisting `UnitZoneCard.deployedFrom` in deploy service and defaulting missing `scope` to `"source"` for `source*` conditions in `EffectConditionEvaluator`.
+- `GD03-039` deploy no-target semantic mismatch + sequence failure metadata loss:
+  - card play should succeed and Deploy should fizzle when no other active friendly `(Clan)` unit exists, but backend surfaced a post-placement `DEPLOY_EFFECT_TRIGGERED` error.
+  - root cause was generic failure bubbling from nested sequence step targeting, plus loss of structured failure classification through `SequenceEffectManager`.
+  - fixed with structured `failureKind` propagation (`NO_TARGETS_REQUIRED`) and `DeployEffectManager` downgrade for `ENTERS_PLAY` no-target-required failures.
+  - See `references/incident-gd03-039-deploy-no-target-fizzle-sequence-failurekind.md`.
 - `GD03-051` linked deploy chooser affordability UX gap (and same pattern for `GD02-096`/`GD02-110`/`GD03-130`):
   - text/rules correctly encoded `Pay its cost to deploy it` (`payCost: true`), but chooser `availableTargets` was generated from target filters only and did not exclude unaffordable deploy candidates.
   - Result: backend could show a target in dialog that would fail at resolution-time energy payment (`P2` UX/backend-parity mismatch).

@@ -289,7 +289,8 @@ export class DeployTargetManager {
                 if (failIfNoTargets) {
                     return {
                         success: false,
-                        error: `No eligible targets found for ${effectLabel}`
+                        error: `No eligible targets found for ${effectLabel}`,
+                        failureKind: 'NO_TARGETS_REQUIRED'
                     };
                 }
                 if (effectAction === 'damageShield') {

@@ -6,23 +6,7 @@
   "tags": ["GD03-039", "Deploy", "Rest Effect", "Optional Damage", "Clan Filter", "AP Filter"],
   "notes": [
     "Action: Player 1 has GD03-039 in hand, another active friendly (Clan) unit in Slot 2",
-    "Expect: Setup correct for deploy effect testing",
-    "Action: Player 1 deploys GD03-039 from hand to empty slot",
-    "Expect: GD03-039 successfully deployed with cost 2, isRested: true, playedThisTurn: true",
-    "Expect: Deploy effect triggers - Choose 1 other active friendly (Clan) Unit. Rest it.",
-    "Action: Player 1 selects the active friendly (Clan) unit in Slot 2 to rest",
-    "Expect: Chosen friendly unit becomes rested (isRested: true)",
-    "Expect: Deploy effect Step 2 triggers - If you do, choose 1 enemy Unit with 2 or less AP. Deal 2 damage to it.",
-    "Action: Player 1 chooses to deal damage and selects enemy unit with AP≤2 in Slot 1",
-    "Expect: Enemy unit receives 2 damage (HP decreased by 2)",
-    "Expect: Enemy unit survives the damage (HP 3 → 1 after 2 damage)",
-    "Action: Alternatively, Player 1 chooses not to deal damage",
-    "Expect: Enemy unit receives no damage, remains unchanged",
-    "Expect: Both choices (deal damage or skip) are available to player",
-    "Expect: GD03-039 cannot attack this turn (isRested: true from playedThisTurn: true)",
-    "Expect: Friendly Clan unit remains rested for the turn",
-    "Expect: AP≤2 filter works correctly for enemy unit selection",
-    "Expect: Clan trait filter works correctly for friendly unit selection"
+    "Expected Play Card Success"   
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -84,24 +68,6 @@
         "zones": {
           "slot1": {},
           "slot2": {
-            "unit": {
-              "carduid": "GD03-032_friendly_clan_0001",
-              "cardId": "GD03-032",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "playedThisTurn": false,
-              "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false,
-              "damageReceived": 0,
-              "modifyAP": 0,
-              "modifyHP": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
-              "originalAP": 2,
-              "originalHP": 2
-            }
           },
           "slot3": {},
           "slot4": {},

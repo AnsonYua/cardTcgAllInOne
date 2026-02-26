@@ -41,6 +41,12 @@
   - preceding step has stable `stepId`
   - dependent branch checks `type: "stepResolved"` for that `stepId`
   - resulting steps are encoded in `conditional.parameters.then` (not only in free-text `parameters.text`)
+- For `ENTERS_PLAY` `sequence` effects with mandatory target steps (`failIfNoTargets` / `target.required`):
+  - decide intended semantics first:
+    - hard fail (cannot play / effect must fail), or
+    - card enters play and effect fizzles on no target
+  - do not infer this only from nested step metadata; verify the timing handler (`DeployEffectManager`) policy
+  - if the effect is encoded as `sequence`, verify wrapper layers preserve nested failure classification (e.g. `failureKind`) so timing-specific policy can be applied at the top level
 - For sequence text using pronouns like "it" / "that Unit" after a player choice:
   - verify later dependent step targets use `target.scope = "previous_target"` (or equivalent carry-over), not a second fresh `player_choice`
   - add regression coverage that no second target chooser appears for the dependent step
