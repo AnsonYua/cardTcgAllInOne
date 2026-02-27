@@ -405,7 +405,10 @@ export class TargetResolver {
             }
         }
 
-        const keywordResult = TargetKeywordFilterUtils.validateKeywordFilters(card, filters);
+        const keywordResult = TargetKeywordFilterUtils.validateKeywordFilters(card, filters, {
+            gameEnv,
+            cardOwnerPlayerId: targetPlayerId
+        });
         if (!keywordResult.ok) {
             console.log(`❌ Card ${card.carduid} failed keyword filter: ${keywordResult.reason ?? 'unknown'}`);
             return false;

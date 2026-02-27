@@ -163,7 +163,19 @@
               "continueModifyHP": 0
             }
           },
-          "slot3": {},
+          "slot3": {            "unit": {
+              "carduid": "GD01-042_unit_p2_00013",
+              "cardId": "GD01-042",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }},
           "slot4": {},
           "slot5": {},
           "slot6": {},

@@ -70,5 +70,10 @@ describe('Wave 1 schema remediation regression', () => {
     expect(trashCondition?.cardType).toBe('unit');
     expect(trashCondition?.value).toBe('>=10');
     expect(Array.isArray(trashCondition?.traitsAny)).toBe(true);
+
+    const thenSteps = Array.isArray(conditional?.parameters?.then) ? conditional.parameters.then : [];
+    expect(thenSteps[0]?.action).toBe('damage');
+    expect(thenSteps[0]?.target?.scope).toBe('any_all_unit');
+    expect(thenSteps[0]?.target?.filters?.keywords).toEqual(['Blocker']);
   });
 });

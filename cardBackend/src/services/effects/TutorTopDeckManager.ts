@@ -155,12 +155,19 @@ export class TutorTopDeckManager {
         }
 
         if (isGd01048DeployTutor) {
+            const preview = lookedDetails[0];
+            const lookedCarduids = lookedDetails.map((c) => c.carduid);
+            const restOrder = parseTutorRestOrder(rest?.order);
             const options: OptionChoiceOption[] = [
                 {
                     index: 0,
-                    label: 'Top',
-                    payload: { action: 'TOP' },
-                    display: ChoiceDisplayBuilder.text('Top')
+                    label: 'Add to hand',
+                    payload: {
+                        action: 'TAKE',
+                        carduid: preview.carduid,
+                        cardId: preview.cardId
+                    },
+                    display: ChoiceDisplayBuilder.card(preview.cardId, 'Add to hand')
                 },
                 {
                     index: 1,
@@ -170,18 +177,19 @@ export class TutorTopDeckManager {
                 }
             ];
 
-            ChoiceEventScheduler.enqueuePromptChoice(gameEnv, {
+            ChoiceEventScheduler.enqueueOptionChoice(gameEnv, {
                 playerId,
-                choiceId: 'tutor_top_deck_position',
-                headerText: 'Choose Option',
-                promptText: 'Put the card on top or bottom of your deck?',
+                sourceCarduid,
+                effect: normalizedEffect,
+                headerText: 'Top of Deck',
+                promptText: 'Add this card to your hand or put it on the bottom of your deck?',
                 availableOptions: options,
                 defaultOptionIndex: 1,
-                sourceCarduid,
                 context: {
+                    kind: 'TUTOR_TOP_DECK_POSITION',
                     tutor: {
-                        lookedCarduids: lookedDetails.map(c => c.carduid),
-                        restOrder: parseTutorRestOrder(rest?.order),
+                        lookedCarduids,
+                        restOrder,
                         reveal
                     }
                 },

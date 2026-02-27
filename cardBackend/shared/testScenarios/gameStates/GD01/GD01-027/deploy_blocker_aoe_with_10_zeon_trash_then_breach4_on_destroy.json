@@ -273,7 +273,21 @@
               "continueModifyHP": 0
             }
           },
-          "slot4": {},
+          "slot4": {
+            "unit": {
+              "carduid": "GD03-007_enemy_blocker_0001",
+              "cardId": "GD03-007",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
           "slot5": {},
           "slot6": {},
           "base": [],

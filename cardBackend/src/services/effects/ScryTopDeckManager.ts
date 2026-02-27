@@ -1,11 +1,11 @@
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import { CardDatabaseManager, createZoneCard } from '../../models/CardSystem';
-import type { EffectDefinition, PromptChoiceEvent } from '../EventQueue/interfaces/GameEvent';
+import type { EffectDefinition, OptionChoiceEvent, PromptChoiceEvent } from '../EventQueue/interfaces/GameEvent';
 import { ChoiceEventScheduler } from '../choices/ChoiceEventScheduler';
 import { ChoiceDisplayBuilder } from '../choices/ChoiceDisplayBuilder';
 import type { ExecutionResult } from '../ExecutionResult';
 
-const SCRY_PROMPT_CHOICE_ID = 'scry_top_deck_choice';
+const SCRY_CHOICE_ID = 'scry_top_deck_choice';
 
 type ScryRuntimeContext = {
     kind: 'SCRY_TOP_DECK';
@@ -194,9 +194,10 @@ export class ScryTopDeckManager {
         }
 
         if (choice === 'top_or_bottom' && looked.length === 1) {
-            ChoiceEventScheduler.enqueuePromptChoice(gameEnv, {
+            ChoiceEventScheduler.enqueueOptionChoice(gameEnv, {
                 playerId: sourcePlayerId,
-                choiceId: SCRY_PROMPT_CHOICE_ID,
+                sourceCarduid: sourceCarduid ?? '',
+                effect,
                 headerText: 'Top of Deck',
                 promptText: 'Put the card on top or bottom of your deck?',
                 availableOptions: [
@@ -214,7 +215,6 @@ export class ScryTopDeckManager {
                     }
                 ],
                 defaultOptionIndex: 0,
-                sourceCarduid,
                 context: {
                     kind: 'SCRY_TOP_DECK',
                     sourcePlayerId,
@@ -230,14 +230,14 @@ export class ScryTopDeckManager {
             return { success: true };
         }
 
-        ChoiceEventScheduler.enqueuePromptChoice(gameEnv, {
+        ChoiceEventScheduler.enqueueOptionChoice(gameEnv, {
             playerId: sourcePlayerId,
-            choiceId: SCRY_PROMPT_CHOICE_ID,
+            sourceCarduid: sourceCarduid ?? '',
+            effect,
             headerText: 'Top of Deck',
             promptText: `Choose ${keepCount} card to keep on top of your deck.`,
             availableOptions: buildCardChoiceOptions(looked),
             defaultOptionIndex: 0,
-            sourceCarduid,
             context: {
                 kind: 'SCRY_TOP_DECK',
                 sourcePlayerId,
@@ -253,15 +253,11 @@ export class ScryTopDeckManager {
         return { success: true };
     }
 
-    static executePromptChoice(event: PromptChoiceEvent, gameEnv: GameEnvironment): ExecutionResult {
-        const selectedOptionIndex = typeof event.data.selectedOptionIndex === 'number'
-            ? event.data.selectedOptionIndex
-            : -1;
+    private static resolveChoiceByIndex(selectedOptionIndex: number, rawContext: unknown, gameEnv: GameEnvironment): ExecutionResult {
         if (selectedOptionIndex < 0) {
             return { success: false, error: 'No option selected for scry_top_deck' };
         }
 
-        const rawContext = event.data.context;
         const context = rawContext && typeof rawContext === 'object' ? (rawContext as Partial<ScryRuntimeContext>) : null;
         if (!context || context.kind !== 'SCRY_TOP_DECK' || typeof context.sourcePlayerId !== 'string') {
             return { success: false, error: 'scry_top_deck missing runtime context' };
@@ -270,7 +266,21 @@ export class ScryTopDeckManager {
         return applyResolvedScryChoice(gameEnv, context as ScryRuntimeContext, selectedOptionIndex);
     }
 
+    static executeOptionChoice(event: OptionChoiceEvent, gameEnv: GameEnvironment): ExecutionResult {
+        const selectedOptionIndex = typeof event.data.selectedOptionIndex === 'number'
+            ? event.data.selectedOptionIndex
+            : -1;
+        return this.resolveChoiceByIndex(selectedOptionIndex, event.data.context, gameEnv);
+    }
+
+    static executePromptChoice(event: PromptChoiceEvent, gameEnv: GameEnvironment): ExecutionResult {
+        const selectedOptionIndex = typeof event.data.selectedOptionIndex === 'number'
+            ? event.data.selectedOptionIndex
+            : -1;
+        return this.resolveChoiceByIndex(selectedOptionIndex, event.data.context, gameEnv);
+    }
+
     static getPromptChoiceId(): string {
-        return SCRY_PROMPT_CHOICE_ID;
+        return SCRY_CHOICE_ID;
     }
 }

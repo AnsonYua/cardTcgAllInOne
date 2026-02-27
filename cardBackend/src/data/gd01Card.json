@@ -1329,7 +1329,7 @@
                         "action": "damage",
                         "target": {
                           "type": "unit",
-                          "scope": "any",
+                          "scope": "any_all_unit",
                           "filters": {
                             "keywords": [
                               "Blocker"
