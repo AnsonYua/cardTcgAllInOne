@@ -272,6 +272,54 @@ describe('effectSchemaCanonicalValidation utilities', () => {
         expect(diagnostics.some((d) => d.severity === 'error' && /top-level modifyAP/.test(d.message))).toBe(true);
     });
 
+    test('accepts discardFromHand and pair_from_trash as canonical sequence step actions', () => {
+        const diagnostics = [];
+        walkEffects(
+            {
+                effectId: 'activate_effect',
+                type: 'activated',
+                trigger: 'MAIN_PHASE',
+                action: 'sequence',
+                parameters: {
+                    steps: [
+                        {
+                            action: 'discardFromHand',
+                            target: {
+                                type: 'card',
+                                scope: 'self_hand',
+                                count: 1
+                            },
+                            parameters: {
+                                value: 1
+                            }
+                        },
+                        {
+                            action: 'pair_from_trash',
+                            target: {
+                                type: 'card',
+                                scope: 'self_trash',
+                                count: 1,
+                                filters: {
+                                    cardType: 'pilot',
+                                    traitsAny: ['Newtype'],
+                                    level: '<=3'
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            { cardId: 'MOCK-DISCARD-STEP', effectId: 'activate_effect', jsonPath: 'cards.MOCK-DISCARD-STEP.effects.rules[0]' },
+            diagnostics
+        );
+
+        expect(
+            diagnostics.some(
+                (d) => d.severity === 'error' && /unsupported sequence step action/.test(d.message)
+            )
+        ).toBe(false);
+    });
+
     test('accepts prevent_battle_damage enemyHp comparator parameter', () => {
         const diagnostics = [];
         walkEffects(

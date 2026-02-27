@@ -62,8 +62,13 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": [],
-          "handUids": [],
+          "hand": [
+              {
+              "carduid": "GD03-112_c6825cb6-7337-42d6-a26f-f8dded9f0c88",
+              "cardId": "GD03-112"
+              }
+          ],
+          "handUids": [ "GD03-112_c6825cb6-7337-42d6-a26f-f8dded9f0c88"],
           "mainDeck": []
         },
         "confirmIsRedraw": false,
@@ -127,6 +132,54 @@
             {
               "cardId": "energy_basic",
               "carduid": "energy_basic_auto_gd01-019_gain_blocker_if_enemy_units_ge_4_playerId_1_0004",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-019_gain_blocker_if_enemy_units_ge_4_playerId_1_0002",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-019_gain_blocker_if_enemy_units_ge_4_playerId_1_0002",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-019_gain_blocker_if_enemy_units_ge_4_playerId_1_0002",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-019_gain_blocker_if_enemy_units_ge_4_playerId_1_0002",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-019_gain_blocker_if_enemy_units_ge_4_playerId_1_0002",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-019_gain_blocker_if_enemy_units_ge_4_playerId_1_0002",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -240,6 +293,38 @@
             {
               "cardId": "energy_basic",
               "carduid": "energy_basic_auto_gd01-019_gain_blocker_if_enemy_units_ge_4_playerId_2_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-019_gain_blocker_if_enemy_units_ge_4_playerId_2_0004",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-019_gain_blocker_if_enemy_units_ge_4_playerId_2_0004",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-019_gain_blocker_if_enemy_units_ge_4_playerId_2_0004",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-019_gain_blocker_if_enemy_units_ge_4_playerId_2_0004",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,

@@ -7,15 +7,17 @@
     "GD01-025",
     "PAIRING_COMPLETE",
     "pairedPilotTrait",
-    "addExtraEnergy",
+    "addBasicEnergy",
     "grant_keyword",
     "First Strike"
   ],
   "notes": [
-    "Setup: Player A has GD01-025 in slot1. Player A hand: [GD01-090] (Operation Meteor pilot, level 4). Player A has 1 active energy to pay pilot cost.",
+    "Setup: Player A has GD01-025 in slot1 and can attack this turn. Player A hand: [GD01-090] (Operation Meteor pilot, level 4). Player A has active energy to pay pilot cost. Player B has a battle target in slot1.",
     "Action: Player A plays GD01-090 as pilot targeting GD01-025_unit_0001 to complete pairing.",
-    "Expect: Pairing triggers addExtraEnergy with parameters.rested=true, producing a rested energy_extra in energyArea and a RESOURCE_GAINED notification.",
-    "Expect: Pairing triggers grant_keyword First Strike until end of turn on GD01-025_unit_0001 and emits KEYWORD_GRANTED notification."
+    "Expect: Pairing triggers addBasicEnergy with parameters.rested=true, producing one new energy_basic in energyArea with isRested=true and isExtraEnergy=false.",
+    "Expect: RESOURCE_GAINED payload reports isExtraEnergy=false and includes the newly added basic energy carduid.",
+    "Expect: Pairing triggers grant_keyword First Strike on GD01-025_unit_0001 with duration UNTIL_END_OF_TURN and emits KEYWORD_GRANTED notification.",
+    "Expect (battle follow-up): During this turn, when GD01-025 attacks the enemy unit, battle uses the first-strike resolution path."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -87,12 +89,18 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
+              "modifyAP": 0,
+              "modifyHP": 0,
               "originalAP": 5,
               "originalHP": 4,
               "continueModifyAP": 0,
               "continueModifyHP": 0,
               "damageReceived": 0,
-              "temporaryEffects": []
+              "temporaryEffects": [],
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": true,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
             }
           },
           "slot2": {},
@@ -154,7 +162,26 @@
         "playerPoint": 0,
         "isReady": true,
         "zones": {
-          "slot1": {},
+          "slot1": {
+            "unit": {
+              "carduid": "GD01-022_defender_0001",
+              "cardId": "GD01-022",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": true,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 3,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "damageReceived": 1,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
           "slot2": {},
           "slot3": {},
           "slot4": {},

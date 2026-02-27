@@ -1131,11 +1131,10 @@
             "trigger": "ENTERS_PLAY",
             "target": {
               "type": "unit",
-              "scope": "any",
+              "scope": "any_all_unit",
               "filters": {
                 "level": "<=5"
-              },
-              "count": 12
+              }
             },
             "action": "damage",
             "parameters": {

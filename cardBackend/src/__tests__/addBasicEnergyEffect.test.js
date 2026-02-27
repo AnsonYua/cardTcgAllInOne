@@ -32,7 +32,7 @@ describe('addBasicEnergy effect', () => {
         expect(addedCard.isRested).toBe(true);
     });
 
-    test('GD01-025 pairing resource effect uses addBasicEnergy in data', () => {
+    test('GD01-025 pairing resource effect uses sequence addBasicEnergy + First Strike in data', () => {
         const gameEnv = new GameEnvironment();
         gameEnv.addPlayer('playerId_1', 'P1');
 
@@ -44,10 +44,16 @@ describe('addBasicEnergy effect', () => {
         expect(slot1.unit.carduid).toBe(unitUid);
 
         const rules = slot1.unit.cardData?.effects?.rules || [];
-        const resourceEffect = rules.find((r) => r.effectId === 'pair_place_rested_resource');
-        expect(resourceEffect).toBeTruthy();
-        expect(resourceEffect.action).toBe('addBasicEnergy');
-        expect(resourceEffect.parameters.rested).toBe(true);
+        const pairingEffect = rules.find((r) => r.effectId === 'pair_operation_meteor_place_resource_then_gain_first_strike');
+        expect(pairingEffect).toBeTruthy();
+        expect(pairingEffect.action).toBe('sequence');
+
+        const steps = pairingEffect.parameters?.steps || [];
+        expect(Array.isArray(steps)).toBe(true);
+        expect(steps[0].action).toBe('addBasicEnergy');
+        expect(steps[0].parameters?.rested).toBe(true);
+        expect(steps[1].action).toBe('grant_keyword');
+        expect(steps[1].parameters?.keyword).toBe('First Strike');
+        expect(steps[1].timing?.duration).toBe('UNTIL_END_OF_TURN');
     });
 });
-
