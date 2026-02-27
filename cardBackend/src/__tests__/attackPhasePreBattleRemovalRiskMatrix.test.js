@@ -160,5 +160,18 @@ describe('ATTACK_PHASE pre-battle removal risk matrix', () => {
         expect(resolution.payload?.result?.battleEndedEarly).toBe(true);
         expect(resolution.payload?.result?.abortReason).toBe('TARGET_NOT_ON_BOARD');
         expect(resolution.payload?.result?.targetMissing).toBe(true);
+
+        if (cardId === 'GD01-050') {
+            expect(resolution.payload?.result?.attackerDamageTaken).toBe(0);
+
+            const declaredIndex = (gameEnv.notificationQueue || []).findIndex((event) => event?.id === attackNotificationId);
+            expect(declaredIndex).toBeGreaterThanOrEqual(0);
+
+            const attackerDamagedAfterDeclare = (gameEnv.notificationQueue || [])
+                .slice(declaredIndex + 1)
+                .filter((event) => event?.type === 'CARD_DAMAGED')
+                .some((event) => event?.payload?.carduid === attackerUnit.carduid);
+            expect(attackerDamagedAfterDeclare).toBe(false);
+        }
     });
 });

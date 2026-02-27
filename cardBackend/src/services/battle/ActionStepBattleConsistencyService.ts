@@ -109,18 +109,28 @@ export class ActionStepBattleConsistencyService {
             ? !this.isUnitLookupMatch(targetLookup, battle.targetCarduid)
             : false;
         const targetSnapshot = buildInvalidActionStepTargetSnapshot(gameEnv, battle, targetLookup);
+        const isUnitAttack = battle.actionType === 'attackUnit';
+        const shouldEmitZeroDamageOutcome = isUnitAttack && (
+            reason === 'TARGET_NOT_ON_BOARD' || reason === 'ATTACKER_NOT_ON_BOARD'
+        );
 
         emitBattleResolutionNotification(gameEnv, battle, {
             attacker: attackerSnapshot,
             target: targetSnapshot,
             focusTarget: targetSnapshot,
             result: {
-                targetType: battle.actionType === 'attackUnit' ? 'unit' : 'shield',
+                targetType: isUnitAttack ? 'unit' : 'shield',
                 aborted: true,
                 abortReason: reason,
                 battleEndedEarly: true,
                 attackerMissing,
-                targetMissing
+                targetMissing,
+                ...(shouldEmitZeroDamageOutcome ? {
+                    attackerDamageTaken: 0,
+                    defenderDamageTaken: 0,
+                    battleDamageApplied: false,
+                    damageStepExecuted: false
+                } : {})
             }
         });
 

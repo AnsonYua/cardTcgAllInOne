@@ -100,7 +100,24 @@
           "slot5": {},
           "slot6": {},
           "base": [],
-          "shieldArea": [],
+          "shieldArea": [
+                            {
+              "carduid": "ST01-013_a3466e63-bec3-4dc0-9c9b-11d7e77f4637",
+              "cardId": "ST01-013",
+              "placedAt": 1757854884783,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "originalCardType": "command"
+            },
+            {
+              "carduid": "ST01-016_344d543e-eea7-49d2-bcf3-f3d406cbf07a",
+              "cardId": "ST01-016",
+              "placedAt": 1757854884783,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "originalCardType": "base"
+            }
+          ],
           "energyArea": [
             {
               "cardId": "energy_basic",
@@ -154,18 +171,14 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD01-052_defender_0001",
-              "cardId": "GD01-052",
+              "carduid": "GD03-007_defender_0001",
+              "cardId": "GD03-007",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": true,
               "damageReceived": 0,
               "modifyAP": 0,
               "modifyHP": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
-              "originalAP": 2,
-              "originalHP": 3,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
@@ -178,7 +191,7 @@
               "cardId": "GD01-022",
               "placedAt": 0,
               "placedBy": "playerId_2",
-              "isRested": false,
+              "isRested": true,
               "damageReceived": 0,
               "modifyAP": 0,
               "modifyHP": 0,
@@ -197,7 +210,24 @@
           "slot5": {},
           "slot6": {},
           "base": [],
-          "shieldArea": [],
+          "shieldArea": [
+                        {
+              "carduid": "ST01-013_a3466e63-bec3-4dc0-9c9b-11d7e77f4637",
+              "cardId": "ST01-013",
+              "placedAt": 1757854884783,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalCardType": "command"
+            },
+            {
+              "carduid": "ST01-016_344d543e-eea7-49d2-bcf3-f3d406cbf07a",
+              "cardId": "ST01-016",
+              "placedAt": 1757854884783,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalCardType": "base"
+            }
+          ],
           "energyArea": [
             {
               "cardId": "energy_basic",

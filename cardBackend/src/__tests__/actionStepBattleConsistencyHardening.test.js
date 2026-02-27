@@ -120,6 +120,10 @@ describe('ACTION_STEP battle consistency hardening', () => {
         expect(resolution.payload.result.battleEndedEarly).toBe(true);
         expect(resolution.payload.result.abortReason).toBe('TARGET_NOT_ON_BOARD');
         expect(resolution.payload.result.targetMissing).toBe(true);
+        expect(resolution.payload.result.attackerDamageTaken).toBe(0);
+        expect(resolution.payload.result.defenderDamageTaken).toBe(0);
+        expect(resolution.payload.result.battleDamageApplied).toBe(false);
+        expect(resolution.payload.result.damageStepExecuted).toBe(false);
         expect(resolution.payload.battleType).toBe('attackUnit');
         expect(resolution.payload.target?.zoneType).toBe('slot');
         expect(resolution.payload.target?.slot).toBe('slot1');

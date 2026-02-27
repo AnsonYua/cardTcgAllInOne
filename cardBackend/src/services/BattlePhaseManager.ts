@@ -1118,6 +1118,10 @@ export class BattlePhaseManager {
                 battleEndedEarly: true,
                 abortReason: 'TARGET_NOT_ON_BOARD',
                 targetMissing: true,
+                attackerDamageTaken: 0,
+                defenderDamageTaken: 0,
+                battleDamageApplied: false,
+                damageStepExecuted: false,
                 preBattle: true
             }
         });

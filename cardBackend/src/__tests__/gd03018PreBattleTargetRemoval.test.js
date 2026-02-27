@@ -39,6 +39,7 @@ describe('GD03-018 pre-battle target removal handling', () => {
         const targetBefore = findUnit(gameEnv, 'playerId_2', targetUid);
         expect(attackerBefore).toBeTruthy();
         expect(targetBefore).toBeTruthy();
+        const attackerDamageBeforeAttack = attackerBefore.damageReceived || 0;
         attackerBefore.isRested = false;
         attackerBefore.playedThisTurn = false;
         attackerBefore.canAttackThisTurn = true;
@@ -60,6 +61,7 @@ describe('GD03-018 pre-battle target removal handling', () => {
         expect(findUnit(gameEnv, 'playerId_2', targetUid)).toBeFalsy();
         expect(findUnit(gameEnv, 'playerId_1', attackerUid)).toBeTruthy();
         expect(findUnit(gameEnv, 'playerId_1', attackerUid).isRested).toBe(true);
+        expect(findUnit(gameEnv, 'playerId_1', attackerUid).damageReceived || 0).toBe(attackerDamageBeforeAttack);
         expect(gameEnv.currentBattle).toBeUndefined();
 
         const resolution = latestBattleResolved(gameEnv);
@@ -68,6 +70,10 @@ describe('GD03-018 pre-battle target removal handling', () => {
         expect(resolution.payload?.result?.battleEndedEarly).toBe(true);
         expect(resolution.payload?.result?.abortReason).toBe('TARGET_NOT_ON_BOARD');
         expect(resolution.payload?.result?.targetMissing).toBe(true);
+        expect(resolution.payload?.result?.attackerDamageTaken).toBe(0);
+        expect(resolution.payload?.result?.defenderDamageTaken).toBe(0);
+        expect(resolution.payload?.result?.battleDamageApplied).toBe(false);
+        expect(resolution.payload?.result?.damageStepExecuted).toBe(false);
 
         const attackDeclared = (gameEnv.notificationQueue || []).find(
             (entry) => (entry?.type || '').toUpperCase() === 'UNIT_ATTACK_DECLARED'
