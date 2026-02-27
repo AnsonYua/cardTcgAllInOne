@@ -8,6 +8,7 @@ import { CardPlayNotificationLifecycle } from '../notifications/CardPlayNotifica
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { GameEvent, TargetChoiceEvent, TargetReference, TokenChoiceEvent, OptionChoiceEvent, PromptChoiceEvent } from '../EventQueue/interfaces/GameEvent';
 import type { GameLogicResult } from '../GameLogic';
+import { EventStatus } from '../EventQueue/interfaces/GameEvent';
 
 export interface ChoiceConfirmationPersistence {
     loadGameFromFile(gameId: string): Promise<GameEnvironment | null>;
@@ -15,6 +16,22 @@ export interface ChoiceConfirmationPersistence {
 }
 
 export class ChoiceConfirmationService {
+    private static listUnresolvedChoiceIds(gameEnv: GameEnvironment): string[] {
+        return (gameEnv.processingQueue || [])
+            .filter((queuedEvent: any) => {
+                const type = String(queuedEvent?.type || '').toUpperCase();
+                const isChoiceType =
+                    type === EventType.TARGET_CHOICE ||
+                    type === EventType.BLOCKER_CHOICE ||
+                    type === EventType.BURST_EFFECT_CHOICE ||
+                    type === EventType.TOKEN_CHOICE ||
+                    type === EventType.OPTION_CHOICE ||
+                    type === EventType.PROMPT_CHOICE;
+                return isChoiceType && queuedEvent?.status === EventStatus.DECLARED;
+            })
+            .map((queuedEvent: any) => `${queuedEvent.id}:${queuedEvent.type}`);
+    }
+
     private static async processAndPersist(
         persistence: ChoiceConfirmationPersistence,
         gameId: string,
@@ -80,6 +97,12 @@ export class ChoiceConfirmationService {
 
             const event = gameEnv.processingQueue.find(e => e.id === eventId) as TargetChoiceEvent | undefined;
             if (!event) {
+                console.error('[ChoiceConfirmationService] Target choice event not found', {
+                    gameId,
+                    playerId,
+                    requestedEventId: eventId,
+                    unresolvedChoiceIds: this.listUnresolvedChoiceIds(gameEnv)
+                });
                 return { success: false, error: 'Target choice event not found' };
             }
 

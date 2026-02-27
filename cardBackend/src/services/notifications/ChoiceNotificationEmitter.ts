@@ -111,11 +111,16 @@ export class ChoiceNotificationEmitter {
     }
 
     static emitBlockerChoiceCreated(gameEnv: GameEnvironment, event: BlockerChoiceEvent): void {
-        const notificationManager = new GameNotificationManager(gameEnv);
-        notificationManager.addNotificationEventWithId(event.id, 'BLOCKER_CHOICE', {
-            playerId: event.playerId,
-            event
-        }, 'high');
+        ChoiceNotificationEmitter.emitPersistentChoiceCreated(gameEnv, {
+            eventId: event.id,
+            type: 'BLOCKER_CHOICE',
+            payload: {
+                playerId: event.playerId,
+                event,
+                isCompleted: false
+            },
+            priority: 'high'
+        });
     }
 
     static emitBlockerChoiceResolved(

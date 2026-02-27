@@ -52,4 +52,46 @@ describe('GameEnvViewBuilder notification-first choice contract', () => {
         expect(targetChoice.payload?.event?.id).toBe('target_choice_1');
         expect(targetChoice.payload?.event?.data?.userDecisionMade).toBe(false);
     });
+
+    test('keeps resolved/completed choice state in notificationQueue even when processingQueue is sanitized', () => {
+        const gameEnv = new GameEnvironment();
+        gameEnv.addPlayer('playerId_1', 'P1');
+        gameEnv.addPlayer('playerId_2', 'P2');
+        gameEnv.processingQueue = [];
+        gameEnv.notificationQueue = [
+            {
+                id: 'target_choice_2',
+                type: 'TARGET_CHOICE',
+                metadata: {
+                    timestamp: Date.now(),
+                    expiresAt: Number.MAX_SAFE_INTEGER,
+                    requiresAcknowledgment: true,
+                    priority: 'high'
+                },
+                payload: {
+                    playerId: 'playerId_2',
+                    isCompleted: true,
+                    event: {
+                        ...createTargetChoiceEvent('target_choice_2'),
+                        status: EventStatus.RESOLVED,
+                        data: {
+                            choiceId: 'choice_target_choice_2',
+                            userDecisionMade: true
+                        }
+                    }
+                }
+            }
+        ];
+
+        const view = GameEnvViewBuilder.toPlayerView(gameEnv, 'playerId_2');
+        expect(Array.isArray(view.processingQueue)).toBe(true);
+        expect(view.processingQueue).toHaveLength(0);
+
+        const notes = Array.isArray(view.notificationQueue) ? view.notificationQueue : [];
+        const targetChoice = notes.find((entry) => entry && entry.id === 'target_choice_2');
+        expect(targetChoice).toBeTruthy();
+        expect(targetChoice.payload?.isCompleted).toBe(true);
+        expect(targetChoice.payload?.event?.status).toBe(EventStatus.RESOLVED);
+        expect(targetChoice.payload?.event?.data?.userDecisionMade).toBe(true);
+    });
 });

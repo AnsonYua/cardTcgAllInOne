@@ -66,7 +66,11 @@
         "deck": {
           "hand": [],
           "handUids": [],
-          "mainDeck": []
+          "mainDeck": [
+            "GD03-045_topdeck_0001",
+            "GD03-044_topdeck_0002",
+             "GD03-056_hand_0003"
+            ]
         },
         "confirmIsRedraw": false,
         "isRedraw": false,
@@ -141,7 +145,10 @@
           "hand": [],
           "handUids": [],
           "mainDeck": [
-            "GD01-022_draw_0001"
+            "GD01-022_draw_0001",
+             "GD03-045_topdeck_0001",
+            "GD03-044_topdeck_0002",
+             "GD03-056_hand_0003"
           ]
         },
         "confirmIsRedraw": false,

@@ -152,6 +152,10 @@ describe('confirmBlockerChoice notification contract', () => {
         expect(refreshTarget.payload.forcedTargetCarduid).toBe('blocker_uid_1');
         expect(refreshTarget.payload.forcedTargetZone).toBe('slot1');
         expect(refreshTarget.payload.forcedTargetPlayerId).toBe(fixture.defenderId);
+
+        const blockerNotification = fixture.gameEnv.notificationQueue.find((note) => note.id === fixture.blockerEventId);
+        expect(blockerNotification).toBeTruthy();
+        expect(blockerNotification.payload.isCompleted).toBe(true);
     });
 
     test('DECLINE does not mutate attack target fields or emit REFRESH_TARGET', async () => {
@@ -178,5 +182,9 @@ describe('confirmBlockerChoice notification contract', () => {
 
         const refreshTarget = fixture.gameEnv.notificationQueue.find((note) => note.type === 'REFRESH_TARGET');
         expect(refreshTarget).toBeUndefined();
+
+        const blockerNotification = fixture.gameEnv.notificationQueue.find((note) => note.id === fixture.blockerEventId);
+        expect(blockerNotification).toBeTruthy();
+        expect(blockerNotification.payload.isCompleted).toBe(true);
     });
 });

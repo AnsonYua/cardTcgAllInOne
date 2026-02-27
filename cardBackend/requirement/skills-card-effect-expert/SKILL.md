@@ -68,6 +68,10 @@ Use this when the user asks "is this effect properly implemented?" and does not 
 - Frontend timing checks must normalize phase enum variants (e.g. `ACTION_STEP_PHASE`) to canonical rule tokens (e.g. `ACTION_STEP`) before matching `timing.windows`.
 - Do not parse comparison strings in multiple places; use one shared utility.
 - Prefer engine-level semantic fixes over card-by-card data hacks when behavior is cross-card.
+- `another`-condition review rule (`hasAnotherUnitWithTrait` and similar):
+  - verify explicit self exclusion via `excludeCarduid` (source must not satisfy its own "another" requirement)
+  - verify condition ownership binding uses the source card controller (not current turn player)
+  - verify trigger timing against zone transition (evaluate conditions before source leaves play when card text implies in-play state checks at trigger time)
 - `prevent_battle_damage` continuous-application guardrail:
   - unit-targeted continuous prevention with `parameters.from = "enemy_units"` is a valid unconditional shape even without `enemyLevel` / `enemyAp` / `maxEnemyAp` / `enemyHp`.
   - do not require comparator filters before applying continuous temporary prevention, or effects can register but silently never apply (e.g. `GD03-020`).
@@ -149,6 +153,17 @@ Use this when the user asks "is this effect properly implemented?" and does not 
   - Reactive triggers caused by intermediate step damage (e.g., `EFFECT_DAMAGE_RECEIVED`) should resolve after sequence completion.
   - If sequence resolution spans multiple API calls, deferred reactive trigger buffers must survive `GameEnvironment.toJSON()/fromJSON()` persistence.
   - Deferred reactive buffers that depend on event-target conditions must persist per-event notification context (not just player ids), or later flush may evaluate against the wrong notification queue tail.
+- Choice-notification source-of-truth rule:
+  - Frontend choice/dialog flow must be derived from `notificationQueue` only; `processingQueue` is internal execution state and non-authoritative for UI.
+  - When returning player views, keep `processingQueue` sanitized/non-authoritative and ensure actionable choice payloads (`TARGET_CHOICE`, `BLOCKER_CHOICE`, `BURST_EFFECT_CHOICE`, etc.) are present in `notificationQueue`.
+- Choice persistence-serializer rule:
+  - Never persist game state with client-filtered queue serialization.
+  - Use persistence serialization that keeps full internal `processingQueue` (including declared blocking choices), even if client serialization hides those entries when `BATTLE_RESOLVED` is present.
+- Choice notification durability rule:
+  - All interactive choice notifications (`TARGET_CHOICE`, `BLOCKER_CHOICE`, `BURST_EFFECT_CHOICE`, token/option/prompt choices) should be persistent (`requiresAcknowledgment=true`, far-future `expiresAt`) until acknowledged.
+- Choice submit failure UX parity rule:
+  - On confirm API failure, do not close/clear choice dialogs as if resolution succeeded.
+  - Keep the choice UI active/recoverable and log request context (`gameId`, `playerId`, `eventId`) + error payload for debugging.
 - Sequence target continuity rule:
   - If later sequence text refers to the same chosen target from an earlier step ("it", "that Unit"), encode dependent steps with `target.scope = "previous_target"` rather than a second `player_choice`.
 - Reactive continuous expansion metadata rule:
@@ -252,6 +267,11 @@ See `references/incident-gd03-035.md` for concrete bugs and fixes:
   - add/inspect deploy diagnostics (`triggered`, `resolved`, `no_targets`, `invalid_target_state`) before changing `effects.rules`.
   - if `npm run review:effects` reports `Issues: 0` but `validate:effects:canonical` fails, inspect canonical schema definitions in `src/services/effects/schema/EffectSchema.ts` (for example missing sequence step actions like `prevent_shield_damage`) before patching card JSON.
   - See `references/incident-deploy-diagnostics-fixture-canonicality-and-schema-validator-gap.md`.
+- `GD01-007` destroyed conditional draw implementation-review capture:
+  - verified text/rule/runtime alignment for `[Destroyed] If you have another (OZ) Unit in play, draw 1.`
+  - confirms `another` exclusion via `excludeCarduid` and pre-trash destroyed-trigger timing in runtime path
+  - implementation is correct; residual gap is missing card-specific negative scenario coverage (`no other OZ in play => no draw`)
+  - See `references/incident-gd01-007-destroyed-conditional-draw-another-trait.md`.
 - `GD03-002` / `GD02-005` attack-trigger timing and ordering pattern:
   - `GD03-002` (`During Pair`, reactive continuous on `UNIT_ATTACK_DECLARED`) and `GD02-005` (`ATTACK_PHASE` rest while linked) exposed that "attack text" spans two backend trigger pipelines with different timing/context risks.
   - Fixes/lessons:
@@ -260,6 +280,19 @@ See `references/incident-gd03-035.md` for concrete bugs and fixes:
     - ensure auto-applied attack-triggered effects emit state-change notifications before `BATTLE_RESOLVED`/`GAME_ENDED`
     - treat `TARGET_CHOICE` from attack triggers as an interrupt that pauses attack progression before battle opens
   - Review takeaway: always classify the card as declaration-reactive vs `ATTACK_PHASE` first, then verify ordering with notification timestamps/types.
+- Battle-resolve destroy choice desync pattern (`Target choice event not found`):
+  - symptom: player selects a valid card in dialog, but hand/board state does not change and confirm endpoint returns "event not found".
+  - root cause class:
+    - persisted game snapshots used client-filtered serialization (`toJSON`) that hid declared blocking choices after `BATTLE_RESOLVED`.
+    - confirm endpoints look up unresolved choice events from internal `processingQueue`, so reload lost the target event id.
+    - in parallel, frontend submit flows could swallow confirm errors and close dialogs, creating false-success UX.
+  - hardening:
+    - add and use `toPersistenceJSON()` for save/version snapshot paths (full `processingQueue` retained)
+    - keep frontend choice source strictly notification-based
+    - make `BLOCKER_CHOICE` notification persistence parity explicit
+    - keep dialogs open on submit failure and require successful confirm before close/clear
+    - add consistency tests: unresolved choice notifications map to persisted processing events by id
+  - See `references/incident-battle-resolve-destroy-choice-persistence-and-notification-contract.md`.
 
 ## Output Requirements
 - Provide:

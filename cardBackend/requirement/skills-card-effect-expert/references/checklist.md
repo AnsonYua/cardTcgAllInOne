@@ -23,6 +23,9 @@
   - evaluator/resolver path
   - runtime execution path
 - For cards with multiple effects (e.g. keyword + triggered/pair effect), review each effect separately and report pass/fail per effect.
+- For conditional-trigger effects (`if another...`, `if linked...`, `if paired...`):
+  - verify both positive and negative scenario coverage when available
+  - if only positive coverage exists, call out residual risk explicitly in findings
 - If no card-specific automated test exists:
   - run the closest engine-surface regression tests (keyword semantics, reactive continuous processing, dynamic target filters)
   - state residual risk explicitly instead of assuming full runtime coverage

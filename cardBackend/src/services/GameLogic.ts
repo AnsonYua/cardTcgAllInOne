@@ -68,6 +68,21 @@ export class GameLogic {
         'st07Card.json',
         'st08Card.json'
     ];
+    private listUnresolvedChoiceIds(gameEnv: GameEnvironment): string[] {
+        return (gameEnv.processingQueue || [])
+            .filter((queuedEvent: any) => {
+                const type = String(queuedEvent?.type || '').toUpperCase();
+                const isChoiceType =
+                    type === EventType.TARGET_CHOICE ||
+                    type === EventType.BLOCKER_CHOICE ||
+                    type === EventType.BURST_EFFECT_CHOICE ||
+                    type === EventType.TOKEN_CHOICE ||
+                    type === EventType.OPTION_CHOICE ||
+                    type === EventType.PROMPT_CHOICE;
+                return isChoiceType && queuedEvent?.status === EventStatus.DECLARED;
+            })
+            .map((queuedEvent: any) => `${queuedEvent.id}:${queuedEvent.type}`);
+    }
 
     constructor() {
         this.baseDataPath = path.join(__dirname, '../gameData');
@@ -1099,6 +1114,12 @@ export class GameLogic {
             // Find the event in processing queue
             const event = gameEnv.findEventById(eventId) as BurstEffectChoiceEvent | undefined;
             if (!event) {
+                console.error('[GameLogic] Burst choice event not found', {
+                    gameId,
+                    playerId,
+                    requestedEventId: eventId,
+                    unresolvedChoiceIds: this.listUnresolvedChoiceIds(gameEnv)
+                });
                 return {
                     success: false,
                     error: 'Event not found in processing queue'
@@ -1309,6 +1330,12 @@ export class GameLogic {
 
             const event = gameEnv.processingQueue.find(e => e.id === eventId) as BlockerChoiceEvent | undefined;
             if (!event) {
+                console.error('[GameLogic] Blocker choice event not found', {
+                    gameId,
+                    playerId,
+                    requestedEventId: eventId,
+                    unresolvedChoiceIds: this.listUnresolvedChoiceIds(gameEnv)
+                });
                 return {
                     success: false,
                     error: 'Blocker choice event not found'
@@ -1458,6 +1485,7 @@ export class GameLogic {
                     blockerNotification.payload.event.data.userDecisionMade = true;
                     blockerNotification.payload.event.data.selectedTarget = resolvedTarget;
                     blockerNotification.payload.event.data.userDecision = resolvedTarget ? 'BLOCK' : 'DECLINE';
+                    blockerNotification.payload.isCompleted = true;
                 }
             } catch (error) {
                 console.error('❌ Failed to update BLOCKER_CHOICE notification payload:', error);
