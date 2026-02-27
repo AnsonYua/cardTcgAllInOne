@@ -29,6 +29,7 @@ export interface CardPlacementResult {
 export interface CardPlacementOptions {
     targetUnit?: string;
     replaceSlot?: string;
+    forcedSlot?: string;
     [key: string]: any;
 }
 
@@ -40,7 +41,8 @@ export class PlayerCardManager {
     static placeCardWithEventData(
         gameEnv: GameEnvironment,
         playerId: string,
-        eventData: PlayCardEventData
+        eventData: PlayCardEventData,
+        options: CardPlacementOptions = {}
     ): CardPlacementResult {
         try {
             const normalizedCarduid = normalizeCarduid(eventData.carduid as unknown as string);
@@ -76,7 +78,8 @@ export class PlayerCardManager {
                                              fullCardData, 
                                              normalizedCarduid, 
                                              playerId,
-                                             eventData.replaceSlot as string | undefined);
+                                             eventData.replaceSlot as string | undefined,
+                                             options.forcedSlot);
 
                 case 'pilot':
                     return this.placePilotCard(player.zones, 
@@ -194,12 +197,14 @@ export class PlayerCardManager {
         cardData: any,
         carduid: string,
         playerId: string,
-        replaceSlot?: string
+        replaceSlot?: string,
+        forcedSlot?: string
     ): CardPlacementResult {
         const slotResult = resolveUnitPlacementSlot(playerZones, {
             gameEnv,
             playerId,
             replaceSlot,
+            forcedSlot,
             findFirstEmptySlot: PlayerCardManager.findFirstEmptySlot,
             moveUnitFromSlotToTrash: (env, ownerId, slotName, unitCard) =>
                 PlayerCardManager.moveCardToTrashFromSlot(env, ownerId, slotName, unitCard, 'unit')

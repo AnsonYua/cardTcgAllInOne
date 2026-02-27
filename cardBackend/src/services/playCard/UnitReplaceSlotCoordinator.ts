@@ -5,6 +5,7 @@ export const UNIT_BOARD_FULL_PROMPT = 'Board is full. Choose a slot to replace.'
 export const INVALID_REPLACE_SLOT = (value: unknown) => `Invalid replaceSlot: ${String(value)}`;
 export const REPLACE_SLOT_MUST_HAVE_UNIT = 'replaceSlot must reference an occupied unit slot.';
 export const REPLACE_SLOT_ONLY_ON_FULL_BOARD = 'replaceSlot can only be used when board is full.';
+export const FORCED_SLOT_MUST_BE_EMPTY = 'forcedSlot must reference an empty unit slot.';
 
 export type UnitReplaceValidationResult =
     | { success: true; boardFull: boolean; replaceSlot?: SlotZone }
@@ -72,10 +73,32 @@ export const resolveUnitPlacementSlot = (
         gameEnv: GameEnvironment;
         playerId: string;
         replaceSlot?: unknown;
+        forcedSlot?: unknown;
         findFirstEmptySlot: (zones: any) => string | null;
         moveUnitFromSlotToTrash: (gameEnv: GameEnvironment, playerId: string, slotName: string, unitCard: any) => boolean;
     }
 ): UnitPlacementSlotResult => {
+    const forced = normalizeReplaceSlot(opts.forcedSlot);
+    if (forced === null) {
+        return {
+            success: false,
+            error: INVALID_REPLACE_SLOT(opts.forcedSlot)
+        };
+    }
+    if (forced) {
+        const forcedTargetSlot = playerZones?.[forced];
+        if (forcedTargetSlot?.unit) {
+            return {
+                success: false,
+                error: FORCED_SLOT_MUST_BE_EMPTY
+            };
+        }
+        return {
+            success: true,
+            targetZone: forced
+        };
+    }
+
     const normalized = normalizeReplaceSlot(opts.replaceSlot);
     if (normalized === null) {
         return {

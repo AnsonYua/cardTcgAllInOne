@@ -38,7 +38,9 @@ export interface PlayCardPreparationSuccess {
     cardData: any;
     tappedEnergy: EnergyZoneCard[];
     fromBurst: boolean;
+    finalizeBeforePlacement?: () => { success: boolean; error?: string };
     finalizeAfterPlacement?: () => { success: boolean; error?: string };
+    forcedUnitSlot?: string;
     rollback: () => void;
 }
 
@@ -132,16 +134,6 @@ export class PlayCardPreparationManager {
             }
         }
 
-        if (eventData.playAs === 'unit') {
-            const validation = validateUnitReplaceSlotForPlay(player.zones, eventData.replaceSlot);
-            if (!validation.success) {
-                return {
-                    success: false,
-                    error: validation.error
-                };
-            }
-        }
-
         let cardDataForEnergy = HandContinuousModifier.applyModifiersForHandCardPlay(
             gameEnv,
             playerId,
@@ -162,6 +154,16 @@ export class PlayCardPreparationManager {
                 level: replacementChoice.replacementLevel,
                 cost: replacementChoice.replacementCost
             };
+        }
+
+        if (eventData.playAs === 'unit' && !replacementChoice.forcedUnitSlot) {
+            const validation = validateUnitReplaceSlotForPlay(player.zones, eventData.replaceSlot);
+            if (!validation.success) {
+                return {
+                    success: false,
+                    error: validation.error
+                };
+            }
         }
 
         if (cardDataForEnergy && (cardDataForEnergy.cost !== cardData.cost || cardDataForEnergy.level !== cardData.level)) {
@@ -246,7 +248,9 @@ export class PlayCardPreparationManager {
             cardData,
             tappedEnergy: energyResult.tapped,
             fromBurst,
+            ...(replacementChoice.finalizeBeforePlacement ? { finalizeBeforePlacement: replacementChoice.finalizeBeforePlacement } : {}),
             ...(replacementChoice.finalizeAfterPlacement ? { finalizeAfterPlacement: replacementChoice.finalizeAfterPlacement } : {}),
+            ...(replacementChoice.forcedUnitSlot ? { forcedUnitSlot: replacementChoice.forcedUnitSlot } : {}),
             rollback
         };
     }
@@ -262,7 +266,9 @@ export class PlayCardPreparationManager {
         applyReplacement: boolean;
         replacementCost: number;
         replacementLevel: number;
+        finalizeBeforePlacement?: () => { success: boolean; error?: string };
         finalizeAfterPlacement?: () => { success: boolean; error?: string };
+        forcedUnitSlot?: string;
     } {
         if (fromBurst) {
             return {
@@ -312,7 +318,9 @@ export class PlayCardPreparationManager {
         applyReplacement: boolean;
         replacementCost: number;
         replacementLevel: number;
+        finalizeBeforePlacement?: () => { success: boolean; error?: string };
         finalizeAfterPlacement?: () => { success: boolean; error?: string };
+        forcedUnitSlot?: string;
     } | null {
         if (this.isDestroyLinkedUnitCostReplacementRule(replacementRule)) {
             return this.resolveDestroyLinkedUnitCostReplacement(
@@ -350,7 +358,9 @@ export class PlayCardPreparationManager {
         applyReplacement: boolean;
         replacementCost: number;
         replacementLevel: number;
+        finalizeBeforePlacement?: () => { success: boolean; error?: string };
         finalizeAfterPlacement?: () => { success: boolean; error?: string };
+        forcedUnitSlot?: string;
     } | null {
         const requestedByEvent = (eventData as any).useCostReplacement === true;
         const availableEnergy = EnergyManager.getAvailableEnergy(gameEnv, playerId);
@@ -377,7 +387,8 @@ export class PlayCardPreparationManager {
             applyReplacement: true,
             replacementCost,
             replacementLevel,
-            finalizeAfterPlacement: () => {
+            forcedUnitSlot: selected.slotName,
+            finalizeBeforePlacement: () => {
                 const player = gameEnv.getPlayer(playerId);
                 if (!player?.zones) {
                     return { success: false, error: `Player ${playerId} zones not found for cost replacement` };
@@ -537,7 +548,9 @@ export class PlayCardPreparationManager {
                 continue;
             }
 
-            if (!SlotCardStateUtils.isCardLinked(gameEnv, unit.carduid)) {
+            const isLinkedNow = SlotCardStateUtils.isCardLinked(gameEnv, unit.carduid);
+            const isLinkCapableUnit = Array.isArray(unit.cardData?.link) && unit.cardData.link.length > 0;
+            if (!isLinkedNow && !isLinkCapableUnit) {
                 continue;
             }
 

@@ -7,6 +7,7 @@ const { BaseAbilityManager } = require('../services/effects/BaseAbilityManager')
 const { ContinuousEffectManager } = require('../services/ContinuousEffectManager');
 const { EffectExecutor } = require('../services/effects/EffectExecutor');
 const { CardPlayExecutor } = require('../services/CardPlayExecutor');
+const { EnergyManager } = require('../services/EnergyManager');
 
 describe('GD01 audit fixes', () => {
     test('card data includes fixed linked/keyword rule mappings', () => {
@@ -173,6 +174,284 @@ describe('GD01 audit fixes', () => {
             .map((slot) => p1.zones[slot]?.unit?.carduid)
             .filter(Boolean);
         expect(deployedUids).toContain(destroyModeUid);
+    });
+
+    test('GD01-002 can auto-apply replacement using unpaired GD01-005 (link-capable Unicorn Mode Lv.5) when energy is insufficient', () => {
+        const gameEnv = new GameEnvironment();
+        const p1 = gameEnv.addPlayer('playerId_1', 'P1');
+
+        gameEnv.currentTurn = 1;
+        gameEnv.currentPlayer = 'playerId_1';
+        gameEnv.phase = 'MAIN_PHASE';
+
+        const unicornModeUid = 'GD01-005_unit_unpaired_0001';
+        const destroyModeUid = 'GD01-002_unit_unpaired_0001';
+        p1.deck._handUids = [destroyModeUid];
+        p1.deck.handUids = [destroyModeUid];
+
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: unicornModeUid, playAs: 'unit' }).success).toBe(true);
+
+        const result = CardPlayExecutor.execute(
+            {
+                id: 'play_evt_unpaired_1',
+                type: 'PLAY_CARD',
+                status: 'DECLARED',
+                priority: 1,
+                playerId: 'playerId_1',
+                timestamp: Date.now(),
+                data: {
+                    carduid: destroyModeUid,
+                    playAs: 'unit',
+                    playerId: 'playerId_1'
+                }
+            },
+            gameEnv
+        );
+
+        expect(result.success).toBe(true);
+        expect(p1.deck.handUids).not.toContain(destroyModeUid);
+        expect(p1.zones.trashArea.map((card) => card.carduid)).toContain(unicornModeUid);
+
+        const deployedUids = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6']
+            .map((slot) => p1.zones[slot]?.unit?.carduid)
+            .filter(Boolean);
+        expect(deployedUids).toContain(destroyModeUid);
+    });
+
+    test('GD01-002 replacement on full board uses destroyed unit slot without replace prompt (unpaired target)', () => {
+        const gameEnv = new GameEnvironment();
+        const p1 = gameEnv.addPlayer('playerId_1', 'P1');
+
+        gameEnv.currentTurn = 1;
+        gameEnv.currentPlayer = 'playerId_1';
+        gameEnv.phase = 'MAIN_PHASE';
+
+        const fillerA = 'GD01-007_unit_fill_a_0001';
+        const fillerB = 'GD01-008_unit_fill_b_0001';
+        const targetUid = 'GD01-005_unit_fill_target_0001';
+        const fillerC = 'GD01-009_unit_fill_c_0001';
+        const fillerD = 'GD01-010_unit_fill_d_0001';
+        const fillerE = 'GD01-011_unit_fill_e_0001';
+        const destroyModeUid = 'GD01-002_unit_fill_play_0001';
+        p1.deck._handUids = [destroyModeUid];
+        p1.deck.handUids = [destroyModeUid];
+
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: fillerA, playAs: 'unit' }).success).toBe(true);
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: fillerB, playAs: 'unit' }).success).toBe(true);
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: targetUid, playAs: 'unit' }).success).toBe(true);
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: fillerC, playAs: 'unit' }).success).toBe(true);
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: fillerD, playAs: 'unit' }).success).toBe(true);
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: fillerE, playAs: 'unit' }).success).toBe(true);
+
+        const result = CardPlayExecutor.execute(
+            {
+                id: 'play_evt_full_board_unpaired_1',
+                type: 'PLAY_CARD',
+                status: 'DECLARED',
+                priority: 1,
+                playerId: 'playerId_1',
+                timestamp: Date.now(),
+                data: {
+                    carduid: destroyModeUid,
+                    playAs: 'unit',
+                    playerId: 'playerId_1'
+                }
+            },
+            gameEnv
+        );
+
+        expect(result.success).toBe(true);
+        expect(p1.zones.slot3.unit?.carduid).toBe(destroyModeUid);
+        const trashedUids = p1.zones.trashArea.map((card) => card.carduid);
+        expect(trashedUids).toContain(targetUid);
+        expect(trashedUids).not.toEqual(expect.arrayContaining([fillerA, fillerB, fillerC, fillerD, fillerE]));
+    });
+
+    test('GD01-002 replacement on full board uses destroyed linked target slot and trashes paired pilot', () => {
+        const gameEnv = new GameEnvironment();
+        const p1 = gameEnv.addPlayer('playerId_1', 'P1');
+
+        gameEnv.currentTurn = 1;
+        gameEnv.currentPlayer = 'playerId_1';
+        gameEnv.phase = 'MAIN_PHASE';
+
+        const fillerA = 'GD01-007_unit_fill_a_0002';
+        const targetUid = 'GD01-005_unit_fill_target_0002';
+        const targetPilotUid = 'GD01-088_pilot_fill_target_0002';
+        const fillerB = 'GD01-008_unit_fill_b_0002';
+        const fillerC = 'GD01-009_unit_fill_c_0002';
+        const fillerD = 'GD01-010_unit_fill_d_0002';
+        const fillerE = 'GD01-011_unit_fill_e_0002';
+        const destroyModeUid = 'GD01-002_unit_fill_play_0002';
+        p1.deck._handUids = [destroyModeUid];
+        p1.deck.handUids = [destroyModeUid];
+
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: fillerA, playAs: 'unit' }).success).toBe(true);
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: targetUid, playAs: 'unit' }).success).toBe(true);
+        expect(
+            PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', {
+                carduid: targetPilotUid,
+                playAs: 'pilot',
+                targetUnit: targetUid
+            }).success
+        ).toBe(true);
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: fillerB, playAs: 'unit' }).success).toBe(true);
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: fillerC, playAs: 'unit' }).success).toBe(true);
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: fillerD, playAs: 'unit' }).success).toBe(true);
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: fillerE, playAs: 'unit' }).success).toBe(true);
+
+        const result = CardPlayExecutor.execute(
+            {
+                id: 'play_evt_full_board_linked_1',
+                type: 'PLAY_CARD',
+                status: 'DECLARED',
+                priority: 1,
+                playerId: 'playerId_1',
+                timestamp: Date.now(),
+                data: {
+                    carduid: destroyModeUid,
+                    playAs: 'unit',
+                    playerId: 'playerId_1'
+                }
+            },
+            gameEnv
+        );
+
+        expect(result.success).toBe(true);
+        expect(p1.zones.slot2.unit?.carduid).toBe(destroyModeUid);
+        expect(p1.zones.slot2.pilot).toBeFalsy();
+
+        const trashedUids = p1.zones.trashArea.map((card) => card.carduid);
+        expect(trashedUids).toContain(targetUid);
+        expect(trashedUids).toContain(targetPilotUid);
+    });
+
+    test('GD01-002 uses normal cost when energy is sufficient and replacement is not requested', () => {
+        const gameEnv = new GameEnvironment();
+        const p1 = gameEnv.addPlayer('playerId_1', 'P1');
+        gameEnv.addPlayer('playerId_2', 'P2');
+
+        gameEnv.currentTurn = 1;
+        gameEnv.currentPlayer = 'playerId_1';
+        gameEnv.phase = 'MAIN_PHASE';
+
+        const unicornModeUid = 'GD01-005_unit_keep_0001';
+        const banagherUid = 'GD01-088_pilot_keep_0001';
+        const destroyModeUid = 'GD01-002_unit_cost_pay_0001';
+        p1.deck._handUids = [destroyModeUid];
+        p1.deck.handUids = [destroyModeUid];
+
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: unicornModeUid, playAs: 'unit' }).success).toBe(true);
+        expect(
+            PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', {
+                carduid: banagherUid,
+                playAs: 'pilot',
+                targetUnit: unicornModeUid
+            }).success
+        ).toBe(true);
+
+        for (let i = 0; i < 7; i += 1) {
+            expect(EnergyManager.addBasicEnergy(gameEnv, 'playerId_1')).toBe(true);
+        }
+
+        const result = CardPlayExecutor.execute(
+            {
+                id: 'play_evt_2',
+                type: 'PLAY_CARD',
+                status: 'DECLARED',
+                priority: 1,
+                playerId: 'playerId_1',
+                timestamp: Date.now(),
+                data: {
+                    carduid: destroyModeUid,
+                    playAs: 'unit',
+                    playerId: 'playerId_1'
+                }
+            },
+            gameEnv
+        );
+
+        expect(result.success).toBe(true);
+        expect(p1.deck.handUids).not.toContain(destroyModeUid);
+        expect(p1.zones.slot1.unit?.carduid).toBe(unicornModeUid);
+        expect(p1.zones.slot1.pilot?.carduid).toBe(banagherUid);
+
+        const trashedUids = p1.zones.trashArea.map((card) => card.carduid);
+        expect(trashedUids).not.toContain(unicornModeUid);
+        expect(trashedUids).not.toContain(banagherUid);
+
+        const restedEnergyCount = (p1.zones.energyArea || []).filter((card) => card.isRested).length;
+        expect(restedEnergyCount).toBe(6);
+    });
+
+    test('GD01-002 applies requested replacement and destroys selected linked Unicorn Mode target even when energy is sufficient', () => {
+        const gameEnv = new GameEnvironment();
+        const p1 = gameEnv.addPlayer('playerId_1', 'P1');
+        gameEnv.addPlayer('playerId_2', 'P2');
+
+        gameEnv.currentTurn = 1;
+        gameEnv.currentPlayer = 'playerId_1';
+        gameEnv.phase = 'MAIN_PHASE';
+
+        const unicornModeKeepUid = 'GD01-005_unit_keep_0002';
+        const banagherKeepUid = 'GD01-088_pilot_keep_0002';
+        const unicornModeDestroyUid = 'GD01-005_unit_destroy_0002';
+        const banagherDestroyUid = 'GD01-088_pilot_destroy_0002';
+        const destroyModeUid = 'GD01-002_unit_choice_0002';
+        p1.deck._handUids = [destroyModeUid];
+        p1.deck.handUids = [destroyModeUid];
+
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: unicornModeKeepUid, playAs: 'unit' }).success).toBe(true);
+        expect(
+            PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', {
+                carduid: banagherKeepUid,
+                playAs: 'pilot',
+                targetUnit: unicornModeKeepUid
+            }).success
+        ).toBe(true);
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: unicornModeDestroyUid, playAs: 'unit' }).success).toBe(true);
+        expect(
+            PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', {
+                carduid: banagherDestroyUid,
+                playAs: 'pilot',
+                targetUnit: unicornModeDestroyUid
+            }).success
+        ).toBe(true);
+
+        for (let i = 0; i < 7; i += 1) {
+            expect(EnergyManager.addBasicEnergy(gameEnv, 'playerId_1')).toBe(true);
+        }
+
+        const result = CardPlayExecutor.execute(
+            {
+                id: 'play_evt_3',
+                type: 'PLAY_CARD',
+                status: 'DECLARED',
+                priority: 1,
+                playerId: 'playerId_1',
+                timestamp: Date.now(),
+                data: {
+                    carduid: destroyModeUid,
+                    playAs: 'unit',
+                    playerId: 'playerId_1',
+                    useCostReplacement: true,
+                    costReplacementTargetCarduid: unicornModeDestroyUid
+                }
+            },
+            gameEnv
+        );
+
+        expect(result.success).toBe(true);
+        expect(p1.deck.handUids).not.toContain(destroyModeUid);
+
+        const trashedUids = p1.zones.trashArea.map((card) => card.carduid);
+        expect(trashedUids).toContain(unicornModeDestroyUid);
+        expect(trashedUids).toContain(banagherDestroyUid);
+        expect(trashedUids).not.toContain(unicornModeKeepUid);
+        expect(trashedUids).not.toContain(banagherKeepUid);
+
+        const restedEnergyCount = (p1.zones.energyArea || []).filter((card) => card.isRested).length;
+        expect(restedEnergyCount).toBe(0);
     });
 
     test('GD01-046 support trigger sets source active once per turn when boosting ZAFT unit AP', () => {
