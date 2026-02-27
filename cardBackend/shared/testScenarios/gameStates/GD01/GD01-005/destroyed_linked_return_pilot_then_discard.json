@@ -63,7 +63,11 @@
         "deck": {
           "hand": [],
           "handUids": [],
-          "mainDeck": []
+          "mainDeck": [
+            "ST02-007_4246f80c-16bc-4841-b2f1-0de546a8d62c",
+            "ST02-007_00000000-0000-0000-0000-000000000901",
+            "ST02-008_00000000-0000-0000-0000-000000000902"
+          ]
         },
         "confirmIsRedraw": false,
         "isRedraw": false,
@@ -138,14 +142,18 @@
         "deck": {
           "hand": [
             {
-              "carduid": "GD01-010_discard_0001",
-              "cardId": "GD01-010"
+              "carduid": "GD01-007_discard_0001",
+              "cardId": "GD01-007"
             }
           ],
           "handUids": [
-            "GD01-010_discard_0001"
+            "GD01-007_discard_0001"
           ],
-          "mainDeck": []
+          "mainDeck": [
+            "ST02-007_4246f80c-16bc-4841-b2f1-0de546a8d62c",
+            "ST02-007_00000000-0000-0000-0000-000000000901",
+            "ST02-008_00000000-0000-0000-0000-000000000902"
+          ]
         },
         "confirmIsRedraw": false,
         "isRedraw": false,

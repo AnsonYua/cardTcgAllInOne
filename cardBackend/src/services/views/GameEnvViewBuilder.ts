@@ -35,7 +35,9 @@ export class GameEnvViewBuilder {
             playersReady: gameEnv.playersReady,
             currentBattle: gameEnv.currentBattle,
             version: gameEnv.version,
-            processingQueue: gameEnv.processingQueue,
+            // Frontend choice flow must use notificationQueue only.
+            // Keep processingQueue as non-authoritative debug data.
+            processingQueue: [],
             processingEnabled: gameEnv.processingEnabled,
             maxEventsPerCycle: gameEnv.maxEventsPerCycle,
             notificationQueue: gameEnv.notificationQueue,

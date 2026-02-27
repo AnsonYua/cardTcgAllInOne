@@ -477,7 +477,7 @@ export class GameLogic {
             }
         }
 
-        const snapshot = gameEnv.toJSON();
+        const snapshot = gameEnv.toPersistenceJSON();
         const normalizedNewState = this.normalizeStateForComparison(snapshot);
         const existingVersion = typeof existingGameData?.version === 'number' ? existingGameData.version : 0;
         let shouldBumpVersion = true;
@@ -493,7 +493,7 @@ export class GameLogic {
             gameEnv.version = Math.max(existingVersion, gameEnv.version);
         }
 
-        const gameData = gameEnv.toJSON();
+        const gameData = gameEnv.toPersistenceJSON();
 
         // Save to file
         await fs.promises.writeFile(filePath, JSON.stringify(gameData, null, 2));

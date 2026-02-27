@@ -631,10 +631,12 @@ export class GameEnvironment {
 
     // ============ SERIALIZATION ============
 
-    public toJSON(): any {
+    private buildSerializedGameState(processingQueueForOutput: GameEvent[]): any {
         if (this.currentBattle) {
             this.refreshBattleActionTargets();
         }
+
+        const notificationQueue = Array.isArray(this.notificationQueue) ? this.notificationQueue : [];
 
         const players = Object.fromEntries(
             Object.entries(this.players).map(([id, player]) => {
@@ -704,12 +706,12 @@ export class GameEnvironment {
             players,
             
             // Internal processing event system
-            processingQueue: this.processingQueue,
+            processingQueue: processingQueueForOutput,
             processingEnabled: this.processingEnabled,
             maxEventsPerCycle: this.maxEventsPerCycle,
             
             // Frontend notification system
-            notificationQueue: this.notificationQueue,
+            notificationQueue,
             lastEventId: this.lastEventId,
             battlePhaseReturnPoint: this.battlePhaseReturnPoint,
             pendingPhaseTransition: this.pendingPhaseTransition,
@@ -717,6 +719,29 @@ export class GameEnvironment {
             deferredEffectDamageReceivedEntries: this.deferredEffectDamageReceivedEntries,
             
         };
+    }
+
+    public toJSON(): any {
+        const notificationQueue = Array.isArray(this.notificationQueue) ? this.notificationQueue : [];
+        const hasUnconsumedBattleResolved = notificationQueue.some((event: any) =>
+            String(event?.type || '').toUpperCase() === 'BATTLE_RESOLVED'
+        );
+        const processingQueueForClient = hasUnconsumedBattleResolved
+            ? this.processingQueue.filter((event) => {
+                const type = String(event?.type || '').toUpperCase();
+                const isBlockingChoice =
+                    type === 'TARGET_CHOICE' ||
+                    type === 'BLOCKER_CHOICE' ||
+                    type === 'BURST_EFFECT_CHOICE';
+                return !(isBlockingChoice && event?.status === EventStatus.DECLARED);
+            })
+            : this.processingQueue;
+
+        return this.buildSerializedGameState(processingQueueForClient);
+    }
+
+    public toPersistenceJSON(): any {
+        return this.buildSerializedGameState(this.processingQueue);
     }
 
     public static fromJSON(data: any): GameEnvironment {

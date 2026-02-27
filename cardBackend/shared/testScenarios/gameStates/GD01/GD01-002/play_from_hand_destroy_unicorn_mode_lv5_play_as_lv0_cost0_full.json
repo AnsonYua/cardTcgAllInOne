@@ -70,10 +70,15 @@
             {
               "carduid": "GD01-002_hand_0001",
               "cardId": "GD01-002"
+            },
+            {
+              "carduid": "GD03-007_hand_0001",
+              "cardId": "GD03-007"
             }
           ],
           "handUids": [
-            "GD01-002_hand_0001"
+            "GD01-002_hand_0001",
+            "GD03-007_hand_0001"
           ],
           "mainDeck": []
         },
@@ -192,7 +197,38 @@
               "cardId": "GD01-000"
             }
           ],
-          "energyArea": [],
+          "energyArea": [ {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-003_attack_link_move_12_from_trash_shuffle_set_active_first_strike_playerId_1_0001",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-003_attack_link_move_12_from_trash_shuffle_set_active_first_strike_playerId_1_0002",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-003_attack_link_move_12_from_trash_shuffle_set_active_first_strike_playerId_1_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-003_attack_link_move_12_from_trash_shuffle_set_active_first_strike_playerId_1_0004",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            }],
           "trashArea": [],
           "repairAbilitiesCheckedThisCycle": false,
           "endTurnEffectsCheckedThisCycle": false
