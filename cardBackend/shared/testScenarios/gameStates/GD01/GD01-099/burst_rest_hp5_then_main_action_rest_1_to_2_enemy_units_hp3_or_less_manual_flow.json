@@ -1,0 +1,271 @@
+{
+  "description": "gd01-099_burst_rest_hp5_then_main_action_rest_1_to_2_enemy_units_hp3_or_less_manual_flow",
+  "gameId": "gd01-099_burst_rest_hp5_then_main_action_rest_1_to_2_enemy_units_hp3_or_less_manual_flow",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD01-099",
+    "Burst",
+    "Main",
+    "Action",
+    "rest",
+    "HP<=5",
+    "HP<=3",
+    "manual_flow"
+  ],
+  "notes": [
+    "Action: Load scenario via getTestScenario and inject via injectGameState.",
+    "Expect: Start in MAIN_PHASE with Player 1 turn, currentBattle null, and Player 2 shield[0] is GD01-099.",
+    "Action: Player 1 attacks Player 2 shield area with slot1 GD01-020_attacker_p1_0001 and resolves confirmBattle for both players.",
+    "Expect: BURST_EFFECT_CHOICE appears for Player 2 on GD01-099.",
+    "Action: Player 2 confirms burst choice with confirmed=true and chooses Player 1 slot4 GD01-038_enemy_hp5_target_0001.",
+    "Expect: Player 1 slot4 becomes rested (Burst: enemy Unit with 5 or less HP), and GD01-099 moves from Player 2 shield area to Player 2 hand.",
+    "Action: End Player 1 turn. On Player 2 MAIN_PHASE, play GD01-099 from hand and choose Player 1 slot2 GD01-001_enemy_hp3_target_0001 plus slot3 GD01-079_enemy_hp2_target_0001.",
+    "Expect: Player 1 slot2 and slot3 become rested (Main/Action: choose 1 to 2 enemy Units with 3 or less HP). Player 1 slot5 GD01-013_enemy_hp4_invalid_main_0001 remains active and is not a legal target."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed_gd01099_manual_flow",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_GD01099_MANUAL_FLOW",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD01-020_attacker_p1_0001",
+              "cardId": "GD01-020",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "GD01-001_enemy_hp3_target_0001",
+              "cardId": "GD01-001",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot3": {
+            "unit": {
+              "carduid": "GD01-079_enemy_hp2_target_0001",
+              "cardId": "GD01-079",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot4": {
+            "unit": {
+              "carduid": "GD01-038_enemy_hp5_target_0001",
+              "cardId": "GD01-038",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot5": {
+            "unit": {
+              "carduid": "GD01-013_enemy_hp4_invalid_main_0001",
+              "cardId": "GD01-013",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot6": {
+            "unit": {
+              "carduid": "GD01-027_enemy_hp6_invalid_burst_0001",
+              "cardId": "GD01-027",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "GD01-001_shield_p1_0001",
+              "cardId": "GD01-001"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd01099_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "GD01-099_shield_p2_0001",
+              "cardId": "GD01-099"
+            },
+            {
+              "carduid": "GD01-020_shield_p2_0002",
+              "cardId": "GD01-020"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd01099_p2_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd01099_p2_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd01099_p2_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd01099_p2_0004",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

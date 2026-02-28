@@ -1,0 +1,224 @@
+{
+  "description": "gd01-092_burst_add_to_hand_then_pair_zeon_gain_breach_1_and_trigger_breach_damage_manual_flow",
+  "gameId": "gd01-092_burst_add_to_hand_then_pair_zeon_gain_breach_1_and_trigger_breach_damage_manual_flow",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD01-092",
+    "Burst",
+    "Paired",
+    "Zeon",
+    "Breach",
+    "manual_flow"
+  ],
+  "notes": [
+    "Action: Load scenario via getTestScenario and inject via injectGameState.",
+    "Expect: Start in MAIN_PHASE with Player 1 turn; Player 2 shield[0] is GD01-092, Player 2 slot2 has unpaired Zeon unit GD01-031, and Player 1 has a rested enemy target in slot2 plus at least 2 shield cards.",
+    "Action: Player 1 attacks Player 2 shield area with slot1 GD01-020_attacker_0001 and resolves confirmBattle for both players.",
+    "Expect: BURST_EFFECT_CHOICE appears for Player 2 on GD01-092.",
+    "Action: Player 2 confirms burst choice with confirmed=true.",
+    "Expect: GD01-092 moves from Player 2 shield area to Player 2 hand.",
+    "Action: End Player 1 turn. On Player 2 MAIN_PHASE, play GD01-092 from hand as pilot onto Player 2 slot2 GD01-031_zeon_host_0001.",
+    "Expect: Player 2 slot2 is paired (linked not required), and because the paired unit has (Zeon) trait, it gains <Breach 1> from GD01-092 continuous effect.",
+    "Action: On the same Player 2 turn, declare attackUnit from Player 2 slot2 GD01-031_zeon_host_0001 targeting Player 1 slot2 ST02-009_rested_target_0001 and resolve confirmBattle.",
+    "Expect: Player 1 slot2 ST02-009_rested_target_0001 is destroyed by battle damage.",
+    "Action: Let post-battle destroy triggers resolve naturally.",
+    "Expect: The gained <Breach 1> triggers and removes the first card in Player 1 shieldArea while the second shield card remains."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed_gd01092_manual_flow",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_GD01092_MANUAL_FLOW",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD01-020_attacker_0001",
+              "cardId": "GD01-020",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "ST02-009_rested_target_0001",
+              "cardId": "ST02-009",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": false,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "GD01-001_shield_p1_0001",
+              "cardId": "GD01-001"
+            },
+            {
+              "carduid": "GD01-020_shield_p1_0002",
+              "cardId": "GD01-020"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd01092_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {
+            "unit": {
+              "carduid": "GD01-031_zeon_host_0001",
+              "cardId": "GD01-031",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "GD01-092_shield_p2_0001",
+              "cardId": "GD01-092"
+            },
+            {
+              "carduid": "GD01-041_shield_p2_0002",
+              "cardId": "GD01-041"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd01092_p2_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd01092_p2_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd01092_p2_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

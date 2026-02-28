@@ -1,0 +1,189 @@
+{
+  "description": "gd01-109_main_tutor_top5_choose_operation_meteor_or_g_team_to_hand",
+  "gameId": "gd01-109_main_tutor_top5_choose_operation_meteor_or_g_team_to_hand",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD01-109",
+    "MAIN_PHASE",
+    "tutor_top_deck",
+    "PROMPT_CHOICE",
+    "OPTION_CHOICE",
+    "Operation Meteor",
+    "G Team"
+  ],
+  "notes": [
+    "Action: Load this scenario with getTestScenario and inject it via injectGameState.",
+    "Expect: Start in MAIN_PHASE with playerId_1 turn, currentBattle null, GD01-109 in hand, and at least 5 active energy cards.",
+    "Action: Player 1 plays GD01-109 from hand.",
+    "Expect: Cost 1 is paid (1 energy card becomes rested), GD01-109 moves to trashArea, and tutor flow emits TOP_DECK_VIEWED then a PROMPT_CHOICE (continue).",
+    "Action: Resolve the PROMPT_CHOICE using confirmOptionChoice with selectedOptionIndex=0.",
+    "Expect: An OPTION_CHOICE appears with selectable matches from the looked top 5 (index 0 = GD01-024, index 1 = GD01-090, index 2 = put cards on bottom).",
+    "Action: Resolve OPTION_CHOICE with selectedOptionIndex=0 to take GD01-024.",
+    "Expect: GD01-024 is revealed and added to hand, top of deck becomes GD01-055_next_0006 then GD01-039_next_0007, remaining looked cards are returned randomly to deck bottom, and TUTOR_TOP_DECK_RESOLVED is emitted."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed_gd01109_main",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_GD01109_MAIN",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "GD01-109_hand_0001",
+              "cardId": "GD01-109"
+            }
+          ],
+          "handUids": [
+            "GD01-109_hand_0001"
+          ],
+          "mainDeck": [
+            "GD01-024_top_0001",
+            "GD01-020_top_0002",
+            "GD01-090_top_0003",
+            "GD01-061_top_0004",
+            "ST01-001_top_0005",
+            "GD01-055_next_0006",
+            "GD01-039_next_0007"
+          ]
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd01109_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd01109_p1_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd01109_p1_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd01109_p1_0004",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd01109_p1_0005",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd01109_p2_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
