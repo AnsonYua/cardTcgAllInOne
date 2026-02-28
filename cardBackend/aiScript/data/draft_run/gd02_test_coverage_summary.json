@@ -1,0 +1,1164 @@
+{
+  "generatedAtUtc": "2026-02-28T09:14:01.705530+00:00",
+  "paths": {
+    "cards": "/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/data/gd02Card.json",
+    "testRoot": "/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/shared/testScenarios/gameStates/GD02",
+    "draftJson": "/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/aiScript/data/draft_run/gd02_prompt_drafts.json"
+  },
+  "totals": {
+    "cardsInGd02CardJson": 131,
+    "testedCardFoldersInGd02": 22,
+    "scenarioJsonFilesInGd02": 25,
+    "missingCardTests": 109,
+    "draftPromptsGenerated": 86,
+    "missingButExcludedFromDraft": 23
+  },
+  "testedCards": [
+    {
+      "cardId": "GD02-001",
+      "scenarioFileCount": 1,
+      "scenarioFiles": [
+        "GD02-001/paired_titans_shield_area_battle_damage_heal_2.json"
+      ]
+    },
+    {
+      "cardId": "GD02-002",
+      "scenarioFileCount": 2,
+      "scenarioFiles": [
+        "GD02-002/link_once_per_turn_set_active_on_friendly_battle_destroy.json",
+        "GD02-002/link_once_per_turn_set_active_on_friendly_battle_destroy_nopilot.json"
+      ]
+    },
+    {
+      "cardId": "GD02-007",
+      "scenarioFileCount": 1,
+      "scenarioFiles": [
+        "GD02-007/repair_2_end_of_turn.json"
+      ]
+    },
+    {
+      "cardId": "GD02-009",
+      "scenarioFileCount": 1,
+      "scenarioFiles": [
+        "GD02-009/ap_reduced_by_enemy_effect_retaliate_damage_2.json"
+      ]
+    },
+    {
+      "cardId": "GD02-010",
+      "scenarioFileCount": 1,
+      "scenarioFiles": [
+        "GD02-010/effect_damage_received_enemy_draw_once_per_turn.json"
+      ]
+    },
+    {
+      "cardId": "GD02-022",
+      "scenarioFileCount": 1,
+      "scenarioFiles": [
+        "GD02-022/gain_breach_2_on_ex_resource_once_per_turn.json"
+      ]
+    },
+    {
+      "cardId": "GD02-023",
+      "scenarioFileCount": 2,
+      "scenarioFiles": [
+        "GD02-023/link_first_strike_if_player_level_ge_7.json",
+        "GD02-023/link_no_first_strike_if_player_level_lt_7.json"
+      ]
+    },
+    {
+      "cardId": "GD02-031",
+      "scenarioFileCount": 2,
+      "scenarioFiles": [
+        "GD02-031/continuous_ap_plus_2_if_player_level_ge_7_less.json",
+        "GD02-031/continuous_ap_plus_2_if_player_level_ge_7_more.json"
+      ]
+    },
+    {
+      "cardId": "GD02-033",
+      "scenarioFileCount": 1,
+      "scenarioFiles": [
+        "GD02-033/gain_breach_5_if_another_zeon_link.json"
+      ]
+    },
+    {
+      "cardId": "GD02-034",
+      "scenarioFileCount": 1,
+      "scenarioFiles": [
+        "GD02-034/pair_ap_boost_if_paired_red_pilot.json"
+      ]
+    },
+    {
+      "cardId": "GD02-054",
+      "scenarioFileCount": 1,
+      "scenarioFiles": [
+        "GD02-054/attack_cost_destroy_friendly_then_damage_2_to_enemy_le_4.json"
+      ]
+    },
+    {
+      "cardId": "GD02-057",
+      "scenarioFileCount": 1,
+      "scenarioFiles": [
+        "GD02-057/attack_cost_destroy_friendly_then_damage_2_to_enemy_le_4.json"
+      ]
+    },
+    {
+      "cardId": "GD02-058",
+      "scenarioFileCount": 1,
+      "scenarioFiles": [
+        "GD02-058/deploy_draw1_dis1.json"
+      ]
+    },
+    {
+      "cardId": "GD02-061",
+      "scenarioFileCount": 1,
+      "scenarioFiles": [
+        "GD02-061/pair_rest_enemy_ap_le_3_if_trash_teiwaz_or_tekkadan_ge_3.json"
+      ]
+    },
+    {
+      "cardId": "GD02-070",
+      "scenarioFileCount": 1,
+      "scenarioFiles": [
+        "GD02-070/deploy_draw2_dis2_if_trash_4_gjallarhorn.json"
+      ]
+    },
+    {
+      "cardId": "GD02-073",
+      "scenarioFileCount": 1,
+      "scenarioFiles": [
+        "GD02-073/opponent_turn_grant_first_strike_to_battling_enemy.json"
+      ]
+    },
+    {
+      "cardId": "GD02-075",
+      "scenarioFileCount": 1,
+      "scenarioFiles": [
+        "GD02-075/attack_rest_enemy_unit_lv_le_4.json"
+      ]
+    },
+    {
+      "cardId": "GD02-089",
+      "scenarioFileCount": 1,
+      "scenarioFiles": [
+        "GD02-089/pair_choose_other_zeon_link_unit_grant_breach_1.json"
+      ]
+    },
+    {
+      "cardId": "GD02-095",
+      "scenarioFileCount": 1,
+      "scenarioFiles": [
+        "GD02-095/attack_damaged_le_5_grant_high_maneuver_skip_blocker.json"
+      ]
+    },
+    {
+      "cardId": "GD02-098",
+      "scenarioFileCount": 1,
+      "scenarioFiles": [
+        "GD02-098/pair_draw1_dis1_if_aeug.json"
+      ]
+    },
+    {
+      "cardId": "GD02-117",
+      "scenarioFileCount": 1,
+      "scenarioFiles": [
+        "GD02-117/draw3_dis2.json"
+      ]
+    },
+    {
+      "cardId": "GD02-120",
+      "scenarioFileCount": 1,
+      "scenarioFiles": [
+        "GD02-120/action_heal_aeug_unit_or_base.json"
+      ]
+    }
+  ],
+  "missingCards": [
+    {
+      "cardId": "GD02-003",
+      "cardName": "Gundam Mk-II (Titans)",
+      "effectLines": [
+        "[During Pair-Lv.3 or Lower Pilot][Destroyed]You may discard 1 Unit card. If you do, return the card paired with this Unit to your hand."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-004",
+      "cardName": "Byarlant",
+      "effectLines": [
+        "[When Paired]Choose 1 rested enemy Unit with 3 or less HP. It won't be set as active during the start phase of your opponent's next turn."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-005",
+      "cardName": "Tallgeese",
+      "effectLines": [
+        "[During Link][Attack]Choose 1 enemy Unit with 2 or less HP. Rest it."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-006",
+      "cardName": "Forbidden Gundam",
+      "effectLines": [
+        "<Blocker> (Rest this Unit to change the attack target to it.)",
+        "During your turn, this Unit can't receive battle damage from enemy Units that are Lv.2 or lower."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-008",
+      "cardName": "Gabthley",
+      "effectLines": [
+        "[When Linked]Choose 1 rested enemy Unit. Deal 1 damage to it."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-011",
+      "cardName": "Moebius (Peacemaker Team)",
+      "effectLines": [
+        "[Activate-Action]Destroy this Unit:Choose 1 enemy Base/enemy Shield this Unit is battling. Deal 6 damage to it."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-012",
+      "cardName": "Core Booster",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    },
+    {
+      "cardId": "GD02-013",
+      "cardName": "Hizack",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    },
+    {
+      "cardId": "GD02-014",
+      "cardName": "Galbaldy Beta",
+      "effectLines": [
+        "[Deploy]Choose 1 of your (Titans) Units. It gets AP+1 during this turn."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-015",
+      "cardName": "Marasai",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    },
+    {
+      "cardId": "GD02-016",
+      "cardName": "Barzam",
+      "effectLines": [
+        "[Deploy]Choose 1 of your (Titans) Units. It gets AP+1 during this turn."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-017",
+      "cardName": "Delta Plus (Waverider Mode)",
+      "effectLines": [
+        "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)"
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-018",
+      "cardName": "Taurus",
+      "effectLines": [
+        "This Unit can't choose the enemy player as its attack target."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-019",
+      "cardName": "Raider Gundam (MA Mode)",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    },
+    {
+      "cardId": "GD02-020",
+      "cardName": "Elmeth",
+      "effectLines": [
+        "[Deploy]Look at the top 5 cards of your deck. You may reveal 1 green (Zeon) Pilot card among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck.",
+        "[During Link] This Unit gets AP+2."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-021",
+      "cardName": "Gundam AGE-1 Normal",
+      "effectLines": [
+        "[Deploy]You may discard 1 green (Earth Federation) Unit card. If you do, place 1 EX Resource. Then, if you are Lv.7 or higher, draw 1."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-024",
+      "cardName": "Red Gundam",
+      "effectLines": [
+        "[During Link]This Unit gains <High-Maneuver>. (This Unit can't be blocked.)"
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-025",
+      "cardName": "Gundam Heavyarms",
+      "effectLines": [
+        "[Deploy]Look at the top card of your deck. Return it to the top or bottom of your deck."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-026",
+      "cardName": "Genoace Custom",
+      "effectLines": [
+        "[Deploy]If you are Lv.7 or higher, choose 1 of your (AGE System) Units. It gets AP+2 during this turn."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-027",
+      "cardName": "Gundam AGE-1 Titus",
+      "effectLines": [
+        "<Breach 3> (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)"
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-028",
+      "cardName": "Abdul's Maganac",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    },
+    {
+      "cardId": "GD02-029",
+      "cardName": "Gundam AGE-1 Normal",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    },
+    {
+      "cardId": "GD02-030",
+      "cardName": "Genoace",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    },
+    {
+      "cardId": "GD02-032",
+      "cardName": "White Gundam",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    },
+    {
+      "cardId": "GD02-035",
+      "cardName": "Police Zaku (Armored RRU Type)",
+      "effectLines": [
+        "This Unit can't choose the enemy player as its attack target."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-036",
+      "cardName": "Qubeley",
+      "effectLines": [
+        "[When Linked]This Unit gains <Suppression> during this turn. (Damage to Shields by an attack is dealt to the first 2 cards simultaneously.)",
+        "[During Pair-(Neo Zeon) Pilot][Attack]Choose 1 damaged enemy Unit. Deal 2 damage to it."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-037",
+      "cardName": "Gundam Virsago",
+      "effectLines": [
+        "<Breach 1> (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)",
+        "[Deploy]If there are 3 or less enemy Shields, choose 1 enemy Unit with 5 or less AP. Deal 2 damage to it."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-038",
+      "cardName": "GQuuuuuuX (Omega Psycommu)",
+      "effectLines": [
+        "[Deploy]Look at the top 3 cards of your deck. You may deploy 1 (Clan) Unit card that is Lv.4 or lower among them. Return the remaining cards randomly to the bottom of your deck."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-039",
+      "cardName": "Haman Karn's Gaza C",
+      "effectLines": [
+        "[When Paired]Choose 1 enemy Unit that is Lv.3 or lower. Deal 1 damage to it."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-040",
+      "cardName": "Gundam Ashtaron",
+      "effectLines": [
+        "[Activate/Main]<Support 2> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)",
+        "[Deploy]Choose 1 of your other (New UNE) Units. It can't receive battle damage from enemy Units with 2 or less HP during this turn."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-041",
+      "cardName": "Sugai's Gelgoog (GQ)",
+      "effectLines": [
+        "[Deploy]Choose 1 enemy Unit that is Lv.5 or higher. Deal 2 damage to it."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-042",
+      "cardName": "Gundam Ashtaron (MA Mode)",
+      "effectLines": [
+        "[Deploy]Choose 1 of your (New UNE) Units. It gains <High-Maneuver> during this turn. (This Unit can't be blocked.)"
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-043",
+      "cardName": "Daughtress Weapon",
+      "effectLines": [
+        "[Deploy]If you have another (New UNE) Unit in play, deploy 1 rested [Daughtress]((New UNE)-AP0-HP1) Unit token."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-044",
+      "cardName": "Daughtress Command",
+      "effectLines": [
+        "[Destroyed]If you have another (New UNE) Unit in play, deploy 1 rested [Daughtress]((New UNE)-AP0-HP1) Unit token."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-045",
+      "cardName": "GINN Long-Range Reconnaissance Type",
+      "effectLines": [
+        "[Attack]If this Unit has 5 or more AP and it is attacking an enemy Unit, draw 1."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-046",
+      "cardName": "Sayla's Light-Type Guncannon",
+      "effectLines": [
+        "[Deploy]Choose 1 enemy Unit token. Deal 2 damage to it."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-047",
+      "cardName": "Gaza C",
+      "effectLines": [
+        "[Activate/Main]Rest this Unit:Destroy this and choose 1 enemy Unit that is Lv.5 or lower. Deal 1 damage to it."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-048",
+      "cardName": "Zaku Ⅲ (Sleeves)",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    },
+    {
+      "cardId": "GD02-049",
+      "cardName": "Daughtress",
+      "effectLines": [
+        "[Activate/Main]<Support 1> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)"
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-050",
+      "cardName": "Ga-Zowmn (Sleeves)",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    },
+    {
+      "cardId": "GD02-051",
+      "cardName": "01 Gundam",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    },
+    {
+      "cardId": "GD02-052",
+      "cardName": "Guncannon (GQ)",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    },
+    {
+      "cardId": "GD02-053",
+      "cardName": "Gundam X",
+      "effectLines": [
+        "[Suppression] (Damage to Shields by an attack is dealt to the first 2 cards simultaneously.)",
+        "[During Link]During your turn, while there are 7 or more cards in your trash, all your other (Vulture) Units get AP+2."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-055",
+      "cardName": "Gundam Gusion Rebake",
+      "effectLines": [
+        "<Blocker> (Rest this Unit to change the attack target to it.)",
+        "[Deploy]Choose 1 of your Units and 1 enemy Unit. Deal 1 damage to them."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-056",
+      "cardName": "Gundam X",
+      "effectLines": [
+        "[During Pair-(Vulture) Pilot][Destroyed]Choose 1 (Vulture) Unit card that is Lv.5 or higher from your trash. Add it to your hand."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-059",
+      "cardName": "Gundam Airmaster",
+      "effectLines": [
+        "<Blocker> (Rest this Unit to change the attack target to it.)"
+      ],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "only_ignored_exact_effects"
+    },
+    {
+      "cardId": "GD02-060",
+      "cardName": "Gundam Leopard",
+      "effectLines": [
+        "[Deploy]If there are 7 or more cards in your trash, choose 1 enemy Unit that is Lv.4 or lower. Rest it."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-062",
+      "cardName": "Amida's Hyakuren",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    },
+    {
+      "cardId": "GD02-063",
+      "cardName": "Gundam Airmaster (Fighter Mode)",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    },
+    {
+      "cardId": "GD02-064",
+      "cardName": "Gundam Leopard",
+      "effectLines": [
+        "During your turn, while there are 7 or more cards in your trash, this Unit can't receive effect damage from enemy Commands."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-065",
+      "cardName": "Jenice Custom",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    },
+    {
+      "cardId": "GD02-066",
+      "cardName": "Gafran",
+      "effectLines": [
+        "This Unit can't choose the enemy player as its attack target."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-067",
+      "cardName": "Baqto",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    },
+    {
+      "cardId": "GD02-068",
+      "cardName": "Gundam Barbatos 3rd Form",
+      "effectLines": [
+        "[Deploy]Deal 2 damage to this Unit."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-069",
+      "cardName": "Zeta Gundam",
+      "effectLines": [
+        "[During Link][Activate/Main][Once per Turn]Choose 1 active friendly Base. Rest it. If you do, set this Unit as active. It can't choose the enemy player as its attack target during this turn."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-071",
+      "cardName": "Gundam Mk-II (AEUG)",
+      "effectLines": [
+        "[Deploy]If a friendly white Base is in play, you may pair 1 (AEUG) Pilot card from your hand with this Unit."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-072",
+      "cardName": "Hyaku-Shiki",
+      "effectLines": [
+        "<Blocker> (Rest this Unit to change the attack target to it.)",
+        "While a friendly white Base is in play, this Unit gains <Repair 1>. (At the end of your turn, this Unit recovers the specified number of HP.)"
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-074",
+      "cardName": "Gundam Aerial Rebuild",
+      "effectLines": [
+        "<High-Maneuver> (This Unit can't be blocked.)",
+        "[During Pair]While there are 4 or more Command cards in your trash, this Unit gains <Blocker>. (Rest this Unit to change the attack target to it.)"
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-076",
+      "cardName": "Buster Gundam",
+      "effectLines": [
+        "While this Unit has 5 or more AP, it gains <Blocker>. (Rest this Unit to change the attack target to it.)"
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-077",
+      "cardName": "Ein's Schwalbe Graze",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    },
+    {
+      "cardId": "GD02-078",
+      "cardName": "Gundam Pharact",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    },
+    {
+      "cardId": "GD02-079",
+      "cardName": "Rick Dias",
+      "effectLines": [
+        "<Blocker> (Rest this Unit to change the attack target to it.)"
+      ],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "only_ignored_exact_effects"
+    },
+    {
+      "cardId": "GD02-080",
+      "cardName": "Nemo",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    },
+    {
+      "cardId": "GD02-081",
+      "cardName": "Methuss",
+      "effectLines": [
+        "[Deploy]If a friendly white Base is in play, choose 1 enemy Unit. It gets AP-2 during this turn."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-082",
+      "cardName": "Gaelio's Schwalbe Graze",
+      "effectLines": [
+        "While you have another (Gjallarhorn) Unit in play, this Unit gains <Blocker>. (Rest this Unit to change the attack target to it.)"
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-083",
+      "cardName": "Graze Ritter (Ground Type)",
+      "effectLines": [
+        "[Destroyed]If it is your opponent's turn, choose 1 of your (Gjallarhorn) Units. Set it as active."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-084",
+      "cardName": "Lauda's Dilanza",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    },
+    {
+      "cardId": "GD02-085",
+      "cardName": "Four Murasame",
+      "effectLines": [
+        "[Burst]Add this card to your hand.",
+        "[During Link][Once per Turn]During your turn, when this Unit recovers HP, if you have 4 or less cards in your hand, draw 1."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-086",
+      "cardName": "Jerid Messa",
+      "effectLines": [
+        "[Burst]Add this card to your hand.",
+        "While you have another (Titans) Unit in play, this gets AP+1."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-087",
+      "cardName": "Orga, Crot, and Shani",
+      "effectLines": [
+        "[Burst]Add this card to your hand.",
+        "[When Linked]If this is a blue Unit, choose 1 enemy Unit with <Blocker>. Rest it."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-088",
+      "cardName": "Flit Asuno",
+      "effectLines": [
+        "[Burst]Add this card to your hand.",
+        "[When Linked]Look at the top 3 cards of your deck. You may reveal 1 green (Earth Federation) Unit card/1 card with \"AGE Device\" in its card name among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-090",
+      "cardName": "Challia Bull (GQ)",
+      "effectLines": [
+        "[Burst]Add this card to your hand.",
+        "While you have another Unit with <High-Maneuver> in play, this Unit gets AP+1."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-091",
+      "cardName": "Haman Karn",
+      "effectLines": [
+        "[Burst]Add this card to your hand.",
+        "[When Paired]If this Unit is red, choose 1 enemy Unit whose Lv. is equal to or lower than this Unit. Deal 1 damage to it."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-092",
+      "cardName": "Shagia Frost",
+      "effectLines": [
+        "[Burst]Add this card to your hand.",
+        "[During Link][Attack]Choose 1 of your (New UNE) Units. It gets AP+2 during this turn."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-093",
+      "cardName": "Olba Frost",
+      "effectLines": [
+        "[Burst]Add this card to your hand.",
+        "During your turn, when this Unit destroys an enemy Unit paired with a (Newtype) Pilot with battle damage, draw 1."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-094",
+      "cardName": "Garrod Ran & Tiffa Adill",
+      "effectLines": [
+        "[Burst]Add this card to your hand.",
+        "[When Paired]You may discard 1. If you do, look at the top 3 cards of your deck. You may reveal 1 (Vulture) Unit card among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-096",
+      "cardName": "Desil Galette",
+      "effectLines": [
+        "[Burst]Add this card to your hand.",
+        "[When Linked]You may choose 1 (Vagan) Unit card that is Lv.2 or lower from your trash. Pay its cost to deploy it."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-097",
+      "cardName": "Kamille Bidan",
+      "effectLines": [
+        "[Burst]Add this card to your hand.",
+        "While there is a friendly white Base in play, this Unit gets AP+2."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-099",
+      "cardName": "Gaelio Bauduin",
+      "effectLines": [
+        "[Burst]Add this card to your hand.",
+        "[When Paired]If there are 4 or more (Gjallarhorn) cards in your trash, choose 1 enemy Unit. It gets AP-2 during this turn."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-100",
+      "cardName": "Dramatic Turnabout",
+      "effectLines": [
+        "[Burst]Draw 1.",
+        "[Main]Choose 1 friendly damaged Unit. It recovers 2 HP. Then, draw 1."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-101",
+      "cardName": "Beneath the Mask",
+      "effectLines": [
+        "[Main][Action]Choose 1 to 2 enemy Units that are Lv.2 or lower. Rest them."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-102",
+      "cardName": "Mouar’s Determination",
+      "effectLines": [
+        "[Main][Action]Choose 1 friendly (Titans) Unit. It gets AP+2 during this turn.",
+        "[Pilot][Mouar Pharaoh]"
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-103",
+      "cardName": "AGE Device",
+      "effectLines": [
+        "[Burst]Choose 1 (Asuno Family) Pilot card from your trash. Add it to your hand.",
+        "[Main]If you have an (AGE System) Unit in play, place 1 EX Resource."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-104",
+      "cardName": "Turning Point of History",
+      "effectLines": [
+        "[Main]Look at the top 3 cards of your deck and return 1 to the top. Return the remaining cards to the bottom of your deck. Then, if you have a (Newtype) Pilot in play, draw 1."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-105",
+      "cardName": "Valedictorian",
+      "effectLines": [
+        "[Action]Choose 1 of your Unit tokens. It can't receive battle damage from enemy Units during this battle.",
+        "[Pilot][Xavier Olivette]"
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-106",
+      "cardName": "White Wolf",
+      "effectLines": [
+        "[Action]During this battle, your shield area cards can't receive damage from enemy Units that are Lv.3 or lower.",
+        "[Pilot][Woolf Enneacle]"
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-107",
+      "cardName": "All-Range Attack",
+      "effectLines": [
+        "[Burst]Choose 1 enemy Unit. Deal 1 damage to it.",
+        "[Main]Deal 1 damage to all enemy Units other than Link Units."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-108",
+      "cardName": "That One Looks A Lot Stronger?",
+      "effectLines": [
+        "[Main]Choose 1 friendly (Clan) Unit. During this turn, it may choose an active enemy Unit that is Lv.4 or lower as its attack target."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-109",
+      "cardName": "Undying Persistence",
+      "effectLines": [
+        "[Main][Action]Choose 1 enemy Unit. Deal 1 damage to it.",
+        "[Pilot][Shiiko Sugai]"
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-110",
+      "cardName": "Awakened Power",
+      "effectLines": [
+        "[Main]Choose 1 Unit card that is Lv.5 or lower from your trash. Pay its cost to deploy it."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-111",
+      "cardName": "Decisive Last Resort",
+      "effectLines": [
+        "[Burst]Choose 1 enemy Unit that is Lv.3 or lower. Deal 2 damage to it.",
+        "[Main]Choose 6 purple Unit cards from your trash. Exile them from the game. If you do, choose 1 enemy Unit. Destroy it."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-112",
+      "cardName": "Momentary Respite",
+      "effectLines": [
+        "[Burst]Draw 1.",
+        "[Main]Choose 1 purple Pilot card from your trash. Add it to your hand."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-113",
+      "cardName": "Sisterly Care",
+      "effectLines": [
+        "[Main][Action]If a friendly (Teiwaz) Link Unit is in play, choose 1 enemy Unit with 2 or less AP. Destroy it.",
+        "[Pilot][Amida Arca]"
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-114",
+      "cardName": "It's Name is Ryusei-Go",
+      "effectLines": [
+        "[Main][Action]Choose 1 damaged friendly Unit. It gets AP+2 during this turn.",
+        "[Pilot][Norba Shino]"
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-115",
+      "cardName": "Familial Devotion",
+      "effectLines": [
+        "[Main][Action]Choose 1 friendly (Vulture) Unit. It gets AP+2 during this turn.",
+        "[Pilot][Witz Sou]"
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-116",
+      "cardName": "Comrades Come First",
+      "effectLines": [
+        "[Main]If there are 7 or more cards in your trash, choose 1 friendly (Vulture) Unit. During this turn, it may choose an active enemy Unit that is Lv.4 or lower as its attack target.",
+        "[Pilot][Roybea Loy]"
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-118",
+      "cardName": "Heart Set on Revenge",
+      "effectLines": [
+        "[Action]Choose 1 enemy Unit with 4 or less HP battling a friendly Unit with <Blocker>. Return it to its owner's hand.",
+        "[Pilot][Ein Dalton]"
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-119",
+      "cardName": "Persistent and Fortudinous",
+      "effectLines": [
+        "[Action]If you have a (Gjallarhorn) Link Unit in play, choose 1 enemy Unit. It gets AP-3 during this battle.",
+        "[Pilot][Carta Issue]"
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-121",
+      "cardName": "Dominion",
+      "effectLines": [
+        "[Burst]Deploy this card.",
+        "[Deploy]Add 1 of your Shields to your hand. Then, choose 1 friendly blue Unit. It recovers 2 HP."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-122",
+      "cardName": "Alexandria",
+      "effectLines": [
+        "[Burst]Deploy this card.",
+        "[Deploy]Add 1 of your Shields to your hand. Then, choose 1 rested enemy Unit that is Lv.4 or lower. Deal 1 damage to it."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-123",
+      "cardName": "Sodon",
+      "effectLines": [
+        "[Burst]Deploy this card.",
+        "[Deploy]Add 1 of your Shields to your hand. Then, choose 1 friendly Unit token. During this turn, it may choose an active enemy Unit with 5 or less AP as its attack target."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-124",
+      "cardName": "Diva",
+      "effectLines": [
+        "[Burst]Deploy this card.",
+        "[Deploy]Add 1 of your Shields to your hand. During your turn, while you are Lv.7 or higher, all friendly green (Earth Federation) Units get AP+1."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-125",
+      "cardName": "Gwadan",
+      "effectLines": [
+        "[Burst]Deploy this card.",
+        "[Deploy]Add 1 of your Shields to your hand. Then, if it is your turn, you may discard 1 red card. If you do, draw 1."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-126",
+      "cardName": "Shuji's Hideout",
+      "effectLines": [
+        "[Burst]Deploy this card.",
+        "[Deploy]Add 1 of your Shields to your hand.",
+        "[Destroyed]Choose 1 enemy Unit that is Lv.4 or lower. Deal 1 damage to it."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-127",
+      "cardName": "Freeden",
+      "effectLines": [
+        "[Burst]Deploy this card.",
+        "[Deploy]Add 1 of your Shields to your hand.",
+        "[Destroyed]Place the top 2 cards of your deck into your trash."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-128",
+      "cardName": "Hammerhead",
+      "effectLines": [
+        "[Burst]Deploy this card.",
+        "[Deploy]Add 1 of your Shields to your hand. Then, if it is your turn and a friendly (Teiwaz) Link Unit is in play, choose 1 enemy Unit with 2 or less AP. Destroy it."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-129",
+      "cardName": "Argama",
+      "effectLines": [
+        "[Burst]Deploy this card.",
+        "[Deploy]Add 1 of your Shields to your hand. This Base can't receive enemy effect damage."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "GD02-130",
+      "cardName": "Sleipnir",
+      "effectLines": [
+        "[Burst]Deploy this card.",
+        "[Deploy]Add 1 of your Shields to your hand. Then, if a friendly (Gjallarhorn) Unit is in play, choose 1 enemy Unit. It gets AP-2 during this turn."
+      ],
+      "eligibleForDraftPrompt": true,
+      "excludedReason": null
+    },
+    {
+      "cardId": "T-012",
+      "cardName": "Daughtress",
+      "effectLines": [],
+      "eligibleForDraftPrompt": false,
+      "excludedReason": "empty_effect_description"
+    }
+  ]
+}

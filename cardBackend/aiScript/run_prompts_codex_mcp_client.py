@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
-Run GD01 prompt drafts through Codex MCP directly (no OpenAI Agents SDK).
+Run prompt drafts through Codex MCP directly (no OpenAI Agents SDK).
 
 Auth is handled by local Codex CLI session (for example, `codex login`).
+
+python3 /Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/aiScript/run_prompts_codex_mcp_client.py --set-id gd02 --working-dir /Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend --working-dir /Users/hello/Desktop/card/unity/cardGameFrontend --max-cards 100 --print-conversation --sandbox danger-full-access
 """
 
 from __future__ import annotations
@@ -16,7 +18,7 @@ from typing import Any
 import re
 
 
-DEFAULT_INPUT = Path(__file__).resolve().parent / "data" / "draft_run" / "gd01_prompt_drafts.json"
+DEFAULT_SET_ID = "gd01"
 DEFAULT_OUTPUT_DIR = Path(__file__).resolve().parent / "data" / "agent_runs"
 DEFAULT_WORKING_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,9 +27,30 @@ def now_utc_tag() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
+def normalize_set_id(value: str) -> str:
+    set_id = value.strip().lower()
+    if not re.fullmatch(r"[a-z0-9][a-z0-9_-]*", set_id):
+        raise ValueError(f"Invalid --set-id: {value!r}. Use lowercase letters, digits, '_' or '-'.")
+    return set_id
+
+
+def default_input_for_set(set_id: str) -> Path:
+    return Path(__file__).resolve().parent / "data" / "draft_run" / f"{set_id}_prompt_drafts.json"
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run prompt drafts via direct Codex MCP client")
-    parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
+    parser.add_argument(
+        "--set-id",
+        default=DEFAULT_SET_ID,
+        help=f"Prompt set id (default: {DEFAULT_SET_ID}), for example gd01 or gd02.",
+    )
+    parser.add_argument(
+        "--input",
+        type=Path,
+        default=None,
+        help="Prompt draft JSON path. If omitted, uses data/draft_run/<set-id>_prompt_drafts.json.",
+    )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument(
         "--working-dir",
@@ -347,7 +370,7 @@ class CodexMCPClient:
             {
                 "protocolVersion": "2025-03-26",
                 "capabilities": {},
-                "clientInfo": {"name": "gd01-codex-mcp-client", "version": "0.1.0"},
+                "clientInfo": {"name": "prompt-codex-mcp-client", "version": "0.1.0"},
             },
         )
         await self._notify("notifications/initialized", {})
@@ -441,6 +464,7 @@ async def run_real(
         print("Skill injection not enabled (no skill file found or disabled).")
     meta = {
         "mode": "codex-mcp-direct",
+        "setId": args.set_id,
         "runTag": run_tag,
         "workingDir": str(working_dir.resolve()),
         "skillFile": str(skill_file) if skill_file else "",
@@ -496,8 +520,8 @@ async def run_real(
                 )
                 print(f"[error] {row['cardId']} {row['cardName']}: {exc}")
 
-    out_json = args.output_dir / f"gd01_codex_mcp_results_{run_tag}{output_suffix}.json"
-    out_jsonl = args.output_dir / f"gd01_codex_mcp_results_{run_tag}{output_suffix}.jsonl"
+    out_json = args.output_dir / f"{args.set_id}_codex_mcp_results_{run_tag}{output_suffix}.json"
+    out_jsonl = args.output_dir / f"{args.set_id}_codex_mcp_results_{run_tag}{output_suffix}.jsonl"
     write_json(out_json, results)
     write_jsonl(out_jsonl, results)
     print(f"Saved results:\n- {out_json}\n- {out_jsonl}")
@@ -521,6 +545,7 @@ def run_dry(
         plan_rows.append(
             {
                 "mode": "codex-mcp-direct-dry-run",
+                "setId": args.set_id,
                 "runTag": run_tag,
                 "workingDir": str(working_dir.resolve()),
                 "skillFile": str(skill_file) if skill_file else "",
@@ -529,8 +554,8 @@ def run_dry(
                 "codexArguments": build_codex_args(row, args, working_dir, skill_text, skill_file),
             }
         )
-    out_json = args.output_dir / f"gd01_codex_mcp_plan_{run_tag}{output_suffix}.json"
-    out_jsonl = args.output_dir / f"gd01_codex_mcp_plan_{run_tag}{output_suffix}.jsonl"
+    out_json = args.output_dir / f"{args.set_id}_codex_mcp_plan_{run_tag}{output_suffix}.json"
+    out_jsonl = args.output_dir / f"{args.set_id}_codex_mcp_plan_{run_tag}{output_suffix}.jsonl"
     write_json(out_json, plan_rows)
     write_jsonl(out_jsonl, plan_rows)
     print("Dry run only (no MCP tool call made).")
@@ -540,6 +565,9 @@ def run_dry(
 
 def main() -> None:
     args = parse_args()
+    args.set_id = normalize_set_id(args.set_id)
+    if args.input is None:
+        args.input = default_input_for_set(args.set_id)
     working_dirs = args.working_dirs or [DEFAULT_WORKING_DIR]
     resolved_working_dirs: list[Path] = []
     for working_dir in working_dirs:

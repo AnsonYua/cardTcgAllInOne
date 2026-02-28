@@ -1,0 +1,170 @@
+# GD02 Test Coverage Summary
+
+- Cards in `gd02Card.json`: 131
+- Tested card folders in `GD02`: 22
+- Scenario JSON files in `GD02`: 25
+- Missing card tests: 109
+- Draft prompts generated: 86
+- Missing but excluded from draft: 23
+
+## Tested Cards
+
+- GD02-001 (1 scenario files)
+  - GD02-001/paired_titans_shield_area_battle_damage_heal_2.json
+- GD02-002 (2 scenario files)
+  - GD02-002/link_once_per_turn_set_active_on_friendly_battle_destroy.json
+  - GD02-002/link_once_per_turn_set_active_on_friendly_battle_destroy_nopilot.json
+- GD02-007 (1 scenario files)
+  - GD02-007/repair_2_end_of_turn.json
+- GD02-009 (1 scenario files)
+  - GD02-009/ap_reduced_by_enemy_effect_retaliate_damage_2.json
+- GD02-010 (1 scenario files)
+  - GD02-010/effect_damage_received_enemy_draw_once_per_turn.json
+- GD02-022 (1 scenario files)
+  - GD02-022/gain_breach_2_on_ex_resource_once_per_turn.json
+- GD02-023 (2 scenario files)
+  - GD02-023/link_first_strike_if_player_level_ge_7.json
+  - GD02-023/link_no_first_strike_if_player_level_lt_7.json
+- GD02-031 (2 scenario files)
+  - GD02-031/continuous_ap_plus_2_if_player_level_ge_7_less.json
+  - GD02-031/continuous_ap_plus_2_if_player_level_ge_7_more.json
+- GD02-033 (1 scenario files)
+  - GD02-033/gain_breach_5_if_another_zeon_link.json
+- GD02-034 (1 scenario files)
+  - GD02-034/pair_ap_boost_if_paired_red_pilot.json
+- GD02-054 (1 scenario files)
+  - GD02-054/attack_cost_destroy_friendly_then_damage_2_to_enemy_le_4.json
+- GD02-057 (1 scenario files)
+  - GD02-057/attack_cost_destroy_friendly_then_damage_2_to_enemy_le_4.json
+- GD02-058 (1 scenario files)
+  - GD02-058/deploy_draw1_dis1.json
+- GD02-061 (1 scenario files)
+  - GD02-061/pair_rest_enemy_ap_le_3_if_trash_teiwaz_or_tekkadan_ge_3.json
+- GD02-070 (1 scenario files)
+  - GD02-070/deploy_draw2_dis2_if_trash_4_gjallarhorn.json
+- GD02-073 (1 scenario files)
+  - GD02-073/opponent_turn_grant_first_strike_to_battling_enemy.json
+- GD02-075 (1 scenario files)
+  - GD02-075/attack_rest_enemy_unit_lv_le_4.json
+- GD02-089 (1 scenario files)
+  - GD02-089/pair_choose_other_zeon_link_unit_grant_breach_1.json
+- GD02-095 (1 scenario files)
+  - GD02-095/attack_damaged_le_5_grant_high_maneuver_skip_blocker.json
+- GD02-098 (1 scenario files)
+  - GD02-098/pair_draw1_dis1_if_aeug.json
+- GD02-117 (1 scenario files)
+  - GD02-117/draw3_dis2.json
+- GD02-120 (1 scenario files)
+  - GD02-120/action_heal_aeug_unit_or_base.json
+
+## Missing Cards (No Test Folder Yet)
+
+- GD02-003 Gundam Mk-II (Titans) | included_in_draft
+- GD02-004 Byarlant | included_in_draft
+- GD02-005 Tallgeese | included_in_draft
+- GD02-006 Forbidden Gundam | included_in_draft
+- GD02-008 Gabthley | included_in_draft
+- GD02-011 Moebius (Peacemaker Team) | included_in_draft
+- GD02-012 Core Booster | empty_effect_description
+- GD02-013 Hizack | empty_effect_description
+- GD02-014 Galbaldy Beta | included_in_draft
+- GD02-015 Marasai | empty_effect_description
+- GD02-016 Barzam | included_in_draft
+- GD02-017 Delta Plus (Waverider Mode) | included_in_draft
+- GD02-018 Taurus | included_in_draft
+- GD02-019 Raider Gundam (MA Mode) | empty_effect_description
+- GD02-020 Elmeth | included_in_draft
+- GD02-021 Gundam AGE-1 Normal | included_in_draft
+- GD02-024 Red Gundam | included_in_draft
+- GD02-025 Gundam Heavyarms | included_in_draft
+- GD02-026 Genoace Custom | included_in_draft
+- GD02-027 Gundam AGE-1 Titus | included_in_draft
+- GD02-028 Abdul's Maganac | empty_effect_description
+- GD02-029 Gundam AGE-1 Normal | empty_effect_description
+- GD02-030 Genoace | empty_effect_description
+- GD02-032 White Gundam | empty_effect_description
+- GD02-035 Police Zaku (Armored RRU Type) | included_in_draft
+- GD02-036 Qubeley | included_in_draft
+- GD02-037 Gundam Virsago | included_in_draft
+- GD02-038 GQuuuuuuX (Omega Psycommu) | included_in_draft
+- GD02-039 Haman Karn's Gaza C | included_in_draft
+- GD02-040 Gundam Ashtaron | included_in_draft
+- GD02-041 Sugai's Gelgoog (GQ) | included_in_draft
+- GD02-042 Gundam Ashtaron (MA Mode) | included_in_draft
+- GD02-043 Daughtress Weapon | included_in_draft
+- GD02-044 Daughtress Command | included_in_draft
+- GD02-045 GINN Long-Range Reconnaissance Type | included_in_draft
+- GD02-046 Sayla's Light-Type Guncannon | included_in_draft
+- GD02-047 Gaza C | included_in_draft
+- GD02-048 Zaku Ⅲ (Sleeves) | empty_effect_description
+- GD02-049 Daughtress | included_in_draft
+- GD02-050 Ga-Zowmn (Sleeves) | empty_effect_description
+- GD02-051 01 Gundam | empty_effect_description
+- GD02-052 Guncannon (GQ) | empty_effect_description
+- GD02-053 Gundam X | included_in_draft
+- GD02-055 Gundam Gusion Rebake | included_in_draft
+- GD02-056 Gundam X | included_in_draft
+- GD02-059 Gundam Airmaster | only_ignored_exact_effects
+- GD02-060 Gundam Leopard | included_in_draft
+- GD02-062 Amida's Hyakuren | empty_effect_description
+- GD02-063 Gundam Airmaster (Fighter Mode) | empty_effect_description
+- GD02-064 Gundam Leopard | included_in_draft
+- GD02-065 Jenice Custom | empty_effect_description
+- GD02-066 Gafran | included_in_draft
+- GD02-067 Baqto | empty_effect_description
+- GD02-068 Gundam Barbatos 3rd Form | included_in_draft
+- GD02-069 Zeta Gundam | included_in_draft
+- GD02-071 Gundam Mk-II (AEUG) | included_in_draft
+- GD02-072 Hyaku-Shiki | included_in_draft
+- GD02-074 Gundam Aerial Rebuild | included_in_draft
+- GD02-076 Buster Gundam | included_in_draft
+- GD02-077 Ein's Schwalbe Graze | empty_effect_description
+- GD02-078 Gundam Pharact | empty_effect_description
+- GD02-079 Rick Dias | only_ignored_exact_effects
+- GD02-080 Nemo | empty_effect_description
+- GD02-081 Methuss | included_in_draft
+- GD02-082 Gaelio's Schwalbe Graze | included_in_draft
+- GD02-083 Graze Ritter (Ground Type) | included_in_draft
+- GD02-084 Lauda's Dilanza | empty_effect_description
+- GD02-085 Four Murasame | included_in_draft
+- GD02-086 Jerid Messa | included_in_draft
+- GD02-087 Orga, Crot, and Shani | included_in_draft
+- GD02-088 Flit Asuno | included_in_draft
+- GD02-090 Challia Bull (GQ) | included_in_draft
+- GD02-091 Haman Karn | included_in_draft
+- GD02-092 Shagia Frost | included_in_draft
+- GD02-093 Olba Frost | included_in_draft
+- GD02-094 Garrod Ran & Tiffa Adill | included_in_draft
+- GD02-096 Desil Galette | included_in_draft
+- GD02-097 Kamille Bidan | included_in_draft
+- GD02-099 Gaelio Bauduin | included_in_draft
+- GD02-100 Dramatic Turnabout | included_in_draft
+- GD02-101 Beneath the Mask | included_in_draft
+- GD02-102 Mouar’s Determination | included_in_draft
+- GD02-103 AGE Device | included_in_draft
+- GD02-104 Turning Point of History | included_in_draft
+- GD02-105 Valedictorian | included_in_draft
+- GD02-106 White Wolf | included_in_draft
+- GD02-107 All-Range Attack | included_in_draft
+- GD02-108 That One Looks A Lot Stronger? | included_in_draft
+- GD02-109 Undying Persistence | included_in_draft
+- GD02-110 Awakened Power | included_in_draft
+- GD02-111 Decisive Last Resort | included_in_draft
+- GD02-112 Momentary Respite | included_in_draft
+- GD02-113 Sisterly Care | included_in_draft
+- GD02-114 It's Name is Ryusei-Go | included_in_draft
+- GD02-115 Familial Devotion | included_in_draft
+- GD02-116 Comrades Come First | included_in_draft
+- GD02-118 Heart Set on Revenge | included_in_draft
+- GD02-119 Persistent and Fortudinous | included_in_draft
+- GD02-121 Dominion | included_in_draft
+- GD02-122 Alexandria | included_in_draft
+- GD02-123 Sodon | included_in_draft
+- GD02-124 Diva | included_in_draft
+- GD02-125 Gwadan | included_in_draft
+- GD02-126 Shuji's Hideout | included_in_draft
+- GD02-127 Freeden | included_in_draft
+- GD02-128 Hammerhead | included_in_draft
+- GD02-129 Argama | included_in_draft
+- GD02-130 Sleipnir | included_in_draft
+- T-012 Daughtress | empty_effect_description

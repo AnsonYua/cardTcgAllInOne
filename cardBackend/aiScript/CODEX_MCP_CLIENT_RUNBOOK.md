@@ -6,7 +6,7 @@
 - Can use local Codex login session (`codex login`) instead of `OPENAI_API_KEY`.
 
 ## Script
-- `run_gd01_prompts_codex_mcp_client.py`
+- `run_prompts_codex_mcp_client.py`
 
 ## Prerequisites
 - Node.js 18+ (`npx` available)
@@ -17,7 +17,8 @@
 
 ## Dry Run (No MCP calls)
 ```bash
-python3 run_gd01_prompts_codex_mcp_client.py \
+python3 run_prompts_codex_mcp_client.py \
+  --set-id gd01 \
   --dry-run \
   --working-dir /Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend \
   --max-cards 5
@@ -25,12 +26,14 @@ python3 run_gd01_prompts_codex_mcp_client.py \
 
 ## Real Run (Direct Codex MCP calls)
 ```bash
-python3 run_gd01_prompts_codex_mcp_client.py \
+python3 run_prompts_codex_mcp_client.py \
+  --set-id gd01 \
   --working-dir /Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend \
   --max-cards 5
 ```
 
 ## Useful Options
+- `--set-id`: prompt set id (for example `gd01`, `gd02`)
 - `--start-index`: continue from an index for batch runs
 - `--max-cards`: run a small batch first
 - `--timeout-seconds`: per-request timeout
@@ -40,8 +43,8 @@ python3 run_gd01_prompts_codex_mcp_client.py \
 
 ## Outputs
 - Dry run:
-  - `data/agent_runs/gd01_codex_mcp_plan_<timestamp>.json`
-  - `data/agent_runs/gd01_codex_mcp_plan_<timestamp>.jsonl`
+  - `data/agent_runs/<set-id>_codex_mcp_plan_<timestamp>.json`
+  - `data/agent_runs/<set-id>_codex_mcp_plan_<timestamp>.jsonl`
 - Real run:
-  - `data/agent_runs/gd01_codex_mcp_results_<timestamp>.json`
-  - `data/agent_runs/gd01_codex_mcp_results_<timestamp>.jsonl`
+  - `data/agent_runs/<set-id>_codex_mcp_results_<timestamp>.json`
+  - `data/agent_runs/<set-id>_codex_mcp_results_<timestamp>.jsonl`
