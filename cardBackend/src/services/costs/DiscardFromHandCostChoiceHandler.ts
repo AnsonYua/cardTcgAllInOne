@@ -5,8 +5,8 @@ import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { TargetChoiceEvent, TargetReference, EffectDefinition } from '../EventQueue/interfaces/GameEvent';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { EffectExecutor } from '../effects/EffectExecutor';
-import { DeployTargetManager } from '../DeployTargetManager';
 import type { DiscardFromHandCostContext } from './DiscardFromHandCostFlow';
+import { executeFollowUpEffectAfterPaidCost } from './CostFollowUpEffectExecutor';
 
 export class DiscardFromHandCostChoiceHandler {
     static tryHandle(
@@ -39,18 +39,12 @@ export class DiscardFromHandCostChoiceHandler {
             return { handled: true, success: false, error: costResult.error || 'discardFromHand cost failed' };
         }
 
-        const followUpEffect = ensureEffectDefaults({
-            ...(ctx.followUpEffect as EffectDefinition),
-            cost: undefined
-        } as any);
-
-        const followUpResult = DeployTargetManager.processEffectWithTargetChoice(
-            gameEnv,
+        const followUpResult = executeFollowUpEffectAfterPaidCost(gameEnv, {
             sourcePlayerId,
             sourceCarduid,
-            followUpEffect,
-            ctx.cardPlayNotificationId
-        );
+            followUpEffect: ensureEffectDefaults(ctx.followUpEffect as EffectDefinition),
+            cardPlayNotificationId: ctx.cardPlayNotificationId
+        });
         if (!followUpResult.success) {
             return { handled: true, success: false, error: followUpResult.error || 'follow-up effect failed' };
         }
@@ -58,4 +52,3 @@ export class DiscardFromHandCostChoiceHandler {
         return { handled: true, success: true };
     }
 }
-

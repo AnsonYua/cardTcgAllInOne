@@ -1,0 +1,272 @@
+{
+  "description": "gd02-111_burst_lv3_or_lower_damage2_then_main_exile6_purple_units_destroy_enemy_manual_flow",
+  "gameId": "gd02-111_burst_lv3_or_lower_damage2_then_main_exile6_purple_units_destroy_enemy_manual_flow",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD02-111",
+    "Burst",
+    "Main",
+    "exile",
+    "destroy",
+    "manual_flow"
+  ],
+  "notes": [
+    "Action: Load scenario via getTestScenario and inject via injectGameState.",
+    "Expect: Start in MAIN_PHASE with currentBattle null, Player 1 hand has GD02-111, Player 1 shield[0] is GD02-111, Player 1 trash has exactly six purple Unit cards, and Player 2 has a Lv3 unit in slot1 plus other enemy units in play.",
+    "Action: During Player 1 MAIN_PHASE, play GD02-111 from hand.",
+    "Expect: Main effect first asks Player 1 to choose 6 purple Unit cards from own trash to exile.",
+    "Action: Select all six purple Unit cards in Player 1 trash (GD02-054_trash_p1_0001, GD02-055_trash_p1_0002, GD02-056_trash_p1_0003, GD02-057_trash_p1_0004, GD02-060_trash_p1_0005, GD02-068_trash_p1_0006).",
+    "Expect: Those six cards are exiled from Player 1 trash, then target selection appears for 1 enemy Unit to destroy.",
+    "Action: Choose Player 2 slot2 GD02-010_main_destroy_target_p2_0001 as the destroy target.",
+    "Expect: Player 2 slot2 unit is destroyed (removed from slot and moved out of play by destroy resolution).",
+    "Action: End Player 1 turn.",
+    "Expect: Turn passes to Player 2 and Player 2 slot3 attacker remains active and can attack shield.",
+    "Action: Player 2 attacks Player 1 shield area with slot3 GD02-040_attacker_p2_0001 and resolve confirmBattle for both players until burst choice appears.",
+    "Expect: BURST_EFFECT_CHOICE appears for Player 1 on GD02-111 from shield.",
+    "Action: Player 1 confirms burst choice with confirmed=true and selects Player 2 slot1 GD02-039_burst_target_p2_0001 (Lv3).",
+    "Expect: Burst deals 2 damage to the chosen Lv3-or-lower enemy unit (GD02-039 damageReceived becomes 2).",
+    "Action: Complete any remaining battle prompts if requested.",
+    "Expect: Scenario verifies both GD02-111 branches: Main exiles 6 purple Units from trash then destroys 1 enemy Unit, and Burst deals 2 damage to a chosen enemy unit that is Lv.3 or lower."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed_gd02111_manual_flow",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_GD02111_MANUAL_FLOW",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "GD02-111_hand_p1_0001",
+              "cardId": "GD02-111"
+            }
+          ],
+          "handUids": [
+            "GD02-111_hand_p1_0001"
+          ],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "GD02-111_shield_p1_0001",
+              "cardId": "GD02-111"
+            },
+            {
+              "carduid": "GD02-001_shield_p1_0002",
+              "cardId": "GD02-001"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd02111_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd02111_p1_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd02111_p1_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd02111_p1_0004",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd02111_p1_0005",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [
+            {
+              "carduid": "GD02-054_trash_p1_0001",
+              "cardId": "GD02-054"
+            },
+            {
+              "carduid": "GD02-055_trash_p1_0002",
+              "cardId": "GD02-055"
+            },
+            {
+              "carduid": "GD02-056_trash_p1_0003",
+              "cardId": "GD02-056"
+            },
+            {
+              "carduid": "GD02-057_trash_p1_0004",
+              "cardId": "GD02-057"
+            },
+            {
+              "carduid": "GD02-060_trash_p1_0005",
+              "cardId": "GD02-060"
+            },
+            {
+              "carduid": "GD02-068_trash_p1_0006",
+              "cardId": "GD02-068"
+            }
+          ],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD02-039_burst_target_p2_0001",
+              "cardId": "GD02-039",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "GD02-010_main_destroy_target_p2_0001",
+              "cardId": "GD02-010",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot3": {
+            "unit": {
+              "carduid": "GD02-040_attacker_p2_0001",
+              "cardId": "GD02-040",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "GD02-002_shield_p2_0001",
+              "cardId": "GD02-002"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd02111_p2_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

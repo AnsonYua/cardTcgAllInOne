@@ -4,6 +4,7 @@ const {
         walkEffects,
         detectAlwaysOnTextRuleMismatches,
         validateReturnToHandSemantics,
+        validateLegacyDiscardFromHandCostPlacement,
         detectSupportActivatedSchemaMismatches
     }
 } = require('../tests/validators/effectSchemaCanonicalValidation');
@@ -204,6 +205,43 @@ describe('effectSchemaCanonicalValidation utilities', () => {
         expect(
             diagnostics.some((d) => d.severity === 'warning' && /SOURCE_CONTROLLER/.test(d.message))
         ).toBe(true);
+    });
+
+    test('warns when discardFromHand is declared under parameters instead of cost', () => {
+        const diagnostics = [];
+        validateLegacyDiscardFromHandCostPlacement(
+            {
+                action: 'returnToHand',
+                parameters: {
+                    discardFromHand: 1
+                }
+            },
+            { cardId: 'MOCK-COST-001', effectId: 'cost_test', jsonPath: 'cards.MOCK-COST-001.effects.rules[0]' },
+            diagnostics
+        );
+
+        expect(
+            diagnostics.some((d) => d.severity === 'warning' && /cost\.discardFromHand/.test(d.message))
+        ).toBe(true);
+    });
+
+    test('does not warn when discardFromHand is declared in canonical cost object', () => {
+        const diagnostics = [];
+        validateLegacyDiscardFromHandCostPlacement(
+            {
+                action: 'returnToHand',
+                cost: {
+                    discardFromHand: {
+                        count: 1
+                    }
+                },
+                parameters: {}
+            },
+            { cardId: 'MOCK-COST-002', effectId: 'cost_test_ok', jsonPath: 'cards.MOCK-COST-002.effects.rules[0]' },
+            diagnostics
+        );
+
+        expect(diagnostics).toHaveLength(0);
     });
 
     test('accepts canonical support activated schema', () => {

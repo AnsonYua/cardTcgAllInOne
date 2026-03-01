@@ -1,0 +1,236 @@
+{
+  "description": "gd02-115_main_action_choose_friendly_vulture_unit_ap_plus_2_then_play_as_witz_sou_pilot_manual_flow",
+  "gameId": "gd02-115_main_action_choose_friendly_vulture_unit_ap_plus_2_then_play_as_witz_sou_pilot_manual_flow",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD02-115",
+    "MAIN_PHASE",
+    "ACTION",
+    "modify_ap",
+    "Vulture",
+    "pilot_designation",
+    "manual_flow"
+  ],
+  "notes": [
+    "Action: Load scenario via getTestScenario and inject via injectGameState.",
+    "Expect: It is Player 1 MAIN_PHASE with currentBattle null, two GD02-115 copies in hand, 2 active energy cards, and empty processingQueue.",
+    "Action: Before confirming GD02-115_hand_main_0001 as command, inspect AP+2 target candidates.",
+    "Expect: Only friendly (Vulture) Units are selectable (Player 1 slot1 GD02-065 is valid). Player 1 slot2 GD02-062 is invalid because it is not (Vulture), and Player 2 slot1 GD02-063 is invalid because scope is friendly only.",
+    "Action: Play GD02-115_hand_main_0001 as command and choose Player 1 slot1 GD02-065_friendly_vulture_target_0001.",
+    "Expect: Player 1 slot1 gets AP+2 during this turn (CARD_STAT_MODIFIED modifyAP delta=2), while non-selected units remain unchanged.",
+    "Action: Play GD02-115_hand_pilot_0002 as pilot onto Player 1 slot3 GD02-063_friendly_pilot_host_0001.",
+    "Expect: Player 1 slot3 becomes paired and the pilot identity is Witz Sou from GD02-115 designate_pilot (pilot stats AP 0 / HP 1).",
+    "Action: Inspect Player 1 energy area after both GD02-115 plays resolve.",
+    "Expect: Both Player 1 energy cards are rested (cost 1 paid twice), and total energy count remains 2 cards.",
+    "Action: End Player 1 turn.",
+    "Expect: Temporary AP+2 from the first GD02-115 play expires at end of turn and AP returns to base value on the next turn."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed_gd02115_manual_flow",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_GD02115_MANUAL_FLOW",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "GD02-115_hand_main_0001",
+              "cardId": "GD02-115"
+            },
+            {
+              "carduid": "GD02-115_hand_pilot_0002",
+              "cardId": "GD02-115"
+            }
+          ],
+          "handUids": [
+            "GD02-115_hand_main_0001",
+            "GD02-115_hand_pilot_0002"
+          ],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD02-065_friendly_vulture_target_0001",
+              "cardId": "GD02-065",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "GD02-062_friendly_non_vulture_invalid_0001",
+              "cardId": "GD02-062",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot3": {
+            "unit": {
+              "carduid": "GD02-063_friendly_pilot_host_0001",
+              "cardId": "GD02-063",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "GD02-001_shield_p1_0001",
+              "cardId": "GD02-001"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd02115_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd02115_p1_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD02-063_enemy_vulture_invalid_scope_0001",
+              "cardId": "GD02-063",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "GD02-017_shield_p2_0001",
+              "cardId": "GD02-017"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd02115_p2_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

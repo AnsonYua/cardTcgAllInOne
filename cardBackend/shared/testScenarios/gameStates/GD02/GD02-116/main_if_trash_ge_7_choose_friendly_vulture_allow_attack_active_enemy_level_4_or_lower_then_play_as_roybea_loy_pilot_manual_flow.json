@@ -1,0 +1,296 @@
+{
+  "description": "gd02-116_main_if_trash_ge_7_choose_friendly_vulture_allow_attack_active_enemy_level_4_or_lower_then_play_as_roybea_loy_pilot_manual_flow",
+  "gameId": "gd02-116_main_if_trash_ge_7_choose_friendly_vulture_allow_attack_active_enemy_level_4_or_lower_then_play_as_roybea_loy_pilot_manual_flow",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD02-116",
+    "MAIN_PHASE",
+    "allow_attack_target",
+    "Vulture",
+    "trash_ge_7",
+    "pilot_designation",
+    "manual_flow"
+  ],
+  "notes": [
+    "Action: Load scenario via getTestScenario and inject via injectGameState.",
+    "Expect: It is Player 1 MAIN_PHASE with currentBattle null, two GD02-116 copies in hand, 4 active energy cards, and Player 1 trash count is 7.",
+    "Action: During Player 1 MAIN_PHASE, play GD02-116_hand_main_0001 as command and inspect target choices for its Main effect before confirming.",
+    "Expect: Only friendly (Vulture) Units are selectable (playerId_1 slot1 GD02-065 and slot3 GD02-063). Friendly non-(Vulture) unit slot2 GD02-062 and all enemy units are not selectable.",
+    "Action: Choose playerId_1 slot1 GD02-065_friendly_vulture_attacker_0001 as the effect target and resolve GD02-116 Main effect.",
+    "Expect: Selected unit gains temporary permission during this turn to choose an active enemy Unit that is Lv.4 or lower as its attack target.",
+    "Action: Enter ATTACK_PHASE and declare attack with playerId_1 slot1 GD02-065.",
+    "Expect: Attack target selection includes active enemy Unit playerId_2 slot1 GD02-041 (Lv.4) and excludes active enemy Unit playerId_2 slot2 GD02-038 (Lv.7).",
+    "Action: Complete battle confirm flow after choosing playerId_2 slot1 as attack target, then return to MAIN_PHASE and play GD02-116_hand_pilot_0002 as pilot onto playerId_1 slot3 GD02-063_friendly_pilot_host_0001.",
+    "Expect: playerId_1 slot3 becomes paired and the pilot identity is Roybea Loy from GD02-116 designate_pilot (pilot stats AP 1 / HP 0).",
+    "Action: Inspect playerId_1 energy area after both GD02-116 plays resolve.",
+    "Expect: Two of four energy cards are rested from paying cost 1 twice; total energy remains 4 cards (meeting Level 3 minimum requirement)."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed_gd02116_manual_flow",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_GD02116_MANUAL_FLOW",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "GD02-116_hand_main_0001",
+              "cardId": "GD02-116"
+            },
+            {
+              "carduid": "GD02-116_hand_pilot_0002",
+              "cardId": "GD02-116"
+            }
+          ],
+          "handUids": [
+            "GD02-116_hand_main_0001",
+            "GD02-116_hand_pilot_0002"
+          ],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD02-065_friendly_vulture_attacker_0001",
+              "cardId": "GD02-065",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "GD02-062_friendly_non_vulture_invalid_0001",
+              "cardId": "GD02-062",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot3": {
+            "unit": {
+              "carduid": "GD02-063_friendly_pilot_host_0001",
+              "cardId": "GD02-063",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "GD02-001_shield_p1_0001",
+              "cardId": "GD02-001"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd02116_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd02116_p1_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd02116_p1_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd02116_p1_0004",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [
+            {
+              "carduid": "GD02-001_trash_p1_0001",
+              "cardId": "GD02-001"
+            },
+            {
+              "carduid": "GD02-014_trash_p1_0002",
+              "cardId": "GD02-014"
+            },
+            {
+              "carduid": "GD02-021_trash_p1_0003",
+              "cardId": "GD02-021"
+            },
+            {
+              "carduid": "GD02-024_trash_p1_0004",
+              "cardId": "GD02-024"
+            },
+            {
+              "carduid": "GD02-042_trash_p1_0005",
+              "cardId": "GD02-042"
+            },
+            {
+              "carduid": "GD02-055_trash_p1_0006",
+              "cardId": "GD02-055"
+            },
+            {
+              "carduid": "GD02-058_trash_p1_0007",
+              "cardId": "GD02-058"
+            }
+          ],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD02-041_enemy_active_lv4_0001",
+              "cardId": "GD02-041",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "GD02-038_enemy_active_lv7_0002",
+              "cardId": "GD02-038",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "GD02-017_shield_p2_0001",
+              "cardId": "GD02-017"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd02116_p2_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,194 @@
+{
+  "description": "gd02-104_main_scry_top3_return1_top_rest_bottom_then_draw1_if_newtype_pilot_in_play_manual_flow",
+  "gameId": "gd02-104_main_scry_top3_return1_top_rest_bottom_then_draw1_if_newtype_pilot_in_play_manual_flow",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD02-104",
+    "MAIN_PHASE",
+    "scry_top_3",
+    "deck_reorder",
+    "Newtype",
+    "draw",
+    "manual_flow"
+  ],
+  "notes": [
+    "Action: Load this scenario via getTestScenario and inject via injectGameState.",
+    "Expect: Start in MAIN_PHASE with playerId_1 as current player, currentBattle null, GD02-104 in hand, and a paired in-play Newtype pilot at playerId_1 slot2 (unit GD02-033 + pilot GD02-089).",
+    "Action: Play GD02-104 from hand during MAIN_PHASE, paying cost 1.",
+    "Expect: Top-3 deck look/reorder flow appears for playerId_1 using this initial order: GD01-001_top3_a_0001 -> GD02-039_top3_b_0002 -> GD03-001_top3_c_0003.",
+    "Action: In the top-3 resolution, choose GD02-039_top3_b_0002 to be returned to the top and send the other two looked cards to the bottom.",
+    "Expect: After scry resolves, the Newtype pilot-in-play condition is true, so draw 1 resolves and the drawn card is GD02-039_top3_b_0002.",
+    "Action: Inspect hand, deck top, and energy after the full GD02-104 effect resolves.",
+    "Expect: Hand contains the drawn GD02-039 card, deck top is now ST01-001_after_top3_0004, exactly 1 playerId_1 energy is rested from cost payment, and GD02-104 is in trashArea."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed_gd02104_manual_flow",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_GD02104_MANUAL_FLOW",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "GD02-104_hand_p1_0001",
+              "cardId": "GD02-104"
+            }
+          ],
+          "handUids": [
+            "GD02-104_hand_p1_0001"
+          ],
+          "mainDeck": [
+            "GD01-001_top3_a_0001",
+            "GD02-039_top3_b_0002",
+            "GD03-001_top3_c_0003",
+            "ST01-001_after_top3_0004",
+            "GD01-020_after_top3_0005"
+          ]
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {
+            "unit": {
+              "carduid": "GD02-033_unit_p1_0001",
+              "cardId": "GD02-033",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            },
+            "pilot": {
+              "carduid": "GD02-089_pilot_p1_0001",
+              "cardId": "GD02-089",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "GD02-001_shield_p1_0001",
+              "cardId": "GD02-001"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd02104_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "GD01-001_shield_p2_0001",
+              "cardId": "GD01-001"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd02104_p2_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

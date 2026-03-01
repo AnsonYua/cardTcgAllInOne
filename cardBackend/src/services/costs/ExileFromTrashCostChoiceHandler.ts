@@ -5,8 +5,8 @@ import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { TargetChoiceEvent, TargetReference, EffectDefinition } from '../EventQueue/interfaces/GameEvent';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { EffectExecutor } from '../effects/EffectExecutor';
-import { DeployTargetManager } from '../DeployTargetManager';
 import type { ExileFromTrashCostContext } from './ExileFromTrashCostFlow';
+import { executeFollowUpEffectAfterPaidCost } from './CostFollowUpEffectExecutor';
 
 export class ExileFromTrashCostChoiceHandler {
     static tryHandle(
@@ -41,18 +41,12 @@ export class ExileFromTrashCostChoiceHandler {
         }
 
         // 2) Resolve follow-up effect without re-triggering cost flow
-        const followUpEffect = ensureEffectDefaults({
-            ...(ctx.followUpEffect as EffectDefinition),
-            cost: undefined
-        } as any);
-
-        const followUpResult = DeployTargetManager.processEffectWithTargetChoice(
-            gameEnv,
+        const followUpResult = executeFollowUpEffectAfterPaidCost(gameEnv, {
             sourcePlayerId,
             sourceCarduid,
-            followUpEffect,
-            ctx.cardPlayNotificationId
-        );
+            followUpEffect: ensureEffectDefaults(ctx.followUpEffect as EffectDefinition),
+            cardPlayNotificationId: ctx.cardPlayNotificationId
+        });
         if (!followUpResult.success) {
             return { handled: true, success: false, error: followUpResult.error || 'follow-up effect failed' };
         }
@@ -60,4 +54,3 @@ export class ExileFromTrashCostChoiceHandler {
         return { handled: true, success: true };
     }
 }
-

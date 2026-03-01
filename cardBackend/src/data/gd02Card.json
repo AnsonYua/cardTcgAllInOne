@@ -196,12 +196,14 @@
               }
             ],
             "optional": true,
-            "parameters": {
-              "ownershipPolicy": "TARGET_OWNER",
+            "cost": {
               "discardFromHand": {
                 "cardType": "unit",
                 "count": 1
-              },
+              }
+            },
+            "parameters": {
+              "ownershipPolicy": "TARGET_OWNER",
               "notes": "Implemented: discardFromHand costs are enforced for DESTROYED-triggered follow-up effects."
             },
             "target": {

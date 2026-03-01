@@ -289,6 +289,34 @@ function validateReturnToHandSemantics(node, context, diagnostics) {
   }
 }
 
+function validateLegacyDiscardFromHandCostPlacement(node, context, diagnostics) {
+  if (!node || typeof node !== 'object') {
+    return;
+  }
+
+  const parameters = node.parameters && typeof node.parameters === 'object' ? node.parameters : null;
+  if (!parameters || !Object.prototype.hasOwnProperty.call(parameters, 'discardFromHand')) {
+    return;
+  }
+
+  const hasCanonicalCost = Boolean(
+    node.cost &&
+    typeof node.cost === 'object' &&
+    Object.prototype.hasOwnProperty.call(node.cost, 'discardFromHand')
+  );
+  if (hasCanonicalCost) {
+    return;
+  }
+
+  diagnostics.push({
+    severity: 'warning',
+    cardId: context.cardId,
+    effectId: context.effectId || 'unknown',
+    jsonPath: `${context.jsonPath}.parameters.discardFromHand`,
+    message: 'discardFromHand cost should be declared under cost.discardFromHand (not parameters.discardFromHand)'
+  });
+}
+
 function validateSequenceStructure(node, context, diagnostics) {
   if (!node || typeof node !== 'object' || node.action !== 'sequence') {
     return;
@@ -662,6 +690,11 @@ function walkEffects(node, context, diagnostics) {
   }
 
   validateReturnToHandSemantics(node, {
+    cardId: context.cardId,
+    effectId: nextContext.effectId || 'unknown',
+    jsonPath: context.jsonPath
+  }, diagnostics);
+  validateLegacyDiscardFromHandCostPlacement(node, {
     cardId: context.cardId,
     effectId: nextContext.effectId || 'unknown',
     jsonPath: context.jsonPath
@@ -1105,6 +1138,7 @@ module.exports = {
     validateScalingConfig,
     detectAlwaysOnTextRuleMismatches,
     validateReturnToHandSemantics,
+    validateLegacyDiscardFromHandCostPlacement,
     validateSequenceStructure,
     detectSupportActivatedSchemaMismatches,
     detectDescriptionRuleContractMismatches,

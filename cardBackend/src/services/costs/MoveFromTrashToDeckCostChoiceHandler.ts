@@ -5,12 +5,12 @@ import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { TargetChoiceEvent, TargetReference, EffectDefinition, PlayerActionEvent } from '../EventQueue/interfaces/GameEvent';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { EffectExecutor } from '../effects/EffectExecutor';
-import { DeployTargetManager } from '../DeployTargetManager';
 import { EventFactory } from '../EventQueue/EventFactory';
 import { AttackResumeScheduler } from '../battle/AttackResumeScheduler';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { AttackEffectUsageTracker } from '../effects/attack/AttackEffectUsageTracker';
 import type { MoveFromTrashToDeckCostContext } from './MoveFromTrashToDeckCostFlow';
+import { executeFollowUpEffectAfterPaidCost } from './CostFollowUpEffectExecutor';
 
 export class MoveFromTrashToDeckCostChoiceHandler {
     static tryHandle(
@@ -63,15 +63,14 @@ export class MoveFromTrashToDeckCostChoiceHandler {
         }
 
         // 2) Apply follow-up effect (sequence) - may enqueue another TARGET_CHOICE.
-        const followUpResult = DeployTargetManager.processEffectWithTargetChoice(
-            gameEnv,
-            attackPlayerId,
+        const followUpResult = executeFollowUpEffectAfterPaidCost(gameEnv, {
+            sourcePlayerId: attackPlayerId,
             sourceCarduid,
             followUpEffect,
-            typeof (ctx.attackEventData as any)?.attackNotificationId === 'string'
+            cardPlayNotificationId: typeof (ctx.attackEventData as any)?.attackNotificationId === 'string'
                 ? ((ctx.attackEventData as any).attackNotificationId as string)
                 : undefined
-        );
+        });
 
         if (!followUpResult.success) {
             return { handled: true, success: false, error: followUpResult.error || 'follow-up effect failed' };
@@ -86,4 +85,3 @@ export class MoveFromTrashToDeckCostChoiceHandler {
         return { handled: true, success: true };
     }
 }
-

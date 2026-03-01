@@ -6,12 +6,12 @@ import type { EffectDefinition, PlayerActionEvent } from '../EventQueue/interfac
 import type { UnitZoneCard, PilotZoneCard } from '../../models/CardSystem';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { AttackResumeScheduler } from '../battle/AttackResumeScheduler';
-import { DeployTargetManager } from '../DeployTargetManager';
 import { DiscardFromHandCostFlow } from './DiscardFromHandCostFlow';
 import { DestroyFriendlyUnitCostFlow } from './DestroyFriendlyUnitCostFlow';
 import { MoveFromHandToDeckBottomCostFlow } from './MoveFromHandToDeckBottomCostFlow';
 import { MoveFromTrashToDeckCostFlow } from './MoveFromTrashToDeckCostFlow';
 import { EffectExecutor } from '../effects/EffectExecutor';
+import { executeFollowUpEffectAfterPaidCost } from './CostFollowUpEffectExecutor';
 
 export type AttackCostInterceptResult =
     | { handled: true; success: true; requiresSelection?: boolean; consumed?: boolean; error?: never }
@@ -44,21 +44,14 @@ export class AttackCostFlowInterceptor {
                 return { handled: true, success: true, requiresSelection: true, consumed: false };
             }
             if (costResult.kind === 'paid') {
-                const followUpEffect = ensureEffectDefaults({
-                    ...effect,
-                    optional: false,
-                    cost: undefined
-                } as any);
-
-                const followUpResult = DeployTargetManager.processEffectWithTargetChoice(
-                    gameEnv,
-                    playerId,
-                    sourceCard.carduid,
-                    followUpEffect,
-                    typeof (attackEvent.data as any)?.attackNotificationId === 'string'
+                const followUpResult = executeFollowUpEffectAfterPaidCost(gameEnv, {
+                    sourcePlayerId: playerId,
+                    sourceCarduid: sourceCard.carduid,
+                    followUpEffect: ensureEffectDefaults(effect),
+                    cardPlayNotificationId: typeof (attackEvent.data as any)?.attackNotificationId === 'string'
                         ? ((attackEvent.data as any).attackNotificationId as string)
                         : undefined
-                );
+                });
                 if (!followUpResult.success) {
                     return { handled: true, success: false, error: followUpResult.error || 'Failed to resolve follow-up effect after discard cost' };
                 }
@@ -139,21 +132,14 @@ export class AttackCostFlowInterceptor {
                 return { handled: true, success: true, requiresSelection: true, consumed: false };
             }
             if (costResult.paid) {
-                const followUpEffect = ensureEffectDefaults({
-                    ...effect,
-                    optional: false,
-                    cost: undefined
-                } as any);
-
-                const followUpResult = DeployTargetManager.processEffectWithTargetChoice(
-                    gameEnv,
-                    playerId,
-                    sourceCard.carduid,
-                    followUpEffect,
-                    typeof (attackEvent.data as any)?.attackNotificationId === 'string'
+                const followUpResult = executeFollowUpEffectAfterPaidCost(gameEnv, {
+                    sourcePlayerId: playerId,
+                    sourceCarduid: sourceCard.carduid,
+                    followUpEffect: ensureEffectDefaults(effect),
+                    cardPlayNotificationId: typeof (attackEvent.data as any)?.attackNotificationId === 'string'
                         ? ((attackEvent.data as any).attackNotificationId as string)
                         : undefined
-                );
+                });
                 if (!followUpResult.success) {
                     return { handled: true, success: false, error: followUpResult.error || 'Failed to resolve follow-up effect after cost' };
                 }
