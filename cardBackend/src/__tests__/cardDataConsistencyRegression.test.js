@@ -297,7 +297,14 @@ describe('card data consistency regressions', () => {
         const p1 = gameEnv.addPlayer('playerId_1', 'P1');
         gameEnv.addPlayer('playerId_2', 'P2');
         gameEnv.currentPlayer = p1.id;
-        p1.playerPoint = 7;
+        p1.zones.energyArea = Array.from({ length: 7 }, (_, index) => ({
+            cardId: 'energy_basic',
+            carduid: `GD02-021_energy_test_0001_${index}`,
+            isExtraEnergy: false,
+            isRested: false,
+            placedAt: 0,
+            placedBy: p1.id
+        }));
 
         const sourceUid = 'GD02-021_src_0001';
         p1.zones.slot1.unit = createUnitZoneCard({
@@ -334,7 +341,14 @@ describe('card data consistency regressions', () => {
         const p1 = gameEnv.addPlayer('playerId_1', 'P1');
         gameEnv.addPlayer('playerId_2', 'P2');
         gameEnv.currentPlayer = p1.id;
-        p1.playerPoint = 7;
+        p1.zones.energyArea = Array.from({ length: 7 }, (_, index) => ({
+            cardId: 'energy_basic',
+            carduid: `GD02-021_energy_test_0002_${index}`,
+            isExtraEnergy: false,
+            isRested: false,
+            placedAt: 0,
+            placedBy: p1.id
+        }));
 
         const sourceUid = 'GD02-021_src_0002';
         p1.zones.slot1.unit = createUnitZoneCard({

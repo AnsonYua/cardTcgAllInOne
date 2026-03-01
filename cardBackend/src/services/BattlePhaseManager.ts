@@ -137,16 +137,19 @@ export class BattlePhaseManager {
                 }
                 return { success: true, requiresSelection: true };
             }
+        }
 
-            const targetGoneAfterAttackEffects = this.tryResolvePreBattleTargetGone(
-                gameEnv,
-                event,
-                defendingPlayerId,
-                'after_attack_phase_effects'
-            );
-            if (targetGoneAfterAttackEffects) {
-                return { success: true };
-            }
+        // Always validate attackUnit target existence before blocker handling.
+        // This is required for resumed attacks (skipAttackPhaseEffects=true), where
+        // the original target may have already left play during a prior choice/effect chain.
+        const targetGoneBeforeBlocker = this.tryResolvePreBattleTargetGone(
+            gameEnv,
+            event,
+            defendingPlayerId,
+            skipAttackPhaseEffects ? 'before_blocker_choice_resume' : 'after_attack_phase_effects'
+        );
+        if (targetGoneBeforeBlocker) {
+            return { success: true };
         }
 
         const blockerResult = BlockerChoiceManager.processAttackWithBlockerChoice(

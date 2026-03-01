@@ -1,0 +1,214 @@
+{
+  "description": "st02-014_burst_activate_main_then_main_action_rest_enemy_hp_le_5_manual_flow",
+  "gameId": "st02-014_burst_activate_main_then_main_action_rest_enemy_hp_le_5_manual_flow",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "ST02-014",
+    "Burst",
+    "ActivateMain",
+    "Main",
+    "Action",
+    "Rest",
+    "HP<=5"
+  ],
+  "notes": [
+    "Action: Load scenario and keep initial state pre-battle (MAIN_PHASE, currentBattle is null).",
+    "Expect: Player 1 shieldArea first card is ST02-014 and Player 2 has active units in slot1 and slot2 with HP 5 or less.",
+    "Action: Player 2 attacks Player 1 shield area using slot1 unit, then resolve confirmBattle for both players until burst choice appears.",
+    "Expect: Burst choice for ST02-014 appears, and confirming burst activates ST02-014 [Main] to choose and rest 1 enemy unit with HP 5 or less.",
+    "Action: During burst main resolution, choose Player 2 slot1 attacker as target.",
+    "Expect: Chosen target becomes rested and no invalid HP>5 target is selectable.",
+    "Action: End Player 2 turn, then on Player 1 turn play ST02-014 from hand during MAIN_PHASE and pay cost.",
+    "Expect: ST02-014 [Main]/[Action] resolves and allows choosing 1 active enemy unit with HP 5 or less (for example Player 2 slot2) to rest.",
+    "Action: Choose Player 2 slot2 as target for the hand-played ST02-014 effect.",
+    "Expect: Player 2 slot2 becomes rested and both burst-activated and normal [Main]/[Action] branches are validated."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_2",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_st02014_seed",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_2",
+          "carduid": "ST02-000_draw_seed_0001",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "ST02-014_hand_0001",
+              "cardId": "ST02-014"
+            }
+          ],
+          "handUids": [
+            "ST02-014_hand_0001"
+          ],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "ST02-014_shield_0001",
+              "cardId": "ST02-014"
+            },
+            {
+              "carduid": "ST02-012_shield_0002",
+              "cardId": "ST02-012"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_st02014_p1_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_st02014_p1_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST02-009_attacker_0001",
+              "cardId": "ST02-009",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 1,
+              "originalHP": 1,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "ST02-006_target_0001",
+              "cardId": "ST02-006",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 4,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_st02014_p2_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

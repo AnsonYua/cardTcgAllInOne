@@ -134,7 +134,14 @@ export class ConditionEvaluators {
         }
 
         const player = gameEnv.getPlayer(scopedPlayerId) || gameEnv.players[scopedPlayerId];
-        const level = typeof (player as any)?.playerPoint === 'number' ? (player as any).playerPoint : 0;
+        const energyArea = Array.isArray((player as any)?.zones?.energyArea)
+            ? (player as any).zones.energyArea
+            : null;
+        // Player "Lv." tracks current energy cards in play; keep playerPoint as a legacy fallback
+        // for older snapshots/tests that may not hydrate zones.
+        const level = energyArea
+            ? energyArea.length
+            : (typeof (player as any)?.playerPoint === 'number' ? (player as any).playerPoint : 0);
 
         if (typeof value === 'number') {
             return level === value;

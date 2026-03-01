@@ -2,6 +2,8 @@ const { GameEnvironment } = require('../models/GameEnvironment');
 const { EventType, PlayerActionType } = require('../models/GameEnums');
 const { PlayerCardManager } = require('../services/PlayerCardManager');
 const { processAction } = require('../services/actions/ActionProcessor');
+const { EventFactory } = require('../services/EventQueue/EventFactory');
+const { BattlePhaseManager } = require('../services/BattlePhaseManager');
 
 function findUnit(gameEnv, playerId, carduid) {
     const player = gameEnv.getPlayer(playerId);
@@ -88,5 +90,49 @@ describe('GD03-018 pre-battle target removal handling', () => {
             entry?.type === EventType.TARGET_CHOICE && entry?.data?.effect?.effectId === 'effect'
         );
         expect(gd03125Choice).toBeFalsy();
+    });
+
+    test('resumed attack aborts before blocker choice when original target is already gone', () => {
+        const gameEnv = new GameEnvironment();
+        gameEnv.addPlayer('playerId_1', 'P1');
+        gameEnv.addPlayer('playerId_2', 'P2');
+        gameEnv.currentTurn = 1;
+        gameEnv.currentPlayer = 'playerId_1';
+        gameEnv.phase = 'MAIN_PHASE';
+
+        const attackerUid = 'GD03-018_attacker_resume_0001';
+        const blockerUid = 'ST01-008_enemy_blocker_resume_0001';
+        const missingTargetUid = 'GD03-083_enemy_removed_before_resume_0001';
+
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_1', { carduid: attackerUid, playAs: 'unit' }).success).toBe(true);
+        expect(PlayerCardManager.placeCardWithEventData(gameEnv, 'playerId_2', { carduid: blockerUid, playAs: 'unit' }).success).toBe(true);
+
+        const attackEvent = EventFactory.createPlayerActionEvent('playerId_1', 'attackUnit', {
+            playerId: 'playerId_1',
+            gameId: 'gd03_018_resume_target_gone',
+            actionType: 'attackUnit',
+            attackerCarduid: attackerUid,
+            targetType: 'unit',
+            targetUnitUid: missingTargetUid,
+            targetPlayerId: 'playerId_2',
+            skipAttackDeclaration: true,
+            skipAttackPhaseEffects: true,
+            resumeAfterChoiceEventId: 'target_choice_resume_1'
+        });
+
+        const result = BattlePhaseManager.initiateAttack(gameEnv, attackEvent);
+        expect(result.success).toBe(true);
+        expect(result.requiresSelection).not.toBe(true);
+        expect(gameEnv.currentBattle).toBeUndefined();
+
+        const blockerChoiceQueued = gameEnv.processingQueue.some((entry) => entry?.type === EventType.BLOCKER_CHOICE);
+        expect(blockerChoiceQueued).toBe(false);
+
+        const resolution = latestBattleResolved(gameEnv);
+        expect(resolution).toBeTruthy();
+        expect(resolution.payload?.result?.aborted).toBe(true);
+        expect(resolution.payload?.result?.battleEndedEarly).toBe(true);
+        expect(resolution.payload?.result?.abortReason).toBe('TARGET_NOT_ON_BOARD');
+        expect(resolution.payload?.result?.targetMissing).toBe(true);
     });
 });

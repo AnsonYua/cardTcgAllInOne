@@ -172,14 +172,32 @@
         "playerPoint": 0,
         "isReady": true,
         "zones": {
-          "slot1": {},
+          "slot1": {
+            "unit": {
+              "carduid": "GD01-001_enemy_unit_0001",
+              "cardId": "GD01-001",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": true,
+              "isFirstPlay": false,
+              "playedThisTurn": false,
+              "damageReceived": 0
+            }
+          },
           "slot2": {},
           "slot3": {},
           "slot4": {},
           "slot5": {},
           "slot6": {},
           "base": [],
-          "shieldArea": [],
+          "shieldArea": [
+            {
+              "carduid": "GD01-050_shield_0001",
+              "cardId": "GD01-050",
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            }
+          ],
           "energyArea": [
             {
               "cardId": "energy_basic",

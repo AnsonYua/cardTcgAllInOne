@@ -1,24 +1,26 @@
 {
-  "description": "gd02-024_during_link_gain_high_maneuver_skip_blocker_manual_flow",
-  "gameId": "gd02-024_during_link_gain_high_maneuver_skip_blocker_manual_flow",
+  "description": "st05-015_activate_main_rest_base_choose_damaged_unit_ap_plus_2_manual_flow",
+  "gameId": "st05-015_activate_main_rest_base_choose_damaged_unit_ap_plus_2_manual_flow",
   "testType": "action",
   "category": "ActionCase",
   "tags": [
-    "GD02-024",
-    "during_link",
-    "linked",
-    "High-Maneuver",
-    "manual_flow",
-    "BLOCKER_CHOICE"
+    "ST05-015",
+    "MAIN_PHASE",
+    "activate_main",
+    "rest_base_cost",
+    "damaged_unit_filter",
+    "modifyAP",
+    "manual_flow"
   ],
   "notes": [
-    "Action: Load this scenario with getTestScenario and inject with injectGameState.",
-    "Expect: Start at MAIN_PHASE with currentBattle null, GD02-024 in player 1 slot1 (not paired yet), ST06-009 in hand, and player 2 has an active blocker in slot2.",
-    "Action: Player 1 plays ST06-009 from hand as pilot onto GD02-024 in slot1.",
-    "Expect: Slot1 is linked (GD02-024 link includes Clan and ST06-009 has Clan trait), so GD02-024 gains High-Maneuver while linked.",
-    "Also expect ST06-009 [When Linked] tutor_top_deck to check top card ST06-002_deck_0001 (Clan): TOP_DECK_VIEWED then option to TAKE or BOTTOM.",
-    "Action: Player 1 enters attack phase and declares attackUnit from GD02-024_unit_0001 to player 2 slot1 unit.",
-    "Expect: No BLOCKER_CHOICE is offered even though player 2 has active ST01-008 blocker in slot2, and battle proceeds directly to confirmations/resolution."
+    "Action: Load scenario via getTestScenario and inject via injectGameState.",
+    "Expect: Start in MAIN_PHASE with currentPlayer=playerId_1, currentBattle=null, processingQueue empty, playerId_1 has active ST05-015 in base, slot1 is a damaged friendly Unit, and slot2 is undamaged.",
+    "Action: During Player 1 MAIN_PHASE, use ST05-015 [Activate/Main] on ST05-015_base_p1_0001 (effectId=activate_ap_plus_2_to_damaged_unit) and choose playerId_1 slot1 ST05-004_damaged_target_p1_0001.",
+    "Expect: ST05-015_base_p1_0001 becomes rested and ST05-004_damaged_target_p1_0001 gets AP+2 during this turn (continueModifyAP increases by 2).",
+    "Action: Enter battle and declare attackShieldArea with ST05-004_damaged_target_p1_0001 during the same turn.",
+    "Expect: The attack uses ST05-004_damaged_target_p1_0001 with the temporary AP+2 applied for this turn.",
+    "Action: End Player 1 turn and return to Player 1 next turn, then inspect ST05-004_damaged_target_p1_0001.",
+    "Expect: The temporary AP+2 from ST05-015 has expired while existing damage on ST05-004_damaged_target_p1_0001 remains."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -40,7 +42,7 @@
     "maxEventsPerCycle": 50,
     "notificationQueue": [
       {
-        "id": "card_drawn_seed_gd02024_during_link_gain_high_maneuver_skip_blocker_manual_flow",
+        "id": "card_drawn_seed_st05015_manual_flow",
         "type": "CARD_DRAWN",
         "metadata": {
           "timestamp": 1768362880422,
@@ -50,7 +52,7 @@
         },
         "payload": {
           "playerId": "playerId_1",
-          "carduid": "DRAW_SEED_GD02024_DURING_LINK_GAIN_HIGH_MANEUVER_SKIP_BLOCKER_MANUAL_FLOW",
+          "carduid": "DRAW_SEED_ST05015_MANUAL_FLOW",
           "sourceZone": "deck",
           "reason": "draw",
           "timestamp": 1768362880422,
@@ -67,20 +69,9 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": [
-            {
-              "carduid": "ST06-009_hand_0001",
-              "cardId": "ST06-009"
-            }
-          ],
-          "handUids": [
-            "ST06-009_hand_0001"
-          ],
-          "mainDeck": [
-            "ST06-002_deck_0001",
-            "GD02-058_deck_0002",
-            "ST03-006_deck_0003"
-          ]
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
         },
         "confirmIsRedraw": false,
         "isRedraw": false,
@@ -89,8 +80,24 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD02-024_unit_0001",
-              "cardId": "GD02-024",
+              "carduid": "ST05-004_damaged_target_p1_0001",
+              "cardId": "ST05-004",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 1,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "ST05-006_undamaged_other_p1_0002",
+              "cardId": "ST05-006",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -103,21 +110,29 @@
               "continueModifyHP": 0
             }
           },
-          "slot2": {},
           "slot3": {},
           "slot4": {},
           "slot5": {},
           "slot6": {},
-          "base": [],
+          "base": [
+            {
+              "carduid": "ST05-015_base_p1_0001",
+              "cardId": "ST05-015",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0
+            }
+          ],
           "shieldArea": [
             {
-              "carduid": "GD02-058_shield_p1_0001",
-              "cardId": "GD02-058"
+              "carduid": "ST05-012_shield_p1_0001",
+              "cardId": "ST05-012"
             }
           ],
           "energyArea": [
             {
-              "carduid": "energy_basic_gd02024_p1_0001",
+              "carduid": "energy_basic_st05015_p1_0001",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -125,7 +140,7 @@
               "isExtraEnergy": false
             },
             {
-              "carduid": "energy_basic_gd02024_p1_0002",
+              "carduid": "energy_basic_st05015_p1_0002",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -133,23 +148,7 @@
               "isExtraEnergy": false
             },
             {
-              "carduid": "energy_basic_gd02024_p1_0003",
-              "cardId": "energy_basic",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "isExtraEnergy": false
-            },
-            {
-              "carduid": "energy_basic_gd02024_p1_0004",
-              "cardId": "energy_basic",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "isExtraEnergy": false
-            },
-            {
-              "carduid": "energy_basic_gd02024_p1_0005",
+              "carduid": "energy_basic_st05015_p1_0003",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -177,8 +176,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD02-043_enemy_0001",
-              "cardId": "GD02-043",
+              "carduid": "ST05-010_enemy_unit_p2_0001",
+              "cardId": "ST05-010",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -191,36 +190,30 @@
               "continueModifyHP": 0
             }
           },
-          "slot2": {
-            "unit": {
-              "carduid": "ST01-008_blocker_0001",
-              "cardId": "ST01-008",
-              "placedAt": 0,
-              "placedBy": "playerId_2",
-              "isRested": false,
-              "playedThisTurn": false,
-              "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false,
-              "damageReceived": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0
-            }
-          },
+          "slot2": {},
           "slot3": {},
           "slot4": {},
           "slot5": {},
           "slot6": {},
-          "base": [],
+          "base": [
+            {
+              "carduid": "ST05-015_base_p2_0001",
+              "cardId": "ST05-015",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "damageReceived": 0
+            }
+          ],
           "shieldArea": [
             {
-              "carduid": "GD02-001_shield_p2_0001",
-              "cardId": "GD02-001"
+              "carduid": "ST05-011_shield_p2_0001",
+              "cardId": "ST05-011"
             }
           ],
           "energyArea": [
             {
-              "carduid": "energy_basic_gd02024_p2_0001",
+              "carduid": "energy_basic_st05015_p2_0001",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_2",
@@ -228,7 +221,7 @@
               "isExtraEnergy": false
             },
             {
-              "carduid": "energy_basic_gd02024_p2_0002",
+              "carduid": "energy_basic_st05015_p2_0002",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_2",
@@ -236,7 +229,7 @@
               "isExtraEnergy": false
             },
             {
-              "carduid": "energy_basic_gd02024_p2_0003",
+              "carduid": "energy_basic_st05015_p2_0003",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_2",

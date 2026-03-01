@@ -4,6 +4,8 @@ Run prompt drafts through Codex MCP directly (no OpenAI Agents SDK).
 
 Auth is handled by local Codex CLI session (for example, `codex login`).
 
+python3 /Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/aiScript/run_prompts_codex_mcp_client.py --input /Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/aiScript/data/draft_run/st01_st08_missing_prompt_drafts.json --working-dir /Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend --working-dir /Users/hello/Desktop/card/unity/cardGameFrontend --max-cards 100 --print-conversation --sandbox danger-full-access
+
 python3 /Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/aiScript/run_prompts_codex_mcp_client.py --set-id gd02 --working-dir /Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend --working-dir /Users/hello/Desktop/card/unity/cardGameFrontend --max-cards 100 --print-conversation --sandbox danger-full-access
 """
 

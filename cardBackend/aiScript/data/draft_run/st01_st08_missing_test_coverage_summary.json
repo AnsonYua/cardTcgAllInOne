@@ -1,0 +1,157 @@
+{
+  "ST01": {
+    "cardCount": 19,
+    "testedFolderCount": 13,
+    "missingCount": 6,
+    "missingCardIds": [
+      "ST01-003",
+      "ST01-005",
+      "ST01-007",
+      "T-001",
+      "T-002",
+      "T-003"
+    ],
+    "orphanTestFolderCount": 0,
+    "orphanTestFolderIds": []
+  },
+  "ST02": {
+    "cardCount": 18,
+    "testedFolderCount": 9,
+    "missingCount": 9,
+    "missingCardIds": [
+      "ST02-004",
+      "ST02-005",
+      "ST02-007",
+      "ST02-008",
+      "ST02-009",
+      "ST02-010",
+      "ST02-014",
+      "T-004",
+      "T-005"
+    ],
+    "orphanTestFolderCount": 0,
+    "orphanTestFolderIds": []
+  },
+  "ST03": {
+    "cardCount": 18,
+    "testedFolderCount": 3,
+    "missingCount": 15,
+    "missingCardIds": [
+      "ST03-001",
+      "ST03-002",
+      "ST03-003",
+      "ST03-004",
+      "ST03-005",
+      "ST03-006",
+      "ST03-007",
+      "ST03-009",
+      "ST03-012",
+      "ST03-013",
+      "ST03-014",
+      "ST03-015",
+      "ST03-016",
+      "T-006",
+      "T-007"
+    ],
+    "orphanTestFolderCount": 0,
+    "orphanTestFolderIds": []
+  },
+  "ST04": {
+    "cardCount": 19,
+    "testedFolderCount": 5,
+    "missingCount": 14,
+    "missingCardIds": [
+      "ST04-003",
+      "ST04-004",
+      "ST04-005",
+      "ST04-006",
+      "ST04-007",
+      "ST04-008",
+      "ST04-010",
+      "ST04-013",
+      "ST04-014",
+      "ST04-015",
+      "ST04-016",
+      "T-008",
+      "T-009",
+      "T-010"
+    ],
+    "orphanTestFolderCount": 0,
+    "orphanTestFolderIds": []
+  },
+  "ST05": {
+    "cardCount": 15,
+    "testedFolderCount": 2,
+    "missingCount": 13,
+    "missingCardIds": [
+      "ST05-002",
+      "ST05-003",
+      "ST05-004",
+      "ST05-005",
+      "ST05-006",
+      "ST05-007",
+      "ST05-008",
+      "ST05-009",
+      "ST05-011",
+      "ST05-012",
+      "ST05-013",
+      "ST05-014",
+      "ST05-015"
+    ],
+    "orphanTestFolderCount": 0,
+    "orphanTestFolderIds": []
+  },
+  "ST06": {
+    "cardCount": 14,
+    "testedFolderCount": 8,
+    "missingCount": 6,
+    "missingCardIds": [
+      "ST06-004",
+      "ST06-007",
+      "ST06-008",
+      "ST06-010",
+      "ST06-012",
+      "ST06-015"
+    ],
+    "orphanTestFolderCount": 0,
+    "orphanTestFolderIds": []
+  },
+  "ST07": {
+    "cardCount": 15,
+    "testedFolderCount": 7,
+    "missingCount": 8,
+    "missingCardIds": [
+      "ST07-002",
+      "ST07-003",
+      "ST07-006",
+      "ST07-007",
+      "ST07-008",
+      "ST07-012",
+      "ST07-013",
+      "ST07-014"
+    ],
+    "orphanTestFolderCount": 0,
+    "orphanTestFolderIds": []
+  },
+  "ST08": {
+    "cardCount": 15,
+    "testedFolderCount": 3,
+    "missingCount": 12,
+    "missingCardIds": [
+      "ST08-002",
+      "ST08-003",
+      "ST08-004",
+      "ST08-005",
+      "ST08-007",
+      "ST08-008",
+      "ST08-009",
+      "ST08-010",
+      "ST08-012",
+      "ST08-013",
+      "ST08-014",
+      "ST08-015"
+    ],
+    "orphanTestFolderCount": 0,
+    "orphanTestFolderIds": []
+  }
+}
