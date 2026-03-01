@@ -39,6 +39,7 @@ import { EffectDrawTriggerDispatcher } from './EffectDrawTriggerDispatcher';
 import { DrawNotificationPublisher } from './DrawNotificationPublisher';
 import { applyDeployEffect } from './actions/EffectDeployActions';
 import { normalizeCarduid } from '../../utils/CardUtils';
+import { isSequenceExecutionActive } from './sequence/SequenceExecutionContext';
 
 interface EffectActionContext {
     gameEnv: GameEnvironment;
@@ -430,6 +431,10 @@ export class EffectExecutor {
         gameEnv: GameEnvironment,
         reason: string
     ): { success: boolean; error?: string } {
+        if (isSequenceExecutionActive(gameEnv)) {
+            return { success: true };
+        }
+
         // Lazy require avoids hard circular dependency between EffectExecutor and BattlePhaseManager.
         const { BattlePhaseManager } = require('../BattlePhaseManager');
         const consistencyResult = BattlePhaseManager?.ensureActionStepBattleConsistency?.(gameEnv, reason);

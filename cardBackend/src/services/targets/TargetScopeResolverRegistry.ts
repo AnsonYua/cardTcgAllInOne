@@ -1,6 +1,7 @@
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { EffectDefinition, TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { BattleOpponentOfSourceTargetResolver } from './BattleOpponentOfSourceTargetResolver';
+import { BattleOpponentBattlingTargetResolver } from './BattleOpponentBattlingTargetResolver';
 import { SourcePairedTargetResolver } from './SourcePairedTargetResolver';
 import { SourceCardTargetResolver } from './SourceCardTargetResolver';
 
@@ -12,6 +13,8 @@ export class TargetScopeResolverRegistry {
         source: (gameEnv, sourceCarduid, effect) => SourceCardTargetResolver.resolve(gameEnv, sourceCarduid, effect),
         opponent_battling_source: (gameEnv, sourceCarduid, effect) =>
             BattleOpponentOfSourceTargetResolver.resolve(gameEnv, sourceCarduid, effect),
+        opponent_battling_target: (gameEnv, sourceCarduid, effect) =>
+            BattleOpponentBattlingTargetResolver.resolve(gameEnv, sourceCarduid, effect),
         source_paired_pilot: (gameEnv, sourceCarduid) =>
             SourcePairedTargetResolver.resolve(gameEnv, sourceCarduid, 'source_paired_pilot'),
         source_paired_unit: (gameEnv, sourceCarduid) =>

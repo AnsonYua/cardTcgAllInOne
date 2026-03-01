@@ -13,6 +13,7 @@ import { SlotHpDestructionChecker } from '../../destruction/SlotHpDestructionChe
 import { SlotHealthService } from '../../health/SlotHealthService';
 import { resolveEffectDamageValue } from './EffectDamageValueResolver';
 import { deferEffectDamageReceivedTrigger, isSequenceExecutionActive } from '../sequence/SequenceExecutionContext';
+import { EventFactory } from '../../EventQueue/EventFactory';
 
 export function applyDamageEffect(
     gameEnv: GameEnvironment,
@@ -102,6 +103,22 @@ export function applyDamageEffect(
                 'normal'
             );
 
+            continue;
+        }
+
+        if (resolvedTarget.kind === 'shield') {
+            const shieldCard = resolvedTarget.card as any;
+            const shieldAttackEvent = EventFactory.createShieldCardAttackedEvent(
+                target.playerId,
+                sourcePlayerId,
+                attackerSlot || 'unknown',
+                [{
+                    carduid: target.carduid,
+                    cardData: shieldCard?.cardData || target.cardData || {}
+                }],
+                damageValue
+            );
+            gameEnv.enqueueForProcessing(shieldAttackEvent);
             continue;
         }
 
