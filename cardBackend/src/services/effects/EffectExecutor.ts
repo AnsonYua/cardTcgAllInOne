@@ -563,6 +563,7 @@ export class EffectExecutor {
             gameEnv,
             playerId,
             drawnCarduids: drawnUids,
+            requestedCount: count,
             drawContext,
             sourceCarduid: options.sourceCarduid
         });

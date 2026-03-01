@@ -74,7 +74,11 @@
             }
           ],
           "handUids": ["GD03-001_daskdjs","ST05-010_dsafdasd"],
-          "mainDeck": []
+          "mainDeck": [
+            "ST01-008_8bfd00ea-d830-48d3-83d0-6270520765a9",
+            "ST01-016_eb48dd84-6a75-47e8-9921-590d5dd43dd4",
+            "ST01-007_04054db5-9573-4ecd-aafc-e7b0eba1f6f8"
+          ]
         },
         "confirmIsRedraw": false,
         "isRedraw": false,
@@ -181,7 +185,7 @@
               "cardId": "GD02-010",
               "placedAt": 0,
               "placedBy": "playerId_2",
-              "isRested": false,
+              "isRested": true,
               "isFirstPlay": false,
               "playedThisTurn": false,
               "damageReceived": 0

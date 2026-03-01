@@ -65,6 +65,9 @@ const {
 const {
   validateSlotTotalHpLethal
 } = require('./validators/slotTotalHpLethalValidation');
+const {
+  validateEffectDrawZeroCardsNotification
+} = require('./validators/effectDrawZeroCardsNotificationValidation');
 
 function main() {
   const root = sharedGameStatesRoot();
@@ -95,6 +98,7 @@ function main() {
   validateBattleSimultaneousDestroyOrder();
   validateEffectDamageImmediateDestroyed();
   validateEffectDestroyImmediate();
+  validateEffectDrawZeroCardsNotification();
   validateSlotTotalHpLethal();
   validateEffectSchemaCanonical();
 
