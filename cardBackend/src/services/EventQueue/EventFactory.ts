@@ -3,6 +3,8 @@
 
 import type { EventType } from '../../models/GameEnums';
 import type {
+    AttackPhaseEffectEvent,
+    AttackPhaseEffectEventData,
     AbilityActivatedEvent,
     AbilityTriggeredEvent,
     AcknowledgeEventsEvent,
@@ -20,6 +22,7 @@ import type {
     PromptChoiceEvent,
     PairingEffectDefinition,
     PairingEffectEvent,
+    QueuedAttackEffectDefinition,
     EffectDrawTriggeredEvent,
     ExResourcePlacedTriggeredEvent,
     ShieldAreaCardDamagedTriggeredEvent,
@@ -63,7 +66,7 @@ import {
     createPromptChoiceEvent,
     createBlockerChoiceEvent
 } from './factories/ChoiceEventFactories';
-import { createDeployEffectEvent, createEffectDrawTriggeredEvent, createExResourcePlacedTriggeredEvent, createPairingEffectEvent, createShieldAreaCardDamagedTriggeredEvent, createShieldCardAttackedEvent } from './factories/EffectEventFactories';
+import { createAttackPhaseEffectEvent, createDeployEffectEvent, createEffectDrawTriggeredEvent, createExResourcePlacedTriggeredEvent, createPairingEffectEvent, createShieldAreaCardDamagedTriggeredEvent, createShieldCardAttackedEvent } from './factories/EffectEventFactories';
 import { generateEventId, createBaseEvent } from './factories/EventIdUtils';
 
 export class EventFactory {
@@ -231,6 +234,24 @@ export class EventFactory {
         pairingEffects: PairingEffectDefinition[]
     ): PairingEffectEvent {
         return createPairingEffectEvent(playerId, carduid, pairingEffects);
+    }
+
+    static createAttackPhaseEffectEvent(params: {
+        attackPlayerId: string;
+        originalAttackEventData: PlayerActionEventData;
+        effect: QueuedAttackEffectDefinition;
+        remainingEffects: QueuedAttackEffectDefinition[];
+        attackNotificationId?: string;
+    }): AttackPhaseEffectEvent {
+        const data: AttackPhaseEffectEventData = {
+            attackPlayerId: params.attackPlayerId,
+            originalAttackEventData: params.originalAttackEventData,
+            effect: params.effect,
+            remainingEffects: params.remainingEffects,
+            ...(params.attackNotificationId ? { attackNotificationId: params.attackNotificationId } : {})
+        };
+
+        return createAttackPhaseEffectEvent(data);
     }
 
     static createEffectDrawTriggeredEvent(params: {

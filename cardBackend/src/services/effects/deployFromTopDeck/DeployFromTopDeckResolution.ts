@@ -3,10 +3,13 @@
 import type { GameEnvironment } from '../../../models/GameEnvironment';
 import { CardDatabaseManager, type CardData } from '../../../models/CardSystem';
 import { DeckZoneManager, type DeckBottomOrder } from '../../zones/DeckZoneManager';
-import { GameNotificationManager } from '../../GameNotificationManager';
 import { getCardIdFromUid } from '../../../utils/CardUtils';
 import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
 import { UnitDeployService } from '../../deploy/UnitDeployService';
+import {
+    emitDeployCardsMovedToBottom,
+    emitDeployFromTopDeckResolved
+} from './DeployFromTopDeckNotificationUtils';
 
 export function resolveDeployFromTopDeckSelection(
     gameEnv: GameEnvironment,
@@ -24,8 +27,7 @@ export function resolveDeployFromTopDeckSelection(
     const extracted = DeckZoneManager.extractSpecific(deck, lookedCarduids);
     const chosenIndex = extracted.indexOf(chosenUid);
     const chosenCarduid = chosenIndex >= 0 ? extracted.splice(chosenIndex, 1)[0] : undefined;
-
-    const notificationManager = new GameNotificationManager(gameEnv);
+    const restCarduids = [...extracted];
 
     if (chosenCarduid) {
         const cardId = getCardIdFromUid(chosenCarduid);
@@ -48,51 +50,45 @@ export function resolveDeployFromTopDeckSelection(
                     }
                 });
                 if (!deployResult.success) {
-                    notificationManager.addNotificationEvent(
-                        'DEPLOY_FROM_TOP_DECK_RESOLVED',
-                        {
-                            playerId: params.playerId,
-                            sourceCarduid: params.sourceCarduid,
-                            effectId: params.effectId,
-                            result: 'FAILED_DEPLOY',
-                            deployedCarduid: chosenCarduid,
-                            error: deployResult.error,
-                            timestamp: Date.now()
-                        },
-                        'high'
-                    );
+                    emitDeployFromTopDeckResolved({
+                        gameEnv,
+                        playerId: params.playerId,
+                        sourceCarduid: params.sourceCarduid,
+                        effectId: params.effectId,
+                        result: 'FAILED_DEPLOY',
+                        deployedCarduid: chosenCarduid,
+                        error: deployResult.error
+                    });
                 }
             }
         }
     }
 
-    DeckZoneManager.moveToBottom(deck, extracted, params.order);
-
-    if (extracted.length > 0) {
-        notificationManager.addNotificationEvent(
-            'CARDS_MOVED_TO_DECK_BOTTOM',
-            {
-                playerId: params.playerId,
-                sourceCarduid: params.sourceCarduid,
-                effectId: params.effectId,
-                carduids: extracted,
-                reason: 'deploy_from_top_deck_resolve_bottom',
-                timestamp: Date.now()
-            },
-            'normal'
-        );
+    if (params.order === 'random') {
+        for (let i = restCarduids.length - 1; i > 0; i -= 1) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [restCarduids[i], restCarduids[j]] = [restCarduids[j], restCarduids[i]];
+        }
     }
-    notificationManager.addNotificationEvent(
-        'DEPLOY_FROM_TOP_DECK_RESOLVED',
-        {
+    deck.push(...restCarduids);
+
+    if (restCarduids.length > 0) {
+        emitDeployCardsMovedToBottom({
+            gameEnv,
             playerId: params.playerId,
             sourceCarduid: params.sourceCarduid,
             effectId: params.effectId,
-            result: chosenCarduid ? 'DEPLOYED' : 'MOVED_TO_BOTTOM',
-            deployedCarduid: chosenCarduid,
-            movedCarduids: extracted,
-            timestamp: Date.now()
-        },
-        'normal'
-    );
+            carduids: restCarduids,
+            reason: 'deploy_from_top_deck_resolve_bottom'
+        });
+    }
+    emitDeployFromTopDeckResolved({
+        gameEnv,
+        playerId: params.playerId,
+        sourceCarduid: params.sourceCarduid,
+        effectId: params.effectId,
+        result: chosenCarduid ? 'DEPLOYED' : 'MOVED_TO_BOTTOM',
+        deployedCarduid: chosenCarduid,
+        movedCarduids: restCarduids
+    });
 }

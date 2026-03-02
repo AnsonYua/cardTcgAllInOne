@@ -2,6 +2,7 @@ import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { EffectDamageReceivedTriggerContext } from '../../models/EffectDamageReceivedTriggerContext';
 import { InPlayTriggeredEffectManager } from './InPlayTriggeredEffectManager';
 import { resolveEffectDamageReceivedNotificationContext } from './EffectDamageReceivedNotificationContext';
+import { withEventConditionNotificationOverride } from './EventConditionNotificationOverride';
 
 export class EffectDamageReceivedTriggeredEffectManager {
     static execute(
@@ -10,14 +11,7 @@ export class EffectDamageReceivedTriggeredEffectManager {
     ): { success: boolean; error?: string; requiresSelection?: boolean } {
         const { damagedPlayerId, sourcePlayerId, damagedCarduid, notificationOverride } = params;
         const latestNotification = resolveEffectDamageReceivedNotificationContext(gameEnv, { damagedCarduid, notificationOverride });
-        const hadOverride = Object.prototype.hasOwnProperty.call(gameEnv as any, 'eventConditionNotificationOverride');
-        const previousOverride = (gameEnv as any).eventConditionNotificationOverride;
-
-        if (latestNotification && typeof latestNotification === 'object') {
-            (gameEnv as any).eventConditionNotificationOverride = latestNotification;
-        }
-
-        try {
+        return withEventConditionNotificationOverride(gameEnv, latestNotification, () => {
             return InPlayTriggeredEffectManager.processForPlayer({
                 gameEnv,
                 playerId: damagedPlayerId,
@@ -33,12 +27,6 @@ export class EffectDamageReceivedTriggeredEffectManager {
                     return requiresEnemySource ? sourcePlayerId !== damagedPlayerId : true;
                 }
             });
-        } finally {
-            if (hadOverride) {
-                (gameEnv as any).eventConditionNotificationOverride = previousOverride;
-            } else {
-                delete (gameEnv as any).eventConditionNotificationOverride;
-            }
-        }
+        });
     }
 }

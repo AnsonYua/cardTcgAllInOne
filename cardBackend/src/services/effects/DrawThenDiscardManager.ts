@@ -21,7 +21,8 @@ export class DrawThenDiscardManager {
         playerId: string,
         sourceCarduid: string,
         effect: EffectDefinition,
-        cardPlayNotificationId?: string
+        cardPlayNotificationId?: string,
+        choiceContext?: Record<string, unknown>
     ): DrawThenDiscardResult {
         const normalizedEffect = ensureEffectDefaults(effect);
         const drawCount = typeof normalizedEffect.parameters?.draw === 'number' ? normalizedEffect.parameters.draw : 0;
@@ -76,6 +77,7 @@ export class DrawThenDiscardManager {
             sourceCarduid,
             effect: discardEffect,
             availableTargets,
+            ...(choiceContext ? { context: choiceContext } : {}),
             cardPlayNotificationId
         });
 

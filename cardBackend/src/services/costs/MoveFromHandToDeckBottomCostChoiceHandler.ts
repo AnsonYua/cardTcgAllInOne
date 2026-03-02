@@ -7,6 +7,7 @@ import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { EffectExecutor } from '../effects/EffectExecutor';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { AttackEffectUsageTracker } from '../effects/attack/AttackEffectUsageTracker';
+import { enqueueAttackEffectChainContinuation } from '../effects/attack/AttackEffectChainContinuation';
 import type { MoveFromHandToDeckBottomCostContext } from './MoveFromHandToDeckBottomCostFlow';
 
 export class MoveFromHandToDeckBottomCostChoiceHandler {
@@ -25,6 +26,7 @@ export class MoveFromHandToDeckBottomCostChoiceHandler {
         const drawCount = typeof ctx.drawCount === 'number' ? ctx.drawCount : 0;
 
         if (normalizedTargets.length === 0) {
+            enqueueAttackEffectChainContinuation(gameEnv, ctx.attackEffectChainContinuation, event.id);
             return { handled: true, success: true };
         }
 
@@ -65,6 +67,8 @@ export class MoveFromHandToDeckBottomCostChoiceHandler {
                 return { handled: true, success: false, error: drawResult.error || 'draw after cost failed' };
             }
         }
+
+        enqueueAttackEffectChainContinuation(gameEnv, ctx.attackEffectChainContinuation, event.id);
 
         return { handled: true, success: true };
     }

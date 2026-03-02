@@ -6,10 +6,12 @@ import { PlayerActionEvent } from '../EventQueue/interfaces/GameEvent';
 import { EventFactory } from '../EventQueue/EventFactory';
 
 export class AttackResumeScheduler {
-    static enqueueResumeAttackAfterChoice(
+    static enqueueResumeAttack(
         gameEnv: GameEnvironment,
         originalAttackEvent: PlayerActionEvent,
-        choiceEventId: string
+        options: {
+            resumeAfterChoiceEventId?: string;
+        } = {}
     ): PlayerActionEvent {
         const resumeEvent = EventFactory.createPlayerActionEvent(
             originalAttackEvent.playerId,
@@ -18,12 +20,23 @@ export class AttackResumeScheduler {
                 ...originalAttackEvent.data,
                 skipAttackDeclaration: true,
                 skipAttackPhaseEffects: true,
-                resumeAfterChoiceEventId: choiceEventId
+                ...(options.resumeAfterChoiceEventId
+                    ? { resumeAfterChoiceEventId: options.resumeAfterChoiceEventId }
+                    : {})
             }
         );
 
         gameEnv.enqueueForProcessing(resumeEvent);
         return resumeEvent;
     }
-}
 
+    static enqueueResumeAttackAfterChoice(
+        gameEnv: GameEnvironment,
+        originalAttackEvent: PlayerActionEvent,
+        choiceEventId: string
+    ): PlayerActionEvent {
+        return this.enqueueResumeAttack(gameEnv, originalAttackEvent, {
+            resumeAfterChoiceEventId: choiceEventId
+        });
+    }
+}

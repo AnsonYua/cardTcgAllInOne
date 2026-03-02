@@ -165,7 +165,7 @@
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": true,
-              "damageReceived": 0,
+              "damageReceived": 3,
               "modifyAP": 0,
               "modifyHP": 0,
               "continueModifyAP": 0,

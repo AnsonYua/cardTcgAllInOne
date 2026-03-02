@@ -1,0 +1,293 @@
+{
+  "description": "st08-013_main_action_choose_enemy_unit_deal_2_if_friendly_mafty_link_unit_in_play_manual_flow",
+  "gameId": "st08-013_main_action_choose_enemy_unit_deal_2_if_friendly_mafty_link_unit_in_play_manual_flow",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "ST08-013",
+    "MAIN_PHASE",
+    "ACTION_STEP",
+    "damage",
+    "Mafty",
+    "linked",
+    "manual_flow"
+  ],
+  "notes": [
+    "Action: Load this scenario via getTestScenario and inject it via injectGameState.",
+    "Expect: Start in MAIN_PHASE with playerId_1 turn, currentBattle null, processingQueue empty, two ST08-013 copies in hand, and 5 active energy cards.",
+    "Action: Inspect Player 1 board before playing ST08-013.",
+    "Expect: Player 1 slot1 is a true linked (Mafty) pair because ST08-002 is paired with ST08-010 Hathaway Noa, so the ST08-013 bonus branch is already satisfied before any manual battle entry.",
+    "Action: Play ST08-013_hand_main_0001 as a command in MAIN_PHASE and choose Player 2 slot1 ST08-003_enemy_main_target_0001.",
+    "Expect: Because a friendly (Mafty) Link Unit is in play, the chosen enemy unit takes 2 damage instead of 1 and remains in play with damageReceived 2.",
+    "Action: Enter battle manually by attacking Player 2 slot2 ST08-009_enemy_battle_target_0002 with Player 1 slot2 ST08-003_friendly_attacker_0002, then confirm battle for both players.",
+    "Expect: ACTION_STEP opens for this battle while the friendly linked (Mafty) pair in Player 1 slot1 remains in play, so Player 1 can play the second ST08-013 from hand during ACTION_STEP.",
+    "Action: During ACTION_STEP, play ST08-013_hand_action_0002 and choose Player 2 slot3 ST08-005_enemy_action_target_0003.",
+    "Expect: Player 2 slot3 also takes 2 damage instead of 1 and remains in play with damageReceived 2; after battle resolves, Player 2 slot2 is destroyed by battle.",
+    "Action: Inspect Player 1 energy area after both ST08-013 plays resolve.",
+    "Expect: Exactly 2 of Player 1's 5 energy cards are rested from paying both Cost 1 plays, and 3 energy cards remain active."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed_st08013_manual_flow",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_ST08013_MANUAL_FLOW",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "ST08-013_hand_main_0001",
+              "cardId": "ST08-013"
+            },
+            {
+              "carduid": "ST08-013_hand_action_0002",
+              "cardId": "ST08-013"
+            }
+          ],
+          "handUids": [
+            "ST08-013_hand_main_0001",
+            "ST08-013_hand_action_0002"
+          ],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST08-002_friendly_mafty_link_unit_0001",
+              "cardId": "ST08-002",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            },
+            "pilot": {
+              "carduid": "ST08-010_friendly_hathaway_link_0001",
+              "cardId": "ST08-010",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "ST08-003_friendly_attacker_0002",
+              "cardId": "ST08-003",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "ST08-014_p1_shield_0001",
+              "cardId": "ST08-014"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_st08013_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_st08013_p1_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_st08013_p1_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_st08013_p1_0004",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_st08013_p1_0005",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST08-003_enemy_main_target_0001",
+              "cardId": "ST08-003",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "ST08-009_enemy_battle_target_0002",
+              "cardId": "ST08-009",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot3": {
+            "unit": {
+              "carduid": "ST08-005_enemy_action_target_0003",
+              "cardId": "ST08-005",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "ST08-015_p2_shield_0001",
+              "cardId": "ST08-015"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_st08013_p2_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_st08013_p2_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

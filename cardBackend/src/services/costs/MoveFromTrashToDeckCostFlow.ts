@@ -9,6 +9,7 @@ import { TargetSelectionPipeline } from '../targets/TargetSelectionPipeline';
 import { ChoiceEventScheduler } from '../choices/ChoiceEventScheduler';
 import { EffectExecutor } from '../effects/EffectExecutor';
 import { CostChoiceUtils } from './CostChoiceUtils';
+import type { AttackEffectChainContinuation } from '../effects/attack/AttackEffectChainContinuation';
 
 type MoveFromTrashToDeckCostConfig = {
     scope?: string;
@@ -25,6 +26,7 @@ export type MoveFromTrashToDeckCostContext = {
     attackPlayerId: string;
     attackEffectUsageId: string;
     cardPlayNotificationId?: string;
+    attackEffectChainContinuation?: AttackEffectChainContinuation;
 };
 
 export class MoveFromTrashToDeckCostFlow {
@@ -34,7 +36,8 @@ export class MoveFromTrashToDeckCostFlow {
         sourceCarduid: string,
         effect: EffectDefinition,
         attackEvent: PlayerActionEvent,
-        cardPlayNotificationId?: string
+        cardPlayNotificationId?: string,
+        attackEffectChainContinuation?: AttackEffectChainContinuation
     ): { success: boolean; paid?: boolean; requiresSelection?: boolean; choiceEventId?: string; error?: string } {
         const costConfig = effect.cost && typeof effect.cost === 'object'
             ? ((effect.cost as any).moveFromTrashToDeck as MoveFromTrashToDeckCostConfig | undefined)
@@ -119,7 +122,8 @@ export class MoveFromTrashToDeckCostFlow {
             attackActionType: actionType,
             attackPlayerId: playerId,
             attackEffectUsageId,
-            ...(cardPlayNotificationId ? { cardPlayNotificationId } : {})
+            ...(cardPlayNotificationId ? { cardPlayNotificationId } : {}),
+            ...(attackEffectChainContinuation ? { attackEffectChainContinuation } : {})
         } satisfies MoveFromTrashToDeckCostContext;
 
         return { success: true, requiresSelection: true, choiceEventId: choiceEvent.id };

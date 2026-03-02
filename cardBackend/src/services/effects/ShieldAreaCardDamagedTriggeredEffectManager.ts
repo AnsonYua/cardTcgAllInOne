@@ -5,6 +5,11 @@ import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { ShieldAreaCardDamagedTriggeredEvent } from '../EventQueue/interfaces/GameEvent';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { InPlayTriggeredEffectManager } from './InPlayTriggeredEffectManager';
+import { withEventConditionNotificationOverride } from './EventConditionNotificationOverride';
+import {
+    findShieldAreaCardDamagedNotification,
+    shieldAreaCardDamagedRuleMatchesEvent
+} from './ShieldAreaCardDamagedNotificationContext';
 
 export class ShieldAreaCardDamagedTriggeredEffectManager {
     static executeShieldAreaCardDamagedTriggeredEvent(
@@ -30,50 +35,25 @@ export class ShieldAreaCardDamagedTriggeredEffectManager {
         }
 
         const attackerTraits: string[] = Array.isArray(attackerUnit.cardData?.traits) ? attackerUnit.cardData.traits : [];
+        const latestNotification = findShieldAreaCardDamagedNotification(gameEnv, event.id);
 
-        return InPlayTriggeredEffectManager.processForPlayer({
-            gameEnv,
-            playerId: attackingPlayerId,
-            trigger: 'SHIELD_AREA_CARD_DAMAGED',
-            expectedTriggers: ['SHIELD_AREA_CARD_DAMAGED'],
-            fallbackEffectId: 'shield_area_card_damaged_triggered_effect',
-            defaultTargetScope: 'self',
-            preFilter: (rawRule) => {
-                const conditions = Array.isArray((rawRule as any).conditions) ? ((rawRule as any).conditions as any[]) : [];
-                const eventConds = conditions.filter(
-                    (cond) => cond && typeof cond === 'object' && (cond as any).type === 'shieldAreaCardDamagedByBattleDamage'
-                );
-                if (eventConds.length === 0) {
-                    return true;
+        return withEventConditionNotificationOverride(gameEnv, latestNotification, () =>
+            InPlayTriggeredEffectManager.processForPlayer({
+                gameEnv,
+                playerId: attackingPlayerId,
+                trigger: 'SHIELD_AREA_CARD_DAMAGED',
+                expectedTriggers: ['SHIELD_AREA_CARD_DAMAGED'],
+                fallbackEffectId: 'shield_area_card_damaged_triggered_effect',
+                defaultTargetScope: 'self',
+                preFilter: (rawRule) => {
+                    return shieldAreaCardDamagedRuleMatchesEvent(rawRule, {
+                        attackingPlayerId,
+                        defendingPlayerId,
+                        defenseArea,
+                        attackerTraits
+                    });
                 }
-
-                return eventConds.every((cond) => {
-                    const scope = typeof (cond as any).scope === 'string' ? ((cond as any).scope as string).toLowerCase() : '';
-                    if (scope === 'opponent' && defendingPlayerId === attackingPlayerId) {
-                        return false;
-                    }
-
-                    const defenseAreas = Array.isArray((cond as any).defenseAreas)
-                        ? ((cond as any).defenseAreas as any[]).filter((v: any) => typeof v === 'string')
-                        : [];
-                    if (defenseAreas.length > 0 && !defenseAreas.includes(defenseArea)) {
-                        return false;
-                    }
-
-                    const filters = (cond as any).sourceUnitFilters && typeof (cond as any).sourceUnitFilters === 'object'
-                        ? (cond as any).sourceUnitFilters
-                        : {};
-                    const traits = Array.isArray(filters.traits) ? filters.traits.filter((t: any) => typeof t === 'string') : [];
-                    if (traits.length > 0) {
-                        const hasAll = traits.every((trait: string) => attackerTraits.includes(trait));
-                        if (!hasAll) {
-                            return false;
-                        }
-                    }
-
-                    return true;
-                });
-            }
-        });
+            })
+        );
     }
 }

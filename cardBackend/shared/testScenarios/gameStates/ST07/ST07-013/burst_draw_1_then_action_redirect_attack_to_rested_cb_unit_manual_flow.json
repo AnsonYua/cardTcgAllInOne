@@ -1,0 +1,250 @@
+{
+  "description": "st07-013_burst_draw_1_then_action_redirect_attack_to_rested_cb_unit_manual_flow",
+  "gameId": "st07-013_burst_draw_1_then_action_redirect_attack_to_rested_cb_unit_manual_flow",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "ST07-013",
+    "Burst",
+    "ACTION_STEP",
+    "ATTACK_REDIRECT",
+    "CB",
+    "manual_flow"
+  ],
+  "notes": [
+    "Action: Load scenario via getTestScenario and inject via injectGameState.",
+    "Expect: Start in MAIN_PHASE on Player 2 turn with currentBattle null, Player 1 shield[0] = ST07-013, Player 1 deck top = ST07-013_action_draw_p1_0001, Player 1 slot2 = active ST07-005, Player 1 slot3 = rested ST07-006, 4 active energy, and no pre-seeded action-step queue entries.",
+    "Action: Player 2 attacks Player 1 shield area with slot1 GD01-020_burst_attacker_p2_0001 and both players resolve confirmBattle.",
+    "Expect: BURST_EFFECT_CHOICE appears for Player 1 on ST07-013_shield_p1_0001.",
+    "Action: Player 1 confirms burst choice with confirmed=true.",
+    "Expect: The shield copy leaves Player 1 shield, and Player 1 draws 1 card from deck top so ST07-013_action_draw_p1_0001 enters hand.",
+    "Action: End Player 2 turn, then end Player 1 turn without moving Player 1 slot2 ST07-005_target_p1_0001 or Player 1 slot3 ST07-006_redirect_p1_0001.",
+    "Expect: On the next Player 2 turn, Player 1 still has ST07-013_action_draw_p1_0001 in hand and slot3 remains a rested friendly (CB) Unit.",
+    "Action: Player 2 attacks Player 1 slot2 ST07-005_target_p1_0001 with slot2 GD01-002_redirect_attacker_p2_0002, then resolve confirmBattle so ACTION_STEP opens.",
+    "Expect: Player 1 may play ST07-013_action_draw_p1_0001 during ACTION_STEP because Player 1 is a battle participant and has a valid rested friendly (CB) Unit target in slot3.",
+    "Action: During ACTION_STEP, Player 1 plays ST07-013_action_draw_p1_0001 as a command and chooses Player 1 slot3 ST07-006_redirect_p1_0001.",
+    "Expect: Player 1 pays 1 energy, ST07-013_action_draw_p1_0001 leaves hand for trash, ATTACK_REDIRECTED is emitted, and the battling enemy Unit's attack target changes from Player 1 slot2 to Player 1 slot3.",
+    "Action: Finish battle resolution if prompted.",
+    "Expect: Player 1 slot2 ST07-005_target_p1_0001 takes no battle damage from that attack, while the redirected battle resolves against Player 1 slot3 ST07-006_redirect_p1_0001."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_2",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed_st07013_manual_flow",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_2",
+          "carduid": "DRAW_SEED_ST07013_MANUAL_FLOW",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": [
+            "ST07-013_action_draw_p1_0001",
+            "ST07-014_draw_p1_0002"
+          ]
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {
+            "unit": {
+              "carduid": "ST07-005_target_p1_0001",
+              "cardId": "ST07-005",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 4,
+              "temporaryEffects": []
+            }
+          },
+          "slot3": {
+            "unit": {
+              "carduid": "ST07-006_redirect_p1_0001",
+              "cardId": "ST07-006",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 3,
+              "temporaryEffects": []
+            }
+          },
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "ST07-013_shield_p1_0001",
+              "cardId": "ST07-013"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_st07013_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_st07013_p1_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_st07013_p1_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_st07013_p1_0004",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD01-020_burst_attacker_p2_0001",
+              "cardId": "GD01-020",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 2,
+              "temporaryEffects": []
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "GD01-002_redirect_attacker_p2_0002",
+              "cardId": "GD01-002",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": true,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 3,
+              "temporaryEffects": []
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

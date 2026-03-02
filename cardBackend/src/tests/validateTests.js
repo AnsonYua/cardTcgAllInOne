@@ -68,6 +68,12 @@ const {
 const {
   validateEffectDrawZeroCardsNotification
 } = require('./validators/effectDrawZeroCardsNotificationValidation');
+const {
+  validateGd02042DeployHighManeuver
+} = require('./validators/gd02042DeployHighManeuverValidation');
+const {
+  validateGd02001PairedTitansShieldDamageHeal
+} = require('./validators/gd02001PairedTitansShieldDamageHealValidation');
 
 function main() {
   const root = sharedGameStatesRoot();
@@ -99,6 +105,8 @@ function main() {
   validateEffectDamageImmediateDestroyed();
   validateEffectDestroyImmediate();
   validateEffectDrawZeroCardsNotification();
+  validateGd02001PairedTitansShieldDamageHeal();
+  validateGd02042DeployHighManeuver();
   validateSlotTotalHpLethal();
   validateEffectSchemaCanonical();
 

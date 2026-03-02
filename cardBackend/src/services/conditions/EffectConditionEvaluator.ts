@@ -491,6 +491,13 @@ export class EffectConditionEvaluator {
             case 'eventDefenderDestroyed':
                 return EventConditionEvaluator.eventDefenderDestroyed(gameEnv, typedCondition);
 
+            case 'shieldAreaCardDamagedByBattleDamage':
+                return EventConditionEvaluator.shieldAreaCardDamagedByBattleDamage(
+                    gameEnv,
+                    cardOwnerPlayerId,
+                    typedCondition
+                );
+
             default:
                 const specialConditionResult = SourceAndSpecialConditionEvaluator.evaluate({
                     gameEnv,

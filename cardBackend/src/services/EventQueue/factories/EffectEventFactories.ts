@@ -2,6 +2,8 @@
 
 import { EventType } from '../../../models/GameEnums';
 import {
+    type AttackPhaseEffectEvent,
+    type AttackPhaseEffectEventData,
     EventPriority,
     EventStatus,
     type DeployEffectEvent,
@@ -13,6 +15,7 @@ import {
     type ShieldAreaCardDamagedTriggeredEvent,
     type ShieldAreaCardDamagedTriggeredEventData,
     type EffectDefinition,
+    type QueuedAttackEffectDefinition,
     type PairingEffectDefinition,
     type PairingEffectEvent,
     type PairingEffectEventData,
@@ -67,6 +70,26 @@ export const createPairingEffectEvent = (
 
     console.log(`🤝 Created Pairing event: ${pairingEvent.id} with ${pairingEffects.length} effects`);
     return pairingEvent;
+};
+
+export const createAttackPhaseEffectEvent = (
+    data: AttackPhaseEffectEventData
+): AttackPhaseEffectEvent => {
+    return {
+        id: nextCounterEventId('attack_effect'),
+        type: EventType.ATTACK_PHASE_EFFECT_TRIGGERED,
+        status: EventStatus.DECLARED,
+        priority: EventPriority.NORMAL,
+        playerId: data.attackPlayerId,
+        timestamp: Date.now(),
+        data: {
+            attackPlayerId: data.attackPlayerId,
+            originalAttackEventData: data.originalAttackEventData,
+            effect: data.effect as QueuedAttackEffectDefinition,
+            remainingEffects: Array.isArray(data.remainingEffects) ? data.remainingEffects : [],
+            ...(data.attackNotificationId ? { attackNotificationId: data.attackNotificationId } : {})
+        }
+    };
 };
 
 export const createEffectDrawTriggeredEvent = (

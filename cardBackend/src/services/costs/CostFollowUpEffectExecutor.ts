@@ -12,6 +12,7 @@ export function executeFollowUpEffectAfterPaidCost(
         sourceCarduid: string;
         followUpEffect: EffectDefinition;
         cardPlayNotificationId?: string;
+        choiceContext?: Record<string, unknown>;
     }
 ): DeployTargetResult {
     const normalizedFollowUp = normalizeCostPaidFollowUpEffect(
@@ -23,6 +24,9 @@ export function executeFollowUpEffectAfterPaidCost(
         params.sourcePlayerId,
         params.sourceCarduid,
         normalizedFollowUp,
-        params.cardPlayNotificationId
+        params.cardPlayNotificationId,
+        undefined,
+        undefined,
+        params.choiceContext ? { choiceContext: params.choiceContext } : undefined
     );
 }

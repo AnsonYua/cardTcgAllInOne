@@ -9,6 +9,7 @@ import { TargetSelectionPipeline } from '../targets/TargetSelectionPipeline';
 import { ChoiceEventScheduler } from '../choices/ChoiceEventScheduler';
 import { EffectExecutor } from '../effects/EffectExecutor';
 import { CostChoiceUtils } from './CostChoiceUtils';
+import type { AttackEffectChainContinuation } from '../effects/attack/AttackEffectChainContinuation';
 
 type DiscardFromHandCostConfig = {
     scope?: string;
@@ -23,6 +24,7 @@ export type DiscardFromHandCostContext = {
     followUpEffect: EffectDefinition;
     sourcePlayerId: string;
     cardPlayNotificationId?: string;
+    attackEffectChainContinuation?: AttackEffectChainContinuation;
 };
 
 export type DiscardFromHandCostFlowResult =
@@ -37,7 +39,8 @@ export class DiscardFromHandCostFlow {
         playerId: string,
         sourceCarduid: string,
         effect: EffectDefinition,
-        cardPlayNotificationId?: string
+        cardPlayNotificationId?: string,
+        attackEffectChainContinuation?: AttackEffectChainContinuation
     ): DiscardFromHandCostFlowResult {
         const rawCost = effect.cost && typeof effect.cost === 'object'
             ? (effect.cost as any).discardFromHand
@@ -108,7 +111,8 @@ export class DiscardFromHandCostFlow {
             sourceCarduid,
             followUpEffect: effect,
             sourcePlayerId: playerId,
-            ...(cardPlayNotificationId ? { cardPlayNotificationId } : {})
+            ...(cardPlayNotificationId ? { cardPlayNotificationId } : {}),
+            ...(attackEffectChainContinuation ? { attackEffectChainContinuation } : {})
         } satisfies DiscardFromHandCostContext;
 
         return { success: true, kind: 'requiresSelection', choiceEventId: choiceEvent.id };
@@ -124,4 +128,3 @@ export class DiscardFromHandCostFlow {
         return rawCost as DiscardFromHandCostConfig;
     }
 }
-

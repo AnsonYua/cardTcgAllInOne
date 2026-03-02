@@ -267,6 +267,10 @@ export interface PairingEffectDefinition extends EffectDefinition {
     sourceCarduid: string;
 }
 
+export interface QueuedAttackEffectDefinition extends EffectDefinition {
+    sourceCarduid: string;
+}
+
 export interface PairingEffectEventData {
     carduid: string;
     effects: PairingEffectDefinition[];
@@ -280,6 +284,18 @@ export interface PairingEffectEventData {
 
 export interface PairingEffectEvent extends BaseGameEvent<PairingEffectEventData> {
     type: EventType.PAIRING_EFFECT_TRIGGERED;
+}
+
+export interface AttackPhaseEffectEventData {
+    attackPlayerId: string;
+    originalAttackEventData: PlayerActionEventData;
+    effect: QueuedAttackEffectDefinition;
+    remainingEffects: QueuedAttackEffectDefinition[];
+    attackNotificationId?: string;
+}
+
+export interface AttackPhaseEffectEvent extends BaseGameEvent<AttackPhaseEffectEventData> {
+    type: EventType.ATTACK_PHASE_EFFECT_TRIGGERED;
 }
 
 // ============ CARD LIFECYCLE EVENTS ============
@@ -630,6 +646,7 @@ export type GameEvent =
     | AcknowledgeEventsEvent
     | PlayCardEvent
     | DeployEffectEvent
+    | AttackPhaseEffectEvent
     | RepairEffectEvent
     | EndTurnTriggeredEffectEvent
     | EffectDrawTriggeredEvent

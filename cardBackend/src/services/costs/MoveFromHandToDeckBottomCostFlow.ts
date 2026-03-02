@@ -8,6 +8,7 @@ import { TargetResolver } from '../targets/TargetResolver';
 import { TargetSelectionPipeline } from '../targets/TargetSelectionPipeline';
 import { ChoiceEventScheduler } from '../choices/ChoiceEventScheduler';
 import { EffectExecutor } from '../effects/EffectExecutor';
+import type { AttackEffectChainContinuation } from '../effects/attack/AttackEffectChainContinuation';
 
 type MoveFromHandToDeckBottomCostConfig = {
     scope?: string;
@@ -22,6 +23,7 @@ export type MoveFromHandToDeckBottomCostContext = {
     sourcePlayerId: string;
     drawCount: number;
     attackEffectUsageId: string;
+    attackEffectChainContinuation?: AttackEffectChainContinuation;
 };
 
 export class MoveFromHandToDeckBottomCostFlow {
@@ -31,7 +33,8 @@ export class MoveFromHandToDeckBottomCostFlow {
         sourceCarduid: string,
         effect: EffectDefinition,
         drawCount: number,
-        cardPlayNotificationId?: string
+        cardPlayNotificationId?: string,
+        attackEffectChainContinuation?: AttackEffectChainContinuation
     ): { success: boolean; paid?: boolean; requiresSelection?: boolean; choiceEventId?: string; error?: string } {
         const costConfig = effect.cost && typeof effect.cost === 'object'
             ? ((effect.cost as any).moveFromHandToDeckBottom as MoveFromHandToDeckBottomCostConfig | undefined)
@@ -106,7 +109,8 @@ export class MoveFromHandToDeckBottomCostFlow {
             sourceCarduid,
             sourcePlayerId: playerId,
             drawCount,
-            attackEffectUsageId
+            attackEffectUsageId,
+            ...(attackEffectChainContinuation ? { attackEffectChainContinuation } : {})
         } satisfies MoveFromHandToDeckBottomCostContext;
 
         return { success: true, requiresSelection: true, choiceEventId: choiceEvent.id };

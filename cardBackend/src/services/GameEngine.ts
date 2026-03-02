@@ -4,7 +4,7 @@
 import { GameEvent, AcknowledgeEventsEvent, PlayCardEvent,
      DeployEffectEvent, TargetChoiceEvent, PairingEffectEvent, ShieldCardAttackedEvent,
      ConfirmRedrawEvent, ChooseFirstPlayerEvent, GameplayBeginsEvent, ErrorOccurredEvent, BurstEffectChoiceEvent,
-     StartGameEvent, JoinGameEvent, NextPlayerTurnEvent, EndTurnEvent, PlayerActionEvent, RepairEffectEvent, BlockerChoiceEvent, ActionStepPostPlayEvent, TokenChoiceEvent, EndTurnTriggeredEffectEvent, OptionChoiceEvent, PromptChoiceEvent, EffectDrawTriggeredEvent, ExResourcePlacedTriggeredEvent, ShieldAreaCardDamagedTriggeredEvent } from './EventQueue/interfaces/GameEvent';
+     StartGameEvent, JoinGameEvent, NextPlayerTurnEvent, EndTurnEvent, PlayerActionEvent, RepairEffectEvent, BlockerChoiceEvent, ActionStepPostPlayEvent, TokenChoiceEvent, EndTurnTriggeredEffectEvent, OptionChoiceEvent, PromptChoiceEvent, EffectDrawTriggeredEvent, ExResourcePlacedTriggeredEvent, ShieldAreaCardDamagedTriggeredEvent, AttackPhaseEffectEvent } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { EventType } from '../models/GameEnums';
 import { GameNotificationManager } from './GameNotificationManager';
@@ -27,6 +27,7 @@ import { PromptChoiceManager } from './effects/PromptChoiceManager';
 import { EffectDrawTriggeredEffectManager } from './effects/EffectDrawTriggeredEffectManager';
 import { ExResourcePlacedTriggeredEffectManager } from './effects/ExResourcePlacedTriggeredEffectManager';
 import { ShieldAreaCardDamagedTriggeredEffectManager } from './effects/ShieldAreaCardDamagedTriggeredEffectManager';
+import { AttackPhaseEffectManager } from './effects/AttackPhaseEffectManager';
 
 export class GameEngine {
     // ============ MAIN EXECUTION INTERFACE ============
@@ -108,6 +109,9 @@ export class GameEngine {
 
                 case EventType.PAIRING_EFFECT_TRIGGERED:
                     return GameEngine.executePairingEffect(event as PairingEffectEvent, gameEnv);
+
+                case EventType.ATTACK_PHASE_EFFECT_TRIGGERED:
+                    return AttackPhaseEffectManager.executeQueuedAttackPhaseEffect(gameEnv, event as AttackPhaseEffectEvent);
 
                 case EventType.TRIGGER_HEALING:
                     return GameEngine.executeHealingEffect(event as RepairEffectEvent, gameEnv);

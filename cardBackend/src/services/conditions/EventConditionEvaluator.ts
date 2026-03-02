@@ -4,6 +4,7 @@ import { SLOT_ZONES } from '../../config/gameConstants';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { KeywordUtils } from '../../utils/KeywordUtils';
 import { SlotCardStateUtils } from './SlotCardStateUtils';
+import { ShieldAreaCardDamagedByBattleDamageConditionEvaluator } from './ShieldAreaCardDamagedByBattleDamageConditionEvaluator';
 
 export class EventConditionEvaluator {
     static eventTypeMatches(gameEnv: GameEnvironment, condition: Record<string, unknown>): boolean {
@@ -279,6 +280,19 @@ export class EventConditionEvaluator {
 
         const actual = latestNotification?.payload?.result?.defenderDestroyed === true;
         return actual === expected;
+    }
+
+    static shieldAreaCardDamagedByBattleDamage(
+        gameEnv: GameEnvironment,
+        cardOwnerPlayerId: string | null,
+        condition: Record<string, unknown>
+    ): boolean {
+        return ShieldAreaCardDamagedByBattleDamageConditionEvaluator.evaluate(
+            gameEnv,
+            cardOwnerPlayerId,
+            condition,
+            this.getLatestNotification(gameEnv)
+        );
     }
 
     private static getLatestNotification(gameEnv: GameEnvironment): Record<string, unknown> | null {

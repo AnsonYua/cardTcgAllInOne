@@ -5,6 +5,10 @@ import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { TargetChoiceEvent, TargetReference, EffectDefinition } from '../EventQueue/interfaces/GameEvent';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { EffectExecutor } from '../effects/EffectExecutor';
+import {
+    enqueueAttackEffectChainContinuation,
+    withAttackEffectChainContinuation
+} from '../effects/attack/AttackEffectChainContinuation';
 import type { DiscardFromHandCostContext } from './DiscardFromHandCostFlow';
 import { executeFollowUpEffectAfterPaidCost } from './CostFollowUpEffectExecutor';
 
@@ -24,6 +28,7 @@ export class DiscardFromHandCostChoiceHandler {
 
         // Optional cost declined: do not resolve follow-up effect.
         if (normalizedTargets.length === 0) {
+            enqueueAttackEffectChainContinuation(gameEnv, ctx.attackEffectChainContinuation, event.id);
             return { handled: true, success: true };
         }
 
@@ -43,10 +48,15 @@ export class DiscardFromHandCostChoiceHandler {
             sourcePlayerId,
             sourceCarduid,
             followUpEffect: ensureEffectDefaults(ctx.followUpEffect as EffectDefinition),
+            choiceContext: withAttackEffectChainContinuation(undefined, ctx.attackEffectChainContinuation),
             cardPlayNotificationId: ctx.cardPlayNotificationId
         });
         if (!followUpResult.success) {
             return { handled: true, success: false, error: followUpResult.error || 'follow-up effect failed' };
+        }
+
+        if (!followUpResult.requiresSelection) {
+            enqueueAttackEffectChainContinuation(gameEnv, ctx.attackEffectChainContinuation, event.id);
         }
 
         return { handled: true, success: true };

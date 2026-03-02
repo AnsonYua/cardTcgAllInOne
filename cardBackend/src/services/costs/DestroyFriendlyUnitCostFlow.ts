@@ -7,6 +7,7 @@ import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { TargetResolver } from '../targets/TargetResolver';
 import { TargetSelectionPipeline } from '../targets/TargetSelectionPipeline';
 import { ChoiceEventScheduler } from '../choices/ChoiceEventScheduler';
+import type { AttackEffectChainContinuation } from '../effects/attack/AttackEffectChainContinuation';
 
 type DestroyFriendlyUnitCostConfig = {
     target: Record<string, unknown>;
@@ -22,6 +23,7 @@ export type DestroyFriendlyUnitCostContext = {
     attackPlayerId: string;
     attackEffectUsageId: string;
     cardPlayNotificationId?: string;
+    attackEffectChainContinuation?: AttackEffectChainContinuation;
 };
 
 export class DestroyFriendlyUnitCostFlow {
@@ -31,7 +33,8 @@ export class DestroyFriendlyUnitCostFlow {
         sourceCarduid: string,
         effect: EffectDefinition,
         attackEvent: PlayerActionEvent,
-        cardPlayNotificationId?: string
+        cardPlayNotificationId?: string,
+        attackEffectChainContinuation?: AttackEffectChainContinuation
     ): { success: boolean; requiresSelection?: boolean; error?: string; choiceEventId?: string } {
         const costConfig = effect.cost && typeof effect.cost === 'object'
             ? ((effect.cost as any).destroyFriendlyUnit as DestroyFriendlyUnitCostConfig | undefined)
@@ -85,7 +88,8 @@ export class DestroyFriendlyUnitCostFlow {
             attackActionType: actionType,
             attackPlayerId: playerId,
             attackEffectUsageId,
-            ...(cardPlayNotificationId ? { cardPlayNotificationId } : {})
+            ...(cardPlayNotificationId ? { cardPlayNotificationId } : {}),
+            ...(attackEffectChainContinuation ? { attackEffectChainContinuation } : {})
         } satisfies DestroyFriendlyUnitCostContext;
 
         return { success: true, requiresSelection: true, choiceEventId: choiceEvent.id };

@@ -1,0 +1,233 @@
+{
+  "description": "st08-012_main_grant_breach_1_to_friendly_link_unit_then_play_as_gawman_nobile_pilot_manual_flow",
+  "gameId": "st08-012_main_grant_breach_1_to_friendly_link_unit_then_play_as_gawman_nobile_pilot_manual_flow",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "ST08-012",
+    "MAIN_PHASE",
+    "Breach",
+    "linked",
+    "designate_pilot",
+    "manual_flow"
+  ],
+  "notes": [
+    "Action: Load this scenario via getTestScenario and inject it via injectGameState.",
+    "Expect: Start in MAIN_PHASE with playerId_1 turn, currentBattle null, processingQueue empty, two ST08-012 copies in hand, and 3 active energy cards.",
+    "Action: Inspect Player 1 board before playing ST08-012 as a command.",
+    "Expect: Player 1 slot1 is a true linked pair (ST08-001 with pilot ST08-010 Hathaway Noa), while Player 1 slot2 ST08-003 has no pilot and is not a linked unit.",
+    "Action: Play ST08-012_hand_main_0001 from hand as a command and choose Player 1 slot1 ST08-001_link_target_0001.",
+    "Expect: TARGET_CHOICE allows only friendly linked units, so slot1 is selectable and slot2 is not; after resolution, exactly 1 of Player 1's 3 energy becomes rested and slot1 gains <Breach 1> during this turn.",
+    "Action: Enter ATTACK_PHASE and attack Player 2 slot1 ST08-009_enemy_target_0001 with Player 1 slot1 ST08-001_link_target_0001, then complete confirmBattle for both players.",
+    "Expect: ST08-009_enemy_target_0001 is destroyed by battle, and the gained <Breach 1> removes only the first card in playerId_2 shieldArea while the second shield card remains.",
+    "Action: Return to MAIN_PHASE and play ST08-012_hand_pilot_0002 from hand as pilot onto Player 1 slot2 ST08-003_gawman_host_0002.",
+    "Expect: Player 1 slot2 becomes paired and the pilot card is ST08-012 designated as Gawman Nobile with playedAs pilot and pilot stats AP 1 / HP 0, but it is not linked because ST08-003 links to Mafty while command-pilot link identity is Gawman Nobile.",
+    "Action: Inspect Player 1 energy area after both ST08-012 plays resolve.",
+    "Expect: Exactly 2 of Player 1's 3 energy cards are rested from paying both Cost 1 plays, and 1 energy remains active."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed_st08012_manual_flow",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_ST08012_MANUAL_FLOW",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "ST08-012_hand_main_0001",
+              "cardId": "ST08-012"
+            },
+            {
+              "carduid": "ST08-012_hand_pilot_0002",
+              "cardId": "ST08-012"
+            }
+          ],
+          "handUids": [
+            "ST08-012_hand_main_0001",
+            "ST08-012_hand_pilot_0002"
+          ],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST08-001_link_target_0001",
+              "cardId": "ST08-001",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            },
+            "pilot": {
+              "carduid": "ST08-010_hathaway_link_0001",
+              "cardId": "ST08-010",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "ST08-003_gawman_host_0002",
+              "cardId": "ST08-003",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "ST08-014_p1_shield_0001",
+              "cardId": "ST08-014"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_st08012_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_st08012_p1_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_st08012_p1_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST08-009_enemy_target_0001",
+              "cardId": "ST08-009",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": true,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "ST08-015_p2_shield_0001",
+              "cardId": "ST08-015"
+            },
+            {
+              "carduid": "ST08-006_p2_shield_0002",
+              "cardId": "ST08-006"
+            }
+          ],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

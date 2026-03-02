@@ -9,6 +9,10 @@ import { EventFactory } from '../EventQueue/EventFactory';
 import { AttackResumeScheduler } from '../battle/AttackResumeScheduler';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { AttackEffectUsageTracker } from '../effects/attack/AttackEffectUsageTracker';
+import {
+    enqueueAttackEffectChainContinuation,
+    withAttackEffectChainContinuation
+} from '../effects/attack/AttackEffectChainContinuation';
 import type { MoveFromTrashToDeckCostContext } from './MoveFromTrashToDeckCostFlow';
 import { executeFollowUpEffectAfterPaidCost } from './CostFollowUpEffectExecutor';
 
@@ -39,7 +43,11 @@ export class MoveFromTrashToDeckCostChoiceHandler {
 
         // Player declined (optional): no cost paid => do not apply follow-up effect, just resume attack.
         if (normalizedTargets.length === 0) {
-            AttackResumeScheduler.enqueueResumeAttackAfterChoice(gameEnv, originalAttackEvent, event.id);
+            if (ctx.attackEffectChainContinuation) {
+                enqueueAttackEffectChainContinuation(gameEnv, ctx.attackEffectChainContinuation, event.id);
+            } else {
+                AttackResumeScheduler.enqueueResumeAttackAfterChoice(gameEnv, originalAttackEvent, event.id);
+            }
             return { handled: true, success: true };
         }
 
@@ -67,6 +75,7 @@ export class MoveFromTrashToDeckCostChoiceHandler {
             sourcePlayerId: attackPlayerId,
             sourceCarduid,
             followUpEffect,
+            choiceContext: withAttackEffectChainContinuation(undefined, ctx.attackEffectChainContinuation),
             cardPlayNotificationId: typeof (ctx.attackEventData as any)?.attackNotificationId === 'string'
                 ? ((ctx.attackEventData as any).attackNotificationId as string)
                 : undefined
@@ -77,11 +86,14 @@ export class MoveFromTrashToDeckCostChoiceHandler {
         }
 
         if (followUpResult.requiresSelection && followUpResult.choiceEventId) {
-            AttackResumeScheduler.enqueueResumeAttackAfterChoice(gameEnv, originalAttackEvent, followUpResult.choiceEventId);
             return { handled: true, success: true };
         }
 
-        AttackResumeScheduler.enqueueResumeAttackAfterChoice(gameEnv, originalAttackEvent, event.id);
+        if (ctx.attackEffectChainContinuation) {
+            enqueueAttackEffectChainContinuation(gameEnv, ctx.attackEffectChainContinuation, event.id);
+        } else {
+            AttackResumeScheduler.enqueueResumeAttackAfterChoice(gameEnv, originalAttackEvent, event.id);
+        }
         return { handled: true, success: true };
     }
 }

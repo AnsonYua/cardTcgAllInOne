@@ -9,6 +9,7 @@ import { DeployFromTopDeckManager } from './DeployFromTopDeckManager';
 import { PairingEffectOrderManager } from './PairingEffectOrderManager';
 import { DeployEffectOrderManager } from './DeployEffectOrderManager';
 import { ScryTopDeckManager } from './ScryTopDeckManager';
+import { AttackEffectOrderManager } from './AttackEffectOrderManager';
 
 export class OptionChoiceManager {
     static executeOptionChoice(event: OptionChoiceEvent, gameEnv: GameEnvironment): ExecutionResult {
@@ -28,6 +29,8 @@ export class OptionChoiceManager {
                 return PairingEffectOrderManager.executeOptionChoice(event, gameEnv);
             case 'deploy_effect_order':
                 return DeployEffectOrderManager.executeOptionChoice(event, gameEnv);
+            case 'attack_effect_order':
+                return AttackEffectOrderManager.executeOptionChoice(event, gameEnv);
             default:
                 return { success: false, error: `OPTION_CHOICE unsupported effect action: ${action || 'unknown'}` };
         }

@@ -3,17 +3,30 @@
 
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import { CardDatabaseManager, type CardData } from '../../models/CardSystem';
-import type { EffectDefinition, OptionChoiceEvent } from '../EventQueue/interfaces/GameEvent';
+import type { EffectDefinition, OptionChoiceEvent, PromptChoiceEvent } from '../EventQueue/interfaces/GameEvent';
 import type { ExecutionResult } from '../ExecutionResult';
 import { ensureEffectDefaults, validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 import { DeckZoneManager, type DeckBottomOrder } from '../zones/DeckZoneManager';
-import { GameNotificationManager } from '../GameNotificationManager';
 import { getCardIdFromUid } from '../../utils/CardUtils';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { ChoiceEventScheduler } from '../choices/ChoiceEventScheduler';
 import { buildDeployOptions } from './deployFromTopDeck/DeployFromTopDeckOptionUtils';
-import { parseDeployFromTopDeckContext, parseRestOrder } from './deployFromTopDeck/DeployFromTopDeckContextUtils';
+import {
+    parseDeployFromTopDeckContext,
+    parseDeployReviewConfirmContext,
+    parseRestOrder
+} from './deployFromTopDeck/DeployFromTopDeckContextUtils';
 import { resolveDeployFromTopDeckSelection } from './deployFromTopDeck/DeployFromTopDeckResolution';
+import {
+    buildDeployReviewConfirmContext,
+    DEPLOY_FROM_TOP_DECK_REVIEW_CHOICE_ID
+} from './deployFromTopDeck/DeployFromTopDeckFlowUtils';
+import {
+    emitDeployCardsMovedToBottom,
+    emitDeployFromTopDeckResolved,
+    emitDeployTopDeckViewed
+} from './deployFromTopDeck/DeployFromTopDeckNotificationUtils';
+import { ChoiceDisplayBuilder } from '../choices/ChoiceDisplayBuilder';
 
 type DeployFromTopDeckSelectConfig = {
     count?: number;
@@ -107,102 +120,186 @@ export class DeployFromTopDeckManager {
                 carduid,
                 cardId,
                 name: cardData?.name || cardId,
-                cardData,
-                matches: matchesTraits && matchesCardType && matchesLevel
+                traits,
+                matchesFilters: matchesTraits && matchesCardType && matchesLevel
             };
         });
 
-        const selectable = lookedDetails.filter(card => card.matches);
+        emitDeployTopDeckViewed({
+            gameEnv,
+            playerId,
+            sourceCarduid,
+            effectId: normalizedEffect.effectId,
+            cards: lookedDetails
+        });
 
-        const notificationManager = new GameNotificationManager(gameEnv);
+        const selectable = lookedDetails.filter(card => card.matchesFilters);
 
         const isOptional = normalizedEffect.optional === true;
 
         if (!hasEmptySlot || selectable.length === 0) {
             DeckZoneManager.moveToBottom(deck, lookedCarduids, restOrder);
-            notificationManager.addNotificationEvent(
-                'CARDS_MOVED_TO_DECK_BOTTOM',
-                {
-                    playerId,
-                    sourceCarduid,
-                    effectId: normalizedEffect.effectId,
-                    carduids: lookedCarduids,
-                    reason: 'deploy_from_top_deck_auto_bottom',
-                    timestamp: Date.now()
-                },
-                'normal'
-            );
-            notificationManager.addNotificationEvent(
-                'DEPLOY_FROM_TOP_DECK_RESOLVED',
-                {
-                    playerId,
-                    sourceCarduid,
-                    effectId: normalizedEffect.effectId,
-                    result: hasEmptySlot ? 'NO_MATCH_MOVED_TO_BOTTOM' : 'NO_EMPTY_SLOT_MOVED_TO_BOTTOM',
-                    movedCarduids: lookedCarduids,
-                    timestamp: Date.now()
-                },
-                'normal'
-            );
+            emitDeployCardsMovedToBottom({
+                gameEnv,
+                playerId,
+                sourceCarduid,
+                effectId: normalizedEffect.effectId,
+                carduids: lookedCarduids,
+                reason: 'deploy_from_top_deck_auto_bottom'
+            });
+            emitDeployFromTopDeckResolved({
+                gameEnv,
+                playerId,
+                sourceCarduid,
+                effectId: normalizedEffect.effectId,
+                result: hasEmptySlot ? 'NO_MATCH_MOVED_TO_BOTTOM' : 'NO_EMPTY_SLOT_MOVED_TO_BOTTOM',
+                movedCarduids: lookedCarduids
+            });
             return { success: true, autoApplied: true };
         }
 
-        if (!isOptional) {
-            if (selectable.length === 1) {
-                const chosen = selectable[0];
-                resolveDeployFromTopDeckSelection(gameEnv, deck, lookedCarduids, chosen.carduid, {
-                    order: restOrder,
-                    playerId,
-                    sourceCarduid,
-                    destinationSlot: emptySlots[0],
-                    effectId: normalizedEffect.effectId
-                });
-                return { success: true, autoApplied: true };
-            }
+        const options = buildDeployOptions(selectable, isOptional);
+        const defaultOptionIndex = isOptional ? options.length - 1 : undefined;
+        const optionChoicePromptText = isOptional
+            ? 'Choose 1 card to deploy, or put the looked cards on the bottom of your deck.'
+            : 'Choose 1 card to deploy from the looked cards.';
 
-            const options = buildDeployOptions(selectable, false);
-
-            ChoiceEventScheduler.enqueueOptionChoice(gameEnv, {
-                playerId,
-                sourceCarduid,
-                effect: normalizedEffect,
-                headerText: 'Deploy From Top Deck',
-                promptText: 'Choose 1 card to deploy from the looked cards.',
-                layoutHint: 'card',
-                availableOptions: options,
-                context: {
-                    deployFromTopDeck: {
-                        lookedCarduids,
-                        restOrder
-                    }
-                },
-                cardPlayNotificationId
-            });
-
-            return { success: true, requiresSelection: true };
-        }
-
-        const options = buildDeployOptions(selectable, true);
-
-        ChoiceEventScheduler.enqueueOptionChoice(gameEnv, {
-            playerId,
+        const reviewContext = buildDeployReviewConfirmContext({
+            lookedCards: lookedDetails,
+            restOrder,
+            availableOptions: options,
             sourceCarduid,
             effect: normalizedEffect,
-            headerText: 'Deploy From Top Deck',
-            promptText: 'Choose 1 card to deploy, or put the looked cards on the bottom of your deck.',
-            defaultOptionIndex: options.length - 1,
-            layoutHint: 'hybrid',
-            availableOptions: options,
-            context: {
-                deployFromTopDeck: {
-                    lookedCarduids,
-                    restOrder
+            optionChoiceHeaderText: 'Deploy From Top Deck',
+            optionChoicePromptText,
+            optionChoiceDefaultIndex: defaultOptionIndex,
+            optionChoiceLayoutHint: isOptional ? 'hybrid' : 'card'
+        });
+
+        ChoiceEventScheduler.enqueuePromptChoice(gameEnv, {
+            playerId,
+            choiceId: DEPLOY_FROM_TOP_DECK_REVIEW_CHOICE_ID,
+            headerText: 'Top of Deck',
+            promptText: 'Review the looked cards, then continue.',
+            availableOptions: [
+                {
+                    index: 0,
+                    label: 'Continue',
+                    payload: { action: 'CONTINUE' },
+                    display: ChoiceDisplayBuilder.text('Continue')
                 }
-            },
+            ],
+            defaultOptionIndex: 0,
+            sourceCarduid,
+            context: reviewContext,
             cardPlayNotificationId
         });
 
         return { success: true, requiresSelection: true };
+    }
+
+    static executeReviewConfirmPromptChoice(event: PromptChoiceEvent, gameEnv: GameEnvironment): ExecutionResult {
+        const selectedOptionIndex = event.data.selectedOptionIndex;
+        if (typeof selectedOptionIndex !== 'number') {
+            return { success: false, error: 'No option selected for deploy_from_top_deck review confirm' };
+        }
+
+        const reviewContext = parseDeployReviewConfirmContext(event.data.context);
+        if (!reviewContext) {
+            return { success: false, error: 'deploy_from_top_deck review confirm missing context' };
+        }
+
+        const player = gameEnv.getPlayer(event.playerId);
+        if (!player?.deck || !Array.isArray(player.deck.mainDeck)) {
+            return { success: false, error: 'Player deck not found for deploy_from_top_deck review confirm' };
+        }
+
+        const emptySlots = player.zones ? SlotZoneUtils.getEmptySlotNames(player.zones) : [];
+        const lookedCarduids = reviewContext.deployFromTopDeck.lookedCarduids;
+        const effect = reviewContext.deployFromTopDeck.effect;
+
+        if (emptySlots.length === 0) {
+            DeckZoneManager.moveToBottom(player.deck.mainDeck, lookedCarduids, reviewContext.deployFromTopDeck.restOrder);
+            emitDeployCardsMovedToBottom({
+                gameEnv,
+                playerId: event.playerId,
+                sourceCarduid: reviewContext.deployFromTopDeck.sourceCarduid,
+                effectId: effect.effectId,
+                carduids: lookedCarduids,
+                reason: 'deploy_from_top_deck_auto_bottom'
+            });
+            emitDeployFromTopDeckResolved({
+                gameEnv,
+                playerId: event.playerId,
+                sourceCarduid: reviewContext.deployFromTopDeck.sourceCarduid,
+                effectId: effect.effectId,
+                result: 'NO_EMPTY_SLOT_MOVED_TO_BOTTOM',
+                movedCarduids: lookedCarduids
+            });
+            return { success: true };
+        }
+
+        const deployOptions = reviewContext.deployFromTopDeck.availableOptions.filter((option) => option.payload?.action === 'DEPLOY');
+        if (deployOptions.length === 0) {
+            DeckZoneManager.moveToBottom(player.deck.mainDeck, lookedCarduids, reviewContext.deployFromTopDeck.restOrder);
+            emitDeployCardsMovedToBottom({
+                gameEnv,
+                playerId: event.playerId,
+                sourceCarduid: reviewContext.deployFromTopDeck.sourceCarduid,
+                effectId: effect.effectId,
+                carduids: lookedCarduids,
+                reason: 'deploy_from_top_deck_auto_bottom'
+            });
+            emitDeployFromTopDeckResolved({
+                gameEnv,
+                playerId: event.playerId,
+                sourceCarduid: reviewContext.deployFromTopDeck.sourceCarduid,
+                effectId: effect.effectId,
+                result: 'NO_MATCH_MOVED_TO_BOTTOM',
+                movedCarduids: lookedCarduids
+            });
+            return { success: true };
+        }
+
+        const isOptional = effect.optional === true;
+        if (!isOptional && deployOptions.length === 1) {
+            const chosenUid = typeof deployOptions[0].payload?.carduid === 'string'
+                ? deployOptions[0].payload.carduid
+                : '';
+            if (!chosenUid) {
+                return { success: false, error: 'deploy_from_top_deck review confirm missing deploy carduid' };
+            }
+
+            resolveDeployFromTopDeckSelection(gameEnv, player.deck.mainDeck, lookedCarduids, chosenUid, {
+                order: reviewContext.deployFromTopDeck.restOrder,
+                playerId: event.playerId,
+                sourceCarduid: reviewContext.deployFromTopDeck.sourceCarduid,
+                destinationSlot: emptySlots[0],
+                effectId: effect.effectId
+            });
+            return { success: true };
+        }
+
+        const optionChoice = reviewContext.deployFromTopDeck.optionChoice;
+        ChoiceEventScheduler.enqueueOptionChoice(gameEnv, {
+            playerId: event.playerId,
+            sourceCarduid: reviewContext.deployFromTopDeck.sourceCarduid,
+            effect,
+            headerText: optionChoice.headerText,
+            promptText: optionChoice.promptText,
+            defaultOptionIndex: optionChoice.defaultOptionIndex,
+            layoutHint: optionChoice.layoutHint,
+            availableOptions: reviewContext.deployFromTopDeck.availableOptions,
+            context: {
+                deployFromTopDeck: {
+                    lookedCarduids,
+                    restOrder: reviewContext.deployFromTopDeck.restOrder
+                }
+            },
+            cardPlayNotificationId: event.data.cardPlayNotificationId
+        });
+
+        return { success: true };
     }
 
     static executeOptionChoice(event: OptionChoiceEvent, gameEnv: GameEnvironment): ExecutionResult {
@@ -254,31 +351,22 @@ export class DeployFromTopDeckManager {
         }
 
         DeckZoneManager.moveToBottom(deck, ctx.lookedCarduids, ctx.restOrder);
-        const notificationManager = new GameNotificationManager(gameEnv);
-        notificationManager.addNotificationEvent(
-            'CARDS_MOVED_TO_DECK_BOTTOM',
-            {
-                playerId: event.playerId,
-                sourceCarduid: event.data.sourceCarduid,
-                effectId: event.data.effect?.effectId,
-                carduids: ctx.lookedCarduids,
-                reason: 'deploy_from_top_deck_choice_bottom',
-                timestamp: Date.now()
-            },
-            'normal'
-        );
-        notificationManager.addNotificationEvent(
-            'DEPLOY_FROM_TOP_DECK_RESOLVED',
-            {
-                playerId: event.playerId,
-                sourceCarduid: event.data.sourceCarduid,
-                effectId: event.data.effect?.effectId,
-                result: 'MOVED_TO_BOTTOM',
-                movedCarduids: ctx.lookedCarduids,
-                timestamp: Date.now()
-            },
-            'normal'
-        );
+        emitDeployCardsMovedToBottom({
+            gameEnv,
+            playerId: event.playerId,
+            sourceCarduid: event.data.sourceCarduid,
+            effectId: event.data.effect?.effectId,
+            carduids: ctx.lookedCarduids,
+            reason: 'deploy_from_top_deck_choice_bottom'
+        });
+        emitDeployFromTopDeckResolved({
+            gameEnv,
+            playerId: event.playerId,
+            sourceCarduid: event.data.sourceCarduid,
+            effectId: event.data.effect?.effectId,
+            result: 'MOVED_TO_BOTTOM',
+            movedCarduids: ctx.lookedCarduids
+        });
         return { success: true };
     }
 }

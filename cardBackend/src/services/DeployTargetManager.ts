@@ -38,11 +38,16 @@ import { EffectConditionEvaluator } from './conditions/EffectConditionEvaluator'
 import { TriggeredEffectProcessor } from './effects/TriggeredEffectProcessor';
 import type { DeployTargetResult } from './DeployTargetResult';
 import { DeployAffordabilityEvaluator } from './deploy/DeployAffordabilityEvaluator';
+import {
+    enqueueAttackEffectChainContinuation,
+    extractAttackEffectChainContinuation
+} from './effects/attack/AttackEffectChainContinuation';
 
 export type { DeployTargetResult } from './DeployTargetResult';
 
 type ProcessEffectWithTargetChoiceOptions = {
     skipConditionValidation?: boolean;
+    choiceContext?: Record<string, unknown>;
 };
 
 export class DeployTargetManager {
@@ -326,7 +331,14 @@ export class DeployTargetManager {
                     sourceCarduid,
                     effect: normalizedEffect,
                     availableTargets,
-                    ...(selectionContext ? { context: selectionContext } : {}),
+                    ...((selectionContext || options?.choiceContext)
+                        ? {
+                            context: {
+                                ...(selectionContext || {}),
+                                ...(options?.choiceContext || {})
+                            }
+                        }
+                        : {}),
                     cardPlayNotificationId
                 });
                 
@@ -414,8 +426,11 @@ export class DeployTargetManager {
                     : { success: false, error: contextResult.error || 'TARGET_CHOICE context handler failed' };
             }
 
+            const attackEffectContinuation = extractAttackEffectChainContinuation(eventData.context);
+
             if (normalizedSelections.length === 0) {
                 if (normalizedEffect.optional === true) {
+                    enqueueAttackEffectChainContinuation(gameEnv, attackEffectContinuation, event.id);
                     return { success: true };
                 }
                 return { success: false, error: 'No targets selected for effect' };
@@ -458,6 +473,7 @@ export class DeployTargetManager {
             }
 
             console.log(`✅ Successfully applied ${normalizedEffect.effectId} to ${normalizedSelections.length} selected target(s)`);
+            enqueueAttackEffectChainContinuation(gameEnv, attackEffectContinuation, event.id);
             return { success: true };
 
         } catch (error) {

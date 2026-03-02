@@ -100,6 +100,9 @@ export enum EventType {
     // Pairing effect events
     PAIRING_EFFECT_TRIGGERED = 'PAIRING_EFFECT_TRIGGERED',
 
+    // Attack-phase effect events
+    ATTACK_PHASE_EFFECT_TRIGGERED = 'ATTACK_PHASE_EFFECT_TRIGGERED',
+
     // Effect draw trigger events
     TRIGGER_EFFECT_DRAW = 'TRIGGER_EFFECT_DRAW',
 

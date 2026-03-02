@@ -70,10 +70,20 @@
             {
               "carduid": "GD01-001_hand_keep_0001",
               "cardId": "GD01-001"
+            },
+            {
+              "carduid": "GD01-113_hand_keep_0002",
+              "cardId": "GD01-113"
+            },
+            {
+              "carduid": "GD01-113_hand_keep_0003",
+              "cardId": "GD01-113"
             }
           ],
           "handUids": [
-            "GD01-001_hand_keep_0001"
+            "GD01-001_hand_keep_0001",
+            "GD01-113_hand_keep_0002",
+            "GD01-113_hand_keep_0003"
           ],
           "mainDeck": [
             "GD01-003_draw_0001",
@@ -97,7 +107,7 @@
               "canAttackThisTurn": true,
               "isFirstPlay": false,
               "damageReceived": 0,
-              "continueModifyAP": 4,
+              "continueModifyAP": 0,
               "continueModifyHP": 0
             }
           },
@@ -114,6 +124,30 @@
             }
           ],
           "energyArea": [
+            {
+              "carduid": "energy_basic_gd02045_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+             {
+              "carduid": "energy_basic_gd02045_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd02045_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
             {
               "carduid": "energy_basic_gd02045_p1_0001",
               "cardId": "energy_basic",

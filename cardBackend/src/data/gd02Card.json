@@ -2156,26 +2156,25 @@
             "effectId": "deploy_effect",
             "type": "triggered",
             "trigger": "ENTERS_PLAY",
-            "action": "sequence",
+            "target": {
+              "type": "unit",
+              "scope": "self_all_unit",
+              "filters": {
+                "traits": [
+                  "New UNE"
+                ]
+              },
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
+            },
+            "action": "grant_keyword",
             "parameters": {
-              "text": "Choose 1 of your (New UNE) Units. It gains <High-Maneuver> during this turn. (This Unit can't be blocked.)",
-              "version": 1,
-              "steps": [
-                {
-                  "action": "grant_keyword",
-                  "timing": {
-                    "duration": "CONTINUOUS"
-                  },
-                  "target": {
-                    "type": "unit",
-                    "scope": "self",
-                    "count": 1
-                  },
-                  "parameters": {
-                    "keyword": "High-Maneuver"
-                  }
-                }
-              ]
+              "keyword": "High-Maneuver"
+            },
+            "timing": {
+              "duration": "UNTIL_END_OF_TURN"
             }
           }
         ]

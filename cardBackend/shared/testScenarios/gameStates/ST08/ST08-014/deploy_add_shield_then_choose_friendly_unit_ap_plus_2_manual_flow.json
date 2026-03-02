@@ -1,0 +1,218 @@
+{
+  "description": "st08-014_deploy_add_shield_then_choose_friendly_unit_ap_plus_2_manual_flow",
+  "gameId": "st08-014_deploy_add_shield_then_choose_friendly_unit_ap_plus_2_manual_flow",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "ST08-014",
+    "Deploy",
+    "add_shield_to_hand",
+    "modifyAP",
+    "manual_flow"
+  ],
+  "notes": [
+    "Action: Load this scenario via getTestScenario and inject it via injectGameState.",
+    "Expect: Start in MAIN_PHASE with playerId_1 turn, currentBattle null, ST08-014 in hand, 2 active energy, and 2 friendly units already in play.",
+    "Action: During playerId_1 MAIN_PHASE, play ST08-014 from hand to base and pay its cost.",
+    "Expect: Deploy step 1 asks playerId_1 to choose 1 of their shields to add to hand.",
+    "Action: Select playerId_1 shield ST01-001_shield_p1_0001.",
+    "Expect: The selected shield moves from playerId_1 shieldArea to hand, ST08-014 enters playerId_1 base, and deploy step 2 prompts for exactly 1 friendly Unit target from slot1 or slot2.",
+    "Action: Choose playerId_1 slot1 ST01-003_target_p1_0001 as the AP buff target.",
+    "Expect: Only playerId_1 slot1 gets AP+2 during this turn with CARD_STAT_MODIFIED (stat=modifyAP, delta=2), playerId_1 slot2 remains unchanged, and exactly 1 of playerId_1's 2 energy becomes rested.",
+    "Action: Enter ATTACK_PHASE and attack playerId_2 slot1 ST01-001_enemy_hp4_0001 with playerId_1 slot1 ST01-003_target_p1_0001, then resolve battle confirmations.",
+    "Expect: playerId_2 slot1 is destroyed because the selected attacker reaches AP4 this turn, proving the temporary AP+2 buff applied to the chosen Unit only.",
+    "Action: End the turn and advance to playerId_2 turn.",
+    "Expect: The temporary AP+2 on playerId_1 slot1 expires at end of turn and its AP returns to base value."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed_st08014_manual_flow",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_ST08014_MANUAL_FLOW",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "ST08-014_hand_p1_0001",
+              "cardId": "ST08-014"
+            }
+          ],
+          "handUids": [
+            "ST08-014_hand_p1_0001"
+          ],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST01-003_target_p1_0001",
+              "cardId": "ST01-003",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "ST01-005_control_p1_0002",
+              "cardId": "ST01-005",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "ST01-001_shield_p1_0001",
+              "cardId": "ST01-001"
+            },
+            {
+              "carduid": "ST01-005_shield_p1_0002",
+              "cardId": "ST01-005"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_st08014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_st08014_p1_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST01-001_enemy_hp4_0001",
+              "cardId": "ST01-001",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "ST01-009_shield_p2_0001",
+              "cardId": "ST01-009"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_st08014_p2_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

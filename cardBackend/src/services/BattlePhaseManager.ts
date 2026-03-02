@@ -121,21 +121,13 @@ export class BattlePhaseManager {
         }
 
         if (!skipAttackPhaseEffects) {
-            const effectsResult = AttackPhaseEffectManager.processAttackPhaseEffects(gameEnv, event);
+            const effectsResult = AttackPhaseEffectManager.queueAttackPhaseEffects(gameEnv, event);
             if (!effectsResult.success) {
                 return { success: false, error: effectsResult.error };
             }
 
-            if (effectsResult.requiresSelection) {
-                return { success: true, requiresSelection: true };
-            }
-
-            if (gameEnv.needsPlayerInput()) {
-                const choiceEvent = gameEnv.getCurrentPlayerChoice();
-                if (choiceEvent?.id) {
-                    AttackResumeScheduler.enqueueResumeAttackAfterChoice(gameEnv, event, choiceEvent.id);
-                }
-                return { success: true, requiresSelection: true };
+            if (effectsResult.queued) {
+                return { success: true };
             }
         }
 

@@ -1,0 +1,293 @@
+{
+  "description": "st08-010_burst_add_to_hand_then_pair_choose_mafty_unit_allow_attack_target_damaged_active_enemy_manual_flow",
+  "gameId": "st08-010_burst_add_to_hand_then_pair_choose_mafty_unit_allow_attack_target_damaged_active_enemy_manual_flow",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "ST08-010",
+    "Burst",
+    "When Paired",
+    "PAIRING_COMPLETE",
+    "allow_attack_target",
+    "Mafty",
+    "damaged",
+    "active_target",
+    "manual_flow"
+  ],
+  "notes": [
+    "Action: Load this scenario via getTestScenario and inject it via injectGameState.",
+    "Expect: Start in MAIN_PHASE with playerId_1 turn, currentBattle null, processingQueue empty, and playerId_2 shield[0] is ST08-010.",
+    "Action: Player 1 attacks playerId_2 shield area with slot4 ST08-003_attacker_p1_0004 and resolve confirmBattle for both players until burst choice appears.",
+    "Expect: BURST_EFFECT_CHOICE appears for playerId_2 on ST08-010.",
+    "Action: Player 2 confirms burst choice with confirmed=true.",
+    "Expect: ST08-010 moves from playerId_2 shield area to playerId_2 hand.",
+    "Action: End playerId_1 turn. On playerId_2 MAIN_PHASE, play ST08-010 from hand as pilot onto playerId_2 slot1 ST08-003_host_mafty_p2_0001.",
+    "Expect: PAIRING_COMPLETE resolves because the paired unit is a (Mafty) Unit, and TARGET_CHOICE appears for playerId_2's (Mafty) Units only: slot1 ST08-003_host_mafty_p2_0001 and slot2 ST08-005_other_mafty_p2_0002. Non-(Mafty) slot3 ST01-001_non_mafty_p2_0003 is not selectable.",
+    "Action: Resolve TARGET_CHOICE by selecting playerId_2 slot2 ST08-005_other_mafty_p2_0002.",
+    "Expect: Only the selected slot2 unit gains temporary allow_attack_target permission until end of turn, slot1 host does not gain that permission unless selected, and exactly 1 of playerId_2's 4 energy becomes rested from paying ST08-010's cost.",
+    "Action: Enter ATTACK_PHASE and declare an attack with playerId_2 slot2 ST08-005_other_mafty_p2_0002.",
+    "Expect: Attack target candidates include playerId_1 slot1 ST08-005_enemy_damaged_active_0001 and slot3 ST01-001_enemy_damaged_active_0003 because they are damaged and active, while slot2 ST01-009_enemy_undamaged_active_0002 is not selectable by the granted active-target permission.",
+    "Action: Choose playerId_1 slot1 ST08-005_enemy_damaged_active_0001 as the attack target and resolve confirmBattle.",
+    "Expect: Battle proceeds against the damaged active enemy unit, confirming the selected (Mafty) Unit may choose a damaged active enemy Unit as its attack target during this turn."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed_st08010_manual_flow",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_ST08010_MANUAL_FLOW",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST08-005_enemy_damaged_active_0001",
+              "cardId": "ST08-005",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 1,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "ST01-009_enemy_undamaged_active_0002",
+              "cardId": "ST01-009",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot3": {
+            "unit": {
+              "carduid": "ST01-001_enemy_damaged_active_0003",
+              "cardId": "ST01-001",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 1,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot4": {
+            "unit": {
+              "carduid": "ST08-003_attacker_p1_0004",
+              "cardId": "ST08-003",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "ST08-014_shield_p1_0001",
+              "cardId": "ST08-014"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_st08010_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST08-003_host_mafty_p2_0001",
+              "cardId": "ST08-003",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "ST08-005_other_mafty_p2_0002",
+              "cardId": "ST08-005",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot3": {
+            "unit": {
+              "carduid": "ST01-001_non_mafty_p2_0003",
+              "cardId": "ST01-001",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "ST08-010_shield_p2_0001",
+              "cardId": "ST08-010"
+            },
+            {
+              "carduid": "ST08-014_shield_p2_0002",
+              "cardId": "ST08-014"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_st08010_p2_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_st08010_p2_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_st08010_p2_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_st08010_p2_0004",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

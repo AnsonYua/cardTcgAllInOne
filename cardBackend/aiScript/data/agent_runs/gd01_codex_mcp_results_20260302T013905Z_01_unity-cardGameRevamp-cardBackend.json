@@ -1,0 +1,22 @@
+[
+  {
+    "mode": "codex-mcp-direct",
+    "setId": "gd01",
+    "runTag": "20260302T013905Z_01",
+    "workingDir": "/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend",
+    "skillFile": "/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/requirement/skills/createGameEnvTest/SKILL.md",
+    "sandbox": "danger-full-access",
+    "approvalPolicy": "never",
+    "model": "",
+    "profile": "",
+    "cardId": "ST08-015",
+    "cardName": "Davao",
+    "status": "ok",
+    "threadId": "019cac33-07fa-7e03-9356-17a70f1b2ce2",
+    "content": "The scenario is in [`shared/testScenarios/gameStates/ST08/ST08-015/activate_main_once_per_turn_choose_friendly_unit_recover_2_hp_manual_flow.json`](/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/shared/testScenarios/gameStates/ST08/ST08-015/activate_main_once_per_turn_choose_friendly_unit_recover_2_hp_manual_flow.json#L1), and I added its preset path in [`DebugControls.ts`](/Users/hello/Desktop/card/unity/cardGameFrontend/src/phaser/controllers/DebugControls.ts#L610).\n\nThe gameEnv I used is the clean manual-flow setup you want:\n- `MAIN_PHASE`, `currentBattle: null`, `currentPlayer: playerId_1`\n- Player 1 has active `ST08-015` in `base`\n- Player 1 slot1 is `ST08-008` with `damageReceived: 3`\n- Player 1 slot2 is `ST08-007` with `damageReceived: 1`\n- Player 1 has `4` active energy so the second attempt tests `Once per Turn`, not energy shortage\n- `processingQueue: []` and a `CARD_DRAWN` notification seed for `playerId_1`\n\nManual steps are:\n1. Load via `getTestScenario` and inject via `injectGameState`.\n2. Use `activateCardAbility` on `ST08-015_base_0001` with `effectId=activate_heal_2_once_per_turn`.\n3. On `TARGET_CHOICE`, choose `playerId_1` slot1.\n4. Verify slot1 `damageReceived` goes `3 -> 1`, slot2 stays `1`, base stays active, and exactly `2` energy become rested.\n5. Try activating the same base effect again in the same `MAIN_PHASE`.\n6. Verify the second activation is blocked by `Once per Turn` while `2` energy are still active.\n\nValidation passed with:\n```bash\nnpm run test:dynamic run ST08/ST08-015/activate_main_once_per_turn_choose_friendly_unit_recover_2_hp_manual_flow.json --verbose\n```\n\nIf you want, next I can also draft a second negative scenario for “no damaged unit chosen” or “not enough active energy.”",
+    "structuredContent": {
+      "threadId": "019cac33-07fa-7e03-9356-17a70f1b2ce2",
+      "content": "The scenario is in [`shared/testScenarios/gameStates/ST08/ST08-015/activate_main_once_per_turn_choose_friendly_unit_recover_2_hp_manual_flow.json`](/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/shared/testScenarios/gameStates/ST08/ST08-015/activate_main_once_per_turn_choose_friendly_unit_recover_2_hp_manual_flow.json#L1), and I added its preset path in [`DebugControls.ts`](/Users/hello/Desktop/card/unity/cardGameFrontend/src/phaser/controllers/DebugControls.ts#L610).\n\nThe gameEnv I used is the clean manual-flow setup you want:\n- `MAIN_PHASE`, `currentBattle: null`, `currentPlayer: playerId_1`\n- Player 1 has active `ST08-015` in `base`\n- Player 1 slot1 is `ST08-008` with `damageReceived: 3`\n- Player 1 slot2 is `ST08-007` with `damageReceived: 1`\n- Player 1 has `4` active energy so the second attempt tests `Once per Turn`, not energy shortage\n- `processingQueue: []` and a `CARD_DRAWN` notification seed for `playerId_1`\n\nManual steps are:\n1. Load via `getTestScenario` and inject via `injectGameState`.\n2. Use `activateCardAbility` on `ST08-015_base_0001` with `effectId=activate_heal_2_once_per_turn`.\n3. On `TARGET_CHOICE`, choose `playerId_1` slot1.\n4. Verify slot1 `damageReceived` goes `3 -> 1`, slot2 stays `1`, base stays active, and exactly `2` energy become rested.\n5. Try activating the same base effect again in the same `MAIN_PHASE`.\n6. Verify the second activation is blocked by `Once per Turn` while `2` energy are still active.\n\nValidation passed with:\n```bash\nnpm run test:dynamic run ST08/ST08-015/activate_main_once_per_turn_choose_friendly_unit_recover_2_hp_manual_flow.json --verbose\n```\n\nIf you want, next I can also draft a second negative scenario for “no damaged unit chosen” or “not enough active energy.”"
+    }
+  }
+]

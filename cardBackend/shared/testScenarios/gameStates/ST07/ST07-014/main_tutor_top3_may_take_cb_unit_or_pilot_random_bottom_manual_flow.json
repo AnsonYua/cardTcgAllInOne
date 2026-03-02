@@ -1,0 +1,154 @@
+{
+  "description": "st07-014_main_tutor_top3_may_take_cb_unit_or_pilot_random_bottom_manual_flow",
+  "gameId": "st07-014_main_tutor_top3_may_take_cb_unit_or_pilot_random_bottom_manual_flow",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "ST07-014",
+    "MAIN_PHASE",
+    "tutor_top_deck",
+    "PROMPT_CHOICE",
+    "OPTION_CHOICE",
+    "manual_flow",
+    "CB"
+  ],
+  "notes": [
+    "Action: Load and inject this scenario; verify it starts in MAIN_PHASE with currentPlayer=playerId_1, currentBattle=null, and processingQueue empty.",
+    "Expect: playerId_1 hand contains ST07-014 and deck top order is ST07-009_top_0001, ST07-006_top_0002, ST07-013_top_0003, then ST07-015_top_0004.",
+    "Action: As playerId_1, play ST07-014 from hand, pay 1 active energy, resolve the PROMPT_CHOICE with Continue, then resolve the OPTION_CHOICE by selecting ST07-009_top_0001.",
+    "Expect: TOP_DECK_VIEWED is emitted first; OPTION_CHOICE offers index 0 = ST07-009_top_0001, index 1 = ST07-006_top_0002, and index 2 = put the looked cards on the bottom; after resolution, ST07-009_top_0001 is revealed and added to hand/handUids, ST07-014 is in trashArea, and TUTOR_TOP_DECK_RESOLVED is emitted.",
+    "Action: Inspect playerId_1 mainDeck and energyArea immediately after the tutor resolves.",
+    "Expect: ST07-015_top_0004 is now the deck top, exactly 1 energy card is rested from paying ST07-014, and ST07-006_top_0002 plus ST07-013_top_0003 are returned to deck bottom in random order.",
+    "Action: Re-inject the same scenario and resolve ST07-014 by choosing index 2 to put the looked cards on the bottom instead of taking a card.",
+    "Expect: No looked card is added to hand; ST07-015_top_0004 becomes the new deck top, all three looked cards move to deck bottom in random order, and ST07-014 still moves to trashArea after play."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed_st07014_main_tutor",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_ST07014_MAIN_TUTOR",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "ST07-014_action_0001",
+              "cardId": "ST07-014"
+            }
+          ],
+          "handUids": [
+            "ST07-014_action_0001"
+          ],
+          "mainDeck": [
+            "ST07-009_top_0001",
+            "ST07-006_top_0002",
+            "ST07-013_top_0003",
+            "ST07-015_top_0004"
+          ]
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_st07014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_st07014_p2_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
