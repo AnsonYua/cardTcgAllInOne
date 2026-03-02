@@ -9,6 +9,13 @@
     "draw_then_discard",
     "condition"
   ],
+  "notes": [
+    "Action: Load scenario via getTestScenario and inject via injectGameState.",
+    "Action: Player 1 plays GD02-070_in_hand_0001 from hand.",
+    "Expect: Deploy effect triggers because Player 1 has 4 (Gjallarhorn) cards in trash.",
+    "Expect: Player 1 draws 2 from mainDeck, then a TARGET_CHOICE prompt appears to discard 2 from hand.",
+    "Expect: After resolving, mainDeck is empty and Player 1 hand count returns to 3."
+  ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
     "playerId_1": "playerId_1",
@@ -168,11 +175,11 @@
               }
             },
             {
-              "carduid": "GD02-084_trash_0005",
-              "cardId": "GD02-084",
+              "carduid": "GD02-073_trash_0005",
+              "cardId": "GD02-073",
               "cardData": {
-                "id": "GD02-084",
-                "cardType": "pilot",
+                "id": "GD02-073",
+                "cardType": "unit",
                 "traits": [
                   "Gjallarhorn"
                 ]

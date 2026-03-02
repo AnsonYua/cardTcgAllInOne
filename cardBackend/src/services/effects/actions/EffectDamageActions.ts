@@ -21,10 +21,10 @@ export function applyDamageEffect(
     sourceCarduid: string | undefined,
     effect: EffectDefinition,
     selectedTargets: TargetReference[]
-): { success: boolean; error?: string } {
+): { success: boolean; error?: string; appliedTargets?: TargetReference[] } {
     const damageValue = resolveEffectDamageValue(gameEnv, sourcePlayerId, effect, sourceCarduid);
     if (damageValue <= 0) {
-        return { success: true };
+        return { success: true, appliedTargets: [] };
     }
     const resolvedDamageParameters = {
         ...(effect.parameters || {}),
@@ -34,6 +34,7 @@ export function applyDamageEffect(
     const attackerSlot = sourceCarduid
         ? SlotZoneUtils.findSlotNameByUnitUidForPlayer(gameEnv, sourcePlayerId, sourceCarduid).slotName
         : undefined;
+    const appliedTargets: TargetReference[] = [];
 
     for (const target of selectedTargets) {
         const resolvedTarget = TargetCardResolver.resolve(gameEnv, target);
@@ -74,6 +75,7 @@ export function applyDamageEffect(
             const remainingHP = Math.max(0, maxHP - newDamage);
 
             baseCard.damageReceived = newDamage;
+            appliedTargets.push(target);
 
             let baseDestroyed = false;
             if (remainingHP <= 0) {
@@ -119,6 +121,7 @@ export function applyDamageEffect(
                 damageValue
             );
             gameEnv.enqueueForProcessing(shieldAttackEvent);
+            appliedTargets.push(target);
             continue;
         }
 
@@ -164,6 +167,7 @@ export function applyDamageEffect(
         if (!applyResult.success) {
             return applyResult;
         }
+        appliedTargets.push(target);
 
         const damageNotificationSnapshot = snapshotLatestCardDamagedNotification(gameEnv, target.carduid);
         if (isSequenceExecutionActive(gameEnv)) {
@@ -201,5 +205,5 @@ export function applyDamageEffect(
         }
     }
 
-    return { success: true };
+    return { success: true, appliedTargets };
 }

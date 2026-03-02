@@ -70,7 +70,9 @@
               "cardId": "GD02-095"
             }
           ],
-          "handUids": [],
+          "handUids": [
+            "GD02-095_pilot_0001"
+          ],
           "mainDeck": []
         },
         "confirmIsRedraw": false,
@@ -172,8 +174,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD02-200_enemy_low_ap_0001",
-              "cardId": "GD02-200",
+              "carduid": "GD02-055_enemy_low_ap_0001",
+              "cardId": "GD02-055",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -183,7 +185,7 @@
               "continueModifyAP": 0,
               "continueModifyHP": 0,
               "originalAP": 3,
-              "originalHP": 3,
+              "originalHP": 5,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
@@ -192,8 +194,8 @@
           },
           "slot2": {
             "unit": {
-              "carduid": "GD02-202_enemy_low_ap_0002",
-              "cardId": "GD02-202",
+              "carduid": "GD02-058_enemy_low_ap_0002",
+              "cardId": "GD02-058",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -212,8 +214,8 @@
           },
           "slot3": {
             "unit": {
-              "carduid": "GD02-201_enemy_high_ap_0001",
-              "cardId": "GD02-201",
+              "carduid": "GD02-059_enemy_high_ap_0001",
+              "cardId": "GD02-059",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -223,7 +225,7 @@
               "continueModifyAP": 0,
               "continueModifyHP": 0,
               "originalAP": 4,
-              "originalHP": 4,
+              "originalHP": 3,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,

@@ -367,13 +367,16 @@ export class DeployTargetManager {
                         return { success: false, error: supportTriggerResult.error || 'Support AP increase trigger failed' };
                     }
                 }
+                const finalAffectedTargets = result.success
+                    ? (Array.isArray(result.appliedTargets) ? result.appliedTargets : targetsToApply)
+                    : [];
                 
-                console.log(`🤖 Auto-applied ${effect.effectId} to ${targetsToApply.length} target(s)`);
+                console.log(`🤖 Auto-applied ${effect.effectId} to ${finalAffectedTargets.length} target(s)`);
                 return {
                     success: result.success,
                     error: result.error,
                     autoApplied: true,
-                    affectedTargets: result.success ? targetsToApply : []
+                    affectedTargets: finalAffectedTargets
                 };
             }
             

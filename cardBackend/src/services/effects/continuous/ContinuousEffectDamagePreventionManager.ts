@@ -6,9 +6,71 @@ import type { EffectDefinition } from '../../EventQueue/interfaces/GameEvent';
 import { TemporaryEffectFactory } from '../TemporaryEffectFactory';
 import { GameNotificationManager } from '../../GameNotificationManager';
 import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
+import { SLOT_ZONES } from '../../../config/gameConstants';
 import { parsePreventDamageVariant } from '../utils/PreventDamageVariantUtils';
 
 export class ContinuousEffectDamagePreventionManager {
+    private static removeExistingPrevention(
+        gameEnv: GameEnvironment,
+        sourceCarduid: string,
+        prevention: { sourceCardType?: string; sourceController?: string }
+    ): number {
+        const removedCards: string[] = [];
+
+        for (const player of Object.values(gameEnv.players)) {
+            const zones = (player as any)?.zones;
+            if (!zones) continue;
+
+            const cards: any[] = [];
+
+            for (const slotName of SLOT_ZONES) {
+                const slot = zones[slotName];
+                if (slot?.unit) cards.push(slot.unit);
+                if (slot?.pilot) cards.push(slot.pilot);
+            }
+
+            if (Array.isArray(zones.base)) {
+                cards.push(...zones.base);
+            }
+            if (Array.isArray(zones.shieldArea)) {
+                cards.push(...zones.shieldArea);
+            }
+
+            for (const card of cards) {
+                if (!card?.temporaryEffects || !Array.isArray(card.temporaryEffects)) {
+                    continue;
+                }
+
+                const before = card.temporaryEffects.length;
+                card.temporaryEffects = card.temporaryEffects.filter((tempEffect: any) => {
+                    if (tempEffect?.sourceCarduid !== sourceCarduid) {
+                        return true;
+                    }
+                    const prevent = tempEffect?.preventEffectDamage;
+                    if (!prevent || typeof prevent !== 'object') {
+                        return true;
+                    }
+                    return !(
+                        prevent.sourceCardType === prevention.sourceCardType
+                        && prevent.sourceController === prevention.sourceController
+                    );
+                });
+
+                if (before !== card.temporaryEffects.length) {
+                    removedCards.push(card.carduid);
+                }
+            }
+        }
+
+        if (removedCards.length > 0) {
+            console.log(
+                `🧹 Removed ${removedCards.length} stale effect-damage prevention effect(s) from ${sourceCarduid}`
+            );
+        }
+
+        return removedCards.length;
+    }
+
     static applyToTargets(
         gameEnv: GameEnvironment,
         effectEntry: {
@@ -34,6 +96,8 @@ export class ContinuousEffectDamagePreventionManager {
         if (!sourceCardType && !sourceController) {
             return 0;
         }
+
+        this.removeExistingPrevention(gameEnv, effectEntry.sourceCarduid, { sourceCardType, sourceController });
 
         const appliedTargets: Array<{ carduid: string; zone?: string; playerId?: string }> = [];
 

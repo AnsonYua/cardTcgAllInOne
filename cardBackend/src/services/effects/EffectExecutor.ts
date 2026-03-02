@@ -49,9 +49,15 @@ interface EffectActionContext {
     sourceCarduid?: string;
 }
 
+export interface EffectApplyResult {
+    success: boolean;
+    error?: string;
+    appliedTargets?: TargetReference[];
+}
+
 export class EffectExecutor {
 
-    private static readonly ACTION_HANDLERS: Record<string, (context: EffectActionContext) => { success: boolean; error?: string }> = {
+    private static readonly ACTION_HANDLERS: Record<string, (context: EffectActionContext) => EffectApplyResult> = {
         draw: ({ gameEnv, effect, sourcePlayerId, sourceCarduid }) => this.applyPlayerDrawEffect(gameEnv, sourcePlayerId, effect, sourceCarduid),
         addToHand: ({ gameEnv, effect, selectedTargets, sourcePlayerId }) =>
             this.applyAddToHandEffect(gameEnv, sourcePlayerId, effect, selectedTargets),
@@ -124,7 +130,7 @@ export class EffectExecutor {
         selectedTargets: TargetReference[],
         sourcePlayerId: string,
         sourceCarduid?: string
-    ): { success: boolean; error?: string } {
+    ): EffectApplyResult {
 
         const action = this.getEffectAction(effect);
         if (!action) {
@@ -148,7 +154,14 @@ export class EffectExecutor {
                 return handlerResult;
             }
 
-            return this.enforceActionStepBattleConsistency(gameEnv, `EFFECT_EXECUTOR_HANDLER_${action}`);
+            const consistency = this.enforceActionStepBattleConsistency(gameEnv, `EFFECT_EXECUTOR_HANDLER_${action}`);
+            if (!consistency.success) {
+                return consistency;
+            }
+            return {
+                success: true,
+                appliedTargets: handlerResult.appliedTargets
+            };
         }
 
         const parameters = this.getEffectParameters(effect);
@@ -197,7 +210,11 @@ export class EffectExecutor {
             }
 
             console.log(`✅ Successfully applied ${action} to ${successfullyApplied.length} target(s)`);
-            return this.enforceActionStepBattleConsistency(gameEnv, `EFFECT_EXECUTOR_FALLBACK_${action}`);
+            const consistency = this.enforceActionStepBattleConsistency(gameEnv, `EFFECT_EXECUTOR_FALLBACK_${action}`);
+            if (!consistency.success) {
+                return consistency;
+            }
+            return { success: true, appliedTargets: successfullyApplied };
 
         } catch (error) {
             console.error(`❌ Error applying effect to targets:`, error);

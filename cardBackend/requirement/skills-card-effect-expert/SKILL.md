@@ -191,6 +191,13 @@ Use this when the user asks "is this effect properly implemented?" and does not 
   - Hide deterministic non-interactive effects (for example, self/paired-unit `allow_attack_target` that auto-applies without chooser).
   - Hidden auto effects must still resolve in deterministic effect-list order.
   - When dialog options represent a filtered subset, option payload must include stable source index mapping (e.g., `payload.effectOrderIndex`) and backend resolution must use that mapping, not raw displayed index.
+- Attack effect order dialog rule (`ATTACK_PHASE`):
+  - When multiple attack effects are simultaneously interactive/orderable (for example attacker-unit effect + paired-pilot effect), enqueue `OPTION_CHOICE` (`action = attack_effect_order`) before any `ATTACK_PHASE_EFFECT_TRIGGERED` event.
+  - `OPTION_CHOICE` context must carry full ordered queue (`allEffects`) plus displayed subset mapping and original attack event data (`ATTACK_EFFECT_ORDER` context), so chosen option can rehydrate the exact next queued attack effect.
+  - Option payload must use stable original queue mapping (`payload.effectOrderIndex`) and resolution must map by payload index, not visible option index.
+  - Disabled options are valid and should include backend-derived reasons (source missing, source/attack condition failed, once-per-turn used, no legal targets, cost cannot be paid).
+  - If multiple effects exist but `<=1` option is currently enabled, skip dialog and auto-queue the only enabled effect (or first fallback), preserving deterministic chain order.
+  - After the chosen effect resolves (including cost/target choices), remaining attack effects must continue through attack-chain continuation and only then enqueue final battle resume (`skipAttackPhaseEffects=true`).
 - Forced attack target rule (`require_attack_target_if_available`):
   - Treat this action as a battle-targeting constraint, not a normal target-choice effect.
   - Extract it from nested `sequence` structures too, including `conditional -> then/else` branches.
@@ -278,6 +285,18 @@ See `references/incident-gd03-035.md` for concrete bugs and fixes:
     - refresh continuous effects before declaration-time reactive checks so dynamically granted attacker keywords (e.g. `<Repair>`) are available
     - resolve reactive event context from the exact `attackNotificationId` / `UNIT_ATTACK_DECLARED` notification during attack `PLAYER_ACTION`
     - ensure auto-applied attack-triggered effects emit state-change notifications before `BATTLE_RESOLVED`/`GAME_ENDED`
+- `GD02-057` + paired pilot (`ST04-010`) attack trigger truncation:
+  - Root cause: attack-trigger processing stopped after first attack effect opened a cost choice, then resumed battle with `skipAttackPhaseEffects=true`, dropping remaining attack triggers (pilot never executed).
+  - Fix pattern:
+    - queue attack effects as internal events (`ATTACK_PHASE_EFFECT_TRIGGERED`) and execute one-at-a-time
+    - carry remaining effects in attack-chain continuation through all cost/target choice contexts
+    - introduce attack effect order `OPTION_CHOICE` (`ATTACK_EFFECT_ORDER`) for multi-interactive cases
+    - resolve chosen option via stable `effectOrderIndex` mapping into full queue (`allEffects`)
+    - only enqueue battle resume after attack effect chain is exhausted
+  - Regression coverage should include:
+    - unit-first and pilot-first order choices
+    - optional attack cost decline still preserves later pilot trigger
+    - only-one-enabled case skips order dialog
     - treat `TARGET_CHOICE` from attack triggers as an interrupt that pauses attack progression before battle opens
   - Review takeaway: always classify the card as declaration-reactive vs `ATTACK_PHASE` first, then verify ordering with notification timestamps/types.
 - Battle-resolve destroy choice desync pattern (`Target choice event not found`):

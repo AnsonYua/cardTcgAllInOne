@@ -37,7 +37,11 @@ export class SequenceTargetChoiceHandler {
         }
 
         const resolvedStepIds = Array.isArray(ctx.ctx?.resolvedStepIds) ? [...ctx.ctx.resolvedStepIds] : [];
-        const stepApplied = normalizedTargets.length > 0;
+        const appliedTargets = Array.isArray((applyResult as any).appliedTargets)
+            ? ((applyResult as any).appliedTargets as TargetReference[])
+            : normalizedTargets;
+        const stepApplied = appliedTargets.length > 0
+            || EffectExecutor.actionSupportsNoTargets(EffectExecutor.getEffectAction(normalizedEffect));
         if (ctx.resolveKey && stepApplied) {
             resolvedStepIds.push(ctx.resolveKey);
         }
@@ -50,7 +54,7 @@ export class SequenceTargetChoiceHandler {
                     movedCards: Array.isArray(ctx.ctx?.movedCards) ? ctx.ctx.movedCards : [],
                     resolvedStepIds,
                     sequenceEffectId: typeof ctx.ctx?.sequenceEffectId === 'string' ? ctx.ctx.sequenceEffectId : undefined,
-                    previousTargets: normalizedTargets.map(t => ({ carduid: t.carduid, zone: t.zone, playerId: t.playerId }))
+                    previousTargets: appliedTargets.map(t => ({ carduid: t.carduid, zone: t.zone, playerId: t.playerId }))
                 }
             },
             ...(ctx.cardPlayNotificationId ? { cardPlayNotificationId: ctx.cardPlayNotificationId } : {})

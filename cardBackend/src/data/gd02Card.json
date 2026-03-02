@@ -615,6 +615,7 @@
                   "asCost": true
                 },
                 {
+                  "stepId": "deal_self_damage",
                   "action": "damage",
                   "target": {
                     "type": "card",
@@ -1854,6 +1855,7 @@
               ],
               "then": [
                 {
+                  "stepId": "deal_self_damage",
                   "action": "damage",
                   "target": {
                     "type": "unit",
@@ -2730,6 +2732,7 @@
               "version": 1,
               "steps": [
                 {
+                  "stepId": "deal_self_damage",
                   "action": "damage",
                   "target": {
                     "type": "unit",
@@ -2919,6 +2922,7 @@
               "version": 1,
               "steps": [
                 {
+                  "stepId": "deal_self_damage",
                   "action": "damage",
                   "target": {
                     "type": "unit",
@@ -2933,10 +2937,23 @@
                   }
                 },
                 {
-                  "action": "draw_then_discard",
+                  "action": "conditional",
                   "parameters": {
-                    "draw": 1,
-                    "discard": 1
+                    "if": [
+                      {
+                        "type": "stepResolved",
+                        "stepId": "deal_self_damage"
+                      }
+                    ],
+                    "then": [
+                      {
+                        "action": "draw_then_discard",
+                        "parameters": {
+                          "draw": 1,
+                          "discard": 1
+                        }
+                      }
+                    ]
                   }
                 }
               ]

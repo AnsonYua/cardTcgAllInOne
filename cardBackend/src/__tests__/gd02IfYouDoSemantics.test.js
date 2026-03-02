@@ -149,4 +149,84 @@ describe('GD02 If-you-do semantics audit', () => {
         expect(p1.deck.handUids).toEqual(['ST01-001_hand_0001', 'ST01-002_hand_0002']);
         expect(p1.zones.trashArea.map((c) => c.carduid)).toEqual(['GJ_1', 'GJ_2', 'GJ_3', 'GJ_4']);
     });
+
+    test('GD02-058 does not draw/discard when chosen self unit damage is prevented', () => {
+        const gameEnv = new GameEnvironment();
+        const p1 = gameEnv.addPlayer('playerId_1', 'P1');
+        gameEnv.addPlayer('playerId_2', 'P2');
+        gameEnv.currentPlayer = 'playerId_1';
+        gameEnv.currentTurn = 1;
+
+        p1.deck._handUids = ['ST01-001_hand_0001'];
+        p1.deck.mainDeck = ['ST01-002_draw_0001'];
+
+        p1.zones.slot1.unit = createUnitZoneCard({
+            carduid: 'GD02-001_friendly_target_0001',
+            cardId: 'GD02-001',
+            effectsRules: [],
+            ap: 3,
+            hp: 4,
+            cardDataExtras: {
+                color: 'Blue',
+                level: 3
+            }
+        });
+        p1.zones.slot1.unit.temporaryEffects = [
+            {
+                sourceCarduid: 'prevent_source_0001',
+                preventEffectDamage: {
+                    sourceController: 'self'
+                }
+            }
+        ];
+
+        const deployEffect = gd02.cards['GD02-058'].effects.rules.find((rule) => rule.effectId === 'deploy_effect');
+        expect(deployEffect).toBeTruthy();
+
+        const result = SequenceEffectManager.processSequenceEffect(gameEnv, p1.id, 'GD02-058_source_0001', deployEffect);
+        expect(result.success).toBe(true);
+        expect(result.requiresSelection).not.toBe(true);
+
+        const discardChoice = gameEnv.processingQueue.find((event) => event.type === 'TARGET_CHOICE');
+        expect(discardChoice).toBeFalsy();
+        expect(p1.deck.handUids).toEqual(['ST01-001_hand_0001']);
+        expect(p1.deck.mainDeck).toEqual(['ST01-002_draw_0001']);
+        expect(p1.zones.slot1.unit.damageReceived || 0).toBe(0);
+    });
+
+    test('GD02-058 draws then prompts discard when self damage is successfully applied', () => {
+        const gameEnv = new GameEnvironment();
+        const p1 = gameEnv.addPlayer('playerId_1', 'P1');
+        gameEnv.addPlayer('playerId_2', 'P2');
+        gameEnv.currentPlayer = 'playerId_1';
+        gameEnv.currentTurn = 1;
+
+        p1.deck._handUids = ['ST01-001_hand_0001'];
+        p1.deck.mainDeck = ['ST01-002_draw_0001'];
+
+        p1.zones.slot1.unit = createUnitZoneCard({
+            carduid: 'GD02-001_friendly_target_0002',
+            cardId: 'GD02-001',
+            effectsRules: [],
+            ap: 3,
+            hp: 4,
+            cardDataExtras: {
+                color: 'Blue',
+                level: 3
+            }
+        });
+
+        const deployEffect = gd02.cards['GD02-058'].effects.rules.find((rule) => rule.effectId === 'deploy_effect');
+        expect(deployEffect).toBeTruthy();
+
+        const result = SequenceEffectManager.processSequenceEffect(gameEnv, p1.id, 'GD02-058_source_0002', deployEffect);
+        expect(result.success).toBe(true);
+        expect(result.requiresSelection).toBe(true);
+
+        const discardChoice = gameEnv.processingQueue.find((event) => event.type === 'TARGET_CHOICE');
+        expect(discardChoice).toBeTruthy();
+        expect(p1.deck.handUids).toContain('ST01-002_draw_0001');
+        expect(p1.deck.mainDeck).toEqual([]);
+        expect(p1.zones.slot1.unit.damageReceived || 0).toBe(1);
+    });
 });
