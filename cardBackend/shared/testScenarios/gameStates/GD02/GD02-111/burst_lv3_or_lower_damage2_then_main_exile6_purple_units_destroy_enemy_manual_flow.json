@@ -175,6 +175,14 @@
             {
               "carduid": "GD02-068_trash_p1_0006",
               "cardId": "GD02-068"
+            },
+            {
+              "carduid": "GD02-060_trash_p1_0003",
+              "cardId": "GD02-060"
+            },
+            {
+              "carduid": "GD02-068_trash_p1_003",
+              "cardId": "GD02-068"
             }
           ],
           "repairAbilitiesCheckedThisCycle": false,

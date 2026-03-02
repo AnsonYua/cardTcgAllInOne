@@ -1,28 +1,28 @@
 {
-  "description": "gd02-093_burst_add_to_hand_then_battle_destroy_enemy_newtype_paired_unit_draw_1_manual_flow",
-  "gameId": "gd02-093_burst_add_to_hand_then_battle_destroy_enemy_newtype_paired_unit_draw_1_manual_flow",
+  "description": "gd02-106_action_prevent_shield_battle_damage_from_enemy_lv3_or_lower_then_play_as_woolf_enneacle_pilot_manual_flow",
+  "gameId": "gd02-106_action_prevent_shield_battle_damage_from_enemy_lv3_or_lower_then_play_as_woolf_enneacle_pilot_manual_flow",
   "testType": "action",
   "category": "ActionCase",
   "tags": [
-    "GD02-093",
-    "Burst",
-    "BATTLE_DESTROY",
-    "Newtype",
+    "GD02-106",
+    "ACTION_STEP",
+    "prevent_battle_damage",
+    "shield_area",
+    "enemy_level_gate",
+    "pilot_designation",
     "manual_flow"
   ],
   "notes": [
     "Action: Load scenario via getTestScenario and inject via injectGameState.",
-    "Expect: Start in MAIN_PHASE with Player 1 turn, currentBattle is null, and Player 2 shield[0] is GD02-093.",
-    "Action: Player 1 attacks Player 2 shield area with slot1 GD01-020_attacker_p1_0001 and resolve confirmBattle for both players until burst choice appears.",
-    "Expect: BURST_EFFECT_CHOICE appears for Player 2 on GD02-093_shield_p2_0001.",
-    "Action: Player 2 confirms burst choice with confirmed=true.",
-    "Expect: GD02-093 moves from Player 2 shield area to Player 2 hand.",
-    "Action: End Player 1 turn. On Player 2 MAIN_PHASE, play GD02-093 from hand as pilot onto Player 2 slot1 unit GD01-020_source_unit_p2_0001.",
-    "Expect: Player 2 slot1 is paired (unit + pilot) and exactly 1 of Player 2 energy cards is rested to pay GD02-093 cost.",
-    "Action: Player 2 attacks Player 1 slot2 GD03-083_enemy_unit_p1_0001 (paired with GD02-094_enemy_newtype_pilot_p1_0001) and resolve battle confirmations.",
-    "Expect: Player 1 slot2 enemy unit is destroyed by battle damage while paired with a (Newtype) pilot.",
-    "Action: Check Player 2 hand/deck after battle resolution.",
-    "Expect: GD02-093 triggered effect resolves and Player 2 draws 1 (GD01-001_draw_p2_0001 moves from mainDeck to hand)."
+    "Expect: Player 1 starts in MAIN_PHASE with currentBattle null, two GD02-106 in hand, 4 active energy, and empty processingQueue.",
+    "Action: Play GD02-106_hand_pilot_0001 as pilot onto playerId_1 slot2 (GD02-013_friendly_pilot_host_0001).",
+    "Expect: playerId_1 slot2 becomes paired and pilot identity is Woolf Enneacle (designate_pilot AP 1 / HP 0).",
+    "Action: End turn so playerId_2 becomes current turn player.",
+    "Expect: playerId_2 can start battle normally with no pre-seeded action-step progress.",
+    "Action: Enter battle manually by attacking playerId_1 directly (shield area) with playerId_2 slot1 unit GD02-015, then confirm battle for both players.",
+    "Expect: ACTION_STEP opens for this battle and playerId_1 can play GD02-106_hand_action_0002.",
+    "Action: Play GD02-106_hand_action_0002 during ACTION_STEP and resolve the same battle to damage calculation.",
+    "Expect: Because the damage source is an enemy Lv.3 unit, playerId_1 shield-area cards do not receive battle damage in this battle (shield count does not decrease)."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -44,7 +44,7 @@
     "maxEventsPerCycle": 50,
     "notificationQueue": [
       {
-        "id": "card_drawn_seed_gd02093_manual_flow",
+        "id": "card_drawn_seed_gd02106_manual_flow",
         "type": "CARD_DRAWN",
         "metadata": {
           "timestamp": 1768362880422,
@@ -54,7 +54,7 @@
         },
         "payload": {
           "playerId": "playerId_1",
-          "carduid": "DRAW_SEED_GD02093_MANUAL_FLOW",
+          "carduid": "DRAW_SEED_GD02106_MANUAL_FLOW",
           "sourceZone": "deck",
           "reason": "draw",
           "timestamp": 1768362880422,
@@ -71,13 +71,21 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": [],
-          "handUids": [],
-          "mainDeck": [
-            "GD01-002_draw_p1_00013",
-            "GD01-003_draw_p1_00022",
-            "GD01-004_draw_p1_00032"
-          ]
+          "hand": [
+            {
+              "carduid": "GD02-106_hand_pilot_0001",
+              "cardId": "GD02-106"
+            },
+            {
+              "carduid": "GD02-106_hand_action_0002",
+              "cardId": "GD02-106"
+            }
+          ],
+          "handUids": [
+            "GD02-106_hand_pilot_0001",
+            "GD02-106_hand_action_0002"
+          ],
+          "mainDeck": []
         },
         "confirmIsRedraw": false,
         "isRedraw": false,
@@ -86,8 +94,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD01-020_attacker_p1_0001",
-              "cardId": "GD01-020",
+              "carduid": "GD02-017_friendly_battle_unit_0001",
+              "cardId": "GD02-017",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -102,22 +110,8 @@
           },
           "slot2": {
             "unit": {
-              "carduid": "GD03-083_enemy_unit_p1_0001",
-              "cardId": "GD03-083",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": true,
-              "playedThisTurn": false,
-              "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false,
-              "damageReceived": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0
-            },
-            "pilot": {
-              "carduid": "GD02-094_enemy_newtype_pilot_p1_0001",
-              "cardId": "GD02-094",
+              "carduid": "GD02-013_friendly_pilot_host_0001",
+              "cardId": "GD02-013",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -134,16 +128,64 @@
           "slot4": {},
           "slot5": {},
           "slot6": {},
-          "base": [],
+          "base": [           {
+              "carduid": "base_default",
+              "cardId": "base_default",
+              "placedAt": 1757854884783,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "originalHP": 3,
+              "damageReceived": 0,
+              "fieldCardValue": {
+                "totalOriginalAP": 0,
+                "totalOriginalHP": 3,
+                "totalTempModifyAP": 0,
+                "totalTempModifyHP": 0,
+                "totalContinueModifyAP": 0,
+                "totalContinueModifyHP": 0,
+                "totalDamageReceived": 0,
+                "totalAP": 0,
+                "totalHP": 3,
+                "isRested": false
+              }
+            }],
           "shieldArea": [
             {
-              "carduid": "GD01-001_shield_p1_0001",
-              "cardId": "GD01-001"
+              "carduid": "GD02-017_p1_shield_0001",
+              "cardId": "GD02-017"
+            },
+            {
+              "carduid": "GD02-018_p1_shield_0002",
+              "cardId": "GD02-018"
             }
           ],
           "energyArea": [
             {
-              "carduid": "energy_basic_gd02093_p1_0001",
+              "carduid": "energy_basic_gd02106_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd02106_p1_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd02106_p1_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd02106_p1_0004",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -162,11 +204,7 @@
         "deck": {
           "hand": [],
           "handUids": [],
-          "mainDeck": [
-            "GD01-001_draw_p2_0001",
-            "GD01-001_draw_p2_0002",
-            "GD01-001_draw_p2_0003"
-          ]
+          "mainDeck": []
         },
         "confirmIsRedraw": false,
         "isRedraw": false,
@@ -175,8 +213,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD01-020_source_unit_p2_0001",
-              "cardId": "GD01-020",
+              "carduid": "GD02-015_enemy_lv3_attacker_0001",
+              "cardId": "GD02-015",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -194,20 +232,16 @@
           "slot4": {},
           "slot5": {},
           "slot6": {},
-          "base": [],
+          "base": [ ],
           "shieldArea": [
             {
-              "carduid": "GD02-093_shield_p2_0001",
-              "cardId": "GD02-093"
-            },
-            {
-              "carduid": "GD01-001_shield_p2_0002",
-              "cardId": "GD01-001"
+              "carduid": "GD02-021_p2_shield_0001",
+              "cardId": "GD02-021"
             }
           ],
           "energyArea": [
             {
-              "carduid": "energy_basic_gd02093_p2_0001",
+              "carduid": "energy_basic_gd02106_p2_0001",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_2",
@@ -215,7 +249,7 @@
               "isExtraEnergy": false
             },
             {
-              "carduid": "energy_basic_gd02093_p2_0002",
+              "carduid": "energy_basic_gd02106_p2_0002",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_2",
@@ -223,7 +257,7 @@
               "isExtraEnergy": false
             },
             {
-              "carduid": "energy_basic_gd02093_p2_0003",
+              "carduid": "energy_basic_gd02106_p2_0003",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_2",

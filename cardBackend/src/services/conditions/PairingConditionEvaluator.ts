@@ -68,6 +68,15 @@ export class PairingConditionEvaluator {
                 return CardTraitUtils.hasTrait(unit.cardData, required);
             }
 
+            case 'pairedUnitColor': {
+                const expected = typeof condition.value === 'string' ? condition.value : null;
+                if (!expected) {
+                    return false;
+                }
+                const unitColor = typeof unit.cardData?.color === 'string' ? unit.cardData.color : '';
+                return unitColor === expected;
+            }
+
             case 'unitsInPlayWithTrait': {
                 const traits = Array.isArray((condition as any).traits)
                     ? (condition as any).traits.filter((t: unknown) => typeof t === 'string')

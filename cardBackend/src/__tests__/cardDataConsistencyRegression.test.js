@@ -220,7 +220,7 @@ describe('card data consistency regressions', () => {
         });
     });
 
-    test('GD02-120 play_effect: unit path can be declined and base fallback can be selected', () => {
+    test('GD02-120 play_effect: single target choice can select AEUG unit or AEUG base', () => {
         const gameEnv = new GameEnvironment();
         const p1 = gameEnv.addPlayer('playerId_1', 'P1');
         gameEnv.addPlayer('playerId_2', 'P2');
@@ -238,26 +238,32 @@ describe('card data consistency regressions', () => {
         p1.zones.base.push(aeugBase);
 
         const effect = gd02.cards['GD02-120'].effects.rules.find((rule) => rule.effectId === 'play_effect');
+        const steps = effect.parameters?.steps;
+        expect(Array.isArray(steps)).toBe(true);
+        expect(steps).toHaveLength(1);
+        expect(steps[0].target).toMatchObject({
+            type: 'card',
+            scope: 'self_unit_or_base',
+            filters: {
+                traits: ['AEUG'],
+                cardTypeAny: ['unit', 'base']
+            }
+        });
+
         const result = SequenceEffectManager.processSequenceEffect(gameEnv, p1.id, 'GD02-120_src_0001', effect);
         expect(result.success).toBe(true);
         expect(result.requiresSelection).toBe(true);
 
-        const firstChoice = findFirstPendingTargetChoice(gameEnv);
-        expect(firstChoice).toBeTruthy();
-        firstChoice.data.selectedTargets = [];
-        firstChoice.data.userDecisionMade = true;
-        const firstProcess = gameEnv.processEvents();
-        expect(firstProcess.success).toBe(true);
+        const choice = findFirstPendingTargetChoice(gameEnv);
+        expect(choice).toBeTruthy();
+        expect(choice.data.availableTargets).toHaveLength(2);
 
-        const secondChoice = findFirstPendingTargetChoice(gameEnv);
-        expect(secondChoice).toBeTruthy();
-        expect(secondChoice.id).not.toBe(firstChoice.id);
-        const baseTarget = secondChoice.data.availableTargets.find((target) => target.zone === 'base');
+        const baseTarget = choice.data.availableTargets.find((target) => target.zone === 'base');
         expect(baseTarget).toBeTruthy();
-        secondChoice.data.selectedTargets = [baseTarget];
-        secondChoice.data.userDecisionMade = true;
-        const secondProcess = gameEnv.processEvents();
-        expect(secondProcess.success).toBe(true);
+        choice.data.selectedTargets = [baseTarget];
+        choice.data.userDecisionMade = true;
+        const processResult = gameEnv.processEvents();
+        expect(processResult.success).toBe(true);
 
         expect((p1.zones.slot1.unit.damageReceived || 0)).toBe(1);
         expect((p1.zones.base[0].damageReceived || 0)).toBe(0);
@@ -279,15 +285,7 @@ describe('card data consistency regressions', () => {
         const effect = gd02.cards['GD02-120'].effects.rules.find((rule) => rule.effectId === 'play_effect');
         const result = SequenceEffectManager.processSequenceEffect(gameEnv, p1.id, 'GD02-120_src_0002', effect);
         expect(result.success).toBe(true);
-        expect(result.requiresSelection).toBe(true);
-
-        const choice = findFirstPendingTargetChoice(gameEnv);
-        expect(choice).toBeTruthy();
-        expect(choice.data.availableTargets).toHaveLength(1);
-        choice.data.selectedTargets = [choice.data.availableTargets[0]];
-        choice.data.userDecisionMade = true;
-        const processResult = gameEnv.processEvents();
-        expect(processResult.success).toBe(true);
+        expect(findFirstPendingTargetChoice(gameEnv)).toBeFalsy();
 
         expect((p1.zones.slot1.unit.damageReceived || 0)).toBe(0);
     });

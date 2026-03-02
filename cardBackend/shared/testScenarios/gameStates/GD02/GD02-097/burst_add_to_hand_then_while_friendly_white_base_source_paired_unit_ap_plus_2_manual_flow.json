@@ -82,8 +82,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD01-020_attacker_p1_0001",
-              "cardId": "GD01-020",
+              "carduid": "ST02-001_attacker_p1_0001",
+              "cardId": "ST02-001",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -127,8 +127,12 @@
         "id": "playerId_2",
         "name": "Player 2",
         "deck": {
-          "hand": [],
-          "handUids": [],
+          "hand": [ 
+            {
+              "carduid": "GD02-097_shield_p2_0001",
+              "cardId": "GD02-097"
+            }],
+          "handUids": ["GD02-097_shield_p2_0001"],
           "mainDeck": []
         },
         "confirmIsRedraw": false,
@@ -142,7 +146,7 @@
               "cardId": "GD01-020",
               "placedAt": 0,
               "placedBy": "playerId_2",
-              "isRested": false,
+              "isRested": true,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
@@ -168,10 +172,6 @@
             }
           ],
           "shieldArea": [
-            {
-              "carduid": "GD02-097_shield_p2_0001",
-              "cardId": "GD02-097"
-            },
             {
               "carduid": "GD01-020_shield_p2_0002",
               "cardId": "GD01-020"

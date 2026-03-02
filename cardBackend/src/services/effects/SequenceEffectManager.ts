@@ -37,6 +37,7 @@ type SequenceContext = {
     movedCardsByStepId: Record<string, any[]>;
     resolvedStepIds: Set<string>;
     sequenceEffectId?: string;
+    sequenceTrigger?: string;
     previousTargets: Array<{ carduid: string; zone: string; playerId: string }>;
 };
 
@@ -47,6 +48,7 @@ export type SequenceContinuationPayload = {
         movedCardsByStepId?: Record<string, any[]>;
         resolvedStepIds?: string[];
         sequenceEffectId?: string;
+        sequenceTrigger?: string;
         previousTargets?: Array<{ carduid: string; zone: string; playerId: string }>;
     };
 };
@@ -75,6 +77,7 @@ export class SequenceEffectManager {
             movedCardsByStepId: {},
             resolvedStepIds: new Set<string>(),
             sequenceEffectId: typeof effect.effectId === 'string' ? effect.effectId : undefined,
+            sequenceTrigger: typeof effect.trigger === 'string' ? effect.trigger : undefined,
             previousTargets: []
         };
 
@@ -99,6 +102,7 @@ export class SequenceEffectManager {
                 : {},
             resolvedStepIds: new Set<string>(Array.isArray(payload.ctx?.resolvedStepIds) ? payload.ctx.resolvedStepIds : []),
             sequenceEffectId: typeof payload.ctx?.sequenceEffectId === 'string' ? payload.ctx.sequenceEffectId : undefined,
+            sequenceTrigger: typeof payload.ctx?.sequenceTrigger === 'string' ? payload.ctx.sequenceTrigger : undefined,
             previousTargets: Array.isArray(payload.ctx?.previousTargets) ? payload.ctx.previousTargets : []
         };
 
@@ -138,7 +142,7 @@ export class SequenceEffectManager {
             }
             const params = (step.parameters || {}) as Record<string, unknown>;
             const stepId = typeof step.stepId === 'string' ? step.stepId : undefined;
-            const stepEffect = this.buildStepEffect(step, stepId);
+            const stepEffect = this.buildStepEffect(step, stepId, ctx.sequenceTrigger);
             const sourceCard = sourceCarduid ? SlotZoneUtils.getCardByUid(gameEnv, sourceCarduid) : null;
             const stepEligible = EffectConditionEvaluator.validateEffectConditions(
                 stepEffect,
@@ -474,6 +478,7 @@ export class SequenceEffectManager {
                     movedCardsByStepId: ctx.movedCardsByStepId,
                     resolvedStepIds: Array.from(ctx.resolvedStepIds),
                     sequenceEffectId: ctx.sequenceEffectId,
+                    sequenceTrigger: ctx.sequenceTrigger,
                     previousTargets: ctx.previousTargets
                 },
                 ...(cardPlayNotificationId ? { cardPlayNotificationId } : {})
@@ -489,7 +494,17 @@ export class SequenceEffectManager {
         ctx.resolvedStepIds.add(key);
     }
 
-    private static buildStepEffect(step: SequenceStep, stepId?: string): EffectDefinition {
+    private static buildStepEffect(step: SequenceStep, stepId?: string, sequenceTrigger?: string): EffectDefinition {
+        const stepParameters = step.parameters ? { ...(step.parameters as Record<string, unknown>) } : {};
+        const isBurstSequence = typeof sequenceTrigger === 'string' && sequenceTrigger.toUpperCase() === 'BURST_CONDITION';
+        if (
+            step.action === 'addToHand' &&
+            isBurstSequence &&
+            typeof stepParameters.reason !== 'string'
+        ) {
+            stepParameters.reason = 'burst';
+        }
+
         return ensureEffectDefaults({
             effectId: (typeof step.effectId === 'string' && step.effectId.length > 0)
                 ? step.effectId
@@ -501,7 +516,7 @@ export class SequenceEffectManager {
             ...(Array.isArray(step.conditions) ? { conditions: step.conditions as any } : {}),
             ...(step.target ? { target: step.target as any } : {}),
             ...(step.timing ? { timing: step.timing as any } : {}),
-            ...(step.parameters ? { parameters: step.parameters as any } : {})
+            ...(Object.keys(stepParameters).length > 0 ? { parameters: stepParameters as any } : {})
         } as any);
     }
 

@@ -250,7 +250,7 @@ export class EffectExecutor {
         return duration === 'UNTIL_END_OF_TURN' || duration === 'UNTIL_END_OF_BATTLE';
     }
 
-     static applyAddToHandEffect(gameEnv: GameEnvironment, 
+    static applyAddToHandEffect(gameEnv: GameEnvironment, 
                                  sourcePlayerId: string, 
                                  effect: EffectDefinition,
                                  selectedTargets: TargetReference[]): { success: boolean; error?: string } {
@@ -312,7 +312,8 @@ export class EffectExecutor {
                     target.carduid,
                     target.cardData,
                     {
-                        sourceZone
+                        sourceZone,
+                        reason: typeof parameters?.reason === 'string' ? parameters.reason : undefined
                     }
                 );
                 

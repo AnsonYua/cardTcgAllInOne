@@ -414,11 +414,12 @@ export class DeployTargetManager {
                 ? selectedTargets
                 : [];
 
-            const normalizedTargets: TargetReference[] = normalizedSelections.map((selection) => ({
-                carduid: selection.carduid,
-                zone: selection.zone,
-                playerId: selection.playerId
-            }));
+            const availableTargets: TargetReference[] = Array.isArray(eventData.availableTargets)
+                ? eventData.availableTargets
+                : [];
+            const normalizedTargets: TargetReference[] = normalizedSelections.map((selection) =>
+                this.hydrateSelectedTargetFromAvailableTargets(selection, availableTargets)
+            );
 
             // Even if the player declined an optional selection (empty array), context handlers may need
             // to run (e.g., optional COST flows that must resume an attack after declining the cost).
@@ -496,6 +497,36 @@ export class DeployTargetManager {
      */
     static cleanupExpiredTemporaryEffects(gameEnv: GameEnvironment, endingPlayerId: string): void {
         EffectExecutor.cleanupExpiredTemporaryEffects(gameEnv, endingPlayerId);
+    }
+
+    private static hydrateSelectedTargetFromAvailableTargets(
+        selection: TargetChoiceSelection,
+        availableTargets: TargetReference[]
+    ): TargetReference {
+        const canonical = availableTargets.find((target) =>
+            target?.carduid === selection.carduid &&
+            target?.zone === selection.zone &&
+            target?.playerId === selection.playerId
+        );
+
+        if (canonical) {
+            return {
+                carduid: canonical.carduid,
+                zone: canonical.zone,
+                playerId: canonical.playerId,
+                ...(canonical.cardData ? { cardData: canonical.cardData } : {}),
+                ...(Array.isArray(canonical.tags) ? { tags: [...canonical.tags] } : {}),
+                ...(canonical.computed && typeof canonical.computed === 'object'
+                    ? { computed: { ...canonical.computed } }
+                    : {})
+            };
+        }
+
+        return {
+            carduid: selection.carduid,
+            zone: selection.zone,
+            playerId: selection.playerId
+        };
     }
 
     private static maybeTriggerApReducedByEnemyEffects(

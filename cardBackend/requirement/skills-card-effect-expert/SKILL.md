@@ -92,6 +92,8 @@ Use this when the user asks "is this effect properly implemented?" and does not 
   - treat pair/link wording as a source-state requirement first (`sourceConditions`) before debugging event conditions.
   - `paired` and `linked` are not interchangeable; verify the card text matches the encoded source condition exactly.
   - for "one of your other Units ..." wording, require explicit non-self event/source exclusion (e.g. `eventAttackerIsNotSource = true`), not an implicit assumption from target scope.
+- Pairing-condition coverage rule:
+  - `pairedUnitColor` must be supported in `PairingConditionEvaluator` for `PAIRING_COMPLETE` checks (missing support breaks GD02-087 rest-Blocker behavior).
 - Event-reactive continuous review rule:
   - For `continuous -> sequence -> conditional(eventType=...) -> then(action)` designs, verify the branch becomes a derived reactive registry entry and is executed through `processReactiveContinuousEffects`, not only present in static card JSON.
   - Confirm duplicate suppression for the same event (`lastReactiveEventKey`) when reviewing once-per-event triggers.

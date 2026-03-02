@@ -10,13 +10,16 @@
   ],
   "notes": [
     "Action: Load scenario via getTestScenario and inject via injectGameState.",
-    "Expect: Player 1 has GD02-120 in hand during ACTION_STEP.",
+    "Expect: Player 1 starts in MAIN_PHASE with currentBattle null and has GD02-120 in hand.",
     "Expect: There is a damaged friendly (AEUG) Unit and a damaged friendly (AEUG) Base.",
+    "Action: Enter battle manually by attacking playerId_2 shield area, then confirm battle for both players to reach ACTION_STEP.",
+    "Expect: ACTION_STEP opens and GD02-120 is playable.",
     "Action: Play GD02-120 and resolve target choice.",
-    "Expect: Chosen target recovers 2 HP."
+    "Expect: Chosen target recovers 2 HP.",
+    "Expect: No card draw occurs, because GD02-120 text only heals and has no draw clause."
   ],
   "initialGameEnv": {
-    "phase": "ACTION_STEP_PHASE",
+    "phase": "MAIN_PHASE",
     "playerId_1": "playerId_1",
     "playerId_2": "playerId_2",
     "gameStarted": true,
@@ -34,7 +37,25 @@
     "processingEnabled": true,
     "maxEventsPerCycle": 50,
     "lastEventId": 0,
-    "notificationQueue": [],
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed_gd02120_manual_flow",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_GD02120_MANUAL_FLOW",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }],
     "pendingPhaseTransition": null,
     "currentBattle": null,
     "version": 0,
@@ -104,6 +125,22 @@
               "placedBy": "playerId_1",
               "isRested": false,
               "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd02120_p1_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_gd02120_p1_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [],
@@ -131,7 +168,12 @@
           "slot5": {},
           "slot6": {},
           "base": [],
-          "shieldArea": [],
+          "shieldArea": [
+            {
+              "carduid": "GD01-001_p2_shield_0001",
+              "cardId": "GD01-001"
+            }
+          ],
           "energyArea": [],
           "trashArea": [],
           "repairAbilitiesCheckedThisCycle": false,

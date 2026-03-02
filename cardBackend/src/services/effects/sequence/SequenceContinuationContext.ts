@@ -11,6 +11,7 @@ export type SequenceContinuationAfterChoiceContext = {
         movedCardsByStepId?: Record<string, any[]>;
         resolvedStepIds?: string[];
         sequenceEffectId?: string;
+        sequenceTrigger?: string;
         previousTargets?: Array<{ carduid: string; zone: string; playerId: string }>;
     };
     cardPlayNotificationId?: string;

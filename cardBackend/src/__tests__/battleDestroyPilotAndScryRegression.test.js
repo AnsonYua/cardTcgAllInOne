@@ -155,7 +155,12 @@ describe('battle destroy pilot self + scry regression', () => {
             type: 'BATTLE_RESOLVED',
             payload: {
                 attackerCarduid: sourceUnitUid,
-                targetCarduid: enemyUnitUid
+                targetCarduid: enemyUnitUid,
+                result: {
+                    targetType: 'unit',
+                    attackerDestroyed: false,
+                    defenderDestroyed: true
+                }
             }
         });
 

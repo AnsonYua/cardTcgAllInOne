@@ -26,8 +26,9 @@ export function isShieldDamagePrevented(
     defendingPlayerId: string,
     attackingUnit: UnitZoneCard
 ): boolean {
-    const attackerLevel = attackingUnit.cardData?.level || 0;
-    return isShieldDamagePreventedByAttackerLevel(gameEnv, defendingPlayerId, attackerLevel);
+    const defender = gameEnv.getPlayer(defendingPlayerId);
+    const defaultTargets = defender ? getShieldCardsToAttack(defender, 1) : [];
+    return areShieldCardsDamagePrevented(gameEnv, defendingPlayerId, attackingUnit, defaultTargets);
 }
 
 export function isShieldDamagePreventedByAttackerLevel(
@@ -51,5 +52,89 @@ export function isShieldDamagePreventedByAttackerLevel(
             return attackerLevel <= prevention.maxEnemyLevel;
         }
         return true;
+    });
+}
+
+function isShieldDamagePreventedByTemporaryEffect(
+    shieldCard: any,
+    attackingUnit: UnitZoneCard
+): boolean {
+    const tempEffects = Array.isArray(shieldCard?.temporaryEffects) ? shieldCard.temporaryEffects : [];
+    if (tempEffects.length === 0) {
+        return false;
+    }
+
+    const enemyLevel = typeof attackingUnit.cardData?.level === 'number' ? attackingUnit.cardData.level : 0;
+    const enemyAp = typeof attackingUnit.cardData?.ap === 'number'
+        ? attackingUnit.cardData.ap
+        : ((attackingUnit as any).originalAP || 0);
+    const enemyHp = Math.max(0, (attackingUnit.cardData?.hp || 0) - ((attackingUnit as any).damageReceived || 0));
+
+    return tempEffects.some((tempEffect: any) => {
+        const prevention = tempEffect?.preventBattleDamage;
+        if (!prevention || typeof prevention !== 'object') {
+            return false;
+        }
+
+        const from = typeof prevention.from === 'string' ? prevention.from : undefined;
+        if (from && from !== 'enemy_units') {
+            return false;
+        }
+
+        if (typeof prevention.enemyLevel === 'string' && !validateComparisonFilter(enemyLevel, prevention.enemyLevel)) {
+            return false;
+        }
+
+        if (typeof prevention.enemyAp === 'string' && !validateComparisonFilter(enemyAp, prevention.enemyAp)) {
+            return false;
+        } else if (typeof prevention.maxEnemyAp === 'number' && enemyAp > prevention.maxEnemyAp) {
+            return false;
+        }
+
+        if (typeof prevention.enemyHp === 'string' && !validateComparisonFilter(enemyHp, prevention.enemyHp)) {
+            return false;
+        }
+
+        if (
+            typeof prevention.enemyLevel !== 'string'
+            && typeof prevention.enemyAp !== 'string'
+            && typeof prevention.enemyHp !== 'string'
+            && typeof prevention.maxEnemyAp !== 'number'
+            && from !== 'enemy_units'
+        ) {
+            return false;
+        }
+
+        return true;
+    });
+}
+
+export function areShieldCardsDamagePrevented(
+    gameEnv: GameEnvironment,
+    defendingPlayerId: string,
+    attackingUnit: UnitZoneCard,
+    shieldCardsToCheck: Array<{ carduid: string }>
+): boolean {
+    const attackerLevel = attackingUnit.cardData?.level || 0;
+    if (isShieldDamagePreventedByAttackerLevel(gameEnv, defendingPlayerId, attackerLevel)) {
+        return true;
+    }
+
+    if (!Array.isArray(shieldCardsToCheck) || shieldCardsToCheck.length === 0) {
+        return false;
+    }
+
+    const defender = gameEnv.getPlayer(defendingPlayerId);
+    const shieldArea = Array.isArray(defender?.zones?.shieldArea) ? defender.zones.shieldArea : [];
+    if (shieldArea.length === 0) {
+        return false;
+    }
+
+    return shieldCardsToCheck.every((target) => {
+        const shieldCard = shieldArea.find((card: any) => card?.carduid === target.carduid);
+        if (!shieldCard) {
+            return false;
+        }
+        return isShieldDamagePreventedByTemporaryEffect(shieldCard, attackingUnit);
     });
 }

@@ -79,10 +79,20 @@ export class TargetResolver {
         const filteredCardType = typeof (targetConfig.filters as any)?.cardType === 'string'
             ? (((targetConfig.filters as any).cardType as string) || '').toLowerCase()
             : '';
+        const cardTypeAnyFilter = Array.isArray((targetConfig.filters as any)?.cardTypeAny)
+            ? ((targetConfig.filters as any).cardTypeAny as unknown[])
+                .filter((value): value is string => typeof value === 'string')
+                .map((value) => value.toLowerCase())
+            : [];
         const isBaseScope =
             targetConfig.type === 'base' ||
             scopeValue.includes('base') ||
             (targetConfig.type === 'card' && filteredCardType === 'base');
+        const isUnitOrBaseScope =
+            scopeValue === 'self_unit_or_base' ||
+            scopeValue === 'opponent_unit_or_base' ||
+            scopeValue === 'any_unit_or_base' ||
+            (targetConfig.type === 'card' && cardTypeAnyFilter.includes('unit') && cardTypeAnyFilter.includes('base'));
 
         if (isShieldScope) {
             const targetPlayerIds = this.getTargetPlayerIds(gameEnv, playerId, targetConfig.scope);
@@ -113,9 +123,74 @@ export class TargetResolver {
         } else if (isEnergyScope) {
             const targetPlayerIds = this.getTargetPlayerIds(gameEnv, playerId, targetConfig.scope);
             targets.push(...EnergyTargetResolver.generateEnergyTargets(gameEnv, targetPlayerIds, targetConfig));
-        } else if (isBaseScope) {
+        } else if (isBaseScope && !isUnitOrBaseScope) {
             const targetPlayerIds = this.getTargetPlayerIds(gameEnv, playerId, targetConfig.scope);
             targets.push(...BaseTargetResolver.generateBaseTargets(gameEnv, targetPlayerIds, targetConfig));
+        } else if (isUnitOrBaseScope) {
+            const targetPlayerIds = this.getTargetPlayerIds(gameEnv, playerId, targetConfig.scope);
+            for (const targetPlayerId of targetPlayerIds) {
+                const player = gameEnv.getPlayer(targetPlayerId);
+                if (!player) {
+                    console.error(`❌ Target player ${targetPlayerId} not found`);
+                    continue;
+                }
+
+                for (const slotName of SLOT_ZONES) {
+                    const slotResult = SlotZoneUtils.getSlotZone(player.zones, slotName);
+                    if (!slotResult.isValid || !slotResult.slot) {
+                        continue;
+                    }
+
+                    const unit = SlotZoneUtils.getUnit(slotResult.slot);
+                    if (!unit) {
+                        continue;
+                    }
+
+                    if (this.validateTargetFilters(
+                        gameEnv,
+                        unit,
+                        targetConfig.filters || {},
+                        targetPlayerId,
+                        sourceCarduid,
+                        slotName,
+                        dynamicContext,
+                        targetConfig.sourceLevelScope
+                    )) {
+                        targets.push({
+                            carduid: unit.carduid,
+                            zone: slotName,
+                            playerId: targetPlayerId,
+                            cardData: unit.cardData,
+                            computed: getSlotTotals(slotResult.slot)
+                        });
+                    }
+                }
+
+                const baseArea = Array.isArray(player.zones.base) ? player.zones.base : [];
+                for (const baseCard of baseArea) {
+                    if (!baseCard?.carduid) {
+                        continue;
+                    }
+
+                    if (this.validateTargetFilters(
+                        gameEnv,
+                        baseCard as any,
+                        targetConfig.filters || {},
+                        targetPlayerId,
+                        sourceCarduid,
+                        undefined,
+                        dynamicContext,
+                        targetConfig.sourceLevelScope
+                    )) {
+                        targets.push({
+                            carduid: baseCard.carduid,
+                            zone: 'base',
+                            playerId: targetPlayerId,
+                            cardData: baseCard.cardData as any
+                        });
+                    }
+                }
+            }
         } else {
             const targetPlayerIds = this.getTargetPlayerIds(gameEnv, playerId, targetConfig.scope);
 

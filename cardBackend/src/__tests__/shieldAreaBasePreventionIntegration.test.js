@@ -56,7 +56,7 @@ function latestEvent(gameEnv, type) {
     return events[events.length - 1] || null;
 }
 
-function setupBaseAttackActionStep(attackerLevel, { includeShield = false } = {}) {
+function setupBaseAttackActionStep(attackerLevel, { includeShield = false, shieldCount, includeBase = true } = {}) {
     const gameEnv = new GameEnvironment();
     const defenderPlayerId = 'playerId_1';
     const attackerPlayerId = 'playerId_2';
@@ -72,10 +72,15 @@ function setupBaseAttackActionStep(attackerLevel, { includeShield = false } = {}
 
     const attackingUnit = createUnit('attacker_unit_0001', 'ATK-UNIT', { level: attackerLevel, ap: 3, hp: 4 });
     attacker.zones.slot1.unit = attackingUnit;
-    if (includeShield) {
-        defender.zones.shieldArea.push({ carduid: 'defender_shield_0001', cardId: 'TEST-SHIELD' });
+    const resolvedShieldCount = Number.isInteger(shieldCount)
+        ? Math.max(0, shieldCount)
+        : (includeShield ? 1 : 0);
+    for (let i = 0; i < resolvedShieldCount; i++) {
+        defender.zones.shieldArea.push({ carduid: `defender_shield_${String(i + 1).padStart(4, '0')}`, cardId: 'TEST-SHIELD' });
     }
-    defender.zones.base.push(createBase('defender_base_0001', 6));
+    if (includeBase) {
+        defender.zones.base.push(createBase('defender_base_0001', 6));
+    }
 
     const notificationManager = new GameNotificationManager(gameEnv);
     const attackNotificationId = notificationManager.addNotificationEvent('UNIT_ATTACK_DECLARED', {
@@ -185,5 +190,32 @@ describe('shield-area prevention commands also protect base during battle', () =
         expect(latestEvent(gameEnv, 'BASE_DAMAGE_PREVENTED')).toBeFalsy();
         const resolved = latestEvent(gameEnv, 'BATTLE_RESOLVED');
         expect(resolved?.payload?.result?.damagePrevented).toBe(false);
+    });
+
+    test('GD02-106 auto-applies to all shields without TARGET_CHOICE when multiple shields exist', () => {
+        const effect = gd02.cards['GD02-106'].effects.rules.find((r) => r.effectId === 'play_effect');
+        const { gameEnv } = setupBaseAttackActionStep(3, { shieldCount: 2 });
+
+        applyPlaySequence(gameEnv, 'playerId_1', effect, 'GD02-106_cmd_src_multi_shield_0001');
+
+        const hasTargetChoice = (gameEnv.notificationQueue || []).some((event) => event?.type === 'TARGET_CHOICE');
+        const hasPendingTargetChoice = (gameEnv.processingQueue || []).some((event) => event?.type === 'TARGET_CHOICE');
+        expect(hasTargetChoice).toBe(false);
+        expect(hasPendingTargetChoice).toBe(false);
+    });
+
+    test('GD02-106 prevents shield battle damage from Lv.3 enemy unit', () => {
+        const effect = gd02.cards['GD02-106'].effects.rules.find((r) => r.effectId === 'play_effect');
+        const { gameEnv, attackerPlayerId, defenderPlayerId } = setupBaseAttackActionStep(3, { shieldCount: 2, includeBase: false });
+
+        applyPlaySequence(gameEnv, defenderPlayerId, effect, 'GD02-106_cmd_src_shield_only_0001');
+        resolveBattle(gameEnv, attackerPlayerId, defenderPlayerId);
+
+        const defender = gameEnv.getPlayer(defenderPlayerId);
+        expect(defender.zones.shieldArea).toHaveLength(2);
+        expect(latestEvent(gameEnv, 'SHIELD_AREA_CARD_DAMAGED')).toBeFalsy();
+        const resolved = latestEvent(gameEnv, 'BATTLE_RESOLVED');
+        expect(resolved?.payload?.result?.targetType).toBe('shield');
+        expect(resolved?.payload?.result?.damagePrevented).toBe(true);
     });
 });

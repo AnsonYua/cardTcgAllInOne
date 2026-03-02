@@ -22,7 +22,7 @@ export interface SlotSearchByCardResult {
 
 export interface ResolvedTargetReference {
     card: any;
-    type: 'unit' | 'pilot' | 'base';
+    type: 'unit' | 'pilot' | 'base' | 'shield';
     slotName: string;
     playerId: string;
 }
@@ -73,6 +73,21 @@ export class SlotSearchUtils {
                 card: baseCard,
                 type: 'base',
                 slotName: 'base',
+                playerId: target.playerId
+            };
+        }
+
+        if (target.zone === 'shield') {
+            const shieldArea = Array.isArray(player.zones.shieldArea) ? player.zones.shieldArea : [];
+            const shieldCard = shieldArea.find((card: any) => card?.carduid === target.carduid);
+            if (!shieldCard) {
+                console.log(`⚠️ Target card ${target.carduid} not found in shield`);
+                return null;
+            }
+            return {
+                card: shieldCard,
+                type: 'shield',
+                slotName: 'shield',
                 playerId: target.playerId
             };
         }

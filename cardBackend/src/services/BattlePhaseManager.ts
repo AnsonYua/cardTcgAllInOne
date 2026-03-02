@@ -25,7 +25,7 @@ import {
     emitBattleResolutionNotification,
     buildSlotReferenceSnapshot
 } from './battle/BattleSnapshotUtils';
-import { getShieldCardsToAttack, isShieldDamagePrevented } from './battle/BattleShieldUtils';
+import { areShieldCardsDamagePrevented, getShieldCardsToAttack } from './battle/BattleShieldUtils';
 import { KeywordUtils } from '../utils/KeywordUtils';
 import { EffectExecutor } from './effects/EffectExecutor';
 import { BattleDamagePreventionUtils } from './battle/BattleDamagePreventionUtils';
@@ -878,7 +878,11 @@ export class BattlePhaseManager {
             });
         } else {
             if (defender.hasShield() && totalAttackPower > 0) {
-                if (isShieldDamagePrevented(gameEnv, defender.id, attackingUnit)) {
+                const attackerHasSuppression = KeywordUtils.hasKeyword(attackingUnit as UnitZoneCard, 'Suppression');
+                const shieldsToAttackCount = attackerHasSuppression ? 2 : 1;
+                const shieldCardsToAttack = getShieldCardsToAttack(defender, shieldsToAttackCount);
+
+                if (areShieldCardsDamagePrevented(gameEnv, defender.id, attackingUnit, shieldCardsToAttack)) {
                     const shieldSnapshot = buildShieldSnapshot(defender);
                     emitBattleResolutionNotification(gameEnv, context, {
                         attacker: attackerSnapshot,
@@ -891,29 +895,26 @@ export class BattlePhaseManager {
                         }
                     });
                 } else {
-                const attackerHasSuppression = KeywordUtils.hasKeyword(attackingUnit as UnitZoneCard, 'Suppression');
-                const shieldsToAttackCount = attackerHasSuppression ? 2 : 1;
-                const shieldCardsToAttack = getShieldCardsToAttack(defender, shieldsToAttackCount);
-                const shieldAttackEvent = EventFactory.createShieldCardAttackedEvent(
-                    defender.id,
-                    playerId,
-                    attackerSlot,
-                    shieldCardsToAttack,
-                    totalAttackPower
-                );
-                gameEnv.enqueueForProcessing(shieldAttackEvent);
-                console.log(`🎯 Shield attack event queued: ${shieldAttackEvent.id}`);
+                    const shieldAttackEvent = EventFactory.createShieldCardAttackedEvent(
+                        defender.id,
+                        playerId,
+                        attackerSlot,
+                        shieldCardsToAttack,
+                        totalAttackPower
+                    );
+                    gameEnv.enqueueForProcessing(shieldAttackEvent);
+                    console.log(`🎯 Shield attack event queued: ${shieldAttackEvent.id}`);
 
-                const shieldSnapshot = buildShieldSnapshot(defender);
-                emitBattleResolutionNotification(gameEnv, context, {
-                    attacker: attackerSnapshot,
-                    target: shieldSnapshot,
-                    result: {
-                        targetType: 'shield',
-                        shieldsTargeted: shieldCardsToAttack.length,
-                        attackPower: totalAttackPower
-                    }
-                });
+                    const shieldSnapshot = buildShieldSnapshot(defender);
+                    emitBattleResolutionNotification(gameEnv, context, {
+                        attacker: attackerSnapshot,
+                        target: shieldSnapshot,
+                        result: {
+                            targetType: 'shield',
+                            shieldsTargeted: shieldCardsToAttack.length,
+                            attackPower: totalAttackPower
+                        }
+                    });
                 }
             } else if (totalAttackPower > 0) {
                 const shieldSnapshot = buildShieldSnapshot(defender);

@@ -10,7 +10,7 @@
     "TARGET_CHOICE"
   ],
   "notes": [
-    "Setup: Player A MAIN_PHASE. Slot1 has a unit with no pilot. Player A hand has GD02-089 (pilot) and has at least 1 active energy to play it. Player A also has another (Zeon) Link Unit in slot2 (unit+pilot linked).",
+    "Setup: Player A MAIN_PHASE. Slot1 has a unit with no pilot (GD02-020 Elmeth). Player A hand has GD02-089 (pilot) and has at least 1 active energy to play it. Player A also has another (Zeon) Link Unit in slot2 (GD02-033 Kikeroga + GD02-090 Challia Bull linked).",
     "Action (manual): Player A plays GD02-089 as a pilot onto slot1 unit (PAIRING_COMPLETE).",
     "Expect: A TARGET_CHOICE is enqueued to choose 1 other friendly (Zeon) linked unit (slot2) to gain Breach 1 until end of turn; notificationQueue receives TARGET_CHOICE.",
     "Action (manual): Player A resolves TARGET_CHOICE selecting slot2 unit.",
@@ -67,10 +67,20 @@
             {
               "carduid": "GD02-089_hand_0001",
               "cardId": "GD02-089"
+            },
+            {
+              "carduId":"ST03-014_hand_0002",
+              "cardId":"ST03-014"
+            },
+            {
+              "carduid":"ST03-009_hand_990",
+              "cardId":"ST03-009"
             }
           ],
           "handUids": [
-            "GD02-089_hand_0001"
+            "GD02-089_hand_0001",
+            "ST03-014_hand_0002",
+            "ST03-009_hand_990"
           ],
           "mainDeck": []
         },
@@ -81,8 +91,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD02-001_unit_0001",
-              "cardId": "GD02-001",
+              "carduid": "GD02-020_unit_0001",
+              "cardId": "GD02-020",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -91,8 +101,8 @@
               "modifyHP": 0,
               "continueModifyAP": 0,
               "continueModifyHP": 0,
-              "originalAP": 2,
-              "originalHP": 3,
+              "originalAP": 4,
+              "originalHP": 4,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
@@ -102,8 +112,8 @@
           },
           "slot2": {
             "unit": {
-              "carduid": "GD02-002_link_unit_0002",
-              "cardId": "GD02-002",
+              "carduid": "GD02-033_link_unit_0002",
+              "cardId": "GD02-033",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -112,8 +122,8 @@
               "modifyHP": 0,
               "continueModifyAP": 0,
               "continueModifyHP": 0,
-              "originalAP": 3,
-              "originalHP": 3,
+              "originalAP": 5,
+              "originalHP": 4,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
@@ -121,8 +131,8 @@
               "temporaryEffects": []
             },
             "pilot": {
-              "carduid": "GD02-003_link_pilot_0002",
-              "cardId": "GD02-003",
+              "carduid": "GD02-090_link_pilot_0002",
+              "cardId": "GD02-090",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -165,6 +175,46 @@
               "isRested": false,
               "placedAt": 0,
               "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd02-089_pair_choose_other_zeon_link_unit_grant_breach_1_playerId_1_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd02-089_pair_choose_other_zeon_link_unit_grant_breach_1_playerId_1_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd02-089_pair_choose_other_zeon_link_unit_grant_breach_1_playerId_1_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd02-089_pair_choose_other_zeon_link_unit_grant_breach_1_playerId_1_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd02-089_pair_choose_other_zeon_link_unit_grant_breach_1_playerId_1_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
             }
           ],
           "trashArea": [],
@@ -185,13 +235,53 @@
         "playerPoint": 0,
         "isReady": true,
         "zones": {
-          "slot1": {},
+          "slot1": {
+            "unit": {
+              "carduid": "GD02-020_unit_0002",
+              "cardId": "GD02-020",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": true,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 4,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "temporaryEffects": []
+            }
+          },
           "slot2": {},
           "slot3": {},
           "slot4": {},
           "slot5": {},
           "slot6": {},
-          "base": [],
+          "base": [            {
+              "carduid": "base_default",
+              "cardId": "base_default",
+              "placedAt": 1757854884783,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalHP": 6,
+              "damageReceived": 0,
+              "fieldCardValue": {
+                "totalOriginalAP": 0,
+                "totalOriginalHP": 6,
+                "totalTempModifyAP": 0,
+                "totalTempModifyHP": 0,
+                "totalContinueModifyAP": 0,
+                "totalContinueModifyHP": 0,
+                "totalDamageReceived": 0,
+                "totalAP": 0,
+                "totalHP": 6,
+                "isRested": false
+              }
+            }],
           "shieldArea": [
             {
               "carduid": "GD02-010_shield_0001",

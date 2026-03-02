@@ -1,28 +1,30 @@
 {
-  "description": "gd02-118_action_choose_enemy_hp4_or_less_battling_friendly_blocker_return_to_hand_then_play_as_ein_dalton_manual_flow",
-  "gameId": "gd02-118_action_choose_enemy_hp4_or_less_battling_friendly_blocker_return_to_hand_then_play_as_ein_dalton_manual_flow",
+  "description": "gd02-103_burst_choose_asuno_pilot_from_trash_then_main_place_ex_resource_if_age_system_manual_flow",
+  "gameId": "gd02-103_burst_choose_asuno_pilot_from_trash_then_main_place_ex_resource_if_age_system_manual_flow",
   "testType": "action",
   "category": "ActionCase",
   "tags": [
-    "GD02-118",
-    "ACTION_STEP",
-    "return_to_hand",
-    "blocker_battle_condition",
-    "hp_filter_le_4",
-    "pilot_designation",
+    "GD02-103",
+    "Burst",
+    "Main",
+    "Asuno Family",
+    "AGE System",
+    "EX_Resource",
     "manual_flow"
   ],
   "notes": [
     "Action: Load scenario via getTestScenario and inject via injectGameState.",
-    "Expect: Player 1 starts in MAIN_PHASE with currentBattle null, two GD02-118 in hand, 4 active energy, and empty processingQueue.",
-    "Action: Play GD02-118_hand_pilot_0001 as pilot onto playerId_1 slot2 (GD02-080_friendly_pilot_host_0001).",
-    "Expect: playerId_1 slot2 becomes paired and pilot identity is Ein Dalton (designate_pilot AP 1 / HP 0).",
-    "Action: Enter battle manually by attacking playerId_2 slot1 (GD02-080_enemy_battle_target_0001) with playerId_1 slot1 (GD02-079_friendly_blocker_attacker_0001), then confirm battle for both players.",
-    "Expect: ACTION_STEP opens for this battle and playerId_1 can play GD02-118_hand_action_0002.",
-    "Action: During ACTION_STEP, play GD02-118_hand_action_0002 and choose the battling enemy unit in playerId_2 slot1.",
-    "Expect: The chosen enemy unit is returned to playerId_2 hand and removed from slot1; the in-battle target must satisfy HP <= 4 and be battling a friendly Unit with <Blocker>.",
-    "Action: Inspect playerId_2 hand and board after effect resolution.",
-    "Expect: playerId_2 hand contains GD02-080_enemy_battle_target_0001, slot1 no longer contains that unit, and playerId_2 slot2 GD02-055_enemy_non_target_0002 remains in play."
+    "Expect: Start in MAIN_PHASE with currentBattle null, Player 1 hand contains GD02-103, Player 1 shield[0] is GD02-103, and Player 1 trash contains Asuno Family pilot GD02-088.",
+    "Action: During Player 1 MAIN_PHASE, play GD02-103 from hand.",
+    "Expect: Because Player 1 controls an AGE System unit (GD02-021 in slot2), GD02-103 Main places 1 EX Resource in Player 1 energyArea (new energy_extra card with isExtraEnergy=true).",
+    "Action: End Player 1 turn.",
+    "Expect: Turn passes to Player 2 with slot1 attacker active and able to attack.",
+    "Action: Player 2 attacks Player 1 shield area with slot1 GD02-039_attacker_p2_0001 and resolve confirmBattle for both players until burst choice appears.",
+    "Expect: BURST_EFFECT_CHOICE appears for Player 1 on GD02-103 from shield.",
+    "Action: Player 1 confirms burst choice with confirmed=true and selects GD02-088_trash_p1_0001.",
+    "Expect: Selected Asuno Family pilot GD02-088 moves from Player 1 trashArea to Player 1 hand.",
+    "Action: Complete remaining battle resolution prompts if any.",
+    "Expect: Scenario verifies both GD02-103 branches: Main conditionally places 1 EX Resource, and Burst adds exactly 1 Asuno Family pilot from self trash to hand."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -44,7 +46,7 @@
     "maxEventsPerCycle": 50,
     "notificationQueue": [
       {
-        "id": "card_drawn_seed_gd02118_manual_flow",
+        "id": "card_drawn_seed_gd02103_manual_flow",
         "type": "CARD_DRAWN",
         "metadata": {
           "timestamp": 1768362880422,
@@ -54,7 +56,7 @@
         },
         "payload": {
           "playerId": "playerId_1",
-          "carduid": "DRAW_SEED_GD02118_MANUAL_FLOW",
+          "carduid": "DRAW_SEED_GD02103_MANUAL_FLOW",
           "sourceZone": "deck",
           "reason": "draw",
           "timestamp": 1768362880422,
@@ -73,17 +75,12 @@
         "deck": {
           "hand": [
             {
-              "carduid": "GD02-118_hand_pilot_0001",
-              "cardId": "GD02-118"
-            },
-            {
-              "carduid": "GD02-118_hand_action_0002",
-              "cardId": "GD02-118"
+              "carduid": "GD02-103_hand_p1_0001",
+              "cardId": "GD02-103"
             }
           ],
           "handUids": [
-            "GD02-118_hand_pilot_0001",
-            "GD02-118_hand_action_0002"
+            "GD02-103_hand_p1_0001"
           ],
           "mainDeck": []
         },
@@ -92,26 +89,11 @@
         "playerPoint": 0,
         "isReady": true,
         "zones": {
-          "slot1": {
-            "unit": {
-              "carduid": "GD02-079_friendly_blocker_attacker_0001",
-              "cardId": "GD02-079",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "playedThisTurn": false,
-              "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false,
-              "damageReceived": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0
-            }
-          },
+          "slot1": {},
           "slot2": {
             "unit": {
-              "carduid": "GD02-080_friendly_pilot_host_0001",
-              "cardId": "GD02-080",
+              "carduid": "GD02-021_age_system_p1_0001",
+              "cardId": "GD02-021",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -131,13 +113,17 @@
           "base": [],
           "shieldArea": [
             {
-              "carduid": "GD02-072_p1_shield_0001",
-              "cardId": "GD02-072"
+              "carduid": "GD02-103_shield_p1_0001",
+              "cardId": "GD02-103"
+            },
+            {
+              "carduid": "GD02-010_shield_p1_0002",
+              "cardId": "GD02-010"
             }
           ],
           "energyArea": [
             {
-              "carduid": "energy_basic_gd02118_p1_0001",
+              "carduid": "energy_basic_gd02103_p1_0001",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -145,7 +131,7 @@
               "isExtraEnergy": false
             },
             {
-              "carduid": "energy_basic_gd02118_p1_0002",
+              "carduid": "energy_basic_gd02103_p1_0002",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -153,7 +139,7 @@
               "isExtraEnergy": false
             },
             {
-              "carduid": "energy_basic_gd02118_p1_0003",
+              "carduid": "energy_basic_gd02103_p1_0003",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -161,7 +147,7 @@
               "isExtraEnergy": false
             },
             {
-              "carduid": "energy_basic_gd02118_p1_0004",
+              "carduid": "energy_basic_gd02103_p1_0004",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -169,7 +155,20 @@
               "isExtraEnergy": false
             }
           ],
-          "trashArea": [],
+          "trashArea": [
+            {
+              "carduid": "GD02-088_trash_p1_0001",
+              "cardId": "GD02-088"
+            },  
+            {
+              "carduid": "GD02-088_trash_p1_0002",
+              "cardId": "GD02-088"
+            },
+            {
+              "carduid": "GD02-089_trash_p1_0002",
+              "cardId": "GD02-089"
+            }
+          ],
           "repairAbilitiesCheckedThisCycle": false,
           "endTurnEffectsCheckedThisCycle": false
         }
@@ -189,8 +188,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD02-080_enemy_battle_target_0001",
-              "cardId": "GD02-080",
+              "carduid": "GD02-039_attacker_p2_0001",
+              "cardId": "GD02-039",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -203,22 +202,7 @@
               "continueModifyHP": 0
             }
           },
-          "slot2": {
-            "unit": {
-              "carduid": "GD02-055_enemy_non_target_0002",
-              "cardId": "GD02-055",
-              "placedAt": 0,
-              "placedBy": "playerId_2",
-              "isRested": false,
-              "playedThisTurn": false,
-              "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false,
-              "damageReceived": 2,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0
-            }
-          },
+          "slot2": {},
           "slot3": {},
           "slot4": {},
           "slot5": {},
@@ -226,21 +210,13 @@
           "base": [],
           "shieldArea": [
             {
-              "carduid": "GD02-081_p2_shield_0001",
-              "cardId": "GD02-081"
+              "carduid": "GD02-001_shield_p2_0001",
+              "cardId": "GD02-001"
             }
           ],
           "energyArea": [
             {
-              "carduid": "energy_basic_gd02118_p2_0001",
-              "cardId": "energy_basic",
-              "placedAt": 0,
-              "placedBy": "playerId_2",
-              "isRested": false,
-              "isExtraEnergy": false
-            },
-            {
-              "carduid": "energy_basic_gd02118_p2_0002",
+              "carduid": "energy_basic_gd02103_p2_0001",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_2",

@@ -72,7 +72,10 @@
           "handUids": [
             "GD02-095_pilot_0001"
           ],
-          "mainDeck": []
+          "mainDeck": [      
+            "GD01-002_draw_p1_00013",
+            "GD01-003_draw_p1_00022",
+            "GD01-004_draw_p1_00032"]
         },
         "confirmIsRedraw": false,
         "isRedraw": false,
@@ -169,7 +172,11 @@
         "deck": {
           "hand": [],
           "handUids": [],
-          "mainDeck": []
+          "mainDeck": [
+            "GD01-002_draw_p1_00013",
+            "GD01-003_draw_p1_00022",
+            "GD01-004_draw_p1_00032"
+          ]
         },
         "confirmIsRedraw": false,
         "isRedraw": false,
