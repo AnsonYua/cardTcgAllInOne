@@ -2,6 +2,7 @@ import { GameEnvironment } from '../../models/GameEnvironment';
 import { UnitZoneCard, PilotZoneCard } from '../../models/CardSystem';
 import { TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { GameNotificationManager } from '../GameNotificationManager';
+import { ContinuousEffectManager } from '../ContinuousEffectManager';
 import { calculateSlotFieldValue } from '../../utils/FieldValueCalculator';
 
 export class EffectNotifier {
@@ -107,7 +108,7 @@ export class EffectNotifier {
                   (fieldCardValue.totalContinueModifyHP ?? 0)
                 : undefined;
 
-        notificationManager.addNotificationEvent(
+        const notificationId = notificationManager.addNotificationEvent(
             'CARD_HEALED',
             {
                 playerId: target.playerId,
@@ -125,5 +126,19 @@ export class EffectNotifier {
             },
             'normal'
         );
+
+        const notification = (gameEnv.notificationQueue || []).find(
+            (entry: any) => entry?.id === notificationId
+        ) as Record<string, unknown> | undefined;
+
+        if (notification) {
+            const reactive = ContinuousEffectManager.processReactiveContinuousEffectsForNotification(
+                gameEnv,
+                notification
+            );
+            if (!reactive.success) {
+                console.error(`❌ Reactive continuous effects failed after CARD_HEALED: ${reactive.error}`);
+            }
+        }
     }
 }

@@ -79,7 +79,7 @@
               "cardId": "GD02-073",
               "placedAt": 0,
               "placedBy": "playerId_1",
-              "isRested": false,
+              "isRested": true,
               "originalAP": 5,
               "originalHP": 4,
               "continueModifyAP": 0,
@@ -151,13 +151,11 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "ST01-001_attacker_0001",
-              "cardId": "ST01-001",
+              "carduid": "GD01-010_attacker_0001",
+              "cardId": "GD01-010",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
-              "originalAP": 4,
-              "originalHP": 4,
               "continueModifyAP": 0,
               "continueModifyHP": 0,
               "damageReceived": 0,

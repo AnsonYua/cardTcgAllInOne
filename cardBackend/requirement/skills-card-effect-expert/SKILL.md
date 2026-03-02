@@ -120,6 +120,11 @@ Use this when the user asks "is this effect properly implemented?" and does not 
 - Repair keyword review rule:
   - Backend `eventAttackerHasKeyword = Repair` may be satisfied by keyword text OR by semantic detection of an end-turn `heal` rule; when auditing Repair interactions, verify both the card data and keyword detection path.
   - Also verify runtime keyword detection includes temporary granted keywords (`temporaryEffects.grantedKeywords`), not only base card keyword text/rule shape.
+- End-turn heal condition rule:
+  - `END_OF_TURN` `heal` effects are executed via `RepairEffectManager`, not `EndTurnTriggeredEffectManager`.
+  - Ensure `RepairEffectManager` evaluates full `effects.rules[].conditions` with `EffectConditionEvaluator` (not just `sourceHp` / `sourceAp`).
+  - If a card uses `cardsInPlayWithFilter` (e.g., “friendly white Base in play”), confirm end-phase execution path honors it.
+  - Beware tests that directly call `DeployTargetManager.processEffectWithTargetChoice`; they can pass even when end-phase `RepairEffectManager` would skip the effect.
 - Event-condition semantics for linked pilot reactions:
   - `eventTarget = self` may need effective self resolution to the paired unit for pilot/command sources (not literal pilot carduid).
   - state-change event notifications (e.g. `CARD_SET_ACTIVE`) should include enough prior-state metadata (e.g. `wasRested`) for conditions like `eventTargetWasRested`.

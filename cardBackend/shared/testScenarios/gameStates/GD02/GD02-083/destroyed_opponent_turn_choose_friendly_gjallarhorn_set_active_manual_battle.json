@@ -1,25 +1,25 @@
 {
-  "description": "gd02-083_destroyed_opponent_turn_choose_friendly_gjallarhorn_set_active_manual_battle",
-  "gameId": "gd02-083_destroyed_opponent_turn_choose_friendly_gjallarhorn_set_active_manual_battle",
+  "description": "gd02-082_while_another_gjallarhorn_in_play_gain_blocker_redirect_attack_target_manual_flow",
+  "gameId": "gd02-082_while_another_gjallarhorn_in_play_gain_blocker_redirect_attack_target_manual_flow",
   "testType": "action",
   "category": "ActionCase",
   "tags": [
-    "GD02-083",
-    "Destroyed",
-    "opponent_turn",
+    "GD02-082",
+    "ATTACK_REDIRECT",
+    "hasAnotherUnitWithTrait",
     "Gjallarhorn",
-    "set_active",
-    "manual_battle"
+    "blocker",
+    "manual_flow"
   ],
   "notes": [
     "Action: Load scenario via getTestScenario and inject via injectGameState.",
-    "Expect: Start in MAIN_PHASE with currentBattle null and currentPlayer = playerId_1 (opponent turn from playerId_2 perspective).",
-    "Action: As playerId_1, declare attackUnit with GD02-083_attacker_0001 (slot1) targeting playerId_2 slot1 GD02-083_unit_0001, then complete confirmBattle for both players.",
-    "Expect: playerId_2 slot1 GD02-083_unit_0001 is destroyed by battle damage and moved to playerId_2 trashArea.",
-    "Action: When GD02-083 Destroyed target choice appears, inspect selectable friendly units before confirming.",
-    "Expect: Only playerId_2 (Gjallarhorn) Units are selectable (slot2 GD02-082_gjallarhorn_rested_0001 valid; slot3 GD02-031_non_gjallarhorn_rested_0001 invalid).",
-    "Action: Select playerId_2 slot2 GD02-082_gjallarhorn_rested_0001.",
-    "Expect: Selected unit becomes active (isRested: true -> false)."
+    "Expect: Start in MAIN_PHASE with currentBattle null; Player 1 controls GD02-082 in slot1 and another Gjallarhorn Unit (GD02-083) in slot2.",
+    "Action: As Player 2, declare attackShieldArea with attackerCarduid=GD02-010_attacker_0001 targeting Player 1.",
+    "Expect: A BLOCKER_CHOICE prompt is created for Player 1, and GD02-082_unit_0001 appears as a legal blocker because another Gjallarhorn Unit is in play.",
+    "Action: As Player 1, confirmBlockerChoice selecting target carduid=GD02-082_unit_0001.",
+    "Expect: GD02-082 becomes rested as blocker cost, ATTACK_REDIRECTED is emitted, and battle target is redirected to GD02-082.",
+    "Action: Confirm battle with both players.",
+    "Expect: Battle resolves against GD02-082 (not shield/player), validating conditional <Blocker> from another Gjallarhorn Unit in play."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -30,8 +30,8 @@
     "firstPlayerChooser": null,
     "firstPlayerDecision": null,
     "hasChosenFirstPlayer": true,
-    "currentPlayer": "playerId_1",
-    "currentTurn": 1,
+    "currentPlayer": "playerId_2",
+    "currentTurn": 2,
     "playersReady": {
       "playerId_1": true,
       "playerId_2": true
@@ -41,7 +41,7 @@
     "maxEventsPerCycle": 50,
     "notificationQueue": [
       {
-        "id": "card_drawn_seed_gd02083_destroyed",
+        "id": "card_drawn_seed_gd02082_blocker_gjallarhorn",
         "type": "CARD_DRAWN",
         "metadata": {
           "timestamp": 1768362880422,
@@ -50,8 +50,8 @@
           "priority": "normal"
         },
         "payload": {
-          "playerId": "playerId_1",
-          "carduid": "DRAW_SEED_GD02083_DESTROYED",
+          "playerId": "playerId_2",
+          "carduid": "DRAW_SEED_GD02082_BLOCKER_GJALLARHORN",
           "sourceZone": "deck",
           "reason": "draw",
           "timestamp": 1768362880422,
@@ -79,35 +79,90 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD02-083_attacker_0001",
-              "cardId": "GD02-083",
+              "carduid": "GD02-082_unit_0001",
+              "cardId": "GD02-082",
               "placedAt": 0,
               "placedBy": "playerId_1",
-              "isRested": false,
+              "isRested": true,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
               "isFirstPlay": false,
               "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
               "continueModifyAP": 0,
-              "continueModifyHP": 0
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 3
             }
           },
-          "slot2": {},
-          "slot3": {},
+          "slot2": {
+            "unit": {
+              "carduid": "GD02-083_ally_gjallarhorn_0001",
+              "cardId": "GD02-083",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 2
+            }
+          },
+          "slot3": {
+            "unit": {
+              "carduid": "GD02-083_ally_gjallarhorn_002",
+              "cardId": "GD02-083",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 2
+            }
+          },
           "slot4": {},
           "slot5": {},
           "slot6": {},
-          "base": [],
+          "base": [
+            {
+              "carduid": "GD02-129_base_p1_0001",
+              "cardId": "GD02-129",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0
+            }
+          ],
           "shieldArea": [
             {
-              "carduid": "GD02-017_p1_shield_0001",
-              "cardId": "GD02-017"
+              "carduid": "GD01-020_shield_p1_0001",
+              "cardId": "GD01-020"
+            },
+            {
+              "carduid": "GD01-012_shield_p1_0002",
+              "cardId": "GD01-012"
             }
           ],
           "energyArea": [
             {
-              "carduid": "energy_basic_gd02083_p1_0001",
+              "carduid": "energy_basic_gd02082_p1_0001",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -115,7 +170,7 @@
               "isExtraEnergy": false
             },
             {
-              "carduid": "energy_basic_gd02083_p1_0002",
+              "carduid": "energy_basic_gd02082_p1_0002",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -123,7 +178,7 @@
               "isExtraEnergy": false
             },
             {
-              "carduid": "energy_basic_gd02083_p1_0003",
+              "carduid": "energy_basic_gd02082_p1_0003",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -151,8 +206,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD02-083_unit_0001",
-              "cardId": "GD02-083",
+              "carduid": "GD02-010_attacker_0001",
+              "cardId": "GD02-010",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -161,55 +216,38 @@
               "canAttackThisTurn": true,
               "isFirstPlay": false,
               "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
               "continueModifyAP": 0,
-              "continueModifyHP": 0
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 4
             }
           },
-          "slot2": {
-            "unit": {
-              "carduid": "GD02-082_gjallarhorn_rested_0001",
-              "cardId": "GD02-082",
-              "placedAt": 0,
-              "placedBy": "playerId_2",
-              "isRested": true,
-              "playedThisTurn": false,
-              "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false,
-              "damageReceived": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0
-            }
-          },
-          "slot3": {
-            "unit": {
-              "carduid": "GD02-031_non_gjallarhorn_rested_0001",
-              "cardId": "GD02-031",
-              "placedAt": 0,
-              "placedBy": "playerId_2",
-              "isRested": true,
-              "playedThisTurn": false,
-              "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false,
-              "damageReceived": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0
-            }
-          },
+          "slot2": {},
+          "slot3": {},
           "slot4": {},
           "slot5": {},
           "slot6": {},
-          "base": [],
+          "base": [
+            {
+              "carduid": "GD02-129_base_p2_0001",
+              "cardId": "GD02-129",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "damageReceived": 0
+            }
+          ],
           "shieldArea": [
             {
-              "carduid": "GD02-018_p2_shield_0001",
-              "cardId": "GD02-018"
+              "carduid": "GD01-020_shield_p2_0001",
+              "cardId": "GD01-020"
             }
           ],
           "energyArea": [
             {
-              "carduid": "energy_basic_gd02083_p2_0001",
+              "carduid": "energy_basic_gd02082_p2_0001",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_2",
@@ -217,7 +255,7 @@
               "isExtraEnergy": false
             },
             {
-              "carduid": "energy_basic_gd02083_p2_0002",
+              "carduid": "energy_basic_gd02082_p2_0002",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_2",
@@ -225,7 +263,7 @@
               "isExtraEnergy": false
             },
             {
-              "carduid": "energy_basic_gd02083_p2_0003",
+              "carduid": "energy_basic_gd02082_p2_0003",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_2",

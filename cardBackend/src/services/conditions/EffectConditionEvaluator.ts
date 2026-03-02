@@ -121,7 +121,20 @@ export class EffectConditionEvaluator {
         switch (type) {
             case 'turnPlayer': {
                 const scopedPlayerId = ConditionScopeUtils.resolveScopedPlayerId(gameEnv, cardOwnerPlayerId, scope);
-                return scopedPlayerId ? gameEnv.currentPlayer === scopedPlayerId : false;
+                if (!scopedPlayerId) {
+                    return false;
+                }
+                const value = typeof typedCondition.value === 'string' ? typedCondition.value : '';
+                switch (value) {
+                    case '':
+                    case 'YOUR_TURN':
+                        return gameEnv.currentPlayer === scopedPlayerId;
+                    case 'OPPONENT_TURN':
+                        return gameEnv.currentPlayer !== scopedPlayerId;
+                    default:
+                        console.log(`⚠️ Unknown turnPlayer value: ${value}`);
+                        return false;
+                }
             }
 
             case 'playerLevel':
@@ -456,7 +469,7 @@ export class EffectConditionEvaluator {
             }
 
             case 'eventType':
-                return EventConditionEvaluator.eventTypeMatches(gameEnv, typedCondition);
+                return EventConditionEvaluator.eventTypeMatches(gameEnv, typedCondition, sourceCard);
 
             case 'eventAttacker':
                 return EventConditionEvaluator.eventAttackerMatches(gameEnv, sourceCard, typedCondition);

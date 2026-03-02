@@ -103,7 +103,7 @@
               "cardId": "GD02-083",
               "placedAt": 0,
               "placedBy": "playerId_1",
-              "isRested": false,
+              "isRested": true,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,

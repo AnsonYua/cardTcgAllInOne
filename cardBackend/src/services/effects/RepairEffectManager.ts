@@ -22,9 +22,9 @@ import { getCardIdFromUid } from '../../utils/CardUtils';
 import { eventDataValidator } from '../../validators/EventDataValidator';
 import { KeywordUtils } from '../../utils/KeywordUtils';
 import { EffectNotifier } from './EffectNotifier';
-import { SourceStatConditionEvaluator } from '../conditions/SourceStatConditionEvaluator';
 import { SlotHealthService } from '../health/SlotHealthService';
 import { SlotHealthStorage } from '../health/SlotHealthStorage';
+import { EffectConditionEvaluator } from '../conditions/EffectConditionEvaluator';
 
 interface ExecutionResult {
     success: boolean;
@@ -235,7 +235,12 @@ export class RepairEffectManager implements StandardEffectManager {
                         const resolvedAction = resolveEffectActionFromRule(effect);
                         
                         if (effect.trigger === 'END_OF_TURN' && resolvedAction === 'heal') {
-                            if (!RepairEffectManager.areEndOfTurnHealConditionsMet(gameEnv, unit.carduid, effect)) {
+                            if (!RepairEffectManager.areEndOfTurnHealConditionsMet(
+                                gameEnv,
+                                playerId,
+                                unit.carduid,
+                                effect
+                            )) {
                                 return;
                             }
                             
@@ -292,41 +297,17 @@ export class RepairEffectManager implements StandardEffectManager {
 
     private static areEndOfTurnHealConditionsMet(
         gameEnv: GameEnvironment,
+        playerId: string,
         sourceUnitCarduid: string,
         effectRule: any
     ): boolean {
-        const conditions = Array.isArray(effectRule?.conditions) ? effectRule.conditions : [];
-        if (conditions.length === 0) {
-            return true;
-        }
-
-        for (const condition of conditions) {
-            if (!condition || typeof condition !== 'object') {
-                continue;
-            }
-
-            const type = typeof (condition as any).type === 'string' ? ((condition as any).type as string) : '';
-            const value = (condition as any).value;
-
-            if (type === 'sourceHp') {
-                if (!SourceStatConditionEvaluator.sourceHpMatches(gameEnv, sourceUnitCarduid, value)) {
-                    return false;
-                }
-                continue;
-            }
-
-            if (type === 'sourceAp') {
-                if (!SourceStatConditionEvaluator.sourceApMatches(gameEnv, sourceUnitCarduid, value)) {
-                    return false;
-                }
-                continue;
-            }
-
-            console.warn(`⚠️ Unsupported END_OF_TURN heal condition type: ${type}`);
-            return false;
-        }
-
-        return true;
+        const sourceCard = SlotZoneUtils.getCardByUid(gameEnv, sourceUnitCarduid);
+        return EffectConditionEvaluator.validateEffectConditions(
+            effectRule,
+            gameEnv,
+            playerId,
+            sourceCard as any
+        );
     }
 
     /**

@@ -510,15 +510,45 @@ export class ContinuousEffectManager {
             return { success: true, executed: 0 };
         }
 
+        const reactiveOverride = this.buildReactiveEventConditionNotificationOverride(gameEnv, currentEvent);
+        return this.executeReactiveContinuousEffects(gameEnv, eventKey, reactiveOverride);
+    }
+
+    static processReactiveContinuousEffectsForNotification(
+        gameEnv: GameEnvironment,
+        notification: Record<string, unknown>
+    ): { success: boolean; error?: string; executed?: number } {
+        const type = typeof notification?.type === 'string' ? String(notification.type) : '';
+        const id = typeof notification?.id === 'string' ? String(notification.id) : '';
+        const eventKey = type && id ? `${type}:${id}` : '';
+        if (!eventKey) {
+            return { success: true, executed: 0 };
+        }
+
+        return this.executeReactiveContinuousEffects(gameEnv, eventKey, notification);
+    }
+
+    private static executeReactiveContinuousEffects(
+        gameEnv: GameEnvironment,
+        eventKey: string,
+        overrideNotification: Record<string, unknown> | null
+    ): { success: boolean; error?: string; executed?: number } {
         let executed = 0;
         let pass = 0;
         let executedThisPass = false;
         const previousOverride = (gameEnv as any).eventConditionNotificationOverride;
-        const reactiveOverride = this.buildReactiveEventConditionNotificationOverride(gameEnv, currentEvent);
+
+        // Ensure effect registry is populated before evaluating reactive effects.
+        // This avoids missing event-reactive continuous entries when registry updates lag behind.
+        try {
+            ContinuousEffectManager.updateEffectRegistry(gameEnv);
+        } catch (error) {
+            console.error(`❌ Failed to refresh effect registry for reactive effects:`, error);
+        }
 
         try {
-            if (reactiveOverride) {
-                (gameEnv as any).eventConditionNotificationOverride = reactiveOverride;
+            if (overrideNotification && typeof overrideNotification === 'object') {
+                (gameEnv as any).eventConditionNotificationOverride = overrideNotification;
             } else {
                 delete (gameEnv as any).eventConditionNotificationOverride;
             }

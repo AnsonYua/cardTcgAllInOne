@@ -49,9 +49,7 @@ export class StateBasedActionEngine {
         // Check all categories of state-based actions using specialized managers
         // END_PHASE ordering matters: end-of-turn effects should be queued before NEXT_PLAYER_TURN.
         if (this.gameEnv.phase === GamePhase.END_PHASE) {
-            actions.push(...this.checkRepairAbilitiesInEndPhase());
-            actions.push(...this.checkEndTurnTriggeredEffectsInEndPhase());
-            actions.push(...PhaseTransitionManager.getAllPhaseTransitionActions(this.gameEnv));
+            actions.push(...this.collectEndPhaseActions());
         } else {
             actions.push(...PhaseTransitionManager.getAllPhaseTransitionActions(this.gameEnv));
         }
@@ -70,78 +68,84 @@ export class StateBasedActionEngine {
     
     // ============ SPECIFIC STATE CHECKS ============
     
-    
-    
-    /**
-     * Check for repair abilities during END_PHASE (separate from phase transition)
-     */
-    private checkRepairAbilitiesInEndPhase(): StateBasedAction[] {
+    private collectEndPhaseActions(): StateBasedAction[] {
         const actions: StateBasedAction[] = [];
-        
-        // Only check for repair abilities during END_PHASE
-        if (this.gameEnv.phase === GamePhase.END_PHASE) {
-            console.log(`🔄 END_PHASE detected - checking for repair abilities`);
-            
-            const currentPlayerId = this.gameEnv.currentPlayer;
-            if (currentPlayerId) {
-                const currentPlayer = this.gameEnv.players[currentPlayerId];
-                if (!currentPlayer) {
-                    console.error(`❌ Current player ${currentPlayerId} not found in gameEnv.players`);
-                    return actions;
-                }
-                
-                // Initialize zones if needed
-                if (!currentPlayer.zones) {
-                    console.log(`🔧 Initializing zones for player ${currentPlayerId}`);
-                    currentPlayer.initializeZones();
-                }
-                
-                const hasCheckedRepairAbilities = currentPlayer.zones.repairAbilitiesCheckedThisCycle || false;
-                
-                if (!hasCheckedRepairAbilities) {
-                    console.log(`🩹 Checking repair abilities for player ${currentPlayerId}`);
-                    const repairActions = RepairEffectManager.checkRepairAbilities(this.gameEnv, currentPlayerId);
-                    actions.push(...repairActions);
-                    // Set the flag to prevent repeated checking
-                    currentPlayer.zones.repairAbilitiesCheckedThisCycle = true;
-                } else {
-                    console.log(`🩹 Repair abilities already checked this cycle for player ${currentPlayerId}, skipping...`);
-                }
-            }
+        const context = this.resolveEndPhaseContext();
+        if (!context) {
+            return actions;
         }
-        
+
+        const repairActions = this.checkRepairAbilitiesInEndPhase(context.playerId, context.player);
+        const endTurnActions = this.checkEndTurnTriggeredEffectsInEndPhase(context.playerId, context.player);
+        actions.push(...repairActions);
+        actions.push(...endTurnActions);
+
+        // Critical ordering guard:
+        // Do not queue NEXT_PLAYER_TURN until all end-of-turn auto effects (Repair/END_OF_TURN triggers)
+        // have been drained in prior processing passes.
+        if (repairActions.length === 0 && endTurnActions.length === 0) {
+            actions.push(...PhaseTransitionManager.getAllPhaseTransitionActions(this.gameEnv));
+        }
+
         return actions;
     }
 
-    private checkEndTurnTriggeredEffectsInEndPhase(): StateBasedAction[] {
+    private resolveEndPhaseContext(): { playerId: string; player: any } | null {
+        if (this.gameEnv.phase !== GamePhase.END_PHASE) {
+            return null;
+        }
+
+        const playerId = this.gameEnv.currentPlayer;
+        if (!playerId) {
+            return null;
+        }
+
+        const player = this.gameEnv.players[playerId];
+        if (!player) {
+            console.error(`❌ Current player ${playerId} not found in gameEnv.players`);
+            return null;
+        }
+
+        if (!player.zones) {
+            console.log(`🔧 Initializing zones for player ${playerId}`);
+            player.initializeZones();
+        }
+
+        return { playerId, player };
+    }
+
+    /**
+     * Check for repair abilities during END_PHASE (separate from phase transition)
+     */
+    private checkRepairAbilitiesInEndPhase(playerId: string, player: any): StateBasedAction[] {
         const actions: StateBasedAction[] = [];
 
-        if (this.gameEnv.phase !== GamePhase.END_PHASE) {
-            return actions;
+        console.log(`🔄 END_PHASE detected - checking for repair abilities`);
+        const hasCheckedRepairAbilities = player.zones.repairAbilitiesCheckedThisCycle || false;
+
+        if (!hasCheckedRepairAbilities) {
+            console.log(`🩹 Checking repair abilities for player ${playerId}`);
+            const repairActions = RepairEffectManager.checkRepairAbilities(this.gameEnv, playerId);
+            actions.push(...repairActions);
+            // Set the flag to prevent repeated checking
+            player.zones.repairAbilitiesCheckedThisCycle = true;
+        } else {
+            console.log(`🩹 Repair abilities already checked this cycle for player ${playerId}, skipping...`);
         }
 
-        const currentPlayerId = this.gameEnv.currentPlayer;
-        if (!currentPlayerId) {
-            return actions;
-        }
+        return actions;
+    }
 
-        const currentPlayer = this.gameEnv.players[currentPlayerId];
-        if (!currentPlayer) {
-            return actions;
-        }
-
-        if (!currentPlayer.zones) {
-            currentPlayer.initializeZones();
-        }
-
-        const hasChecked = currentPlayer.zones.endTurnEffectsCheckedThisCycle || false;
+    private checkEndTurnTriggeredEffectsInEndPhase(playerId: string, player: any): StateBasedAction[] {
+        const actions: StateBasedAction[] = [];
+        const hasChecked = player.zones.endTurnEffectsCheckedThisCycle || false;
         if (hasChecked) {
             return actions;
         }
 
-        const endTurnActions = EndTurnTriggeredEffectManager.checkEndTurnTriggeredEffects(this.gameEnv, currentPlayerId);
+        const endTurnActions = EndTurnTriggeredEffectManager.checkEndTurnTriggeredEffects(this.gameEnv, playerId);
         actions.push(...endTurnActions);
-        currentPlayer.zones.endTurnEffectsCheckedThisCycle = true;
+        player.zones.endTurnEffectsCheckedThisCycle = true;
         return actions;
     }
     

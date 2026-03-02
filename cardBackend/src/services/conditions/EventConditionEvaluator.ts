@@ -7,7 +7,7 @@ import { SlotCardStateUtils } from './SlotCardStateUtils';
 import { ShieldAreaCardDamagedByBattleDamageConditionEvaluator } from './ShieldAreaCardDamagedByBattleDamageConditionEvaluator';
 
 export class EventConditionEvaluator {
-    static eventTypeMatches(gameEnv: GameEnvironment, condition: Record<string, unknown>): boolean {
+    static eventTypeMatches(gameEnv: GameEnvironment, condition: Record<string, unknown>, sourceCard?: any): boolean {
         const expected = typeof condition.value === 'string' ? condition.value.toUpperCase() : '';
         if (!expected) {
             return false;
@@ -18,29 +18,51 @@ export class EventConditionEvaluator {
         const latestNotification = this.getLatestNotification(gameEnv);
         const latestType = String((latestNotification as any)?.type || '').toUpperCase();
 
+        let matched = false;
+
         if (expected === 'UNIT_ATTACK_DECLARED') {
-            return latestType === 'UNIT_ATTACK_DECLARED' || actionType === 'attackunit' || actionType === 'attackshieldarea';
-        }
-        if (expected === 'UNIT_HEALED') {
-            return latestType === 'CARD_HEALED';
-        }
-        if (expected === 'EFFECT_DAMAGE_RECEIVED') {
-            return latestType === 'CARD_DAMAGED' || String(currentEvent?.type || '').toUpperCase() === 'TRIGGER_EFFECT_DAMAGE_RECEIVED';
-        }
-        if (expected === 'SET_ACTIVE_BY_EFFECT') {
-            return latestType === 'CARD_SET_ACTIVE';
-        }
-        if (expected === 'END_OF_TURN') {
-            return gameEnv.phase === GamePhase.END_PHASE || String(currentEvent?.type || '').toUpperCase() === 'TRIGGER_END_OF_TURN_EFFECT';
-        }
-        if (expected === 'BATTLE_DESTROY') {
+            matched = latestType === 'UNIT_ATTACK_DECLARED' || actionType === 'attackunit' || actionType === 'attackshieldarea';
+        } else if (expected === 'UNIT_HEALED') {
+            matched = latestType === 'CARD_HEALED';
+        } else if (expected === 'EFFECT_DAMAGE_RECEIVED') {
+            matched = latestType === 'CARD_DAMAGED' || String(currentEvent?.type || '').toUpperCase() === 'TRIGGER_EFFECT_DAMAGE_RECEIVED';
+        } else if (expected === 'SET_ACTIVE_BY_EFFECT') {
+            matched = latestType === 'CARD_SET_ACTIVE';
+        } else if (expected === 'END_OF_TURN') {
+            matched = gameEnv.phase === GamePhase.END_PHASE || String(currentEvent?.type || '').toUpperCase() === 'TRIGGER_END_OF_TURN_EFFECT';
+        } else if (expected === 'BATTLE_DESTROY') {
             if (latestType !== 'BATTLE_RESOLVED') {
-                return false;
+                matched = false;
+            } else {
+                matched = this.isBattleDestroyNotification(latestNotification as any);
             }
-            return this.isBattleDestroyNotification(latestNotification as any);
+        } else {
+            matched = latestType === expected || String(currentEvent?.type || '').toUpperCase() === expected;
         }
 
-        return latestType === expected || String(currentEvent?.type || '').toUpperCase() === expected;
+        if (!matched) {
+            return false;
+        }
+
+        const source = typeof (condition as any).source === 'string' ? String((condition as any).source).toLowerCase() : '';
+        if (!source) {
+            return true;
+        }
+
+        if (source === 'self') {
+            const targetCarduid = this.getEventTargetCarduid(gameEnv);
+            if (!targetCarduid) {
+                return false;
+            }
+            const effectiveSelf = sourceCard ? this.getEffectiveSelfAttackerCarduid(gameEnv, sourceCard) : null;
+            if (!effectiveSelf) {
+                return false;
+            }
+            return targetCarduid === effectiveSelf;
+        }
+
+        console.log(`⚠️ Unknown eventType source: ${source}`);
+        return false;
     }
 
     static eventAttackerMatches(
