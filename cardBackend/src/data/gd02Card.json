@@ -6651,10 +6651,6 @@
                     "filters": {
                       "traits": [
                         "AEUG"
-                      ],
-                      "cardTypeAny": [
-                        "unit",
-                        "base"
                       ]
                     }
                   },

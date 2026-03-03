@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-02-26T13:36:06.071Z",
+  "generatedAt": "2026-03-03T17:31:24.742Z",
   "fileCount": 11,
   "cardCount": 538,
   "ruleTypeSummary": {
-    "continuous": 84,
-    "triggered": 447,
+    "continuous": 83,
+    "triggered": 448,
     "play": 90,
     "activated": 38,
     "special": 40
@@ -4919,7 +4919,7 @@
     },
     {
       "file": "gd03Card.json",
-      "cardId": "T-022",
+      "cardId": "T-013",
       "name": "Hy-Gogg",
       "cardType": "unit",
       "descriptionCount": 0,
