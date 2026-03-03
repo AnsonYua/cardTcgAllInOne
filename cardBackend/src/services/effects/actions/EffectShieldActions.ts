@@ -6,6 +6,7 @@ import { EventFactory } from '../../EventQueue/EventFactory';
 import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
 import { extractNumericValue } from './EffectActionUtils';
 import { isShieldDamagePreventedByAttackerLevel } from '../../battle/BattleShieldUtils';
+import { EffectDamagePreventionUtils } from '../EffectDamagePreventionUtils';
 
 export function applyPreventShieldDamageEffect(
     gameEnv: GameEnvironment,
@@ -81,6 +82,32 @@ export function applyDamageShieldEffect(
         const baseCards = defender.zones.base || [];
         if (baseCards.length > 0) {
             const baseCard = baseCards[0];
+            const baseTarget = { carduid: baseCard.carduid, zone: 'base', playerId: defender.id as string };
+            const prevention = EffectDamagePreventionUtils.isEffectDamagePrevented({
+                targetCard: baseCard,
+                target: baseTarget,
+                sourcePlayerId,
+                sourceCarduid
+            });
+
+            if (prevention.prevented) {
+                const notificationManager = new GameNotificationManager(gameEnv);
+                notificationManager.addNotificationEvent(
+                    'EFFECT_DAMAGE_PREVENTED',
+                    {
+                        playerId: defender.id,
+                        targetCarduid: baseCard.carduid,
+                        sourcePlayerId,
+                        sourceCarduid,
+                        preventedBySourceCarduid: prevention.preventedBySourceCarduid,
+                        effectId: effect.effectId,
+                        timestamp: Date.now()
+                    },
+                    'normal'
+                );
+                continue;
+            }
+
             const currentDamage = baseCard.damageReceived || 0;
             const newDamage = currentDamage + damageValue;
             const maxHP = baseCard.originalHP || baseCard.cardData?.hp || 0;

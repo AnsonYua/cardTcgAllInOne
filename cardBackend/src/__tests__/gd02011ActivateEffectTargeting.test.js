@@ -70,6 +70,34 @@ function setupGame() {
             isFirstPlay: false
         }
     });
+    p1.zones.slot2.unit = createUnitZoneCard({
+        carduid: 'GD02-041_friendly_0002',
+        cardId: 'GD02-041',
+        name: "Sugai's Gelgoog (GQ)",
+        ap: 3,
+        hp: 3,
+        cardDataExtras: {
+            color: 'Red',
+            level: 4,
+            cost: 4,
+            zone: ['Space', 'Earth'],
+            traits: ['Clan']
+        }
+    });
+    p1.zones.slot3.unit = createUnitZoneCard({
+        carduid: 'GD02-007_friendly_0003',
+        cardId: 'GD02-007',
+        name: 'Psycho Gundam (MA Mode)',
+        ap: 3,
+        hp: 4,
+        cardDataExtras: {
+            color: 'Blue',
+            level: 5,
+            cost: 3,
+            zone: ['Space', 'Earth'],
+            traits: ['Titans']
+        }
+    });
 
     gameEnv.setCurrentBattle({
         actionType: 'attackShieldArea',
@@ -99,6 +127,7 @@ describe('GD02-011 activate effect targeting regression', () => {
 
         expect(result.success).toBe(true);
         expect(result.requiresSelection).not.toBe(true);
+        expect(gameEnv.processingQueue.some((evt) => evt.type === EventType.TARGET_CHOICE)).toBe(false);
 
         expect(p1.zones.slot1.unit).toBeFalsy();
         expect(p1.zones.trashArea.some((card) => card.carduid === 'GD02-011_source_0001')).toBe(true);
@@ -120,6 +149,7 @@ describe('GD02-011 activate effect targeting regression', () => {
 
         expect(result.success).toBe(true);
         expect(result.requiresSelection).not.toBe(true);
+        expect(gameEnv.processingQueue.some((evt) => evt.type === EventType.TARGET_CHOICE)).toBe(false);
 
         expect(p1.zones.slot1.unit).toBeFalsy();
         expect(p1.zones.trashArea.some((card) => card.carduid === 'GD02-011_source_0001')).toBe(true);

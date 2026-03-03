@@ -125,6 +125,7 @@ export const SEQUENCE_SUPPORTED_STEP_ACTIONS = new Set<string>([
     'destroy',
     'discard',
     'discardFromHand',
+    'deploy_from_hand',
     'draw',
     'draw_if_moved_cards_match_traits',
     'draw_then_discard',

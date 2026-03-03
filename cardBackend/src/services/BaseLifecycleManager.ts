@@ -7,12 +7,14 @@ import { DestroyedTriggeredEffectManager } from './effects/DestroyedTriggeredEff
 export class BaseLifecycleManager {
     static destroyBase(gameEnv: GameEnvironment, playerId: string, baseCard: BaseCard): void {
         console.log(`🏰 Base destroyed: ${baseCard.carduid}`);
-        DestroyedTriggeredEffectManager.processDestroyedCard(gameEnv, playerId, baseCard);
-        PlayerCardManager.moveCardToTrash(gameEnv, playerId, baseCard.carduid, baseCard.cardId, baseCard.cardData);
         const player = gameEnv.getPlayer(playerId);
         if (player?.zones?.base) {
             player.zones.base = player.zones.base.filter((card: any) => card.carduid !== baseCard.carduid);
         }
+        // Ordering rule: the destroyed base should already be in trash when DESTROYED effects resolve.
+        // This keeps trash sequencing deterministic for effects like GD02-127 destroyed mill.
+        PlayerCardManager.moveCardToTrash(gameEnv, playerId, baseCard.carduid, baseCard.cardId, baseCard.cardData);
+        DestroyedTriggeredEffectManager.processDestroyedCard(gameEnv, playerId, baseCard);
         EffectExecutor.removeTemporaryEffectsFromSource(gameEnv, baseCard.carduid);
     }
 

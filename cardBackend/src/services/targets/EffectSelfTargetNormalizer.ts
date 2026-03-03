@@ -7,6 +7,7 @@ type ZoneSourceCard = UnitZoneCard | PilotZoneCard;
 
 const SELF_REFERENTIAL_ACTIONS = new Set([
     'allow_attack_target',
+    'destroy',
     'modifyAP',
     'modifyHP',
     'grant_keyword',
