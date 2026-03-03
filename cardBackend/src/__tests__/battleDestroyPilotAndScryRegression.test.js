@@ -1,9 +1,10 @@
 const { GameEnvironment } = require('../models/GameEnvironment');
+const { EventType } = require('../models/GameEnums');
 const { EventStatus } = require('../services/EventQueue/interfaces/GameEvent');
 const { PlayerCardManager } = require('../services/PlayerCardManager');
 const { TriggeredEffectProcessor } = require('../services/effects/TriggeredEffectProcessor');
 const { EventConditionEvaluator } = require('../services/conditions/EventConditionEvaluator');
-const { PromptChoiceManager } = require('../services/effects/PromptChoiceManager');
+const { OptionChoiceManager } = require('../services/effects/OptionChoiceManager');
 const { applyScryTopDeckEffect } = require('../services/effects/actions/EffectScryActions');
 const gd03 = require('../data/gd03Card.json');
 const gd02 = require('../data/gd02Card.json');
@@ -52,7 +53,7 @@ describe('battle destroy pilot self + scry regression', () => {
         expect(EventConditionEvaluator.eventAttackerMatches(gameEnv, pilotCard, { type: 'eventAttacker', value: 'self' })).toBe(false);
     });
 
-    test('GD03-097 during link battle destroy enqueues scry prompt and honors top_or_trash selection', () => {
+    test('GD03-097 during link battle destroy enqueues scry option choice and honors top_or_trash selection', () => {
         const gameEnv = new GameEnvironment();
         gameEnv.addPlayer('playerId_1', 'P1');
         gameEnv.addPlayer('playerId_2', 'P2');
@@ -84,7 +85,12 @@ describe('battle destroy pilot self + scry regression', () => {
             type: 'BATTLE_RESOLVED',
             payload: {
                 attackerCarduid: sourceUnitUid,
-                targetCarduid: enemyUnitUid
+                targetCarduid: enemyUnitUid,
+                result: {
+                    targetType: 'unit',
+                    attackerDestroyed: false,
+                    defenderDestroyed: true
+                }
             }
         });
 
@@ -100,13 +106,14 @@ describe('battle destroy pilot self + scry regression', () => {
         });
         expect(processResult.success).toBe(true);
 
-        const promptEvent = gameEnv.processingQueue.find((event) => event.type === 'PROMPT_CHOICE' && event.data?.choiceId === 'scry_top_deck_choice');
-        expect(promptEvent).toBeTruthy();
+        const optionEvent = gameEnv.processingQueue.find((event) => event.type === EventType.OPTION_CHOICE);
+        expect(optionEvent).toBeTruthy();
 
-        promptEvent.status = EventStatus.RESOLVING;
-        promptEvent.data.selectedOptionIndex = 1;
+        optionEvent.status = EventStatus.RESOLVING;
+        optionEvent.data.userDecisionMade = true;
+        optionEvent.data.selectedOptionIndex = 1;
 
-        const resolveResult = PromptChoiceManager.executePromptChoice(promptEvent, gameEnv);
+        const resolveResult = OptionChoiceManager.executeOptionChoice(optionEvent, gameEnv);
         expect(resolveResult.success).toBe(true);
 
         const mainDeck = gameEnv.players.playerId_1.deck.mainDeck;
@@ -198,19 +205,20 @@ describe('battle destroy pilot self + scry regression', () => {
         const applyResult = applyScryTopDeckEffect(gameEnv, 'playerId_1', effect, 'GD01-039_source_0001');
         expect(applyResult.success).toBe(true);
 
-        const promptEvent = gameEnv.processingQueue.find((event) => event.type === 'PROMPT_CHOICE' && event.data?.choiceId === 'scry_top_deck_choice');
-        expect(promptEvent).toBeTruthy();
+        const optionEvent = gameEnv.processingQueue.find((event) => event.type === EventType.OPTION_CHOICE);
+        expect(optionEvent).toBeTruthy();
 
-        promptEvent.status = EventStatus.RESOLVING;
-        promptEvent.data.selectedOptionIndex = 1;
+        optionEvent.status = EventStatus.RESOLVING;
+        optionEvent.data.userDecisionMade = true;
+        optionEvent.data.selectedOptionIndex = 1;
 
-        const resolveResult = PromptChoiceManager.executePromptChoice(promptEvent, gameEnv);
+        const resolveResult = OptionChoiceManager.executeOptionChoice(optionEvent, gameEnv);
         expect(resolveResult.success).toBe(true);
 
         expect(gameEnv.players.playerId_1.deck.mainDeck).toEqual(['GD01-002_next_0002', 'GD01-001_top_0001']);
     });
 
-    test('scry_top_deck legacy lookCount+choices shape still prompts top/bottom choice', () => {
+    test('scry_top_deck legacy lookCount+choices shape still creates option choice', () => {
         const gameEnv = new GameEnvironment();
         gameEnv.addPlayer('playerId_1', 'P1');
 
@@ -229,13 +237,14 @@ describe('battle destroy pilot self + scry regression', () => {
         const applyResult = applyScryTopDeckEffect(gameEnv, 'playerId_1', effect, 'GD01-039_source_legacy_0001');
         expect(applyResult.success).toBe(true);
 
-        const promptEvent = gameEnv.processingQueue.find((event) => event.type === 'PROMPT_CHOICE' && event.data?.choiceId === 'scry_top_deck_choice');
-        expect(promptEvent).toBeTruthy();
+        const optionEvent = gameEnv.processingQueue.find((event) => event.type === EventType.OPTION_CHOICE);
+        expect(optionEvent).toBeTruthy();
 
-        promptEvent.status = EventStatus.RESOLVING;
-        promptEvent.data.selectedOptionIndex = 1;
+        optionEvent.status = EventStatus.RESOLVING;
+        optionEvent.data.userDecisionMade = true;
+        optionEvent.data.selectedOptionIndex = 1;
 
-        const resolveResult = PromptChoiceManager.executePromptChoice(promptEvent, gameEnv);
+        const resolveResult = OptionChoiceManager.executeOptionChoice(optionEvent, gameEnv);
         expect(resolveResult.success).toBe(true);
 
         expect(gameEnv.players.playerId_1.deck.mainDeck).toEqual(['GD01-002_next_legacy_0002', 'GD01-001_top_legacy_0001']);

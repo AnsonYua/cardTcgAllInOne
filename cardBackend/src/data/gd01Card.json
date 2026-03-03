@@ -6158,7 +6158,7 @@
             },
             "target": {
               "type": "unit",
-              "scope": "any",
+              "scope": "self_all_unit",
               "count": 1
             },
             "action": "heal",

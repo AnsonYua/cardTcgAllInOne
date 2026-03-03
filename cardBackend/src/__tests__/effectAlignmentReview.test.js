@@ -436,4 +436,59 @@ describe('Effect alignment review tooling', () => {
     const riskIssues = report.issues.filter((issue) => issue.category === 'scry-choice-destination-risk');
     expect(riskIssues.some((issue) => issue.cardId === 'T201')).toBe(true);
   });
+
+  test('scry choice destination detector does not flag risk when option-choice scry support exists', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'effect-alignment-scry-option-support-'));
+    const dataDir = path.join(tempDir, 'src', 'data');
+    const effectsDir = path.join(tempDir, 'src', 'services', 'effects');
+    fs.mkdirSync(dataDir, { recursive: true });
+    fs.mkdirSync(effectsDir, { recursive: true });
+
+    const fixture = {
+      cards: {
+        T202: {
+          id: 'T202',
+          name: 'Scry Option Support Fixture',
+          cardType: 'pilot',
+          effects: {
+            description: [
+              'Look at the top 2 cards of your deck, keep 1 on top, and put the other in trash.'
+            ],
+            rules: [
+              {
+                effectId: 'scry_option_supported',
+                type: 'continuous',
+                trigger: 'continuous',
+                action: 'sequence',
+                parameters: {
+                  steps: [
+                    {
+                      action: 'scry_top_deck',
+                      parameters: {
+                        count: 2,
+                        keep: 1,
+                        choice: 'top_or_trash',
+                        rest: 'trash'
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    };
+
+    fs.writeFileSync(path.join(dataDir, 'fixtureCard.json'), `${JSON.stringify(fixture, null, 2)}\n`, 'utf8');
+    fs.writeFileSync(
+      path.join(effectsDir, 'ScryTopDeckManager.ts'),
+      "const SCRY_TOP_DECK = 'SCRY_TOP_DECK';\nfunction fakeSupport() { enqueueOptionChoice(SCRY_TOP_DECK); }\n",
+      'utf8'
+    );
+
+    const report = generateEffectAlignmentReport(tempDir, { cardFiles: ['fixtureCard.json'] });
+    const riskIssues = report.issues.filter((issue) => issue.category === 'scry-choice-destination-risk');
+    expect(riskIssues.some((issue) => issue.cardId === 'T202')).toBe(false);
+  });
 });

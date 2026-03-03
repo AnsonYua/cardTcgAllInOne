@@ -1147,7 +1147,7 @@ function hasInteractiveScrySupport(baseDir) {
     return false;
   }
   const source = fs.readFileSync(scryManagerPath, 'utf8');
-  return /SCRY_TOP_DECK/.test(source) && /enqueuePromptChoice/.test(source);
+  return /SCRY_TOP_DECK/.test(source) && (/enqueueOptionChoice/.test(source) || /enqueuePromptChoice/.test(source));
 }
 
 function nodeContainsEventAttackerSelfBattleDestroy(node) {
