@@ -360,11 +360,15 @@ export class DeployEffectManager {
                 return false;
             }
 
-            if (inMainPhase && EffectTimingWindowUtils.allowsPhase(rule, GamePhase.MAIN_PHASE)) {
+            if (inMainPhase && EffectTimingWindowUtils.allowsPhase(rule, GamePhase.MAIN_PHASE, {
+                defaultToMainPhaseWhenMissing: true
+            })) {
                 return true;
             }
 
-            if (inActionStepPhase && EffectTimingWindowUtils.allowsPhase(rule, GamePhase.ACTION_STEP_PHASE)) {
+            if (inActionStepPhase && EffectTimingWindowUtils.allowsPhase(rule, GamePhase.ACTION_STEP_PHASE, {
+                defaultToMainPhaseWhenMissing: true
+            })) {
                 return true;
             }
 

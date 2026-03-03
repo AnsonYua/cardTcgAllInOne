@@ -5,7 +5,8 @@ const {
         detectAlwaysOnTextRuleMismatches,
         validateReturnToHandSemantics,
         validateLegacyDiscardFromHandCostPlacement,
-        detectSupportActivatedSchemaMismatches
+        detectSupportActivatedSchemaMismatches,
+        detectCommandPlayTimingWindowWarnings
     }
 } = require('../tests/validators/effectSchemaCanonicalValidation');
 
@@ -240,6 +241,50 @@ describe('effectSchemaCanonicalValidation utilities', () => {
             { cardId: 'MOCK-COST-002', effectId: 'cost_test_ok', jsonPath: 'cards.MOCK-COST-002.effects.rules[0]' },
             diagnostics
         );
+
+        expect(diagnostics).toHaveLength(0);
+    });
+
+    test('warns when command play effect omits timing.windows', () => {
+        const diagnostics = [];
+        detectCommandPlayTimingWindowWarnings('mock.json', {
+            'MOCK-CMD-001': {
+                cardType: 'command',
+                effects: {
+                    rules: [
+                        {
+                            effectId: 'cmd_play_missing_windows',
+                            type: 'play',
+                            timing: { duration: 'UNTIL_END_OF_TURN' },
+                            action: 'draw'
+                        }
+                    ]
+                }
+            }
+        }, diagnostics);
+
+        expect(
+            diagnostics.some((d) => d.severity === 'warning' && /timing\.windows/.test(d.jsonPath))
+        ).toBe(true);
+    });
+
+    test('does not warn when command play effect includes timing.windows', () => {
+        const diagnostics = [];
+        detectCommandPlayTimingWindowWarnings('mock.json', {
+            'MOCK-CMD-002': {
+                cardType: 'command',
+                effects: {
+                    rules: [
+                        {
+                            effectId: 'cmd_play_main',
+                            type: 'play',
+                            timing: { windows: ['MAIN_PHASE'], duration: 'UNTIL_END_OF_TURN' },
+                            action: 'draw'
+                        }
+                    ]
+                }
+            }
+        }, diagnostics);
 
         expect(diagnostics).toHaveLength(0);
     });

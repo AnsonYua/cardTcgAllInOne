@@ -102,6 +102,11 @@
             "type": "play",
             "trigger": "COST",
             "optional": true,
+            "timing": {
+              "windows": [
+                "MAIN_PHASE"
+              ]
+            },
             "action": "replace_cost",
             "parameters": {
               "replace": {
@@ -5019,6 +5024,9 @@
             "effectId": "main_all_friendly_units_ap_plus_2",
             "type": "play",
             "timing": {
+              "windows": [
+                "MAIN_PHASE"
+              ],
               "duration": "UNTIL_END_OF_TURN"
             },
             "action": "modifyAP",
@@ -5252,12 +5260,15 @@
             "effectId": "allow_attack_target_active_enemy_ap_le_6_for_unit_ge_4",
             "type": "play",
             "timing": {
+              "windows": [
+                "MAIN_PHASE"
+              ],
               "duration": "UNTIL_END_OF_TURN"
             },
             "action": "allow_attack_target",
             "target": {
               "type": "unit",
-              "scope": "any",
+              "scope": "self",
               "filters": {
                 "level": ">=4"
               },

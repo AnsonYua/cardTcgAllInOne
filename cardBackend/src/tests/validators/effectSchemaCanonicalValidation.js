@@ -1066,6 +1066,38 @@ function detectSupportActivatedSchemaMismatches(fileName, cards, diagnostics) {
   }
 }
 
+function detectCommandPlayTimingWindowWarnings(fileName, cards, diagnostics) {
+  for (const [cardId, card] of Object.entries(cards)) {
+    if ((card?.cardType || '').toString().toLowerCase() !== 'command') {
+      continue;
+    }
+
+    const rules = Array.isArray(card?.effects?.rules) ? card.effects.rules : [];
+    rules.forEach((rule, index) => {
+      if (!rule || typeof rule !== 'object') {
+        return;
+      }
+
+      if ((rule.type || '').toString().toLowerCase() !== 'play') {
+        return;
+      }
+
+      const windows = Array.isArray(rule?.timing?.windows) ? rule.timing.windows : [];
+      if (windows.length > 0) {
+        return;
+      }
+
+      diagnostics.push({
+        severity: 'warning',
+        cardId,
+        effectId: typeof rule.effectId === 'string' ? rule.effectId : 'unknown',
+        jsonPath: `cards.${cardId}.effects.rules[${index}].timing.windows`,
+        message: `${fileName}: command play effect should define explicit timing.windows (MAIN_PHASE/ACTION_STEP)`
+      });
+    });
+  }
+}
+
 function validateCardLinks(fileName, cards, diagnostics) {
   for (const [cardId, card] of Object.entries(cards)) {
     if (!Array.isArray(card.link)) {
@@ -1097,6 +1129,7 @@ function validateEffectSchemaCanonical() {
     validateCardLinks(fileName, cards, diagnostics);
     detectAlwaysOnTextRuleMismatches(fileName, cards, diagnostics);
     detectSupportActivatedSchemaMismatches(fileName, cards, diagnostics);
+    detectCommandPlayTimingWindowWarnings(fileName, cards, diagnostics);
     detectDescriptionRuleContractMismatches(fileName, cards, diagnostics);
 
     for (const [cardId, card] of Object.entries(cards)) {
@@ -1141,6 +1174,7 @@ module.exports = {
     validateLegacyDiscardFromHandCostPlacement,
     validateSequenceStructure,
     detectSupportActivatedSchemaMismatches,
+    detectCommandPlayTimingWindowWarnings,
     detectDescriptionRuleContractMismatches,
     validateScryTopDeckParameters
   }

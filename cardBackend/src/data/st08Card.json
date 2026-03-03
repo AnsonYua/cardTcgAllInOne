@@ -588,6 +588,9 @@
                         "effectId": "main_grant_breach_1_to_friendly_link_unit",
                         "type": "play",
                         "timing": {
+                            "windows": [
+                                "MAIN_PHASE"
+                            ],
                             "duration": "UNTIL_END_OF_TURN"
                         },
                         "action": "grant_breach",
