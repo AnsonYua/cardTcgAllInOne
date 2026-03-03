@@ -287,6 +287,34 @@ describe('card data canonical patch plan regression', () => {
     expect(levelConditional?.parameters?.then?.[0]?.parameters?.value).toBe(1);
   });
 
+  test('GD01-103 main rest effect keeps friendly-then-enemy sequence semantics', () => {
+    const card = gd01.cards['GD01-103'];
+    const rule = card.effects.rules.find((entry) => entry.effectId === 'rest');
+    expect(rule).toBeTruthy();
+    expect(rule.type).toBe('play');
+    expect(rule.action).toBe('sequence');
+
+    const steps = rule.parameters?.steps;
+    expect(Array.isArray(steps)).toBe(true);
+
+    const restFriendly = steps[0];
+    expect(restFriendly?.stepId).toBe('rest_friendly_ef_unit');
+    expect(restFriendly?.action).toBe('rest');
+    expect(restFriendly?.target?.type).toBe('unit');
+    expect(restFriendly?.target?.scope).toBe('self');
+    expect(restFriendly?.target?.count).toBe(1);
+    expect(restFriendly?.target?.filters?.status).toBe('active');
+    expect(restFriendly?.target?.filters?.traits).toEqual(expect.arrayContaining(['Earth Federation']));
+
+    const restEnemy = steps[1];
+    expect(restEnemy?.stepId).toBe('rest_enemy_unit');
+    expect(restEnemy?.action).toBe('rest');
+    expect(restEnemy?.target?.type).toBe('unit');
+    expect(restEnemy?.target?.scope).toBe('opponent');
+    expect(restEnemy?.target?.count).toBe(1);
+    expect(restEnemy?.target?.filters?.status).toBe('active');
+  });
+
   test('GD03-064 deploy_effect keeps add-from-trash gated discard semantics', () => {
     const card = gd03.cards['GD03-064'];
     const rule = card.effects.rules.find((entry) => entry.effectId === 'deploy_effect');

@@ -4915,18 +4915,46 @@
                 "MAIN_PHASE"
               ]
             },
-            "target": {
-              "type": "unit",
-              "scope": "opponent",
-              "filters": {
-                "status": "active",
-                "traits": [
-                  "Earth Federation"
-                ]
-              },
-              "count": 1
-            },
-            "action": "rest"
+            "action": "sequence",
+            "parameters": {
+              "text": "Choose 1 active friendly (Earth Federation) Unit and 1 active enemy Unit. Rest them.",
+              "version": 1,
+              "steps": [
+                {
+                  "stepId": "rest_friendly_ef_unit",
+                  "action": "rest",
+                  "target": {
+                    "type": "unit",
+                    "scope": "self",
+                    "count": 1,
+                    "selection": {
+                      "type": "player_choice"
+                    },
+                    "filters": {
+                      "status": "active",
+                      "traits": [
+                        "Earth Federation"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "stepId": "rest_enemy_unit",
+                  "action": "rest",
+                  "target": {
+                    "type": "unit",
+                    "scope": "opponent",
+                    "count": 1,
+                    "selection": {
+                      "type": "player_choice"
+                    },
+                    "filters": {
+                      "status": "active"
+                    }
+                  }
+                }
+              ]
+            }
           },
           {
             "effectId": "pilot_designation",
