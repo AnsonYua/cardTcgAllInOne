@@ -71,8 +71,12 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": [],
-          "handUids": [],
+          "hand": [
+            {
+              "carduid": "GD02-121_shield_p1_0001",
+              "cardId": "GD02-121"
+            }],
+          "handUids": ["GD02-121_shield_p1_0001"],
           "mainDeck": []
         },
         "confirmIsRedraw": false,

@@ -194,7 +194,20 @@
               "continueModifyHP": 0
             }
           },
-          "slot4": {},
+          "slot4": {  "unit": {
+              "carduid": "GD02-040_enemy_valid_rested_lv4_0002",
+              "cardId": "GD02-040",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": true,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }},
           "slot5": {},
           "slot6": {},
           "base": [],

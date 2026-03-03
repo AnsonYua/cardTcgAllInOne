@@ -127,6 +127,26 @@ export class EffectNotifier {
             'normal'
         );
 
+        if (reason === 'repair') {
+            notificationManager.addNotificationEvent(
+                'CARD_STAT_MODIFIED',
+                {
+                    playerId: target.playerId,
+                    carduid: target.carduid,
+                    cardId,
+                    cardName,
+                    zone: target.zone,
+                    stat: 'modifyHP',
+                    delta: healAmount,
+                    modifierValue: slotResultingHP ?? resultingHP,
+                    displayValue: slotResultingHP ?? resultingHP,
+                    source: 'repair',
+                    timestamp: Date.now()
+                },
+                'normal'
+            );
+        }
+
         const notification = (gameEnv.notificationQueue || []).find(
             (entry: any) => entry?.id === notificationId
         ) as Record<string, unknown> | undefined;

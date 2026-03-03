@@ -103,6 +103,14 @@ describe('GD02-085 END_PHASE ordering stability', () => {
                     note?.payload?.playerId === 'playerId_2' &&
                     note?.payload?.carduid === 'GD02-007_unit_p2_0001'
             );
+            const hpModifiedIndex = notifications.findIndex(
+                (note) =>
+                    note?.type === 'CARD_STAT_MODIFIED' &&
+                    note?.payload?.playerId === 'playerId_2' &&
+                    note?.payload?.carduid === 'GD02-007_unit_p2_0001' &&
+                    note?.payload?.stat === 'modifyHP' &&
+                    note?.payload?.source === 'repair'
+            );
             const drawnP2Indices = notifications
                 .map((note, idx) => ({ note, idx }))
                 .filter((entry) => entry.note?.type === 'CARD_DRAWN' && entry.note?.payload?.playerId === 'playerId_2')
@@ -115,6 +123,8 @@ describe('GD02-085 END_PHASE ordering stability', () => {
             );
 
             expect(healedIndex).toBeGreaterThan(-1);
+            expect(hpModifiedIndex).toBeGreaterThan(-1);
+            expect(hpModifiedIndex).toBeGreaterThan(healedIndex);
             expect(drawnP2Indices.length).toBe(1);
             expect(drawnP2Indices[0]).toBeGreaterThan(healedIndex);
 
