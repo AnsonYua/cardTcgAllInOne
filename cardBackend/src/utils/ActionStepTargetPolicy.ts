@@ -1,12 +1,20 @@
 import { ActionStepTargetSummary } from '../models/BattleContext';
 import { EffectDefinition } from '../services/EventQueue/interfaces/GameEvent';
 import { isPlayOrActivatedEffect } from './EffectTypeRouter';
+import { GameEnvironment } from '../models/GameEnvironment';
+import { EffectSourceConditionEvaluator } from '../services/conditions/EffectSourceConditionEvaluator';
 
 export type ActionStepZoneType = ActionStepTargetSummary['zoneType'];
 
 export interface ActionStepEffectFilterContext {
     availableEnergy: number;
     currentTurn: number;
+    gameEnv?: GameEnvironment;
+    sourcePlayerId?: string;
+    sourceCard?: {
+        carduid: string;
+        [key: string]: unknown;
+    };
     sourceCardState?: {
         isRested?: boolean;
         effectUsage?: Record<string, { lastUsedTurn?: number }>;
@@ -47,14 +55,18 @@ function effectSupportsActionStep(
     }
 
     if (effect.type === 'activated') {
-        // Activated abilities currently only execute from unit/base sources (see ActivatedAbilitySourceResolver).
-        if (zoneType !== 'unit' && zoneType !== 'base') {
+        // Activated abilities can execute from unit/base/pilot sources.
+        if (zoneType !== 'unit' && zoneType !== 'base' && zoneType !== 'pilot') {
             return false;
         }
 
         if (!canActivateNow(effect, zoneType, context)) {
             return false;
         }
+    }
+
+    if (!sourceConditionsAllow(effect, zoneType, context)) {
+        return false;
     }
 
     const windows = Array.isArray(effect.timing?.windows)
@@ -111,4 +123,29 @@ function canActivateNow(effect: EffectDefinition, zoneType: ActionStepZoneType, 
     }
 
     return true;
+}
+
+function sourceConditionsAllow(
+    effect: EffectDefinition,
+    zoneType: ActionStepZoneType,
+    context: ActionStepEffectFilterContext
+): boolean {
+    if (!Array.isArray(effect.sourceConditions) || effect.sourceConditions.length === 0) {
+        return true;
+    }
+
+    if (zoneType === 'hand') {
+        return true;
+    }
+
+    if (!context.gameEnv || !context.sourceCard || !context.sourcePlayerId) {
+        return false;
+    }
+
+    return EffectSourceConditionEvaluator.sourceConditionsMet(
+        effect,
+        context.sourceCard,
+        context.gameEnv,
+        context.sourcePlayerId
+    );
 }

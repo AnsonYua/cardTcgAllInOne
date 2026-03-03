@@ -1,6 +1,6 @@
 # ST01-ST08 Effect Audit Report
 
-Generated at: 2026-02-25T12:39:30.922Z
+Generated at: 2026-03-03T17:18:54.291Z
 Rows: 176 | PASS: 176 | WARN: 0 | FAIL: 0
 
 ## Card Summary
@@ -152,7 +152,7 @@ Rows: 176 | PASS: 176 | WARN: 0 | FAIL: 0
 | st02Card.json | ST02-011 | 1 | link_battle_draw | BATTLE_DESTROY | draw | PASS | yes | no | - |
 | st02Card.json | ST02-012 | 0 | main_grant_breach | - | grant_breach | PASS | yes | no | - |
 | st02Card.json | ST02-012 | 1 | pilot_designation | - | designate_pilot | PASS | yes | no | - |
-| st02Card.json | ST02-013 | 0 | action_prevent_shield_damage | - | prevent_shield_damage | PASS | yes | no | - |
+| st02Card.json | ST02-013 | 0 | action_prevent_shield_damage | - | sequence | PASS | yes | no | - |
 | st02Card.json | ST02-013 | 1 | pilot_designation | - | designate_pilot | PASS | yes | no | - |
 | st02Card.json | ST02-014 | 0 | burst_activate_main | BURST_CONDITION | activate_ability | PASS | yes | no | - |
 | st02Card.json | ST02-014 | 1 | main_action_rest_low_hp | - | rest | PASS | yes | no | - |

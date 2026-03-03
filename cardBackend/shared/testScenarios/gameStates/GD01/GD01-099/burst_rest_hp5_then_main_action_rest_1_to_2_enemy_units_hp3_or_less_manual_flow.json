@@ -170,7 +170,7 @@
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
               "isFirstPlay": false,
-              "damageReceived": 0,
+              "damageReceived":3,
               "continueModifyAP": 0,
               "continueModifyHP": 0
             }
@@ -201,8 +201,11 @@
         "id": "playerId_2",
         "name": "Player 2",
         "deck": {
-          "hand": [],
-          "handUids": [],
+          "hand": [    {
+              "carduid": "GD01-099_shield_p2_0002",
+              "cardId": "GD01-099"
+            }],
+          "handUids": ["GD01-099_shield_p2_0002"],
           "mainDeck": []
         },
         "confirmIsRedraw": false,

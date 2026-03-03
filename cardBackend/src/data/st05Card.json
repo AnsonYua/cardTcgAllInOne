@@ -39,6 +39,7 @@
             "parameters": {
               "steps": [
                 {
+                  "stepId": "damage_other_friendly_unit",
                   "action": "damage",
                   "target": {
                     "type": "unit",
@@ -54,17 +55,30 @@
                   }
                 },
                 {
-                  "action": "modifyAP",
-                  "timing": {
-                    "duration": "UNTIL_END_OF_TURN"
-                  },
-                  "target": {
-                    "type": "unit",
-                    "scope": "previous_target",
-                    "count": 1
-                  },
+                  "action": "conditional",
                   "parameters": {
-                    "value": 1
+                    "if": [
+                      {
+                        "type": "stepResolved",
+                        "stepId": "damage_other_friendly_unit"
+                      }
+                    ],
+                    "then": [
+                      {
+                        "action": "modifyAP",
+                        "timing": {
+                          "duration": "UNTIL_END_OF_TURN"
+                        },
+                        "target": {
+                          "type": "unit",
+                          "scope": "previous_target",
+                          "count": 1
+                        },
+                        "parameters": {
+                          "value": 1
+                        }
+                      }
+                    ]
                   }
                 }
               ]

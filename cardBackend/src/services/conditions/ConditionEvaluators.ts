@@ -6,11 +6,22 @@ import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 import { LinkUtils } from '../../utils/LinkUtils';
 import { KeywordUtils } from '../../utils/KeywordUtils';
 import { hasNameIncludes } from '../../utils/CardNameMatcher';
+import { getSlotTotals } from '../../utils/FieldValueCalculator';
 import { LinkConditionEvaluator } from './LinkConditionEvaluator';
 import { PairedSlotConditionEvaluator } from './PairedSlotConditionEvaluator';
 import { TrashConditionUtils } from './TrashConditionUtils';
 
 export class ConditionEvaluators {
+    private static matchesNumericFilter(actual: number, filter: unknown): boolean {
+        if (typeof filter === 'number') {
+            return actual === filter;
+        }
+        if (typeof filter === 'string') {
+            return validateComparisonFilter(actual, filter);
+        }
+        return true;
+    }
+
     private static resolveScopedPlayerId(
         gameEnv: GameEnvironment,
         rootPlayerId: string,
@@ -396,6 +407,21 @@ export class ConditionEvaluators {
                 if (!validateComparisonFilter(cardLevel, levelFilter)) {
                     return total;
                 }
+            }
+
+            const totals = getSlotTotals({
+                unit,
+                pilot: unitResult?.pilot || undefined
+            } as any);
+
+            const apFilter = filters['ap'];
+            if (apFilter !== undefined && !this.matchesNumericFilter(totals.totalAP || 0, apFilter)) {
+                return total;
+            }
+
+            const hpFilter = filters['hp'];
+            if (hpFilter !== undefined && !this.matchesNumericFilter(totals.totalHP || 0, hpFilter)) {
+                return total;
             }
 
             const statusFilter = filters['status'];

@@ -1,6 +1,6 @@
 # Effect Alignment Fix Map
 
-Generated at: 2026-03-03T16:37:26.933Z
+Generated at: 2026-03-03T17:28:33.484Z
 
 ## Wave 1 (Behavior-Critical)
 

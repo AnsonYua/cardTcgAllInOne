@@ -16,15 +16,23 @@ export class SourceCardTargetResolver {
         if (lookup.found && lookup.playerId && lookup.slotName && SLOT_ZONES.includes(lookup.slotName as any)) {
             if (targetType === 'unit') {
                 const unit = lookup.unit;
+                const pilot = lookup.pilot;
                 if (unit?.carduid === sourceCarduid) {
+                    return [{ carduid: unit.carduid, zone: lookup.slotName, playerId: lookup.playerId, cardData: unit.cardData }];
+                }
+                if (pilot?.carduid === sourceCarduid && unit?.carduid) {
                     return [{ carduid: unit.carduid, zone: lookup.slotName, playerId: lookup.playerId, cardData: unit.cardData }];
                 }
                 return null;
             }
 
             if (targetType === 'pilot') {
+                const unit = lookup.unit;
                 const pilot = lookup.pilot;
                 if (pilot?.carduid === sourceCarduid) {
+                    return [{ carduid: pilot.carduid, zone: lookup.slotName, playerId: lookup.playerId, cardData: pilot.cardData }];
+                }
+                if (unit?.carduid === sourceCarduid && pilot?.carduid) {
                     return [{ carduid: pilot.carduid, zone: lookup.slotName, playerId: lookup.playerId, cardData: pilot.cardData }];
                 }
                 return null;
@@ -57,4 +65,3 @@ export class SourceCardTargetResolver {
         return null;
     }
 }
-

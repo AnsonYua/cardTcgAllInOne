@@ -4683,9 +4683,19 @@
             "cost": {
               "oncePerTurn": true
             },
+            "conditions": [
+              {
+                "type": "unitsInPlayWithFilter",
+                "scope": "opponent",
+                "filters": {
+                  "ap": "<=1"
+                },
+                "value": ">=1"
+              }
+            ],
             "target": {
               "type": "unit",
-              "scope": "source",
+              "scope": "source_paired_unit",
               "count": 1
             },
             "action": "heal",

@@ -315,6 +315,33 @@ describe('card data canonical patch plan regression', () => {
     expect(restEnemy?.target?.filters?.status).toBe('active');
   });
 
+  test('ST05-001 deploy_effect keeps explicit if-you-do conditional gate', () => {
+    const card = st05.cards['ST05-001'];
+    const rule = card.effects.rules.find((entry) => entry.effectId === 'deploy_damage_1_then_ap_plus_1');
+    expect(rule).toBeTruthy();
+    expect(rule.action).toBe('sequence');
+
+    const steps = rule.parameters?.steps;
+    expect(Array.isArray(steps)).toBe(true);
+
+    const damageStep = steps[0];
+    expect(damageStep?.stepId).toBe('damage_other_friendly_unit');
+    expect(damageStep?.action).toBe('damage');
+    expect(damageStep?.target?.scope).toBe('self_all_unit');
+    expect(damageStep?.parameters?.excludeSource).toBe(true);
+
+    const conditionalStep = steps[1];
+    expect(conditionalStep?.action).toBe('conditional');
+    expect(conditionalStep?.parameters?.if).toEqual(
+      expect.arrayContaining([{ type: 'stepResolved', stepId: 'damage_other_friendly_unit' }])
+    );
+
+    const thenStep = conditionalStep?.parameters?.then?.[0];
+    expect(thenStep?.action).toBe('modifyAP');
+    expect(thenStep?.target?.scope).toBe('previous_target');
+    expect(thenStep?.parameters?.value).toBe(1);
+  });
+
   test('GD03-064 deploy_effect keeps add-from-trash gated discard semantics', () => {
     const card = gd03.cards['GD03-064'];
     const rule = card.effects.rules.find((entry) => entry.effectId === 'deploy_effect');

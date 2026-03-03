@@ -121,9 +121,9 @@ export class EffectScannerUtils {
         const availableEnergy = (player.zones?.energyArea || []).filter(card => !card.isRested).length;
         const targets: ActionStepTargetSummary[] = [];
 
-        this.scanHandForActionStepTargets(player, targets, availableEnergy, gameEnv.currentTurn);
-        this.scanSlotForActionStepTargets(player, targets, availableEnergy, gameEnv.currentTurn);
-        this.scanBaseForActionStepTargets(player, targets, availableEnergy, gameEnv.currentTurn);
+        this.scanHandForActionStepTargets(player, targets, availableEnergy, gameEnv.currentTurn, gameEnv, playerId);
+        this.scanSlotForActionStepTargets(player, targets, availableEnergy, gameEnv.currentTurn, gameEnv, playerId);
+        this.scanBaseForActionStepTargets(player, targets, availableEnergy, gameEnv.currentTurn, gameEnv, playerId);
 
         return targets;
     }
@@ -132,7 +132,9 @@ export class EffectScannerUtils {
         player: Player,
         targets: ActionStepTargetSummary[],
         availableEnergy: number,
-        currentTurn: number
+        currentTurn: number,
+        gameEnv: GameEnvironment,
+        sourcePlayerId: string
     ): void {
         const handCards = player.deck?.hand || [];
         for (const card of handCards) {
@@ -143,7 +145,10 @@ export class EffectScannerUtils {
                 'hand',
                 'hand',
                 availableEnergy,
-                currentTurn
+                currentTurn,
+                gameEnv,
+                sourcePlayerId,
+                card
             );
         }
     }
@@ -152,7 +157,9 @@ export class EffectScannerUtils {
         player: Player,
         targets: ActionStepTargetSummary[],
         availableEnergy: number,
-        currentTurn: number
+        currentTurn: number,
+        gameEnv: GameEnvironment,
+        sourcePlayerId: string
     ): void {
         if (!player.zones) {
             return;
@@ -173,7 +180,24 @@ export class EffectScannerUtils {
                     'unit',
                     availableEnergy,
                     currentTurn,
+                    gameEnv,
+                    sourcePlayerId,
                     slot.unit
+                );
+            }
+
+            if (slot.pilot) {
+                this.tryAddActionStepTarget(
+                    targets,
+                    slot.pilot.carduid,
+                    slot.pilot.cardData,
+                    slotName,
+                    'pilot',
+                    availableEnergy,
+                    currentTurn,
+                    gameEnv,
+                    sourcePlayerId,
+                    slot.pilot
                 );
             }
         }
@@ -183,7 +207,9 @@ export class EffectScannerUtils {
         player: Player,
         targets: ActionStepTargetSummary[],
         availableEnergy: number,
-        currentTurn: number
+        currentTurn: number,
+        gameEnv: GameEnvironment,
+        sourcePlayerId: string
     ): void {
         const baseCards = player.zones?.base || [];
         for (const baseCard of baseCards) {
@@ -195,6 +221,8 @@ export class EffectScannerUtils {
                 'base',
                 availableEnergy,
                 currentTurn,
+                gameEnv,
+                sourcePlayerId,
                 baseCard
             );
         }
@@ -208,6 +236,8 @@ export class EffectScannerUtils {
         zoneType: 'hand' | 'unit' | 'pilot' | 'base' = 'unit',
         availableEnergy: number = 0,
         currentTurn: number = 0,
+        gameEnv?: GameEnvironment,
+        sourcePlayerId?: string,
         sourceCardState?: any
     ): void {
         if (!carduid || !cardData?.effects?.rules) {
@@ -225,6 +255,9 @@ export class EffectScannerUtils {
         const effectIds = extractActionStepEffectIds(cardData.effects.rules, zoneType, {
             availableEnergy,
             currentTurn,
+            gameEnv,
+            sourcePlayerId,
+            sourceCard: sourceCardState?.carduid ? sourceCardState : undefined,
             sourceCardState: sourceCardState
                 ? {
                       isRested: Boolean(sourceCardState.isRested),

@@ -58,7 +58,7 @@ function validateCommandInHandRequiresEnergyToAdvertiseActionStepPlay() {
   }
 }
 
-function validatePilotActivatedAbilityDoesNotAppear() {
+function validatePilotActivatedAbilityAppears() {
   const gameEnv = new GameEnvironment();
   const player = gameEnv.addPlayer('playerId_1', 'Player 1');
 
@@ -78,8 +78,8 @@ function validatePilotActivatedAbilityDoesNotAppear() {
 
   const targets = EffectScannerUtils.collectActionStepTargets(gameEnv, player.id);
   const hasPilotTarget = targets.some((target) => target.carduid === 'GD01-098_pilot_0001');
-  if (hasPilotTarget) {
-    throw new Error('Expected pilot-slot activated abilities to not appear in action step targets');
+  if (!hasPilotTarget) {
+    throw new Error('Expected pilot-slot activated abilities to appear in action step targets');
   }
 }
 
@@ -153,7 +153,7 @@ function validateActivatedUnitRequiresEnergyToAppear() {
 function validateActionStepTargetScan() {
   validateCommandPlayedAsPilotDoesNotAdvertisePlayActions();
   validateCommandInHandRequiresEnergyToAdvertiseActionStepPlay();
-  validatePilotActivatedAbilityDoesNotAppear();
+  validatePilotActivatedAbilityAppears();
   validateRestedBaseActivatedAbilityDoesNotAppear();
   validateActivatedUnitRequiresEnergyToAppear();
   console.log('OK: action step target scan validation');
