@@ -179,7 +179,7 @@
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
               "isFirstPlay": false,
-              "damageReceived": 1,
+              "damageReceived": 3,
               "continueModifyAP": 0,
               "continueModifyHP": 0
             }

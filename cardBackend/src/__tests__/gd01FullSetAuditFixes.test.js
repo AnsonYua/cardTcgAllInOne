@@ -20,7 +20,13 @@ describe('GD01 audit fixes', () => {
         const gd01014 = gd01.cards['GD01-014'];
         const healRule = gd01014.effects.rules.find((rule) => rule.effectId === 'activate_heal');
         expect(healRule).toBeTruthy();
+        expect(healRule.target?.scope).toBe('any');
         expect(healRule.sourceConditions).toEqual(expect.arrayContaining([{ type: 'linked' }]));
+
+        const gd01098 = gd01.cards['GD01-098'];
+        const gd01098HealRule = gd01098.effects.rules.find((rule) => rule.effectId === 'activate_heal');
+        expect(gd01098HealRule).toBeTruthy();
+        expect(gd01098HealRule.target?.scope).toBe('source');
 
         const gd01032 = gd01.cards['GD01-032'];
         const destroyRule = gd01032.effects.rules.find((rule) => rule.effectId === 'pair_destroy_blocker_low_level');

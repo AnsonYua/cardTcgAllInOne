@@ -21,8 +21,8 @@
     "Expect: GD01-098 moves from Player 2 shield area to Player 2 hand.",
     "Action: End Player 1 turn. On Player 2 MAIN_PHASE, play GD01-098 from hand as pilot onto Player 2 slot2 GD01-079_host_unit_p2_0001.",
     "Expect: Player 2 slot2 is paired and host damage remains 1 before using activate action.",
-    "Action: On the same Player 2 turn, declare attackShieldArea with Player 2 slot2 GD01-079_host_unit_p2_0001, resolve confirmBattle to reach ACTION_STEP, then use activateCardAbility on GD01-098_pilot_p2_0001 with effectId=activate_heal and choose Player 2 slot2 host unit.",
-    "Expect: activate_heal resolves while enemy AP1 unit is in play and Player 2 slot2 host recovers 1 HP (damageReceived 1 -> 0).",
+    "Action: On the same Player 2 turn, declare attackShieldArea with Player 2 slot2 GD01-079_host_unit_p2_0001, resolve confirmBattle to reach ACTION_STEP, then use activateCardAbility on GD01-098_pilot_p2_0001 with effectId=activate_heal.",
+    "Expect: activate_heal resolves while enemy AP1 unit is in play; no TARGET_CHOICE appears for this effect, and Player 2 slot2 host auto-recovers 1 HP (damageReceived 1 -> 0).",
     "Action: Try to use activateCardAbility on GD01-098_pilot_p2_0001 with effectId=activate_heal again during the same turn.",
     "Expect: Second activation is rejected due to Once per Turn."
   ],

@@ -4680,7 +4680,7 @@
             },
             "target": {
               "type": "unit",
-              "scope": "any",
+              "scope": "source",
               "count": 1
             },
             "action": "heal",

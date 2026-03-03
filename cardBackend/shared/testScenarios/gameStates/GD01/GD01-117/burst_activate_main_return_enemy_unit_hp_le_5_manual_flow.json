@@ -89,7 +89,21 @@
         "playerPoint": 0,
         "isReady": true,
         "zones": {
-          "slot1": {},
+          "slot1": {
+            "unit": {
+              "carduid": "GD01-020_attacker_p2_00022",
+              "cardId": "GD01-020",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }},
           "slot2": {},
           "slot3": {},
           "slot4": {},

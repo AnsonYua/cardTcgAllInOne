@@ -198,7 +198,7 @@
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
               "isFirstPlay": false,
-              "damageReceived": 3,
+              "damageReceived": 6,
               "continueModifyAP": 0,
               "continueModifyHP": 0
             }
@@ -219,7 +219,20 @@
               "continueModifyHP": 0
             }
           },
-          "slot3": {},
+          "slot3": {"unit": {
+              "carduid": "GD01-024_enemy_hp4_valid_0022",
+              "cardId": "GD01-024",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "damageReceived": 3,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }},
           "slot4": {},
           "slot5": {},
           "slot6": {},

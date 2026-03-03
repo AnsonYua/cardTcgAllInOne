@@ -126,24 +126,6 @@
         "isReady": true,
         "zones": {
           "slot1": {
-            "unit": {
-              "carduid": "GD01-010_enemy_hp3_0001",
-              "cardId": "GD01-010",
-              "placedAt": 0,
-              "placedBy": "playerId_2",
-              "isRested": false,
-              "damageReceived": 0,
-              "modifyAP": 0,
-              "modifyHP": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
-              "originalAP": 3,
-              "originalHP": 3,
-              "playedThisTurn": false,
-              "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false
-            }
           },
           "slot2": {},
           "slot3": {},
