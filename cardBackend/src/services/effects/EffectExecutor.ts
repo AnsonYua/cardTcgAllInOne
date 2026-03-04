@@ -30,6 +30,7 @@ import { applyReturnToHandEffect } from './actions/EffectReturnToHandActions';
 import { applyPairFromHandEffect, applyPairFromTrashEffect } from './actions/EffectPairActions';
 import { applyRestEffect } from './actions/EffectRestActions';
 import { applyDamageEffect } from './actions/EffectDamageActions';
+import { applyRedirectAttackEffect } from './actions/EffectRedirectAttackActions';
 import { applyAllowAttackTargetEffect } from './actions/EffectAllowAttackTargetActions';
 import { applySetNameAliasEffect } from './actions/EffectNameAliasActions';
 import { extractNumericValue, resolvePlayerIdsForScope } from './actions/EffectActionUtils';
@@ -115,6 +116,8 @@ export class EffectExecutor {
             applyRestEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         damage: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyDamageEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        redirect_attack: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyRedirectAttackEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         allow_attack_target: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyAllowAttackTargetEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         set_name_alias: ({ gameEnv, effect, sourceCarduid }) =>

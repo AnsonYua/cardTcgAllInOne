@@ -1,6 +1,6 @@
 {
-  "description": "st08-006_pair_attack_reveal_ef_unit_bottom_then_draw_2",
-  "gameId": "st08-006_pair_attack_reveal_ef_unit_bottom_then_draw_2",
+  "description": "st08-006_pair_attack_reveal_ef_unit_bottom_then_draw_2_target_choice_not_selected",
+  "gameId": "st08-006_pair_attack_reveal_ef_unit_bottom_then_draw_2_target_choice_not_selected",
   "testType": "action",
   "category": "ActionCase",
   "tags": [
@@ -8,14 +8,17 @@
     "ATTACK_PHASE",
     "moveFromHandToDeckBottom",
     "draw",
-    "TARGET_CHOICE"
+    "TARGET_CHOICE",
+    "negative_case",
+    "target_choice_not_selected"
   ],
   "notes": [
-    "Setup: Player A MAIN_PHASE. ST08-006 is in slot1 and is paired with any pilot. Player A has 2 Earth Federation unit cards in hand so the reveal+bottom cost requires a TARGET_CHOICE. Player A deck has at least 2 cards to draw. Player B has at least 1 shield card.",
+    "Setup: Player A MAIN_PHASE. ST08-006 is in slot1 and is paired with any pilot. Player A hand contains Earth Federation Unit cards that can satisfy the reveal+bottom cost. Player B has at least 1 shield card.",
     "Action (manual): Player A initiates attackShieldArea with attackerCarduid=ST08-006_unit_0001.",
-    "Expect: AttackPhaseEffectManager triggers ST08-006 because it is paired and attacking the player; TARGET_CHOICE is enqueued for the moveFromHandToDeckBottom cost and notificationQueue receives TARGET_CHOICE.",
-    "Action (manual): Player A resolves TARGET_CHOICE selecting ST08-007_hand_0001 to reveal+move to deck bottom.",
-    "Expect: HAND_CARDS_REVEALED and CARDS_MOVED_TO_DECK_BOTTOM are appended, then Player A draws 2 (two CARD_DRAWN notifications)."
+    "Expect: ST08-006 attack trigger enqueues TARGET_CHOICE for moveFromHandToDeckBottom cost because the unit is paired and attacking the enemy player.",
+    "Action (manual): Do not select a hand card for TARGET_CHOICE (decline/cancel the choice).",
+    "Expect: No HAND_CARDS_REVEALED or CARDS_MOVED_TO_DECK_BOTTOM events are emitted, and draw-2 does not execute.",
+    "Expect: Player A hand/deck counts stay unchanged by this unresolved/declined ST08-006 cost payment."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -66,17 +69,17 @@
         "deck": {
           "hand": [
             {
-              "carduid": "ST06-007_hand_0001",
-              "cardId": "ST06-007"
+              "carduid": "ST08-007_hand_0001",
+              "cardId": "ST08-007"
             },
             {
-              "carduid": "ST06-008_hand_0002",
-              "cardId": "ST06-008"
+              "carduid": "ST08-008_hand_0002",
+              "cardId": "ST08-008"
             }
           ],
           "handUids": [
-            "ST06-007_hand_0001",
-            "ST06-008_hand_0002"
+            "ST08-007_hand_0001",
+            "ST08-008_hand_0002"
           ],
           "mainDeck": [
             "ST03-006_draw_0001",

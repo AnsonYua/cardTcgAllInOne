@@ -115,9 +115,8 @@ export function applyMoveFromHandToDeckBottom(
         moved.push(target.carduid);
     }
 
-    const notificationManager = new GameNotificationManager(gameEnv);
-    if (reveal) {
-        const revealed = moved.map((carduid) => {
+    const revealed = reveal
+        ? moved.map((carduid) => {
             const cardId = carduid.split('_')[0];
             const cardData = CardDatabaseManager.getCardDetails(cardId);
             return {
@@ -127,8 +126,11 @@ export function applyMoveFromHandToDeckBottom(
                 traits: Array.isArray(cardData?.traits) ? cardData.traits : [],
                 cardType: cardData?.cardType
             };
-        });
+        })
+        : [];
 
+    const notificationManager = new GameNotificationManager(gameEnv);
+    if (reveal && revealed.length > 0) {
         notificationManager.addNotificationEvent('HAND_CARDS_REVEALED', {
             playerId: sourcePlayerId,
             sourceCarduid,
@@ -144,9 +146,12 @@ export function applyMoveFromHandToDeckBottom(
         sourceCarduid,
         effectId: effect.effectId,
         carduids: moved,
+        count: moved.length,
         fromZone: 'hand',
         toZone: 'deck_bottom',
         reveal,
+        revealToOpponent: reveal,
+        ...(reveal ? { cards: revealed } : {}),
         reason: 'moveFromHandToDeckBottom',
         timestamp: Date.now()
     }, 'normal');
