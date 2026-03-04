@@ -122,7 +122,9 @@
           "hand": [],
           "handUids": [],
           "mainDeck": [
-            "GD01-003_draw_p2_0001"
+            "GD01-003_draw_p2_0001",
+            "GD01-001_draw_p2_0002",
+            "GD01-001_draw_p2_0002"
           ]
         },
         "confirmIsRedraw": false,

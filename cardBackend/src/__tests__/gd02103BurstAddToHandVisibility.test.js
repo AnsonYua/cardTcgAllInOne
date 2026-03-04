@@ -70,5 +70,6 @@ describe('GD02-103 burst add-to-hand visibility contract', () => {
         expect(addToHandEvent.payload.reason).toBe('burst');
         expect(addToHandEvent.payload.cardId).toBe('GD02-088');
         expect(addToHandEvent.payload.cardName).toBe('Flit Asuno');
+        expect(addToHandEvent.payload.revealToOpponent).toBe(true);
     });
 });

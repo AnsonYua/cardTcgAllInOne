@@ -15,6 +15,17 @@ export interface AddToHandOptions {
 }
 
 export class HandZoneManager {
+    private static isPublicSourceZone(sourceZone?: string): boolean {
+        const zone = (sourceZone || '').toLowerCase();
+        return zone === 'trash' || zone.startsWith('slot') || zone === 'base' || zone === 'shield';
+    }
+
+    private static resolveRevealToOpponentDefault(options: AddToHandOptions): boolean {
+        const reason = (options.reason || '').toLowerCase();
+        if (reason === 'burst') return true;
+        return this.isPublicSourceZone(options.sourceZone);
+    }
+
     static addCardToHand(
         gameEnv: GameEnvironment,
         playerId: string,
@@ -68,6 +79,10 @@ export class HandZoneManager {
                 ...(options.extraPayload || {})
             };
 
+            if (eventType === 'CARD_ADDED_TO_HAND' && payload.revealToOpponent === undefined) {
+                payload.revealToOpponent = this.resolveRevealToOpponentDefault(options);
+            }
+
             if (eventType === 'CARD_DRAWN' && options.drawContext) {
                 payload.drawContext = options.drawContext;
             }
@@ -82,4 +97,3 @@ export class HandZoneManager {
         return { success: true };
     }
 }
-

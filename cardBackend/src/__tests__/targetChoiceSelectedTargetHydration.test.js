@@ -120,5 +120,7 @@ describe('TARGET_CHOICE selected target hydration', () => {
         expect(addToHandEvent).toBeTruthy();
         expect(addToHandEvent.payload.cardId).toBe('GD02-088');
         expect(addToHandEvent.payload.cardName).toBe('Flit Asuno');
+        expect(addToHandEvent.payload.sourceZone).toBe('trash');
+        expect(addToHandEvent.payload.revealToOpponent).toBe(true);
     });
 });

@@ -1,0 +1,202 @@
+{
+  "description": "gd01-059_attack_ap_plus_2_auto_target_source",
+  "gameId": "gd01-059_attack_ap_plus_2_auto_target_source",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD01-059",
+    "ATTACK_PHASE",
+    "modifyAP",
+    "source_scope_fix"
+  ],
+  "notes": [
+    "Action: Player 1 attacks opponent shield with slot1 unit GD01-059_unit_0001.",
+    "Expect: ATTACK_PHASE effect attack_ap_boost applies AP+2 to GD01-059_unit_0001 only (source target).",
+    "Action: Observe event queues immediately after attack declaration resolves attack-phase effects.",
+    "Expect: No TARGET_CHOICE notification/event is created for this self buff; only CARD_STAT_MODIFIED for GD01-059_unit_0001."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd01059_seed",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "GD01-059_draw_0001",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "GD01-059_hand_0001",
+              "cardId": "GD01-059"
+            }
+          ],
+          "handUids": [
+            "GD01-059_hand_0001"
+          ],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD01-059_unit_0001",
+              "cardId": "GD01-059",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 2,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "temporaryEffects": []
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "GD01-020_ally_0001",
+              "cardId": "GD01-020",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 3,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-059_player1_0001",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            }
+          ],
+          "trashArea": []
+        },
+        "effectRegistry": {},
+        "delayedTriggers": []
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [            {
+              "carduid": "base_default",
+              "cardId": "base_default",
+              "placedAt": 1757854884783,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalHP": 3,
+              "damageReceived": 0,
+              "fieldCardValue": {
+                "totalOriginalAP": 0,
+                "totalOriginalHP": 3,
+                "totalTempModifyAP": 0,
+                "totalTempModifyHP": 0,
+                "totalContinueModifyAP": 0,
+                "totalContinueModifyHP": 0,
+                "totalDamageReceived": 0,
+                "totalAP": 0,
+                "totalHP": 3,
+                "isRested": false
+              }
+            }],
+          "shieldArea": [
+            {
+              "carduid": "GD01-040_shield_0001",
+              "cardId": "GD01-040"
+            }
+          ],
+          "energyArea": [
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-059_player2_0001",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            }
+          ],
+          "trashArea": []
+        },
+        "effectRegistry": {},
+        "delayedTriggers": []
+      }
+    }
+  }
+}

@@ -169,7 +169,7 @@
               "cardId": "GD01-010",
               "placedAt": 0,
               "placedBy": "playerId_2",
-              "isRested": true,
+              "isRested": false,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "isFirstPlay": false,

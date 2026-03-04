@@ -202,6 +202,25 @@ export class DelayedTriggerManager {
     }
 
     private static buildThenEffect(then: DelayedTriggerThenStep[]): EffectDefinition | null {
+        const directCombinedStep = then.find(step => step.action === 'setActive_then_restrict_attack');
+        if (directCombinedStep?.target) {
+            const restriction = typeof directCombinedStep.parameters?.restriction === 'string'
+                ? directCombinedStep.parameters.restriction
+                : 'cannot_attack';
+            const duration = typeof directCombinedStep.timing?.duration === 'string'
+                ? directCombinedStep.timing.duration
+                : 'UNTIL_END_OF_TURN';
+            return {
+                effectId: 'delayed_set_active_then_cannot_attack',
+                action: 'setActive_then_restrict_attack',
+                target: directCombinedStep.target as any,
+                timing: { duration },
+                parameters: {
+                    restriction
+                }
+            };
+        }
+
         const setActiveStep = then.find(step => step.action === 'setActive');
         const statusStep = then.find(step => step.action === 'applyStatusEffect');
 

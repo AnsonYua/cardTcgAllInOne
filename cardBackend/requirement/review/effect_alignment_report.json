@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-03T17:31:24.728Z",
+  "generatedAt": "2026-03-03T17:47:55.483Z",
   "filesScanned": [
     "gd01Card.json",
     "gd02Card.json",
@@ -6449,7 +6449,7 @@
       "clusterId": "cluster_270",
       "memberCount": 1,
       "variantCount": 1,
-      "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[],\"effectType\":\"play\",\"sequenceActions\":[\"registerDelayedTrigger\",\"setActive\",\"applyStatusEffect\"],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"\",\"windows\":[\"MAIN_PHASE\"]}",
+      "canonicalVariantKey": "{\"action\":\"sequence\",\"conditionTypes\":[],\"effectType\":\"play\",\"sequenceActions\":[\"registerDelayedTrigger\",\"setActive_then_restrict_attack\"],\"sourceConditionTypes\":[],\"targetCount\":null,\"targetFilters\":{},\"targetScope\":\"\",\"targetType\":\"\",\"timingDuration\":\"\",\"trigger\":\"\",\"windows\":[\"MAIN_PHASE\"]}",
       "memberRefs": [
         {
           "file": "gd03Card.json",
