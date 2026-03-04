@@ -432,6 +432,7 @@
                                             "target": {
                                                 "type": "unit",
                                                 "scope": "self_all_unit",
+                                                "count": 6,
                                                 "filters": {
                                                     "traits": [
                                                         "CB"

@@ -49,7 +49,50 @@
               "originalHP": 1
             }
           },
-          "energyArea": [],
+          "energyArea": [
+            {
+              "placedBy": "playerId_2",
+              "carduid": "energy_basic_st02_012_1",
+              "isExtraEnergy": false,
+              "placedAt": 0,
+              "isRested": false,
+              "cardId": "energy_basic"
+            }, {
+              "placedBy": "playerId_2",
+              "carduid": "energy_basic_st02_012_1",
+              "isExtraEnergy": false,
+              "placedAt": 0,
+              "isRested": false,
+              "cardId": "energy_basic"
+            }, {
+              "placedBy": "playerId_2",
+              "carduid": "energy_basic_st02_012_1",
+              "isExtraEnergy": false,
+              "placedAt": 0,
+              "isRested": false,
+              "cardId": "energy_basic"
+            }, {
+              "placedBy": "playerId_2",
+              "carduid": "energy_basic_st02_012_1",
+              "isExtraEnergy": false,
+              "placedAt": 0,
+              "isRested": false,
+              "cardId": "energy_basic"
+            }, {
+              "placedBy": "playerId_2",
+              "carduid": "energy_basic_st02_012_1",
+              "isExtraEnergy": false,
+              "placedAt": 0,
+              "isRested": false,
+              "cardId": "energy_basic"
+            }, {
+              "placedBy": "playerId_2",
+              "carduid": "energy_basic_st02_012_1",
+              "isExtraEnergy": false,
+              "placedAt": 0,
+              "isRested": false,
+              "cardId": "energy_basic"
+            }],
           "slot3": {},
           "slot2": {},
           "slot5": {},
@@ -99,12 +142,40 @@
           },
           "energyArea": [
             {
-              "placedBy": "playerId_1",
-              "carduid": "energy_basic_st02_012_trig_1",
-              "isExtraEnergy": false,
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
               "placedAt": 0,
+              "placedBy": "playerId_1",
               "isRested": false,
-              "cardId": "energy_basic"
+              "isExtraEnergy": false
+            },   {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },   {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },   {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },   {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
             }
           ],
           "slot3": {},

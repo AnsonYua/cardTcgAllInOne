@@ -126,6 +126,10 @@
           "base": [],
           "shieldArea": [
             {
+              "carduid": "GD01-111_shield_p1_0001",
+              "cardId": "GD01-111"
+            },
+            {
               "carduid": "ST05-011_shield_p1_0001",
               "cardId": "ST05-011"
             }
@@ -185,7 +189,7 @@
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
               "isFirstPlay": false,
-              "damageReceived": 0,
+              "damageReceived": 2,
               "modifyAP": 0,
               "modifyHP": 0,
               "continueModifyAP": 0,

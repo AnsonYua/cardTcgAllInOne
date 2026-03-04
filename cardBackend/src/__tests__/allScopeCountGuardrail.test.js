@@ -102,6 +102,21 @@ function collectFindingsFromNode(node, context, findings) {
             });
         }
     });
+
+    if (Array.isArray(parameters.branches)) {
+        parameters.branches.forEach((branch, branchIndex) => {
+            if (!branch || typeof branch !== 'object' || !Array.isArray(branch.steps)) {
+                return;
+            }
+
+            branch.steps.forEach((step, stepIndex) => {
+                collectFindingsFromNode(step, {
+                    ...context,
+                    path: `${context.path}.parameters.branches[${branchIndex}].steps[${stepIndex}]`
+                }, findings);
+            });
+        });
+    }
 }
 
 describe('all-scope target count guardrail', () => {

@@ -1397,6 +1397,10 @@
                     ],
                     "repairAbilitiesCheckedThisCycle": true,
                     "shieldArea": [
+                        
+                        {       "cardId": "ST03-013",
+                            "carduid": "ST03-013_a0a059d2-6663-4f56-b133-e5afdbce2818"
+                       },
                         {
                             "cardData": {
                                 "ap": 2,

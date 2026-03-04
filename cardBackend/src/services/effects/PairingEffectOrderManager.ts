@@ -9,6 +9,7 @@ import { EventStatus, type OptionChoiceEvent, type PairingEffectDefinition } fro
 type PairingEffectOrderContext = {
     kind: 'PAIRING_EFFECT_ORDER';
     pairingCarduid?: string;
+    justLinkedUnitCarduid?: string;
     effects: PairingEffectDefinition[];
     allEffects?: PairingEffectDefinition[];
 };
@@ -68,6 +69,9 @@ export class PairingEffectOrderManager {
         );
 
         (pairingEvent.data as any).remainingEffects = remainingEffects;
+        if (typeof context.justLinkedUnitCarduid === 'string' && context.justLinkedUnitCarduid.length > 0) {
+            pairingEvent.data.justLinkedUnitCarduid = context.justLinkedUnitCarduid;
+        }
         gameEnv.enqueueForProcessing(pairingEvent);
 
         return { success: true };

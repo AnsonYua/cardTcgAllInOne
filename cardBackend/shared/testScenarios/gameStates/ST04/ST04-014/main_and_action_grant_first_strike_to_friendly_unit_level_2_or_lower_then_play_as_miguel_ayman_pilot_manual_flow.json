@@ -216,7 +216,7 @@
               "cardId": "ST04-009",
               "placedAt": 0,
               "placedBy": "playerId_2",
-              "isRested": false,
+              "isRested": true,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,

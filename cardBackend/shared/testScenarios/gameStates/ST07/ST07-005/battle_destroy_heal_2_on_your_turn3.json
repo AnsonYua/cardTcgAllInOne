@@ -121,10 +121,10 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "ST07-005_attacker_0001",
-              "cardId": "ST07-005",
+              "carduid": "ST01-005_defender_0001",
+              "cardId": "ST01-005",
               "placedAt": 0,
-              "placedBy": "playerId_1",
+              "placedBy": "playerId_2",
               "isRested": true,
               "damageReceived": 0,
               "modifyAP": 0,
@@ -132,7 +132,7 @@
               "continueModifyAP": 0,
               "continueModifyHP": 0,
               "originalAP": 2,
-              "originalHP": 4,
+              "originalHP": 2,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,

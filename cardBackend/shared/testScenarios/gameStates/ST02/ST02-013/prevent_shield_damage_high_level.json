@@ -1,7 +1,7 @@
 {
   "category": "ST02-013",
-  "gameId": "st02-013_prevent_shield_damage_high_level",
-  "description": "st02-013_prevent_shield_damage_high_level",
+  "gameId": "st02-013_prevent_shield_damage",
+  "description": "st02-013_prevent_shield_damage",
   "tags": [
     "Action",
     "Shield"
@@ -28,23 +28,67 @@
           "repairAbilitiesCheckedThisCycle": false,
           "slot1": {
             "unit": {
-              "originalAP": 3,
+              "originalAP": 4,
               "placedBy": "playerId_2",
               "continueModifyHP": 0,
-              "carduid": "ST02-003_attacker_0002",
+              "carduid": "ST02-004_attacker_0001",
               "damageReceived": 0,
               "canAttackThisTurn": true,
               "placedAt": 0,
               "isFirstPlay": false,
               "isRested": false,
-              "cardId": "ST02-003",
+              "cardId": "ST02-004",
               "continueModifyAP": 0,
               "canAttackOnPlayTurn": false,
               "playedThisTurn": false,
-              "originalHP": 4
+              "originalHP": 3
             }
           },
-          "energyArea": [],
+          "energyArea": [
+                        {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },            {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },            {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },            {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },            {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },            {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
           "slot3": {},
           "slot2": {},
           "slot5": {},
@@ -73,18 +117,55 @@
           "trashArea": [],
           "shieldArea": [
             {
-              "carduid": "ST02-007_shield_0005",
+              "carduid": "ST02-007_shield_0003",
               "cardId": "ST02-007"
             },
             {
-              "carduid": "ST02-008_shield_0006",
+              "carduid": "ST02-008_shield_0004",
               "cardId": "ST02-008"
             }
           ],
           "base": [],
           "repairAbilitiesCheckedThisCycle": false,
           "slot1": {},
-          "energyArea": [],
+          "energyArea": [
+                        {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },            {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },            {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },            {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },            {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
           "slot3": {},
           "slot2": {},
           "slot5": {},
@@ -100,11 +181,11 @@
             "ST02-008_00000000-0000-0000-0000-000000000902"
           ],
           "handUids": [
-            "ST02-013_hand_0002"
+            "ST02-013_hand_0001"
           ],
           "hand": [
             {
-              "carduid": "ST02-013_hand_0002",
+              "carduid": "ST02-013_hand_0001",
               "cardId": "ST02-013"
             }
           ]

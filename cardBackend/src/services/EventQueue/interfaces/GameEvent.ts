@@ -275,6 +275,10 @@ export interface PairingEffectEventData {
     carduid: string;
     effects: PairingEffectDefinition[];
     /**
+     * When selection.type is JUST_LINKED, this identifies the newly linked unit card.
+     */
+    justLinkedUnitCarduid?: string;
+    /**
      * When pairing triggers multiple effects, we optionally resolve them one-at-a-time.
      * Any remaining effects are carried here and scheduled after the current effect
      * (usually after any pending TARGET_CHOICE / cost prompts are resolved).

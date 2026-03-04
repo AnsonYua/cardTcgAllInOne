@@ -109,7 +109,7 @@ export class PairingGlobalEffectManager {
                         return { success: false, error: result.error || 'Failed to enqueue global pairing effect' };
                     }
 
-                    if (normalizedEffect.restrictions?.includes('once_per_turn')) {
+                    if (this.isOncePerTurn(normalizedEffect)) {
                         EffectUsageTracker.markUsedThisTurn(sourceCard, usageKey, gameEnv.currentTurn);
                     }
 
@@ -193,13 +193,19 @@ export class PairingGlobalEffectManager {
         usageKey: string,
         currentTurn: number
     ): boolean {
-        const restrictions = effect.restrictions || [];
-        if (restrictions.includes('once_per_turn')) {
+        if (this.isOncePerTurn(effect)) {
             if (!EffectUsageTracker.canUseOncePerTurn(sourceCard, usageKey, currentTurn)) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    private static isOncePerTurn(effect: EffectDefinition): boolean {
+        const restrictions = Array.isArray((effect as any)?.restrictions)
+            ? ((effect as any).restrictions as unknown[]).filter((value): value is string => typeof value === 'string')
+            : [];
+        return restrictions.includes('once_per_turn') || effect.cost?.oncePerTurn === true;
     }
 }

@@ -37,10 +37,12 @@ import { ChoiceNotificationEmitter } from './notifications/ChoiceNotificationEmi
 import { GameNotificationManager } from './GameNotificationManager';
 import { EffectSelfTargetNormalizer } from './targets/EffectSelfTargetNormalizer';
 import { EffectConditionEvaluator } from './conditions/EffectConditionEvaluator';
+import { EffectUsageTracker } from './effects/EffectUsageTracker';
 
 type PairingEffectOrderContext = {
     kind: 'PAIRING_EFFECT_ORDER';
     pairingCarduid: string;
+    justLinkedUnitCarduid?: string;
     effects: PairingEffectDefinition[];
     allEffects?: PairingEffectDefinition[];
 };
@@ -128,7 +130,8 @@ export interface CardInfo {
     carduid: string;
     // REMOVED: cardId - use getCardIdFromUid(carduid) instead
     cardData: any;
-    cardType: 'unit' | 'pilot';
+    cardType: 'unit' | 'pilot' | 'base';
+    sourceCard: any;
 }
 
 export class PairingEffectManager implements StandardEffectManager {
@@ -375,10 +378,20 @@ export class PairingEffectManager implements StandardEffectManager {
             return null;
         }
 
-        // Check both unit and pilot for pairing effects
+        // Check paired cards (unit/pilot) and in-play bases for pairing effects.
+        const baseCards = Array.isArray((player.zones as any).base)
+            ? ((player.zones as any).base as any[]).filter((baseCard) => !!baseCard?.carduid)
+            : [];
+
         const cardsToCheck: CardInfo[] = [
-            { carduid: pairedUnit.carduid, cardData: pairedUnit.cardData, cardType: 'unit' },
-            { carduid: pilot.carduid, cardData: pilot.cardData, cardType: 'pilot' }
+            { carduid: pairedUnit.carduid, cardData: pairedUnit.cardData, cardType: 'unit', sourceCard: pairedUnit },
+            { carduid: pilot.carduid, cardData: pilot.cardData, cardType: 'pilot', sourceCard: pilot },
+            ...baseCards.map((baseCard) => ({
+                carduid: baseCard.carduid,
+                cardData: baseCard.cardData,
+                cardType: 'base' as const,
+                sourceCard: baseCard
+            }))
         ];
 
         for (const cardInfo of cardsToCheck) {
@@ -400,7 +413,7 @@ export class PairingEffectManager implements StandardEffectManager {
             for (const effect of normalizedEffects) {
                 const pairingEffect = ensureEffectDefaults({ ...effect }) as PairingEffect;
 
-                const sourceCard = cardInfo.cardType === 'unit' ? (pairedUnit as any) : (pilot as any);
+                const sourceCard = cardInfo.sourceCard;
                 if (pairingEffect.sourceConditions && pairingEffect.sourceConditions.length > 0) {
                     const satisfied = ContinuousEffectManager.sourceConditionsMet(
                         pairingEffect as any,
@@ -436,6 +449,7 @@ export class PairingEffectManager implements StandardEffectManager {
             eventData.carduid,
             pairingEffects
         );
+        pairingEvent.data.justLinkedUnitCarduid = pairedUnit.carduid;
 
         console.log(`🤝 Created Pairing event: ${pairingEvent.id} with ${pairingEffects.length} effects`);
         return pairingEvent;
@@ -453,6 +467,11 @@ export class PairingEffectManager implements StandardEffectManager {
             let remainingEffects = Array.isArray((eventData as any).remainingEffects)
                 ? ((eventData as any).remainingEffects as PairingEffect[])
                 : [];
+            const selectionContext = {
+                justLinkedUnitCarduid: typeof eventData.justLinkedUnitCarduid === 'string'
+                    ? eventData.justLinkedUnitCarduid
+                    : undefined
+            };
             let skippedNoTargetEffectsCount = 0;
             
             if (!pairingEffects || pairingEffects.length === 0) {
@@ -468,7 +487,8 @@ export class PairingEffectManager implements StandardEffectManager {
                 gameEnv,
                 playerId,
                 eventData.carduid,
-                pairingEffects
+                pairingEffects,
+                selectionContext
             );
             pairingEffects = initialPartition.resolvableEffects;
             skippedNoTargetEffectsCount += initialPartition.skippedNoTargetEffects.length;
@@ -478,7 +498,8 @@ export class PairingEffectManager implements StandardEffectManager {
                     gameEnv,
                     playerId,
                     eventData.carduid,
-                    remainingEffects
+                    remainingEffects,
+                    selectionContext
                 );
                 pairingEffects = remainingPartition.resolvableEffects;
                 remainingEffects = [];
@@ -511,7 +532,8 @@ export class PairingEffectManager implements StandardEffectManager {
                             gameEnv,
                             playerId,
                             eventData.carduid,
-                            effect
+                            effect,
+                            selectionContext
                         );
                         return {
                             index: optionIndex,
@@ -532,6 +554,7 @@ export class PairingEffectManager implements StandardEffectManager {
                     const context: PairingEffectOrderContext = {
                         kind: 'PAIRING_EFFECT_ORDER',
                         pairingCarduid: eventData.carduid,
+                        ...(selectionContext.justLinkedUnitCarduid ? { justLinkedUnitCarduid: selectionContext.justLinkedUnitCarduid } : {}),
                         effects: interactiveOrderCandidates.map((entry) => entry.effect) as unknown as PairingEffectDefinition[],
                         allEffects: pairingEffects as unknown as PairingEffectDefinition[]
                     };
@@ -569,20 +592,31 @@ export class PairingEffectManager implements StandardEffectManager {
             const effect = pairingEffects[0];
             const normalizedEffect = ensureEffectDefaults(effect);
             const { effectId } = normalizedEffect;
+            const sourceCarduid = normalizedEffect.sourceCarduid || eventData.carduid;
+            const sourceCard = this.resolveEffectSourceCard(gameEnv, playerId, sourceCarduid);
+            const restrictions = Array.isArray((normalizedEffect as any).restrictions)
+                ? ((normalizedEffect as any).restrictions as unknown[]).filter((value): value is string => typeof value === 'string')
+                : [];
+            const oncePerTurn = restrictions.includes('once_per_turn') || (normalizedEffect.cost && (normalizedEffect.cost as any).oncePerTurn === true);
+            const usageKey = oncePerTurn
+                ? EffectUsageTracker.getUsageKey(normalizedEffect, 'pairing_effect')
+                : '';
 
             console.log(`⚡ Executing pairing effect: ${effectId}`);
             const action = EffectExecutor.getEffectAction(normalizedEffect);
+            let effectExecuted = false;
 
-            if (action === 'draw') {
+            if (oncePerTurn && sourceCard && !EffectUsageTracker.canUseOncePerTurn(sourceCard, usageKey, gameEnv.currentTurn)) {
+                console.log(`⏭️ Skipping pairing effect ${effectId} (once per turn already used)`);
+            } else if (action === 'draw') {
                 const drawResult = EffectExecutor.applyPlayerDrawEffect(gameEnv, playerId, normalizedEffect);
                 if (!drawResult.success) {
                     console.error(`❌ Failed to execute draw effect ${effectId}: ${drawResult.error}`);
                     return { success: false, error: drawResult.error || 'draw failed' };
                 }
+                effectExecuted = true;
                 console.log(`✅ Pairing effect ${effectId} executed successfully`);
-                effectsProcessed++;
             } else {
-                const sourceCarduid = normalizedEffect.sourceCarduid || eventData.carduid;
                 const normalizedTargetingEffect = EffectSelfTargetNormalizer.normalizeWithSourceCarduid(
                     gameEnv,
                     normalizedEffect,
@@ -592,7 +626,9 @@ export class PairingEffectManager implements StandardEffectManager {
                     gameEnv,
                     playerId,
                     sourceCarduid,
-                    normalizedTargetingEffect
+                    normalizedTargetingEffect,
+                    undefined,
+                    selectionContext
                 );
 
                 if (!choiceResult.success && !choiceResult.requiresSelection) {
@@ -600,7 +636,14 @@ export class PairingEffectManager implements StandardEffectManager {
                     return { success: false, error: choiceResult.error || 'pairing effect failed' };
                 }
 
+                effectExecuted = true;
                 console.log(`✅ Pairing effect ${effectId} executed successfully`);
+            }
+
+            if (effectExecuted) {
+                if (oncePerTurn && sourceCard) {
+                    EffectUsageTracker.markUsedThisTurn(sourceCard, usageKey, gameEnv.currentTurn);
+                }
                 effectsProcessed++;
             }
 
@@ -610,7 +653,8 @@ export class PairingEffectManager implements StandardEffectManager {
                     gameEnv,
                     playerId,
                     eventData.carduid,
-                    remainingEffects
+                    remainingEffects,
+                    selectionContext
                 );
                 remainingEffects = remainingPartition.resolvableEffects;
                 skippedNoTargetEffectsCount += remainingPartition.skippedNoTargetEffects.length;
@@ -622,6 +666,7 @@ export class PairingEffectManager implements StandardEffectManager {
                         remainingEffects[0] as unknown as PairingEffectDefinition
                     ]);
                     (nextEvent.data as any).remainingEffects = [];
+                    nextEvent.data.justLinkedUnitCarduid = selectionContext.justLinkedUnitCarduid;
                     // Keep as NORMAL priority so any immediate choice events resolve first.
                     nextEvent.priority = EventPriority.NORMAL;
                     gameEnv.enqueueForProcessing(nextEvent);
@@ -637,6 +682,7 @@ export class PairingEffectManager implements StandardEffectManager {
                             remainingEffects[0] as unknown as PairingEffectDefinition
                         ]);
                         (nextEvent.data as any).remainingEffects = remainingEffects.slice(1);
+                        nextEvent.data.justLinkedUnitCarduid = selectionContext.justLinkedUnitCarduid;
                         nextEvent.priority = EventPriority.NORMAL;
                         gameEnv.enqueueForProcessing(nextEvent);
                     } else {
@@ -647,7 +693,8 @@ export class PairingEffectManager implements StandardEffectManager {
                                 gameEnv,
                                 playerId,
                                 eventData.carduid,
-                                remainingEffect
+                                remainingEffect,
+                                selectionContext
                             );
                             return {
                                 index: optionIndex,
@@ -668,6 +715,7 @@ export class PairingEffectManager implements StandardEffectManager {
                         const context: PairingEffectOrderContext = {
                             kind: 'PAIRING_EFFECT_ORDER',
                             pairingCarduid: eventData.carduid,
+                            ...(selectionContext.justLinkedUnitCarduid ? { justLinkedUnitCarduid: selectionContext.justLinkedUnitCarduid } : {}),
                             effects: interactiveRemainingCandidates.map((entry) => entry.effect) as unknown as PairingEffectDefinition[],
                             allEffects: remainingEffects as unknown as PairingEffectDefinition[]
                         };
@@ -742,12 +790,19 @@ export class PairingEffectManager implements StandardEffectManager {
         gameEnv: GameEnvironment,
         playerId: string,
         pairingCarduid: string,
-        effect: PairingEffect
+        effect: PairingEffect,
+        selectionContext?: {
+            justLinkedUnitCarduid?: string;
+        }
     ): { disabled: boolean; reason?: string } {
         const sourceCarduid = typeof effect?.sourceCarduid === 'string' && effect.sourceCarduid.length > 0
             ? effect.sourceCarduid
             : pairingCarduid;
-        const sourceCard = SlotZoneUtils.getCardByUid(gameEnv, sourceCarduid) as any;
+        const sourceCard = this.resolveEffectSourceCard(gameEnv, playerId, sourceCarduid);
+
+        if (!this.restrictionsAllowUse(effect, sourceCard, gameEnv.currentTurn)) {
+            return { disabled: true, reason: 'Effect already used this turn' };
+        }
 
         if (Array.isArray(effect.sourceConditions) && effect.sourceConditions.length > 0) {
             const sourceConditionMet = sourceCard
@@ -777,7 +832,8 @@ export class PairingEffectManager implements StandardEffectManager {
             gameEnv,
             playerId,
             sourceCarduid,
-            normalizedEffect
+            normalizedEffect,
+            selectionContext
         );
 
         if (preview.noOpNoTargets) {
@@ -1084,7 +1140,10 @@ export class PairingEffectManager implements StandardEffectManager {
         gameEnv: GameEnvironment,
         playerId: string,
         pairingCarduid: string,
-        effects: PairingEffect[]
+        effects: PairingEffect[],
+        selectionContext?: {
+            justLinkedUnitCarduid?: string;
+        }
     ): {
         resolvableEffects: PairingEffect[];
         skippedNoTargetEffects: PairingEffect[];
@@ -1096,11 +1155,17 @@ export class PairingEffectManager implements StandardEffectManager {
             const sourceCarduid = typeof effect?.sourceCarduid === 'string' && effect.sourceCarduid.length > 0
                 ? effect.sourceCarduid
                 : pairingCarduid;
+            const sourceCard = this.resolveEffectSourceCard(gameEnv, playerId, sourceCarduid);
+            if (!this.restrictionsAllowUse(effect, sourceCard, gameEnv.currentTurn)) {
+                console.log(`⏭️ Auto-skipping pairing effect ${effect.effectId || 'pairing_effect'} (once per turn already used)`);
+                continue;
+            }
             const preview = DeployTargetManager.evaluateImmediateResolution(
                 gameEnv,
                 playerId,
                 sourceCarduid,
-                effect
+                effect,
+                selectionContext
             );
 
             if (preview.noOpNoTargets) {
@@ -1113,6 +1178,54 @@ export class PairingEffectManager implements StandardEffectManager {
         }
 
         return { resolvableEffects, skippedNoTargetEffects };
+    }
+
+    private static restrictionsAllowUse(
+        effect: PairingEffect,
+        sourceCard: any,
+        currentTurn: number
+    ): boolean {
+        const restrictions = Array.isArray((effect as any)?.restrictions)
+            ? ((effect as any).restrictions as unknown[]).filter((value): value is string => typeof value === 'string')
+            : [];
+        const oncePerTurn = restrictions.includes('once_per_turn') || (effect.cost && (effect.cost as any).oncePerTurn === true);
+        if (!oncePerTurn) {
+            return true;
+        }
+        if (!sourceCard) {
+            return true;
+        }
+        const usageKey = EffectUsageTracker.getUsageKey(effect, 'pairing_effect');
+        return EffectUsageTracker.canUseOncePerTurn(sourceCard, usageKey, currentTurn);
+    }
+
+    private static resolveEffectSourceCard(
+        gameEnv: GameEnvironment,
+        sourcePlayerId: string,
+        sourceCarduid: string
+    ): any {
+        const slotCard = SlotZoneUtils.getCardByUid(gameEnv, sourceCarduid) as any;
+        if (slotCard) {
+            return slotCard;
+        }
+
+        const sourcePlayer = gameEnv.getPlayer(sourcePlayerId);
+        const sourceBase = Array.isArray((sourcePlayer as any)?.zones?.base)
+            ? ((sourcePlayer as any).zones.base as any[]).find((baseCard) => baseCard?.carduid === sourceCarduid)
+            : null;
+        if (sourceBase) {
+            return sourceBase;
+        }
+
+        for (const player of Object.values(gameEnv.players || {})) {
+            const baseCards = Array.isArray((player as any)?.zones?.base) ? ((player as any).zones.base as any[]) : [];
+            const found = baseCards.find((baseCard) => baseCard?.carduid === sourceCarduid);
+            if (found) {
+                return found;
+            }
+        }
+
+        return null;
     }
 
     private static shouldPromptForPairingEffectOrder(effects: PairingEffect[]): boolean {

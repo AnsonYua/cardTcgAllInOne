@@ -24,7 +24,30 @@
         "zones": {
           "trashArea": [],
           "shieldArea": [],
-          "base": [],
+          "base": [{
+              "carduid": "base_default",
+              "cardId": "base_default",
+              "cardData": {
+                "cardType": "base"
+              },
+              "placedAt": 1771432630394,
+              "placedBy": "player_eafc3ae6-68e2-40a5-b3e1-d2f367931aae",
+              "isRested": false,
+              "effectUsage": {},
+              "originalHP": 3,
+              "damageReceived": 0,
+              "fieldCardValue": {
+                "totalOriginalAP": 0,
+                "totalOriginalHP": 3,
+                "totalTempModifyAP": 0,
+                "totalTempModifyHP": 0,
+                "totalContinueModifyAP": 0,
+                "totalContinueModifyHP": 0,
+                "totalDamageReceived": 0,
+                "totalAP": 0,
+                "totalHP": 3
+              }
+            }],
           "repairAbilitiesCheckedThisCycle": false,
           "slot1": {
             "unit": {
@@ -44,7 +67,51 @@
               "originalHP": 3
             }
           },
-          "energyArea": [],
+          "energyArea": [
+                        {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },            {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },            {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },            {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },            {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },            {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
           "slot3": {},
           "slot2": {},
           "slot5": {},
@@ -81,10 +148,70 @@
               "cardId": "ST02-008"
             }
           ],
-          "base": [],
+          "base": [{
+              "carduid": "base_default",
+              "cardId": "base_default",
+              "cardData": {
+                "cardType": "base"
+              },
+              "placedAt": 1771432630394,
+              "placedBy": "player_eafc3ae6-68e2-40a5-b3e1-d2f367931aae",
+              "isRested": false,
+              "effectUsage": {},
+              "originalHP": 3,
+              "damageReceived": 0,
+              "fieldCardValue": {
+                "totalOriginalAP": 0,
+                "totalOriginalHP": 3,
+                "totalTempModifyAP": 0,
+                "totalTempModifyHP": 0,
+                "totalContinueModifyAP": 0,
+                "totalContinueModifyHP": 0,
+                "totalDamageReceived": 0,
+                "totalAP": 0,
+                "totalHP": 3
+              }
+            }],
           "repairAbilitiesCheckedThisCycle": false,
           "slot1": {},
-          "energyArea": [],
+          "energyArea": [
+                        {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },            {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },            {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },            {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },            {
+              "carduid": "energy_basic_st02014_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
           "slot3": {},
           "slot2": {},
           "slot5": {},
