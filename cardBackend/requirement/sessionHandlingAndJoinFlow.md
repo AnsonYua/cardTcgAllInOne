@@ -247,6 +247,6 @@ Network/5xx behavior:
 5. Full room fails with `ROOM_FULL`.
 6. Started room fails with `MATCH_ALREADY_STARTED`.
 7. Session auth failures include standardized errorCode.
-8. Lobby join requires invite token prompt.
+8. Lobby join is one-click for rooms that include joinToken; rooms without joinToken are locked.
 9. Session init 4xx errors show dialog instead of silent offline fallback.
 10. Network/5xx still uses offline fallback path.
