@@ -6,6 +6,7 @@ import { gameController } from '../controllers/gameController';
 import { choiceController } from '../controllers/choiceController';
 import { gameLogic } from '../services/GameLogic';
 import { requirePlayerSession } from '../middleware/sessionAuth';
+import { ErrorCodes } from '../constants/ErrorCodes';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -308,6 +309,7 @@ router.post('/test/resolveSeatSession',
     (_req: Request, res: Response, next: NextFunction) => {
         if (!injectGameStateEnabled) {
             res.status(403).json({
+                errorCode: ErrorCodes.SEAT_SWITCH_DISABLED,
                 error: 'This endpoint is disabled (set INJECT_GAME_STATE_ENABLED=true to enable)',
                 timestamp: new Date().toISOString()
             });

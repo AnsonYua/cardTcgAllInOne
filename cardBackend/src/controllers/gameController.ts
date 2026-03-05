@@ -25,6 +25,8 @@ import { deckSubmissionService } from '../services/DeckSubmissionService';
 import { deckResourceService } from '../services/DeckResourceService';
 import { collectTokenCardIdsFromCardData } from '../services/cards/TokenCardDiscovery';
 import { loadTopDecksFromFile } from '../services/TopDeckService';
+import { ErrorCodes } from '../constants/ErrorCodes';
+import { mapJoinFailure, mapJoinTokenFailureReason } from '../services/session/JoinRoomErrorMapper';
 import {
     buildTestSessions,
     normalizePlayerSeatSelector,
@@ -447,6 +449,7 @@ export class GameController {
                     const joinState = await this.gameLogic.joinGame(gameState.gameId, aiPlayerId);
                     if (!joinState.success || !joinState.gameEnv) {
                         res.status(400).json({
+                            errorCode: ErrorCodes.INTERNAL_ERROR,
                             error: joinState.error || 'Failed to add AI opponent',
                             timestamp: new Date().toISOString(),
                             context: 'startGame endpoint - ai join'
@@ -480,17 +483,19 @@ export class GameController {
                 }
 
             const session = sessionManager.createSession(gameState.gameId as string, playerId);
+            const joinTokenRecord = sessionManager.createJoinToken(gameState.gameId as string, 'seat2');
             res.json({
                 success: true,
                 gameId: gameState.gameId,
                 playerId,
                 sessionToken: session.token,
                 sessionExpiresAt: session.expiresAt,
-                joinToken: null,
+                joinToken: joinTokenRecord.token,
                 gameEnv: GameEnvViewBuilder.toPlayerView(gameState.gameEnv, playerId)
             });
             } else {
                 res.status(400).json({
+                    errorCode: ErrorCodes.INTERNAL_ERROR,
                     error: gameState.error || 'Failed to create game',
                     timestamp: new Date().toISOString(),
                     context: 'startGame endpoint'
@@ -500,6 +505,7 @@ export class GameController {
         } catch (error) {
             console.error('❌ Error in startGame:', error);
             res.status(500).json({
+                errorCode: ErrorCodes.INTERNAL_ERROR,
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
                 context: 'startGame endpoint'
@@ -515,11 +521,42 @@ export class GameController {
         try {
             console.log('🔍 joinRoom called with body:', req.body);
             
-            const { gameId } = req.body;
+            const { gameId, joinToken } = req.body;
             
             if (!gameId) {
                 res.status(400).json({
+                    errorCode: ErrorCodes.ROOM_NOT_FOUND,
                     error: 'gameId is required',
+                    timestamp: new Date().toISOString(),
+                    context: 'joinRoom endpoint'
+                });
+                return;
+            }
+
+            if (!joinToken || typeof joinToken !== 'string' || joinToken.trim().length === 0) {
+                res.status(400).json({
+                    errorCode: ErrorCodes.JOIN_TOKEN_REQUIRED,
+                    error: 'joinToken is required',
+                    timestamp: new Date().toISOString(),
+                    context: 'joinRoom endpoint'
+                });
+                return;
+            }
+
+            const joinTokenValidation = sessionManager.validateJoinToken(gameId, joinToken.trim());
+            if (!joinTokenValidation.ok) {
+                res.status(403).json({
+                    errorCode: mapJoinTokenFailureReason(joinTokenValidation.reason),
+                    error: joinTokenValidation.reason === 'expired' ? 'Join token has expired' : 'Invalid join token',
+                    timestamp: new Date().toISOString(),
+                    context: 'joinRoom endpoint'
+                });
+                return;
+            }
+            if (joinTokenValidation.record.seat !== 'seat2') {
+                res.status(403).json({
+                    errorCode: ErrorCodes.JOIN_TOKEN_INVALID,
+                    error: 'Join token is not valid for this seat',
                     timestamp: new Date().toISOString(),
                     context: 'joinRoom endpoint'
                 });
@@ -538,6 +575,8 @@ export class GameController {
                 //     console.log('🎮 Event queue system activated with card triggers for full game:', gameId);
                 // }
                 const session = sessionManager.createSession(gameId, playerId);
+                sessionManager.consumeJoinToken(gameId, joinToken.trim());
+                sessionManager.invalidateJoinTokensForGame(gameId);
                 res.json({
                     success: true,
                     gameId: gameState.gameId,
@@ -547,8 +586,10 @@ export class GameController {
                     gameEnv: GameEnvViewBuilder.toPlayerView(gameState.gameEnv, playerId)
                 });
             } else {
-                res.status(400).json({
-                    error: gameState.error || 'Failed to join game',
+                const mapped = mapJoinFailure(gameState.error || 'Failed to join game');
+                res.status(mapped.status).json({
+                    errorCode: mapped.errorCode,
+                    error: mapped.error,
                     timestamp: new Date().toISOString(),
                     context: 'joinRoom endpoint'
                 });
@@ -557,6 +598,7 @@ export class GameController {
         } catch (error) {
             console.error('❌ Error in joinRoom:', error);
             res.status(500).json({
+                errorCode: ErrorCodes.INTERNAL_ERROR,
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
                 context: 'joinRoom endpoint'
@@ -811,6 +853,7 @@ export class GameController {
             const session = (req as SessionAuthedRequest).session;
             if (!session) {
                 res.status(401).json({
+                    errorCode: ErrorCodes.SESSION_MISSING,
                     error: 'Missing session context',
                     timestamp: new Date().toISOString(),
                     context: 'heartbeat endpoint'
@@ -821,6 +864,7 @@ export class GameController {
             const refreshed = sessionManager.touchSession(session.token);
             if (!refreshed) {
                 res.status(401).json({
+                    errorCode: ErrorCodes.SESSION_EXPIRED,
                     error: 'Invalid or expired session token',
                     timestamp: new Date().toISOString(),
                     context: 'heartbeat endpoint'
@@ -838,6 +882,7 @@ export class GameController {
         } catch (error) {
             console.error('❌ Error in heartbeat:', error);
             res.status(500).json({
+                errorCode: ErrorCodes.INTERNAL_ERROR,
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
                 context: 'heartbeat endpoint'

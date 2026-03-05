@@ -2,6 +2,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { sessionManager, SessionRecord } from '../services/SessionManager';
+import { ErrorCodes } from '../constants/ErrorCodes';
 
 export interface SessionAuthedRequest extends Request {
     session?: SessionRecord;
@@ -29,6 +30,7 @@ const normalizeQueryValue = (value: any): string | undefined => {
 
 const mismatchResponse = (res: Response, context: string): void => {
     res.status(403).json({
+        errorCode: ErrorCodes.SESSION_MISMATCH,
         error: 'Session token does not match requested player or game',
         timestamp: new Date().toISOString(),
         context
@@ -39,6 +41,7 @@ export const requirePlayerSession = (req: Request, res: Response, next: NextFunc
     const token = getTokenFromHeader(req);
     if (!token) {
         res.status(401).json({
+            errorCode: ErrorCodes.SESSION_MISSING,
             error: 'Missing session token',
             timestamp: new Date().toISOString(),
             context: 'session auth'
@@ -49,6 +52,7 @@ export const requirePlayerSession = (req: Request, res: Response, next: NextFunc
     const session = sessionManager.validateSession(token);
     if (!session) {
         res.status(401).json({
+            errorCode: ErrorCodes.SESSION_EXPIRED,
             error: 'Invalid or expired session token',
             timestamp: new Date().toISOString(),
             context: 'session auth'

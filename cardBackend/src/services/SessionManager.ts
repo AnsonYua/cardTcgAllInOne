@@ -21,6 +21,12 @@ export type JoinTokenRecord = {
     expiresAt: number;
 };
 
+export type JoinTokenFailureReason = 'invalid' | 'expired' | 'game_mismatch';
+
+export type JoinTokenValidationResult =
+    | { ok: true; record: JoinTokenRecord }
+    | { ok: false; reason: JoinTokenFailureReason };
+
 const readEnvSeconds = (name: string, fallbackSeconds: number): number => {
     const raw = process.env[name];
     if (!raw) {
@@ -142,21 +148,36 @@ class SessionManager {
         return record;
     }
 
-    consumeJoinToken(gameId: string, token: string): JoinTokenRecord | null {
+    validateJoinToken(gameId: string, token: string): JoinTokenValidationResult {
         this.cleanupExpiredJoinTokens();
         const record = this.joinTokensByToken.get(token);
         if (!record) {
-            return null;
+            return { ok: false, reason: 'invalid' };
         }
         if (record.gameId !== gameId) {
-            return null;
+            return { ok: false, reason: 'game_mismatch' };
         }
         if (this.isExpired(record.expiresAt)) {
             this.joinTokensByToken.delete(token);
-            return null;
+            return { ok: false, reason: 'expired' };
         }
+        return { ok: true, record };
+    }
+
+    consumeJoinToken(gameId: string, token: string): JoinTokenRecord | null {
+        const validation = this.validateJoinToken(gameId, token);
+        if (!validation.ok) return null;
+        const record = validation.record;
         this.joinTokensByToken.delete(token);
         return record;
+    }
+
+    invalidateJoinTokensForGame(gameId: string): void {
+        for (const [token, record] of this.joinTokensByToken.entries()) {
+            if (record.gameId === gameId) {
+                this.joinTokensByToken.delete(token);
+            }
+        }
     }
 }
 
