@@ -6,6 +6,7 @@ import * as path from 'path';
 export interface LobbyRoom {
     gameId: string;
     createdAt: string;
+    joinToken?: string | null;
 }
 
 interface RoomMetadata {
@@ -37,11 +38,12 @@ export class LobbyManager {
         return parsed;
     }
 
-    async addRoom(gameId: string): Promise<LobbyRoom> {
+    async addRoom(gameId: string, opts: { joinToken?: string | null } = {}): Promise<LobbyRoom> {
         const rooms = await this.loadRooms();
         const room: LobbyRoom = {
             gameId,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            joinToken: typeof opts.joinToken === 'string' ? opts.joinToken : null
         };
         rooms.push(room);
         await this.saveRooms(rooms);
@@ -124,7 +126,13 @@ export class LobbyManager {
             if (!Array.isArray(parsed)) {
                 return [];
             }
-            return parsed.filter((room) => room && typeof room.gameId === 'string' && typeof room.createdAt === 'string');
+            return parsed
+                .filter((room) => room && typeof room.gameId === 'string' && typeof room.createdAt === 'string')
+                .map((room) => ({
+                    gameId: room.gameId,
+                    createdAt: room.createdAt,
+                    joinToken: typeof room.joinToken === 'string' ? room.joinToken : null
+                }));
         } catch (error) {
             if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
                 return [];

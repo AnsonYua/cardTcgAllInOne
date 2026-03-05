@@ -436,14 +436,6 @@ export class GameController {
                 // TODO: Initialize event queue system for this game
                 // gameState.gameEnv.initializeEventProcessor();
                 // console.log('🎮 Event queue system initialized for game:', gameState.gameId);
-                if (gameState.gameId) {
-                    try {
-                        await lobbyManager.addRoom(gameState.gameId);
-                    } catch (lobbyError) {
-                        console.error('❌ Failed to add lobby room:', lobbyError);
-                    }
-                }
-
                 if (aiEnabled && gameState.gameId) {
                     const aiPlayerId = requestedAiPlayerId || (playerId === 'ai_player_1' ? 'ai_player_2' : 'ai_player_1');
                     const joinState = await this.gameLogic.joinGame(gameState.gameId, aiPlayerId);
@@ -484,6 +476,11 @@ export class GameController {
 
             const session = sessionManager.createSession(gameState.gameId as string, playerId);
             const joinTokenRecord = sessionManager.createJoinToken(gameState.gameId as string, 'seat2');
+            try {
+                await lobbyManager.addRoom(gameState.gameId as string, { joinToken: joinTokenRecord.token });
+            } catch (lobbyError) {
+                console.error('❌ Failed to add lobby room:', lobbyError);
+            }
             res.json({
                 success: true,
                 gameId: gameState.gameId,
