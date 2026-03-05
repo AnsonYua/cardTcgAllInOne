@@ -91,7 +91,8 @@ app.get('/', (_req: Request, res: Response) => {
             joinGame: 'POST /api/game/player/joinRoom',
             playCard: 'POST /api/game/player/playCard',
             gameData: 'GET /api/game/player/:playerId?gameId=X',
-            images: 'GET /api/game/image/:imagePath'
+            images: 'GET /api/game/image/:imagePath',
+            fileDownload: 'GET /api/game/file/:filePath'
         }
     });
 });

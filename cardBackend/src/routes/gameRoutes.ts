@@ -161,6 +161,12 @@ router.get('/topDecks', gameController.getTopDecks.bind(gameController));
  */
 router.get('/image/*', gameController.serveImage.bind(gameController));
 
+/**
+ * Download files from data/file folder
+ * GET /api/game/file/*
+ */
+router.get('/file/*', gameController.downloadFile.bind(gameController));
+
 // ============ PLACEHOLDER ENDPOINTS FOR FUTURE DEVELOPMENT ============
 
 

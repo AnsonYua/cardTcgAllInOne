@@ -164,6 +164,30 @@ export class GameController {
         return null;
     }
 
+    private static resolveDownloadFilePath(sanitizedFilePath: string): string | null {
+        const fileRootDir = resolveDataPath('file');
+        if (!fs.existsSync(fileRootDir) || !fs.statSync(fileRootDir).isDirectory()) {
+            return null;
+        }
+
+        const filePath = path.resolve(fileRootDir, sanitizedFilePath);
+        const fileRootResolved = path.resolve(fileRootDir);
+        if (!filePath.startsWith(fileRootResolved + path.sep)) {
+            return null;
+        }
+
+        if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+            return filePath;
+        }
+
+        const caseInsensitivePath = GameController.resolvePathCaseInsensitive(fileRootDir, sanitizedFilePath);
+        if (caseInsensitivePath && fs.existsSync(caseInsensitivePath) && fs.statSync(caseInsensitivePath).isFile()) {
+            return caseInsensitivePath;
+        }
+
+        return null;
+    }
+
     private static findNearestPackageRoot(startDir: string): string | null {
         let currentDir = path.resolve(startDir);
         // Walk up until filesystem root
@@ -1920,6 +1944,77 @@ export class GameController {
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
                 context: 'serveImage endpoint'
+            });
+        }
+    }
+
+    /**
+     * Download files from data/file folder
+     * GET /api/game/file/*
+     */
+    async downloadFile(req: Request, res: Response): Promise<void> {
+        try {
+            const requestedFilePath = req.params[0];
+
+            if (!requestedFilePath) {
+                res.status(400).json({
+                    error: 'File path is required',
+                    timestamp: new Date().toISOString(),
+                    context: 'downloadFile endpoint'
+                });
+                return;
+            }
+
+            const sanitizedFilePath = requestedFilePath
+                .replace(/\.\./g, '')
+                .replace(/[\\]/g, '/')
+                .replace(/^\/+/g, '')
+                .replace(/\/+/g, '/');
+
+            if (!sanitizedFilePath) {
+                res.status(400).json({
+                    error: 'Invalid file path',
+                    timestamp: new Date().toISOString(),
+                    context: 'downloadFile endpoint'
+                });
+                return;
+            }
+
+            const filePath = GameController.resolveDownloadFilePath(sanitizedFilePath);
+            if (!filePath) {
+                res.status(404).json({
+                    error: `File not found: ${sanitizedFilePath}`,
+                    timestamp: new Date().toISOString(),
+                    context: 'downloadFile endpoint'
+                });
+                return;
+            }
+
+            const downloadName = path.basename(filePath).replace(/"/g, '');
+            console.log(`📦 Downloading file: ${sanitizedFilePath}`);
+
+            res.setHeader('Cache-Control', 'no-store');
+            res.download(filePath, downloadName, (err) => {
+                if (err) {
+                    console.error('❌ Error downloading file:', err);
+                    if (!res.headersSent) {
+                        const status = (err as NodeJS.ErrnoException).code === 'ENOENT' ? 404 : 500;
+                        res.status(status).json({
+                            error: status === 404 ? 'File not found' : 'Failed to download file',
+                            timestamp: new Date().toISOString(),
+                            context: 'downloadFile endpoint'
+                        });
+                    }
+                } else {
+                    console.log(`✅ File downloaded successfully: ${sanitizedFilePath}`);
+                }
+            });
+        } catch (error) {
+            console.error('❌ Error in downloadFile:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'downloadFile endpoint'
             });
         }
     }
