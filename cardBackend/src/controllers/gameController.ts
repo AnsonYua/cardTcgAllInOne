@@ -133,34 +133,27 @@ export class GameController {
         return currentDir;
     }
 
-    private static resolveImageFilePath(sanitizedImagePath: string): string | null {
-        const imageRootDir = resolveDataPath('image');
+    private static resolveImageFilePath(
+        sanitizedImagePath: string,
+        variant: 'full' | 'thumb' = 'full',
+    ): string | null {
+        const imageRootDir = variant === 'thumb' ? resolveDataPath('image', 'thumb') : resolveDataPath('image');
         if (!fs.existsSync(imageRootDir) || !fs.statSync(imageRootDir).isDirectory()) {
             return null;
         }
 
-        const directPath = resolveDataPath('image', sanitizedImagePath);
+        const normalizedPath = sanitizedImagePath.replace(/^\//, '');
+        const directPath =
+            variant === 'thumb'
+                ? resolveDataPath('image', 'thumb', normalizedPath)
+                : resolveDataPath('image', normalizedPath);
         if (fs.existsSync(directPath)) {
             return directPath;
         }
 
-        const caseInsensitivePath = GameController.resolvePathCaseInsensitive(imageRootDir, sanitizedImagePath);
+        const caseInsensitivePath = GameController.resolvePathCaseInsensitive(imageRootDir, normalizedPath);
         if (caseInsensitivePath && fs.existsSync(caseInsensitivePath)) {
             return caseInsensitivePath;
-        }
-
-        // Back-compat: some clients request previews/<set>/... while assets live at <set>/...
-        const withoutPreviews = sanitizedImagePath.replace(/^previews\//i, '');
-        if (withoutPreviews !== sanitizedImagePath) {
-            const directWithoutPreviews = resolveDataPath('image', withoutPreviews);
-            if (fs.existsSync(directWithoutPreviews)) {
-                return directWithoutPreviews;
-            }
-
-            const caseInsensitiveWithoutPreviews = GameController.resolvePathCaseInsensitive(imageRootDir, withoutPreviews);
-            if (caseInsensitiveWithoutPreviews && fs.existsSync(caseInsensitiveWithoutPreviews)) {
-                return caseInsensitiveWithoutPreviews;
-            }
         }
 
         return null;
@@ -1800,14 +1793,17 @@ export class GameController {
                 }
             };
 
-            const resolveExistingImage = (resourcePath: string): { filePath: string; ext: string } | null => {
+            const resolveExistingImage = (
+                resourcePath: string,
+                variant: 'full' | 'thumb' = 'full',
+            ): { filePath: string; ext: string } | null => {
                 const sanitized = sanitizeResource(resourcePath);
                 const hasExt = /\.(png|jpe?g|webp|gif|svg)$/i.test(sanitized);
                 const candidates = hasExt
                     ? [sanitized]
                     : [`${sanitized}.jpeg`, `${sanitized}.jpg`, `${sanitized}.png`, `${sanitized}.webp`];
                 for (const candidate of candidates) {
-                    const resolved = GameController.resolveImageFilePath(candidate);
+                    const resolved = GameController.resolveImageFilePath(candidate, variant);
                     if (resolved) {
                         return { filePath: resolved, ext: path.extname(candidate).toLowerCase() };
                     }
@@ -1819,33 +1815,47 @@ export class GameController {
                 const filenameBase = resourcePath.split('/').pop() || resourcePath;
                 const baseKey = filenameBase.replace(/\.(png|jpe?g|webp|gif|svg)$/i, '');
 
-                let resolved = resolveExistingImage(resourcePath);
-                if (!resolved && /^T-\d+$/i.test(baseKey)) {
+                let baseResolved = resolveExistingImage(resourcePath, 'thumb');
+                let previewResolved = resolveExistingImage(resourcePath, 'full');
+                if (!baseResolved && /^T-\d+$/i.test(baseKey)) {
                     // Token fallback: if set-scoped token art is missing, try the global token folder.
-                    resolved = resolveExistingImage(`T/${baseKey}`);
+                    baseResolved = resolveExistingImage(`T/${baseKey}`, 'thumb');
+                    if (!previewResolved) {
+                        previewResolved = resolveExistingImage(`T/${baseKey}`, 'full');
+                    }
                 }
-                if (!resolved) {
+                if (!baseResolved && !previewResolved) {
                     missing.push({ key: baseKey });
                     continue;
                 }
 
-                const data = await fs.promises.readFile(resolved.filePath);
-                const contentType = contentTypeForExt(resolved.ext);
-                const filename = `${baseKey}${resolved.ext || '.bin'}`;
+                const baseImage = baseResolved || previewResolved;
+                const previewImage = previewResolved || baseResolved;
+                if (!baseImage || !previewImage) {
+                    missing.push({ key: baseKey });
+                    continue;
+                }
 
-                parts.push({ key: baseKey, contentType, filename, data, preview: false });
-                images.push({ key: baseKey, contentType, bytes: data.length, preview: false });
+                const baseData = await fs.promises.readFile(baseImage.filePath);
+                const baseContentType = contentTypeForExt(baseImage.ext);
+                const baseFilename = `${baseKey}${baseImage.ext || '.bin'}`;
+
+                parts.push({ key: baseKey, contentType: baseContentType, filename: baseFilename, data: baseData, preview: false });
+                images.push({ key: baseKey, contentType: baseContentType, bytes: baseData.length, preview: false });
 
                 if (includePreviews) {
                     const previewKey = `${baseKey}-preview`;
+                    const previewData = await fs.promises.readFile(previewImage.filePath);
+                    const previewContentType = contentTypeForExt(previewImage.ext);
+                    const previewFilename = `${previewKey}${previewImage.ext || '.bin'}`;
                     parts.push({
                         key: previewKey,
-                        contentType,
-                        filename: `${previewKey}${resolved.ext || '.bin'}`,
-                        data,
+                        contentType: previewContentType,
+                        filename: previewFilename,
+                        data: previewData,
                         preview: true,
                     });
-                    images.push({ key: previewKey, contentType, bytes: data.length, preview: true });
+                    images.push({ key: previewKey, contentType: previewContentType, bytes: previewData.length, preview: true });
                 }
             }
 
@@ -1902,7 +1912,9 @@ export class GameController {
     // ============ IMAGE SERVING ENDPOINTS ============
 
     /**
-     * Serve images from data/image folder
+     * Serve images from data/image folder.
+     * `/api/game/image/*` returns full-size images,
+     * `/api/game/image/thumb/*` returns thumbnails.
      * GET /api/game/image/*
      */
     async serveImage(req: Request, res: Response): Promise<void> {
@@ -1927,7 +1939,14 @@ export class GameController {
                 .replace(/[\\]/g, '/') // Normalize path separators
                 .replace(/\/+/g, '/'); // Remove double slashes
 
-            const imagePath = GameController.resolveImageFilePath(sanitizedImagePath);
+            const isThumbRequest = /^thumb\//i.test(sanitizedImagePath);
+            const normalizedImagePath = isThumbRequest
+                ? sanitizedImagePath.replace(/^thumb\//i, '')
+                : sanitizedImagePath;
+            const imagePath = GameController.resolveImageFilePath(
+                normalizedImagePath,
+                isThumbRequest ? 'thumb' : 'full'
+            );
             if (!imagePath) {
                 res.status(404).json({
                     error: `Image not found: ${sanitizedImagePath}`,
@@ -1938,7 +1957,7 @@ export class GameController {
             }
             
             // Get file extension to set proper Content-Type
-            const ext = path.extname(sanitizedImagePath).toLowerCase();
+            const ext = path.extname(normalizedImagePath).toLowerCase();
             let contentType = 'application/octet-stream';
             
             switch (ext) {
