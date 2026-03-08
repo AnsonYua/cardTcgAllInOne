@@ -1707,7 +1707,7 @@ export class GameController {
                 return;
             }
 
-            const includePreviews = req.body?.includePreviews !== false;
+            const includeThumbs = req.body?.includeThumbs !== false;
             const includeBothDecks = req.body?.includeBothDecks === true;
             const allowEnvScanFallback = req.body?.allowEnvScanFallback === true;
 
@@ -1757,14 +1757,14 @@ export class GameController {
                 key: string;
                 contentType: string;
                 bytes: number;
-                preview: boolean;
+                thumb: boolean;
             }> = [];
             const parts: Array<{
                 key: string;
                 contentType: string;
                 filename: string;
                 data: Buffer;
-                preview: boolean;
+                thumb: boolean;
             }> = [];
             const missing: Array<{ key: string }> = [];
 
@@ -1815,47 +1815,47 @@ export class GameController {
                 const filenameBase = resourcePath.split('/').pop() || resourcePath;
                 const baseKey = filenameBase.replace(/\.(png|jpe?g|webp|gif|svg)$/i, '');
 
-                let baseResolved = resolveExistingImage(resourcePath, 'thumb');
-                let previewResolved = resolveExistingImage(resourcePath, 'full');
-                if (!baseResolved && /^T-\d+$/i.test(baseKey)) {
+                let thumbResolved = resolveExistingImage(resourcePath, 'thumb');
+                let fullResolved = resolveExistingImage(resourcePath, 'full');
+                if (!thumbResolved && /^T-\d+$/i.test(baseKey)) {
                     // Token fallback: if set-scoped token art is missing, try the global token folder.
-                    baseResolved = resolveExistingImage(`T/${baseKey}`, 'thumb');
-                    if (!previewResolved) {
-                        previewResolved = resolveExistingImage(`T/${baseKey}`, 'full');
+                    thumbResolved = resolveExistingImage(`T/${baseKey}`, 'thumb');
+                    if (!fullResolved) {
+                        fullResolved = resolveExistingImage(`T/${baseKey}`, 'full');
                     }
                 }
-                if (!baseResolved && !previewResolved) {
+                if (!thumbResolved && !fullResolved) {
                     missing.push({ key: baseKey });
                     continue;
                 }
 
-                const baseImage = baseResolved || previewResolved;
-                const previewImage = previewResolved || baseResolved;
-                if (!baseImage || !previewImage) {
+                const fullImage = fullResolved || thumbResolved;
+                const thumbImage = thumbResolved || fullResolved;
+                if (!fullImage || !thumbImage) {
                     missing.push({ key: baseKey });
                     continue;
                 }
 
-                const baseData = await fs.promises.readFile(baseImage.filePath);
-                const baseContentType = contentTypeForExt(baseImage.ext);
-                const baseFilename = `${baseKey}${baseImage.ext || '.bin'}`;
+                const fullData = await fs.promises.readFile(fullImage.filePath);
+                const fullContentType = contentTypeForExt(fullImage.ext);
+                const fullFilename = `${baseKey}${fullImage.ext || '.bin'}`;
 
-                parts.push({ key: baseKey, contentType: baseContentType, filename: baseFilename, data: baseData, preview: false });
-                images.push({ key: baseKey, contentType: baseContentType, bytes: baseData.length, preview: false });
+                parts.push({ key: baseKey, contentType: fullContentType, filename: fullFilename, data: fullData, thumb: false });
+                images.push({ key: baseKey, contentType: fullContentType, bytes: fullData.length, thumb: false });
 
-                if (includePreviews) {
-                    const previewKey = `${baseKey}-preview`;
-                    const previewData = await fs.promises.readFile(previewImage.filePath);
-                    const previewContentType = contentTypeForExt(previewImage.ext);
-                    const previewFilename = `${previewKey}${previewImage.ext || '.bin'}`;
+                if (includeThumbs) {
+                    const thumbKey = `${baseKey}-thumb`;
+                    const thumbData = await fs.promises.readFile(thumbImage.filePath);
+                    const thumbContentType = contentTypeForExt(thumbImage.ext);
+                    const thumbFilename = `${thumbKey}${thumbImage.ext || '.bin'}`;
                     parts.push({
-                        key: previewKey,
-                        contentType: previewContentType,
-                        filename: previewFilename,
-                        data: previewData,
-                        preview: true,
+                        key: thumbKey,
+                        contentType: thumbContentType,
+                        filename: thumbFilename,
+                        data: thumbData,
+                        thumb: true,
                     });
-                    images.push({ key: previewKey, contentType: previewContentType, bytes: previewData.length, preview: true });
+                    images.push({ key: thumbKey, contentType: thumbContentType, bytes: thumbData.length, thumb: true });
                 }
             }
 
@@ -1885,7 +1885,7 @@ export class GameController {
                 pushString(`Content-Type: ${part.contentType}${CRLF}`);
                 pushString(`Content-Disposition: attachment; name="image"; filename="${part.filename}"${CRLF}`);
                 pushString(`X-Texture-Key: ${part.key}${CRLF}`);
-                pushString(`X-Preview: ${part.preview ? '1' : '0'}${CRLF}${CRLF}`);
+                pushString(`X-Thumb: ${part.thumb ? '1' : '0'}${CRLF}${CRLF}`);
                 pushBuffer(part.data);
                 pushString(CRLF);
             }

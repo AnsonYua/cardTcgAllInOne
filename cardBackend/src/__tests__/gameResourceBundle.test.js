@@ -131,7 +131,7 @@ describe("Game resource bundle endpoint", () => {
 
     const req = {
       headers: { authorization: `Bearer ${token}` },
-      body: { includePreviews: true, includeBothDecks: true, allowEnvScanFallback: false },
+      body: { includeThumbs: true, includeBothDecks: true, allowEnvScanFallback: false },
     };
     const res = new MockResponse();
     await gameController.getGameResourceBundle(req, res);
@@ -149,7 +149,7 @@ describe("Game resource bundle endpoint", () => {
 
     const req = {
       headers: { authorization: `Bearer ${token}` },
-      body: { includePreviews: false, includeBothDecks: true, allowEnvScanFallback: true },
+      body: { includeThumbs: false, includeBothDecks: true, allowEnvScanFallback: true },
     };
     const res = new MockResponse();
     await gameController.getGameResourceBundle(req, res);
@@ -165,14 +165,14 @@ describe("Game resource bundle endpoint", () => {
     expect(manifest.images.length).toBeGreaterThan(0);
   });
 
-  test("includes token textures (with previews) and avoids marking token missing when token is in play", async () => {
+  test("includes token textures (with thumbs) and avoids marking token missing when token is in play", async () => {
     const gameId = makeGameId();
     await injectScenario(gameId, loadTokenFallbackEnv());
     const token = await getBundleToken(gameId);
 
     const req = {
       headers: { authorization: `Bearer ${token}` },
-      body: { includePreviews: true, includeBothDecks: true, allowEnvScanFallback: true },
+      body: { includeThumbs: true, includeBothDecks: true, allowEnvScanFallback: true },
     };
     const res = new MockResponse();
     await gameController.getGameResourceBundle(req, res);
@@ -182,7 +182,7 @@ describe("Game resource bundle endpoint", () => {
     const manifest = parseMultipartManifest(res.body, boundary);
     const imageKeys = imageKeysFromManifest(manifest);
     expect(imageKeys).toContain("T-006");
-    expect(imageKeys).toContain("T-006-preview");
+    expect(imageKeys).toContain("T-006-thumb");
     expect(Array.isArray(manifest.missing)).toBe(true);
     expect(manifest.missing.some((entry) => entry?.key === "T-006")).toBe(false);
   });
@@ -205,7 +205,7 @@ describe("Game resource bundle endpoint", () => {
     const token = await getBundleToken(gameId);
     const req = {
       headers: { authorization: `Bearer ${token}` },
-      body: { includePreviews: false, includeBothDecks: true, allowEnvScanFallback: true },
+      body: { includeThumbs: false, includeBothDecks: true, allowEnvScanFallback: true },
     };
     const res = new MockResponse();
     await gameController.getGameResourceBundle(req, res);
