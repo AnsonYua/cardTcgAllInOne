@@ -2,7 +2,6 @@ const { GameEnvironment } = require('../models/GameEnvironment');
 const { EventType } = require('../models/GameEnums');
 const { EventStatus } = require('../services/EventQueue/interfaces/GameEvent');
 const { OptionChoiceManager } = require('../services/effects/OptionChoiceManager');
-const { PromptChoiceManager } = require('../services/effects/PromptChoiceManager');
 const { applyScryTopDeckEffect } = require('../services/effects/actions/EffectScryActions');
 
 describe('scry_top_deck option-choice contract', () => {
@@ -62,30 +61,4 @@ describe('scry_top_deck option-choice contract', () => {
         expect(player.deck.mainDeck).toEqual(['GD01-002_next_0002', 'GD01-001_top_0001']);
     });
 
-    test('PromptChoiceManager still resolves legacy scry prompt payloads', () => {
-        const gameEnv = new GameEnvironment();
-        const player = gameEnv.addPlayer('playerId_1', 'P1');
-        player.deck.mainDeck = ['GD01-002_next_compat_0002'];
-
-        const legacyPromptEvent = {
-            status: EventStatus.RESOLVING,
-            playerId: 'playerId_1',
-            data: {
-                choiceId: 'scry_top_deck_choice',
-                selectedOptionIndex: 1,
-                context: {
-                    kind: 'SCRY_TOP_DECK',
-                    sourcePlayerId: 'playerId_1',
-                    lookedCarduids: ['GD01-001_top_compat_0001'],
-                    choice: 'top_or_bottom',
-                    keep: 1,
-                    restDestination: 'bottom'
-                }
-            }
-        };
-
-        const result = PromptChoiceManager.executePromptChoice(legacyPromptEvent, gameEnv);
-        expect(result.success).toBe(true);
-        expect(player.deck.mainDeck).toEqual(['GD01-002_next_compat_0002', 'GD01-001_top_compat_0001']);
-    });
 });

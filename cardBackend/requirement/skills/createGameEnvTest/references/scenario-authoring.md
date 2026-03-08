@@ -47,16 +47,25 @@ Required `initialGameEnv` fields:
 1. Parse requirement into one branch objective.
 2. Read target card `effects.description` + `effects.rules`.
 3. Start from `references/templates/action-scenario-template.json`.
-4. Fill both player states with minimal cards needed to trigger the branch.
+4. Fill both player states with the minimal stable preconditions needed to trigger the branch.
 5. Use exact zone snippets from `references/gameenv-zone-cookbook.md`.
 6. Add concise notes with alternating Action/Expect lines.
 7. Validate and run manual flow.
 
 ## Hard Environment Rules
-- Always include `processingQueue: []`.
+- `initialGameEnv` should represent the last stable precondition before the tested behavior.
+- Runtime-derived state should be created by gameplay actions in notes, not embedded directly into the fixture.
+- Do **not** hard-code engine-generated transient state unless the scenario is explicitly about persistence, resume, migration, or compatibility of serialized runtime state.
+- By default, do **not** author into the fixture:
+  - generated choice events in `processingQueue`
+  - generated notifications beyond the required harness seed
+  - battle/action-step progress that should come from runtime actions
+  - resolved effect results or post-choice state
+- If transient runtime state is intentionally hard-coded, the scenario description or notes must explain why trigger-first authoring is required to be bypassed.
+- Always include `processingQueue: []`. This is the default because choice/flow events should usually be created by runtime, not authored into the fixture.
 - Always include at least one `CARD_DRAWN` seed in `notificationQueue`.
 - Seed rule: `notificationQueue[*].payload.playerId === currentPlayer`.
-- For action-effect scenarios, do **not** initialize directly in battle/action step.
+- For action-effect scenarios, do **not** initialize directly in battle/action step. This is one example of the broader trigger-first rule.
   - Keep `initialGameEnv` before manual battle entry (default `phase: "MAIN_PHASE"` and `currentBattle: null` unless explicitly required otherwise).
   - Do not pre-seed action-step confirmations or queued events that skip user-driven battle entry.
 - Always include all six slot objects and explicit arrays for `base`, `shieldArea`, `energyArea`, `trashArea`.

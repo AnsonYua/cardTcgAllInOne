@@ -57,3 +57,8 @@ Owner turn control:
 
 Expected difference:
 - optional deploy-from-hand branch can become available.
+
+## Why This Example Is Trigger-First Correct
+- The fixture encodes only the preconditions needed to reach the branch.
+- The burst choice and follow-up deploy flow are created by runtime actions during manual execution.
+- The scenario does not pre-seed the burst event, deploy choice, or post-resolution results into `gameEnv`.

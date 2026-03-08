@@ -5861,19 +5861,19 @@
             ],
             "action": "scry_top_deck",
             "conditions": [
+                  {
+                    "type": "turnPlayer",
+                    "scope": "self"
+                  },
               {
-                "type": "turnPlayer",
-                "scope": "self"
+                "type": "eventAttacker",
+                "value": "self"
               },
-          {
-            "type": "eventAttacker",
-            "value": "self"
-          },
-          {
-            "type": "eventDefenderDestroyed",
-            "value": true
-          }
-        ],
+              {
+                "type": "eventDefenderDestroyed",
+                "value": true
+              }
+            ],
             "parameters": {
               "text": "During your turn, when this Unit destroys an enemy Unit with battle damage, look at the top 2 cards of your deck and return 1 to the top. Place the remaining card into your trash.",
               "version": 1,

@@ -1,11 +1,9 @@
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import { CardDatabaseManager, createZoneCard } from '../../models/CardSystem';
-import type { EffectDefinition, OptionChoiceEvent, PromptChoiceEvent } from '../EventQueue/interfaces/GameEvent';
+import type { EffectDefinition, OptionChoiceEvent } from '../EventQueue/interfaces/GameEvent';
 import { ChoiceEventScheduler } from '../choices/ChoiceEventScheduler';
 import { ChoiceDisplayBuilder } from '../choices/ChoiceDisplayBuilder';
 import type { ExecutionResult } from '../ExecutionResult';
-
-const SCRY_CHOICE_ID = 'scry_top_deck_choice';
 
 type ScryRuntimeContext = {
     kind: 'SCRY_TOP_DECK';
@@ -273,14 +271,4 @@ export class ScryTopDeckManager {
         return this.resolveChoiceByIndex(selectedOptionIndex, event.data.context, gameEnv);
     }
 
-    static executePromptChoice(event: PromptChoiceEvent, gameEnv: GameEnvironment): ExecutionResult {
-        const selectedOptionIndex = typeof event.data.selectedOptionIndex === 'number'
-            ? event.data.selectedOptionIndex
-            : -1;
-        return this.resolveChoiceByIndex(selectedOptionIndex, event.data.context, gameEnv);
-    }
-
-    static getPromptChoiceId(): string {
-        return SCRY_CHOICE_ID;
-    }
 }

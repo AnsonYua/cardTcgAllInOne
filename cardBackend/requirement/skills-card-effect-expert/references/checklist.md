@@ -36,6 +36,9 @@
   - `allow_attack_target`
   - `restrict_attack`
   - related `conditions`/`sourceConditions`
+- For `scry_top_deck` audits:
+  - verify whether the effect shape should be single-card top/bottom, multi-card choose-one, or auto-resolve
+  - verify actual deck count because looked-card count, not just declared `count`, controls the branch
 - Capture dynamic filters:
   - `<=SOURCE_AP`, `<=SOURCE_LEVEL`, etc.
 - Capture source-level semantic controls:

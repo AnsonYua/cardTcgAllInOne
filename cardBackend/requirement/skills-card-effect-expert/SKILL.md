@@ -147,6 +147,17 @@ Use this when the user asks "is this effect properly implemented?" and does not 
 - `allow_attack_target` dynamic filters must support:
   - `ap: "<=SOURCE_AP"`
   - `level: "<=SOURCE_LEVEL"`
+- `scry_top_deck` UI-branching audit rule:
+  - do not assume one chooser layout for all `scry_top_deck` effects
+  - classify the effect by `count`, `keep`, `choice`, and actual looked-card count before debugging frontend display
+  - verify whether the effect should create `OPTION_CHOICE` at all before debugging the dialog
+  - expected mapping:
+    - `count = 1` + `choice = "top_or_bottom"` + looked count `1` => backend emits text options, frontend shows one-card top/bottom layout
+    - looked count `> 1` + `keep = 1` => backend emits card options, frontend shows multi-card choose-one layout
+    - all other shapes => backend likely auto-resolves with no chooser
+  - fast reference cards:
+    - single-card top/bottom: `GD01-039`, `GD02-025`, `ST06-010`
+    - multi-card choose-one: `GD03-097`, `GD02-104`, `ST02-015`
 - Frontend slot action bar must reflect `restrict_attack` semantics:
   - `disallow: "player"` => block Attack Shield button
   - `requires.type: "friendly_unit_deployed_this_turn"` => disable attack if unmet

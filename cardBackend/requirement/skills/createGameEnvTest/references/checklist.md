@@ -14,8 +14,10 @@
 
 ## Authoring Checks
 - `testType` is `action`.
+- Scenario starts from stable preconditions, not runtime conclusions.
 - `processingQueue` exists and is `[]`.
 - `notificationQueue` includes `CARD_DRAWN` seed with `payload.playerId === currentPlayer`.
+- No hand-authored transient gameplay state unless this is explicitly a persistence/resume/legacy compatibility scenario.
 - For action-effect scenarios:
   - `initialGameEnv` is not pre-set to battle/action step (`phase` should remain pre-battle, usually `MAIN_PHASE`).
   - `currentBattle` is `null` at scenario start unless explicitly required.
@@ -37,6 +39,11 @@
   - attacker is active (`isRested: false`)
   - attacker/turn setup matches intended action
 - Notes alternate `Action` / `Expect`.
+- Trigger-first verification:
+  - the scenario starts before the effect/choice/event under test is generated
+  - notes cause the engine path to create the expected event, dialog, or result
+  - no generated choice events or extra gameplay notifications are pre-seeded by hand
+  - if runtime state is intentionally pre-authored, the scenario clearly says it is a persistence/resume/migration/compatibility test
 
 ## Validation Checks
 - Run:

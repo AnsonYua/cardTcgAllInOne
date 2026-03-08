@@ -19,7 +19,7 @@ Use this skill when you need to create or review a complete action scenario JSON
 1. Read `references/scenario-authoring.md` for contract and process.
 2. Read `references/gameenv-zone-cookbook.md` for exact zone snippets.
 3. Start from `references/templates/action-scenario-template.json`.
-4. Fill the template from user environment requirements.
+4. Fill the template with the minimal stable preconditions needed to trigger the branch.
 5. If card is GD01-125 (or similar burst-turn gating), read `references/gd01-125-worked-example.md`.
 6. Write the scenario JSON file to `shared/testScenarios/gameStates/<SET>/<CARD_ID>/<scenario_name>.json`.
 7. **IMPORTANT**: After creating the scenario file, update `cardGameFrontend/src/phaser/controllers/DebugControls.ts` by adding the new scenario path to `SCENARIO_PRESET_GROUPS` in the appropriate card set group (e.g., GD01, GD02, etc.).
@@ -28,8 +28,23 @@ Use this skill when you need to create or review a complete action scenario JSON
 ## Output Requirements
 - Default `testType: "action"` for new scenarios.
 - Include complete `initialGameEnv` for both players.
-- Include `processingQueue: []`.
+- Include `processingQueue: []` by default.
 - Include `notificationQueue` with a `CARD_DRAWN` seed where `payload.playerId === currentPlayer`.
+- **Trigger-First Authoring Rule (CRITICAL):**
+  - Author the smallest stable precondition state that can trigger the behavior under test.
+  - Let runtime gameplay actions create transient state such as choice events, generated notifications, battle/action-step progress, and effect results.
+  - Do **not** hard-code engine-generated transient state just to force the branch under test.
+  - Unless the test is explicitly about persistence/resume/legacy runtime state, do **not** pre-seed:
+    - generated choice events in `processingQueue`
+    - generated notifications beyond the required harness seed
+    - battle or action-step progress that should come from user actions
+    - resolved effect outputs or post-choice state
+  - If transient runtime state is intentionally authored, the scenario notes or description must state why trigger-first authoring is not possible.
+  - Allowed exceptions:
+    - persistence/load-resume tests
+    - legacy compatibility tests
+    - queue recovery or notification rehydration tests
+    - tests whose purpose is serialized runtime state
 - **Action-Effect Manual Entry Rule (CRITICAL):**
   - For card effects tested via action flow, do **not** pre-set `gameEnv` to battle/action step.
   - Keep initial state before battle progression (normally `phase: "MAIN_PHASE"` with `currentBattle: null`).

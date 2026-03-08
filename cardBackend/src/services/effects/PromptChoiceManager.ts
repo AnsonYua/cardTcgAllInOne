@@ -34,8 +34,6 @@ export class PromptChoiceManager {
                 return TutorTopDeckManager.executeRevealConfirmPromptChoice(event, gameEnv);
             case DEPLOY_FROM_TOP_DECK_REVIEW_CHOICE_ID:
                 return DeployFromTopDeckManager.executeReviewConfirmPromptChoice(event, gameEnv);
-            case 'scry_top_deck_choice':
-                return ScryTopDeckManager.executePromptChoice(event, gameEnv);
             default:
                 return { success: false, error: `PROMPT_CHOICE unsupported choiceId: ${event.data.choiceId || 'unknown'}` };
         }
