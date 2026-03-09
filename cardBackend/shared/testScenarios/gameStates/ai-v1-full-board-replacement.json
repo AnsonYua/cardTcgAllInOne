@@ -1,0 +1,303 @@
+{
+  "id": "ai-v1-full-board-replacement",
+  "name": "AI V1 Full Board Replacement",
+  "status": "ready",
+  "purpose": "Verify replacement-slot play enumeration when the AI board is full.",
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 5,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed_ai_v1_replace",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "DRAW_SEED_AI_V1_REPLACE",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [
+            "ST01-001_ai_replace_hand_0001"
+          ],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 4,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST01-002_ai_board_0001",
+              "cardId": "ST01-002",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 2,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": false,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "ST01-003_ai_board_0002",
+              "cardId": "ST01-003",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "damageReceived": 1,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 2,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": false,
+              "isFirstPlay": false
+            }
+          },
+          "slot3": {
+            "unit": {
+              "carduid": "ST01-004_ai_board_0003",
+              "cardId": "ST01-004",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 2,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": false,
+              "isFirstPlay": false
+            }
+          },
+          "slot4": {
+            "unit": {
+              "carduid": "ST01-005_ai_board_0004",
+              "cardId": "ST01-005",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 3,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": false,
+              "isFirstPlay": false
+            }
+          },
+          "slot5": {
+            "unit": {
+              "carduid": "ST01-006_ai_board_0005",
+              "cardId": "ST01-006",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 4,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": false,
+              "isFirstPlay": false
+            }
+          },
+          "slot6": {
+            "unit": {
+              "carduid": "ST01-007_ai_board_0006",
+              "cardId": "ST01-007",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 3,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": false,
+              "isFirstPlay": false
+            }
+          },
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "ST01-014_shield_0001",
+              "cardId": "ST01-014"
+            },
+            {
+              "carduid": "ST01-010_shield_0002",
+              "cardId": "ST01-010"
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_ai_replace_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_ai_replace_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_ai_replace_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_ai_replace_0004",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 4,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "ST01-011_shield_op_0001",
+              "cardId": "ST01-011"
+            },
+            {
+              "carduid": "ST01-012_shield_op_0002",
+              "cardId": "ST01-012"
+            }
+          ],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  },
+  "actingAiPlayerId": "playerId_1",
+  "viewerPlayerId": "playerId_1",
+  "aiPlayerIds": [
+    "playerId_1"
+  ],
+  "decisionSequence": [
+    {
+      "allowedKinds": [
+        "playCard"
+      ],
+      "payloadSubset": {
+        "action": {
+          "playAs": "unit",
+          "carduid": "ST01-001_ai_replace_hand_0001"
+        }
+      },
+      "payloadAssertions": [
+        {
+          "path": "action.replaceSlot",
+          "exists": true
+        }
+      ],
+      "executeDecision": true,
+      "stateAssertionsAfterExecute": [
+        {
+          "path": "players.playerId_1.zones.trashArea.0.carduid",
+          "exists": true
+        }
+      ]
+    }
+  ]
+}

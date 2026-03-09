@@ -3,6 +3,9 @@ import type { AiActionCandidate, AiDecisionContext } from './AiV1Types';
 const getActionType = (candidate: AiActionCandidate): string =>
     String(candidate.decision.payload?.actionType || candidate.telemetry?.actionType || '');
 
+const getEffectAction = (candidate: AiActionCandidate): string =>
+    String(candidate.telemetry?.action || '');
+
 const estimateBurstRisk = (context: AiDecisionContext, attackerCarduid: string | undefined): number => {
     if (!attackerCarduid || context.opponent.shieldCount <= 0) {
         return 0;
@@ -45,6 +48,7 @@ const evaluateBoardState = (context: AiDecisionContext): number => {
 const scoreCandidate = (context: AiDecisionContext, candidate: AiActionCandidate, hasAlternativeActionStepPlay: boolean): number => {
     let score = candidate.estimatedScore;
     const actionType = getActionType(candidate);
+    const effectAction = getEffectAction(candidate);
 
     if (context.windowKind === 'OWNED_PROMPT') {
         score += 1200;
@@ -78,7 +82,13 @@ const scoreCandidate = (context: AiDecisionContext, candidate: AiActionCandidate
             score += 2000;
         } else {
             score += 8;
+            if (context.opponent.shieldCount <= 1) {
+                score += 18;
+            }
             score -= estimateBurstRisk(context, attackerCarduid);
+        }
+        if (context.self.readyAttackers > 1) {
+            score += 10;
         }
     }
 
@@ -88,10 +98,13 @@ const scoreCandidate = (context: AiDecisionContext, candidate: AiActionCandidate
         if (target) {
             score += target.valueScore;
             if (target.keywords.includes('Blocker')) {
-                score += 12;
+                score += 18;
             }
             if (target.canAttack) {
                 score += 10;
+            }
+            if (context.self.readyAttackers > 1 && candidate.tags.includes('lethal_on_target')) {
+                score += 12;
             }
         }
     }
@@ -107,8 +120,14 @@ const scoreCandidate = (context: AiDecisionContext, candidate: AiActionCandidate
         if (playAs === 'pilot' && context.self.readyAttackers > 0) {
             score += 10;
         }
+        if (playAs === 'pilot' && context.opponent.shieldCount === 0) {
+            score += 12;
+        }
         if (context.self.units.length >= 5 && context.opponent.readyAttackers > context.self.blockers.length + 1) {
             score -= 10;
+        }
+        if (playAs === 'unit' && context.self.readyAttackers > 0 && context.opponent.readyAttackers >= context.self.blockers.length + 1) {
+            score -= 8;
         }
     }
 
@@ -119,6 +138,34 @@ const scoreCandidate = (context: AiDecisionContext, candidate: AiActionCandidate
         if (context.self.damagedUnits.length > 0 && candidate.tags.includes('heals_key_unit')) {
             score += 12;
         }
+    }
+
+    if (effectAction === 'damageShield') {
+        score += context.opponent.shieldCount > 0 ? 24 : 6;
+    }
+    if (effectAction === 'modifyAP') {
+        score += context.windowKind === 'ACTION_STEP' ? 24 : 14;
+    }
+    if (effectAction === 'modifyHP' || effectAction === 'heal' || effectAction === 'repair') {
+        score += context.self.damagedUnits.length > 0 ? 18 : 6;
+    }
+    if (effectAction === 'grant_keyword') {
+        score += 16;
+    }
+    if (effectAction === 'allow_attack_target') {
+        score += 18;
+    }
+    if (effectAction === 'redirect_attack') {
+        score += context.windowKind === 'ACTION_STEP' || context.windowKind === 'BLOCKER_STEP' ? 22 : 10;
+    }
+    if (effectAction === 'setActive') {
+        score += context.self.readyAttackers > 0 ? 18 : 10;
+    }
+    if (effectAction === 'prevent_battle_damage') {
+        score += context.windowKind === 'ACTION_STEP' ? 26 : 10;
+    }
+    if (effectAction === 'sequence' || effectAction === 'conditional') {
+        score += 8;
     }
 
     if (candidate.kind === 'battleConfirm') {

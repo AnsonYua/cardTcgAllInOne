@@ -1,0 +1,47 @@
+{
+  "id": "ai-v1-blocker-redirect",
+  "name": "AI V1 Blocker Redirect",
+  "status": "ready",
+  "purpose": "Verify blocker-step handling and redirected battle continuation in the v1 computer opponent.",
+  "sourceScenarioPath": "ST04/ST04-004/shared_keyword_blocker_redirect_attack_target_manual_flow.json",
+  "actingAiPlayerId": "playerId_1",
+  "viewerPlayerId": "playerId_1",
+  "aiPlayerIds": [
+    "playerId_1"
+  ],
+  "setupActions": [
+    {
+      "playerId": "playerId_2",
+      "kind": "playerAction",
+      "reason": "scenario_declare_attack",
+      "payload": {
+        "actionType": "attackShieldArea",
+        "attackerCarduid": "ST04-005_attacker_0001"
+      }
+    }
+  ],
+  "decisionSequence": [
+    {
+      "allowedKinds": [
+        "confirmBlockerChoice"
+      ],
+      "payloadAssertions": [
+        {
+          "path": "eventId",
+          "exists": true
+        },
+        {
+          "path": "selectedTargets.0.carduid",
+          "equals": "ST04-004_unit_0001"
+        }
+      ],
+      "executeDecision": true,
+      "stateAssertionsAfterExecute": [
+        {
+          "path": "players.playerId_1.zones.trashArea.0.carduid",
+          "equals": "ST04-004_unit_0001"
+        }
+      ]
+    }
+  ]
+}

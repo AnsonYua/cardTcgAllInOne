@@ -141,6 +141,53 @@ export interface AiActionCandidate {
     totalScore?: number;
 }
 
+export interface AiMoveBudget {
+    maxDecisionMs: number;
+    beamWidth: number;
+    maxRootSimulations: number;
+    maxSimulatedNodes: number;
+    maxMainPhaseDepth: number;
+    maxBattleDepth: number;
+    startedAtMs: number;
+}
+
+export interface AiLineHistoryEntry {
+    candidateId: string;
+    kind: AiActionCandidateKind;
+    reason: string;
+    tacticalScore?: number;
+    simulationScore?: number;
+    totalScore?: number;
+}
+
+export interface AiSearchTrace {
+    rootCandidates: Array<Record<string, unknown>>;
+    beamCandidates: Array<Record<string, unknown>>;
+    lineHistory: AiLineHistoryEntry[];
+    simulatedNodeCount: number;
+    budgetUsedMs: number;
+    budgetRemainingMs: number;
+    maxDepthReached: number;
+    bestLineScore: number;
+    fallbackReason?: string;
+}
+
+export interface AiTurnLineNode {
+    depth: number;
+    score: number;
+    candidate: AiActionCandidate;
+    context: AiDecisionContext;
+    simulation: AiSimulationResult | null;
+    parent: AiTurnLineNode | null;
+    history: AiLineHistoryEntry[];
+}
+
+export interface AiTurnLineResult {
+    bestCandidate: AiActionCandidate;
+    bestNode: AiTurnLineNode;
+    searchTrace: AiSearchTrace;
+}
+
 export interface AiSimulationResult {
     supported: boolean;
     success: boolean;
@@ -151,6 +198,7 @@ export interface AiSimulationResult {
     remainingHpByCarduid: Record<string, number>;
     hpDeltas: Record<string, number>;
     promptChain: AiSimulationPromptTrace[];
+    nextStateJson?: Record<string, unknown>;
 }
 
 export interface AiSimulationPromptTrace {

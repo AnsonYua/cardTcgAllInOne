@@ -2,13 +2,6 @@ import type { AiDecision } from './AiTypes';
 import type { AiGameEnvView } from './AiViewTypes';
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import { validateScopeMatrix } from './AiScopeValidator';
-import { decideSetupPhase } from './AiSetupDecider';
-import { decideChoiceIfPending } from './AiChoiceResolver';
-import { decideActionStepConfirmation } from './AiBattleDecider';
-import { getOpponentId } from './AiPlayerUtils';
-import { findNonAttackAction } from './AiAbilityDecider';
-import { findWinningShieldAttack, findBestUnitAttack, findSafeShieldAttack } from './AiAttackDecider';
-import { findBestPlayCard } from './AiPlayDecider';
 import { GameAiV1Service } from './v1/GameAiV1Service';
 
 type GameAiDecisionRuntime = {
@@ -16,6 +9,28 @@ type GameAiDecisionRuntime = {
 };
 
 export class GameAiService {
+    private static buildEmergencyFallback(gameEnvView: AiGameEnvView, aiPlayerId: string, reason: string): AiDecision {
+        if (gameEnvView?.currentPlayer === aiPlayerId && gameEnvView?.phase === 'MAIN_PHASE') {
+            return {
+                kind: 'endTurn',
+                reason: 'v1_wrapper_emergency_end_turn',
+                telemetry: {
+                    fallbackReason: reason,
+                    fallbackKind: 'wrapper_end_turn'
+                }
+            };
+        }
+
+        return {
+            kind: 'wait',
+            reason: 'v1_wrapper_wait',
+            telemetry: {
+                fallbackReason: reason,
+                fallbackKind: 'wrapper_wait'
+            }
+        };
+    }
+
     static async decide(gameEnvView: AiGameEnvView, aiPlayerId: string, runtime: GameAiDecisionRuntime = {}): Promise<AiDecision> {
         const scopeIssue = validateScopeMatrix(gameEnvView, aiPlayerId);
         if (scopeIssue) {
@@ -26,76 +41,10 @@ export class GameAiService {
         }
 
         try {
-            const v1Decision = await GameAiV1Service.decide(gameEnvView, aiPlayerId, runtime);
-            if (v1Decision) {
-                return v1Decision;
-            }
+            return await GameAiV1Service.decide(gameEnvView, aiPlayerId, runtime);
         } catch (error) {
-            console.error('❌ AI v1 pipeline failed, falling back to legacy heuristics:', error);
+            console.error('❌ AI v1 pipeline failed:', error);
+            return this.buildEmergencyFallback(gameEnvView, aiPlayerId, 'v1_pipeline_error');
         }
-
-        return this.decideLegacy(gameEnvView, aiPlayerId);
-    }
-
-    private static decideLegacy(gameEnvView: AiGameEnvView, aiPlayerId: string): AiDecision {
-        const setupDecision = decideSetupPhase(gameEnvView, aiPlayerId);
-        if (setupDecision) {
-            return setupDecision;
-        }
-
-        const players = gameEnvView?.players || {};
-        const self = players[aiPlayerId];
-        if (!self) {
-            return { kind: 'wait', reason: 'self_not_found' };
-        }
-
-        const choiceDecision = decideChoiceIfPending(gameEnvView, aiPlayerId);
-        if (choiceDecision) {
-            return choiceDecision;
-        }
-
-        const battleDecision = decideActionStepConfirmation(gameEnvView, aiPlayerId);
-        if (battleDecision) {
-            return battleDecision;
-        }
-
-        if (gameEnvView?.currentPlayer !== aiPlayerId) {
-            return { kind: 'wait', reason: 'not_my_turn' };
-        }
-
-        const opponentId = getOpponentId(gameEnvView, aiPlayerId);
-        if (!opponentId || !players[opponentId]) {
-            return { kind: 'wait', reason: 'opponent_not_found' };
-        }
-
-        const nonAttack = findNonAttackAction(gameEnvView, aiPlayerId);
-        if (nonAttack) {
-            return nonAttack;
-        }
-
-        const winAttack = findWinningShieldAttack(gameEnvView, aiPlayerId, opponentId);
-        if (winAttack) {
-            return winAttack;
-        }
-
-        const unitAttack = findBestUnitAttack(gameEnvView, aiPlayerId, opponentId);
-        if (unitAttack) {
-            return unitAttack;
-        }
-
-        const playCard = findBestPlayCard(gameEnvView, aiPlayerId);
-        if (playCard) {
-            return playCard;
-        }
-
-        const shieldAttack = findSafeShieldAttack(gameEnvView, aiPlayerId);
-        if (shieldAttack) {
-            return shieldAttack;
-        }
-
-        return {
-            kind: 'endTurn',
-            reason: 'no_better_action'
-        };
     }
 }

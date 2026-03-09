@@ -1,0 +1,63 @@
+{
+  "id": "ai-v1-burst-target-choice",
+  "name": "AI V1 Burst Into Target Choice",
+  "status": "ready",
+  "purpose": "Verify burst prompt resolution followed by chained target-choice handling.",
+  "sourceScenarioPath": "GD03/GD03-109/burst_activate_main_choose_lv5_with_two_improved_technique_in_trash.json",
+  "actingAiPlayerId": "playerId_1",
+  "viewerPlayerId": "playerId_1",
+  "aiPlayerIds": [
+    "playerId_1"
+  ],
+  "setupActions": [
+    {
+      "playerId": "playerId_2",
+      "kind": "playerAction",
+      "reason": "scenario_attack_shield",
+      "payload": {
+        "actionType": "attackShieldArea",
+        "attackerCarduid": "GD03-040_enemy_0001"
+      }
+    }
+  ],
+  "decisionSequence": [
+    {
+      "allowedKinds": [
+        "confirmBurstChoice"
+      ],
+      "payloadAssertions": [
+        {
+          "path": "eventId",
+          "exists": true
+        },
+        {
+          "path": "confirmed",
+          "equals": true
+        }
+      ],
+      "executeDecision": true
+    },
+    {
+      "allowedKinds": [
+        "confirmTargetChoice"
+      ],
+      "payloadAssertions": [
+        {
+          "path": "eventId",
+          "exists": true
+        },
+        {
+          "path": "selectedTargets.0.carduid",
+          "equals": "GD03-040_enemy_0001"
+        }
+      ],
+      "executeDecision": true,
+      "stateAssertionsAfterExecute": [
+        {
+          "path": "players.playerId_2.zones.slot1.unit.damageReceived",
+          "equals": 3
+        }
+      ]
+    }
+  ]
+}

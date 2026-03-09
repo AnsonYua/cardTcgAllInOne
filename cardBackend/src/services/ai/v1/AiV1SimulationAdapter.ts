@@ -538,7 +538,8 @@ export class AiLocalSimulationAdapter implements AiSimulationAdapter {
             destroyedCarduids,
             remainingHpByCarduid: afterRemainingHp,
             hpDeltas,
-            promptChain
+            promptChain,
+            nextStateJson: clone.toPersistenceJSON()
         };
     }
 }

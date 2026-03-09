@@ -1,0 +1,62 @@
+{
+  "id": "ai-v1-action-step-response",
+  "name": "AI V1 Action Step Response",
+  "status": "ready",
+  "purpose": "Verify that the v1 computer opponent uses an action-step command instead of auto-confirming a bad trade.",
+  "sourceScenarioPath": "GD03/GD03-115/action_prevent_battle_damage_ap_le_5_when_player_level_ge_7.json",
+  "initialGameEnvOverrides": {
+    "players": {
+      "playerId_2": {
+        "zones": {
+          "slot1": {
+            "unit": {
+              "isRested": true
+            }
+          }
+        }
+      }
+    }
+  },
+  "actingAiPlayerId": "playerId_1",
+  "viewerPlayerId": "playerId_1",
+  "aiPlayerIds": [
+    "playerId_1"
+  ],
+  "setupActions": [
+    {
+      "playerId": "playerId_1",
+      "kind": "playerAction",
+      "reason": "scenario_open_action_step",
+      "payload": {
+        "actionType": "attackUnit",
+        "attackerCarduid": "GD03-010_attacker_0001",
+        "targetPlayerId": "playerId_2",
+        "targetUnitUid": "GD03-071_defender_0001"
+      }
+    }
+  ],
+  "decisionSequence": [
+    {
+      "allowedKinds": [
+        "playerAction"
+      ],
+      "payloadSubset": {
+        "actionType": "useCommandCard",
+        "carduid": "GD03-115_hand_0001"
+      },
+      "payloadAssertions": [
+        {
+          "path": "effectId",
+          "exists": true
+        }
+      ],
+      "executeDecision": true,
+      "stateAssertionsAfterExecute": [
+        {
+          "path": "currentBattle.status",
+          "equals": "ACTION_STEP"
+        }
+      ]
+    }
+  ]
+}

@@ -26,6 +26,35 @@ const asRecord = (value: unknown): Record<string, unknown> =>
 
 const asString = (value: unknown): string => (typeof value === 'string' ? value : '');
 
+const sortRecordKeys = (value: unknown): unknown => {
+    if (Array.isArray(value)) {
+        return value.map((entry) => sortRecordKeys(entry));
+    }
+    if (value && typeof value === 'object') {
+        return Object.keys(value as Record<string, unknown>)
+            .sort()
+            .reduce<Record<string, unknown>>((accumulator, key) => {
+                accumulator[key] = sortRecordKeys((value as Record<string, unknown>)[key]);
+                return accumulator;
+            }, {});
+    }
+    return value;
+};
+
+const buildCandidateId = (
+    kind: AiActionCandidate['kind'],
+    decision: AiDecision,
+    telemetry: Record<string, unknown>,
+    tags: AiActionCandidateTag[]
+): string => JSON.stringify(sortRecordKeys({
+    kind,
+    decisionKind: decision.kind,
+    reason: decision.reason,
+    payload: decision.payload || {},
+    telemetry,
+    tags
+}));
+
 const buildTargetCombinations = <T>(
     entries: T[],
     selectionSize: number,
@@ -68,14 +97,20 @@ const createCandidate = (
     tags: AiActionCandidateTag[] = [],
     telemetry: Record<string, unknown> = {}
 ): AiActionCandidate => ({
-    candidateId: `${kind}:${decision.reason}:${Math.random().toString(36).slice(2, 8)}`,
+    candidateId: buildCandidateId(kind, decision, telemetry, tags),
     kind,
     decision,
     windowKind,
     estimatedScore,
     tags,
     telemetry,
-    requiresSimulation: kind === 'attack' || kind === 'playCard' || kind === 'activate' || kind === 'battleConfirm' || kind === 'battleResolve' || kind === 'endTurn'
+    requiresSimulation: kind === 'prompt'
+        || kind === 'attack'
+        || kind === 'playCard'
+        || kind === 'activate'
+        || kind === 'battleConfirm'
+        || kind === 'battleResolve'
+        || kind === 'endTurn'
 });
 
 const canAttack = (unit: { canAttackThisTurn?: boolean; isRested?: boolean; playedThisTurn?: boolean; canAttackOnPlayTurn?: boolean } | undefined): boolean => {
@@ -517,6 +552,11 @@ const buildAttackCandidates = (context: AiDecisionContext): AiActionCandidate[] 
     return candidates;
 };
 
+const buildBlockerStepCandidates = (context: AiDecisionContext): AiActionCandidate[] => [
+    ...buildPromptCandidates(context),
+    ...buildBattleCandidates(context)
+];
+
 const buildPlayCandidates = (context: AiDecisionContext): AiActionCandidate[] => {
     if (context.windowKind !== 'MAIN_PHASE') {
         return [];
@@ -745,11 +785,14 @@ const buildEndTurnCandidate = (context: AiDecisionContext): AiActionCandidate[] 
 
 export class GameEnvAiActionAdapter implements AiActionAdapter {
     enumerateCandidates(context: AiDecisionContext): AiActionCandidate[] {
-        switch (context.windowKind) {
+        const candidates = (() => {
+            switch (context.windowKind) {
             case 'SETUP':
                 return buildSetupCandidates(context);
             case 'OWNED_PROMPT':
                 return buildPromptCandidates(context);
+            case 'BLOCKER_STEP':
+                return buildBlockerStepCandidates(context);
             case 'ACTION_STEP':
                 return [
                     ...buildAbilityCandidates(context),
@@ -766,6 +809,9 @@ export class GameEnvAiActionAdapter implements AiActionAdapter {
                 ];
             default:
                 return [];
-        }
+            }
+        })();
+
+        return candidates.sort((left, right) => left.candidateId.localeCompare(right.candidateId));
     }
 }

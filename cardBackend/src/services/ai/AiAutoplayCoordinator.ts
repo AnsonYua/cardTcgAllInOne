@@ -5,7 +5,7 @@ import { GameAiService } from './GameAiService';
 import { AsyncMutex } from '../../utils/AsyncMutex';
 import { AI_AUTOPLAY_DEFAULT_STEPS } from './AiAutoplayConfig';
 import { AiAutoplayPacingStore } from './AiAutoplayPacingStore';
-import { hasPendingChoiceForNonAi } from './AiAutoplayChoiceGuards';
+import { getPendingAiChoiceOwners, hasPendingChoiceForNonAi } from './AiAutoplayChoiceGuards';
 import { AiDecisionExecutor } from './AiDecisionExecutor';
 import { AiDecision } from './AiTypes';
 import { GameLogicResult } from '../GameLogic';
@@ -69,13 +69,13 @@ export class AiAutoplayCoordinator {
         return this.runWithGameLock(gameId, () => this.executeAiDecision(gameId, aiPlayerId, decision));
     }
 
-    async runAiAutoplayForHuman(
+    async runAiAutoplay(
         gameId: string,
-        humanPlayerId: string,
+        viewerPlayerId: string,
         maxSteps: number = AI_AUTOPLAY_DEFAULT_STEPS
     ): Promise<{ success: boolean; gameEnv?: GameEnvironment; error?: string }> {
         for (let step = 0; step < maxSteps; step++) {
-            const latestState = await this.gameLogic.getPlayerGameState(gameId, humanPlayerId);
+            const latestState = await this.gameLogic.getPlayerGameState(gameId, viewerPlayerId);
             if (!latestState.success || !latestState.gameEnv) {
                 return { success: false, error: latestState.error || 'Failed to load game state during AI autoplay' };
             }
@@ -101,8 +101,10 @@ export class AiAutoplayCoordinator {
             }
 
             let progressed = false;
+            const priorityAiPlayerIds = getPendingAiChoiceOwners(gameEnv, aiPlayerIds);
+            const actingAiPlayerIds = priorityAiPlayerIds.length > 0 ? priorityAiPlayerIds : aiPlayerIds;
 
-            for (const aiPlayerId of aiPlayerIds) {
+            for (const aiPlayerId of actingAiPlayerIds) {
                 const aiView = GameEnvViewBuilder.toPlayerView(gameEnv, aiPlayerId);
                 const decision = await GameAiService.decide(aiView, aiPlayerId, { rawGameEnv: gameEnv });
                 if (decision.kind === 'wait') {
@@ -124,11 +126,19 @@ export class AiAutoplayCoordinator {
             }
         }
 
-        const finalState = await this.gameLogic.getPlayerGameState(gameId, humanPlayerId);
+        const finalState = await this.gameLogic.getPlayerGameState(gameId, viewerPlayerId);
         if (!finalState.success || !finalState.gameEnv) {
             return { success: false, error: finalState.error || 'Failed to load final game state after AI autoplay' };
         }
         return { success: true, gameEnv: finalState.gameEnv };
+    }
+
+    async runAiAutoplayForHuman(
+        gameId: string,
+        humanPlayerId: string,
+        maxSteps: number = AI_AUTOPLAY_DEFAULT_STEPS
+    ): Promise<{ success: boolean; gameEnv?: GameEnvironment; error?: string }> {
+        return this.runAiAutoplay(gameId, humanPlayerId, maxSteps);
     }
 
     async maybeRunAiAfterHuman(

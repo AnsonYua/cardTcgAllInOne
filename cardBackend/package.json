@@ -29,7 +29,8 @@
     "validate:effects:strict": "npm run validate:effects:canonical && node scripts/checkEffectsCanonicalGate.cjs",
     "run-test": "node test.cjs",
     "run-testcase1": "node test_case1.cjs",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "benchmark:ai": "node -r ts-node/register scripts/runAiValidationBenchmark.cjs"
   },
   "keywords": [],
   "author": "",
