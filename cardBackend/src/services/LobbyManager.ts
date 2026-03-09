@@ -87,6 +87,18 @@ export class LobbyManager {
         return filteredRooms;
     }
 
+    async removeRoom(gameId: string): Promise<boolean> {
+        const rooms = await this.loadRooms();
+        const filteredRooms = rooms.filter((room) => room.gameId !== gameId);
+
+        if (filteredRooms.length === rooms.length) {
+            return false;
+        }
+
+        await this.saveRooms(filteredRooms);
+        return true;
+    }
+
     private async getRoomMetadata(gameId: string): Promise<RoomMetadata | null> {
         const gamePath = path.join(this.gameDataPath, `${gameId}.json`);
         try {

@@ -7,7 +7,7 @@ import * as path from 'path';
 
 // Import core models
 import { GameEnvironment } from '../models/GameEnvironment';
-import { PlayerActionType, EventType } from '../models/GameEnums';
+import { PlayerActionType, EventType, GamePhase } from '../models/GameEnums';
 import { EventFactory, EventStatus } from './EventQueue/index';
 import { BurstEffectChoiceEvent, BlockerChoiceEvent, TargetReference } from './EventQueue/interfaces/GameEvent';
 import { PlayerAction } from '../models/EventInterfaces';
@@ -19,6 +19,7 @@ import { ChoiceConfirmationService } from './choices/ChoiceConfirmationService';
 import { CardDatabaseManager } from '../models/CardSystem';
 import { BattlePhaseManager } from './BattlePhaseManager';
 import { TestStatePairingRehydrationService } from './testState/TestStatePairingRehydrationService';
+import { lobbyManager } from './LobbyManager';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -54,6 +55,17 @@ export interface PlayerActionResult {
 
 export class GameLogic {
     private baseDataPath: string;
+    private static readonly ACTIVE_GAME_PHASES: ReadonlySet<GamePhase> = new Set([
+        GamePhase.DRAW_PHASE,
+        GamePhase.RESOURCE_PHASE,
+        GamePhase.MAIN_PHASE,
+        GamePhase.BLOCKER_PHASE,
+        GamePhase.ACTION_STEP_PHASE,
+        GamePhase.ATTACK_PHASE,
+        GamePhase.BLOCK_PHASE,
+        GamePhase.DAMAGE_PHASE,
+        GamePhase.END_PHASE
+    ]);
     private static cardDataById: Record<string, any> | null = null;
     private static readonly CARD_DATA_FILES: readonly string[] = [
         'gd01Card.json',
@@ -230,6 +242,10 @@ export class GameLogic {
         }
     }
 
+    private hasLiveGameplayStarted(gameEnv: GameEnvironment): boolean {
+        return GameLogic.ACTIVE_GAME_PHASES.has(gameEnv.phase);
+    }
+
     public async processAction(gameEnv: GameEnvironment, action: PlayerAction): Promise<any> {
         return processAction(gameEnv, action);
     }
@@ -403,6 +419,14 @@ export class GameLogic {
             
             // Save updated game
             await this.saveGameToFile(gameId, gameEnv);
+
+            if (this.hasLiveGameplayStarted(gameEnv)) {
+                try {
+                    await lobbyManager.removeRoom(gameId);
+                } catch (lobbyError) {
+                    console.error(`❌ Failed to remove lobby room for active game ${gameId}:`, lobbyError);
+                }
+            }
             
             console.log(`✅ Player ${playerId} ready phase started for game ${gameId}`);
             
