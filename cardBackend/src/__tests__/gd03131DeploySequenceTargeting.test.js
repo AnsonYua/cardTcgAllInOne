@@ -67,6 +67,9 @@ describe('GD03-131 deploy sequence targeting', () => {
         // Step 1 auto-resolved: one shield moved to hand.
         expect(p1.deck.handUids.length).toBe(handBefore + 1);
         expect(p1.zones.shieldArea.length).toBe(shieldsBefore - 1);
+        expect(p1.deck.handUids).toContain(shieldUid1);
+        expect(p1.deck.handUids).not.toContain(shieldUid2);
+        expect(p1.zones.shieldArea[0].carduid).toBe(shieldUid2);
 
         // No target choice should be created for either step in this scenario.
         const choiceEvent = gameEnv.processingQueue.find((evt) => evt.type === EventType.TARGET_CHOICE);

@@ -62,7 +62,7 @@ describe('GD01-125 (Zanzibar) deploy effect turn gating', () => {
         expect(countUnitsInSlots(owner)).toBe(beforeUnits);
     });
 
-    test('on opponent turn with multiple shields, self_shield addToHand auto-resolves and still skips deploy_from_hand', () => {
+    test('on opponent turn with multiple shields, top shield auto-resolves to hand and still skips deploy_from_hand', () => {
         const gameEnv = new GameEnvironment();
         gameEnv.addPlayer('playerId_1', 'P1');
         const owner = gameEnv.addPlayer('playerId_2', 'P2');
@@ -88,11 +88,9 @@ describe('GD01-125 (Zanzibar) deploy effect turn gating', () => {
             }
         ];
 
-        const baseDeployEffect = gd01.cards['GD01-125'].effects.rules.find(
+        const deployEffect = gd01.cards['GD01-125'].effects.rules.find(
             (rule) => rule.effectId === 'deploy_shield_to_hand_then_optional_deploy_zeon_unit_le_4_if_your_turn'
         );
-        const deployEffect = JSON.parse(JSON.stringify(baseDeployEffect));
-        deployEffect.parameters.steps[0].target.selection = { type: 'player_choice' };
 
         const beforeUnits = countUnitsInSlots(owner);
         const startHandSize = owner.deck.handUids.length;
@@ -109,6 +107,9 @@ describe('GD01-125 (Zanzibar) deploy effect turn gating', () => {
 
         expect(owner.deck.handUids.length).toBe(startHandSize + 1);
         expect(owner.zones.shieldArea.length).toBe(startShieldSize - 1);
+        expect(owner.deck.handUids).toContain(shieldUid1);
+        expect(owner.deck.handUids).not.toContain(shieldUid2);
+        expect(owner.zones.shieldArea[0].carduid).toBe(shieldUid2);
         expect(owner.deck.handUids).toContain(zeonUid);
         expect(countUnitsInSlots(owner)).toBe(beforeUnits);
     });

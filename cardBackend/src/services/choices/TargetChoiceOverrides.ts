@@ -40,8 +40,8 @@ export function overrideRequiresChoice(
         return false;
     }
 
-    // Rule/UX: selecting your own shield for addToHand should auto-resolve to avoid
-    // exposing hidden shield identities in a picker. Sequence can continue to later steps.
+    // Rule: self_shield addToHand resolves the top shield deterministically.
+    // It is not a player choice and should not open a picker.
     if (action === 'addtohand' && scopeValue === 'self_shield') {
         return false;
     }

@@ -46,6 +46,29 @@ describe('card data consistency regressions', () => {
         expect(p2.zones.slot1.unit.isRested).toBe(true);
     });
 
+    test('GD03-123 deploy_rest: with multiple shields, top shield is the one moved to hand', () => {
+        const gameEnv = new GameEnvironment();
+        const p1 = gameEnv.addPlayer('playerId_1', 'P1');
+        gameEnv.addPlayer('playerId_2', 'P2');
+        gameEnv.currentPlayer = p1.id;
+
+        const sourceUid = 'GD03-123_base_src_000_top';
+        p1.zones.base.push(createZoneCard(sourceUid, 'GD03-123', gd03.cards['GD03-123'], p1.id));
+
+        const topShieldUid = 'GD03-001_shield_top_0001';
+        const lowerShieldUid = 'GD03-002_shield_lower_0002';
+        p1.zones.shieldArea.push(createZoneCard(topShieldUid, 'GD03-001', gd03.cards['GD03-001'], p1.id));
+        p1.zones.shieldArea.push(createZoneCard(lowerShieldUid, 'GD03-002', gd03.cards['GD03-002'], p1.id));
+
+        const deployEffect = gd03.cards['GD03-123'].effects.rules.find((rule) => rule.effectId === 'deploy_rest');
+        const result = SequenceEffectManager.processSequenceEffect(gameEnv, p1.id, sourceUid, deployEffect);
+
+        expect(result.success).toBe(true);
+        expect(p1.deck.handUids).toContain(topShieldUid);
+        expect(p1.deck.handUids).not.toContain(lowerShieldUid);
+        expect(p1.zones.shieldArea[0].carduid).toBe(lowerShieldUid);
+    });
+
     test('GD03-123 deploy_rest: shield add resolves and rest step is skipped when no friendly Jupitris unit exists', () => {
         const gameEnv = new GameEnvironment();
         const p1 = gameEnv.addPlayer('playerId_1', 'P1');
@@ -97,6 +120,29 @@ describe('card data consistency regressions', () => {
         expect(result.success).toBe(true);
         expect(p1.deck.handUids).toContain(shieldUid);
         expect(p2.zones.slot1.unit.isRested).toBe(true);
+    });
+
+    test('GD01-123 deploy_rest: with multiple shields, top shield is the one moved to hand', () => {
+        const gameEnv = new GameEnvironment();
+        const p1 = gameEnv.addPlayer('playerId_1', 'P1');
+        gameEnv.addPlayer('playerId_2', 'P2');
+        gameEnv.currentPlayer = p1.id;
+
+        const sourceUid = 'GD01-123_base_src_top_0001';
+        p1.zones.base.push(createZoneCard(sourceUid, 'GD01-123', gd01.cards['GD01-123'], p1.id));
+
+        const topShieldUid = 'GD01-001_shield_top_0001';
+        const lowerShieldUid = 'GD01-002_shield_lower_0002';
+        p1.zones.shieldArea.push(createZoneCard(topShieldUid, 'GD01-001', gd01.cards['GD01-001'], p1.id));
+        p1.zones.shieldArea.push(createZoneCard(lowerShieldUid, 'GD01-002', gd01.cards['GD01-002'], p1.id));
+
+        const deployEffect = gd01.cards['GD01-123'].effects.rules.find((rule) => rule.effectId === 'deploy_rest');
+        const result = SequenceEffectManager.processSequenceEffect(gameEnv, p1.id, sourceUid, deployEffect);
+
+        expect(result.success).toBe(true);
+        expect(p1.deck.handUids).toContain(topShieldUid);
+        expect(p1.deck.handUids).not.toContain(lowerShieldUid);
+        expect(p1.zones.shieldArea[0].carduid).toBe(lowerShieldUid);
     });
 
     test('GD02-075 attack_rest: rule keeps if-you-do sequence semantics (rest base -> AP-2 in battle)', () => {

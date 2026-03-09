@@ -8203,10 +8203,7 @@
                   "target": {
                     "type": "card",
                     "scope": "self_shield",
-                    "count": 1,
-                    "selection": {
-                      "type": "player_choice"
-                    }
+                    "count": 1
                   },
                   "parameters": {
                     "from": "shield",
@@ -8305,10 +8302,7 @@
                   "target": {
                     "type": "card",
                     "scope": "self_shield",
-                    "count": 1,
-                    "selection": {
-                      "type": "player_choice"
-                    }
+                    "count": 1
                   },
                   "parameters": {
                     "from": "shield",
@@ -8408,10 +8402,7 @@
                   "target": {
                     "type": "card",
                     "scope": "self_shield",
-                    "count": 1,
-                    "selection": {
-                      "type": "player_choice"
-                    }
+                    "count": 1
                   },
                   "parameters": {
                     "from": "shield",
@@ -8608,10 +8599,7 @@
                   "target": {
                     "type": "card",
                     "scope": "self_shield",
-                    "count": 1,
-                    "selection": {
-                      "type": "player_choice"
-                    }
+                    "count": 1
                   },
                   "parameters": {
                     "from": "shield",
@@ -8707,10 +8695,7 @@
                   "target": {
                     "type": "card",
                     "scope": "self_shield",
-                    "count": 1,
-                    "selection": {
-                      "type": "player_choice"
-                    }
+                    "count": 1
                   },
                   "parameters": {
                     "from": "shield",
@@ -8814,10 +8799,7 @@
                   "target": {
                     "type": "card",
                     "scope": "self_shield",
-                    "count": 1,
-                    "selection": {
-                      "type": "player_choice"
-                    }
+                    "count": 1
                   },
                   "parameters": {
                     "from": "shield",
@@ -8951,10 +8933,7 @@
                   "target": {
                     "type": "card",
                     "scope": "self_shield",
-                    "count": 1,
-                    "selection": {
-                      "type": "player_choice"
-                    }
+                    "count": 1
                   },
                   "parameters": {
                     "from": "shield",
@@ -9062,10 +9041,7 @@
                   "target": {
                     "type": "card",
                     "scope": "self_shield",
-                    "count": 1,
-                    "selection": {
-                      "type": "player_choice"
-                    }
+                    "count": 1
                   },
                   "parameters": {
                     "from": "shield",
@@ -9173,10 +9149,7 @@
                   "target": {
                     "type": "card",
                     "scope": "self_shield",
-                    "count": 1,
-                    "selection": {
-                      "type": "player_choice"
-                    }
+                    "count": 1
                   },
                   "parameters": {
                     "from": "shield",
