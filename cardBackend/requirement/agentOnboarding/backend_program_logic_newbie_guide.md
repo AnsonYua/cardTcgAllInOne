@@ -108,14 +108,33 @@ Game-end call path example:
 ### Schema and typing
 - `EffectDefinition` type: `src/services/EventQueue/interfaces/GameEvent.ts`
 - Canonical trigger/condition sets: `src/services/effects/schema/EffectSchema.ts`
+- Timing types and compiled descriptors: `src/services/EventQueue/interfaces/GameEvent.ts`
 
 ### Rule normalization and collection
 - Rule collection: `src/services/effects/EffectRuleCatalog.ts`
 - Rule normalization: `src/utils/EffectNormalizationUtils.ts`
+- Timing compilation/bridge: `src/services/effects/timing/EffectTimingCompiler.ts`
+- Card-data timing bridge: `src/models/CardSystem.ts`, `src/services/effects/CardDataResolver.ts`
 
 ### Effect execution
 - Direct handlers: `src/services/effects/EffectExecutor.ts`
 - Routed multi-step actions: `src/services/effects/EffectActionRouter.ts`
+
+### Timing model
+The backend no longer treats one broad `trigger` field as the full meaning of timing.
+
+Source card data now splits timing into:
+- `timing.eventTrigger`
+- `timing.activationWindows`
+- `timing.duration`
+
+Runtime also derives `compiledTiming`, which gives backend, frontend, and AI one normalized timing view.
+
+Simple meaning:
+- `eventTrigger` = a real game event starts the rule
+- `activationWindows` = player may choose to use the rule now
+- `duration` = effect stays active for some period
+- `compiledTiming.timingClass` = backend summary such as `event_triggered` or `player_activated`
 
 ## 9) Choice Resolution Logic
 Choice APIs in routes:
@@ -149,6 +168,7 @@ When something is wrong:
 2. inspect `currentBattle`
 3. inspect last choice event and whether user decision was saved
 4. inspect effect trigger/action/target shape
+4. inspect `timing.eventTrigger`, `timing.activationWindows`, `timing.duration`, and `compiledTiming`
 5. check matching manager file
 
 ## 12) Mapping Bugs to Files
@@ -156,15 +176,17 @@ When something is wrong:
 - Attack flow stuck: `BattlePhaseManager`, `BlockerChoiceManager`
 - Choice not clearing: `ChoiceConfirmationService`, `GameEnvironment.needsPlayerInput`
 - Trigger not firing: `EffectRuleCatalog`, `EffectNormalizationUtils`, specific trigger manager
+- Timing/UI mismatch: `EffectTimingCompiler`, frontend `src/phaser/game/effectTiming.ts`
 - End turn not moving: `StateBasedActionEngine`, `PhaseTransitionManager`
 
 ## 13) Safe Logic Checklist for New Contributors
 Before saying "fixed":
 1. queue order still correct
 2. choice gating still works
-3. trigger/action names are canonical
-4. no turn-rule bypass created
-5. scenario/test still passes
+3. timing fields are canonical (`eventTrigger`, `activationWindows`, `duration`)
+4. action names are canonical
+5. no turn-rule bypass created
+6. scenario/test still passes
 
 ## 14) Useful Commands
 ```bash

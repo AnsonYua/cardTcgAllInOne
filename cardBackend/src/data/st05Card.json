@@ -34,7 +34,6 @@
           {
             "effectId": "deploy_damage_1_then_ap_plus_1",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "steps": [
@@ -82,12 +81,14 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           },
           {
             "effectId": "gain_suppression_while_damaged",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "grant_keyword",
             "target": {
               "type": "unit",
@@ -140,7 +141,6 @@
           {
             "effectId": "ap_plus_2_while_damaged",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "modifyAP",
             "target": {
               "type": "unit",
@@ -189,7 +189,7 @@
             "effectId": "activate_damage_1_then_ap_plus_1",
             "type": "activated",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -285,7 +285,6 @@
           {
             "effectId": "destroyed_rest_enemy_ap_le_4",
             "type": "triggered",
-            "trigger": "DESTROYED",
             "action": "rest",
             "target": {
               "type": "unit",
@@ -295,6 +294,9 @@
                 "status": "active"
               },
               "count": 1
+            },
+            "timing": {
+              "eventTrigger": "DESTROYED"
             }
           }
         ]
@@ -350,7 +352,6 @@
           {
             "effectId": "blocker",
             "type": "triggered",
-            "trigger": "ATTACK_REDIRECT",
             "target": {
               "type": "unit",
               "scope": "self"
@@ -358,15 +359,18 @@
             "action": "redirect_attack",
             "parameters": {
               "cost": "rest_self"
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_REDIRECT"
             }
           },
           {
             "effectId": "pair_enemy_ap_minus_2_low_level",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "modifyAP",
             "timing": {
-              "duration": "UNTIL_END_OF_TURN"
+              "duration": "UNTIL_END_OF_TURN",
+              "eventTrigger": "PAIRING_COMPLETE"
             },
             "target": {
               "type": "unit",
@@ -410,7 +414,6 @@
           {
             "effectId": "blocker",
             "type": "triggered",
-            "trigger": "ATTACK_REDIRECT",
             "target": {
               "type": "unit",
               "scope": "self"
@@ -418,6 +421,9 @@
             "action": "redirect_attack",
             "parameters": {
               "cost": "rest_self"
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_REDIRECT"
             }
           }
         ]
@@ -469,17 +475,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "pair_damage_each_1",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "sequence",
             "parameters": {
               "steps": [
@@ -513,6 +520,9 @@
                 }
               ],
               "notes": "Implemented: sequence steps support independent multi-target selections."
+            },
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
             }
           }
         ]
@@ -542,24 +552,26 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "linked_battle_destroy_add_tekkadan_unit_le_2_from_trash",
             "type": "triggered",
-            "trigger": "BATTLE_DESTROY",
             "sourceConditions": [
               {
                 "type": "linked"
               }
             ],
             "timing": {
-              "actionTurn": "YOUR_TURN"
+              "actionTurn": "YOUR_TURN",
+              "eventTrigger": "BATTLE_DESTROY"
             },
             "action": "addToHand",
             "target": {
@@ -606,17 +618,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "pair_rest_enemy_hp_le_3_if_gh_or_tekkadan_ge_3",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "rest",
             "conditions": [
               {
@@ -640,6 +653,9 @@
             },
             "parameters": {
               "notes": "Represents '2 or more other Units' as having 3+ total matching Units in play."
+            },
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
             }
           }
         ]
@@ -666,7 +682,7 @@
             "effectId": "main_or_action_damage_1_then_ap_plus_3",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE",
                 "ACTION_STEP"
               ]
@@ -730,7 +746,6 @@
           {
             "effectId": "burst_damage_enemy_1",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "damage",
             "target": {
               "type": "unit",
@@ -739,13 +754,16 @@
             },
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "main_destroy_enemy_le_3",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -789,17 +807,18 @@
           {
             "effectId": "burst_deploy",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "deploy"
+            "action": "deploy",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "deploy_shield_to_hand",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "target": {
               "type": "card",
               "scope": "self_shield"
@@ -808,16 +827,19 @@
             "parameters": {
               "value": 1,
               "from": "shield"
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           },
           {
             "effectId": "activate_ap_plus_2_to_damaged_unit",
             "type": "activated",
             "timing": {
-              "windows": [
+              "duration": "UNTIL_END_OF_TURN",
+              "activationWindows": [
                 "MAIN_PHASE"
-              ],
-              "duration": "UNTIL_END_OF_TURN"
+              ]
             },
             "cost": {
               "restSelf": true,

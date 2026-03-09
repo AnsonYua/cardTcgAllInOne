@@ -151,7 +151,8 @@
   - For `requires.type = "friendly_unit_deployed_this_turn"`, treat as turn-history semantics:
     verify evaluator includes same-turn deployed units even if they moved zones (e.g., destroyed to trash).
 - `ACTION_STEP` parity:
-  - Do not infer "triggerable effect" from `timing.windows` alone.
+  - Do not infer "triggerable effect" from raw timing fields alone.
+  - Prefer `compiledTiming.activationWindows`, then `timing.activationWindows`, and only then legacy compatibility fields.
   - Intersect frontend activated-effect options with backend `currentBattle.actionTargets[playerId][].effectIds` when present.
   - Ensure slot-level UI gating and button rendering use the same shared helper to avoid drift.
   - Normalize phase names before timing-window comparisons (e.g. `ACTION_STEP_PHASE` vs `ACTION_STEP`).

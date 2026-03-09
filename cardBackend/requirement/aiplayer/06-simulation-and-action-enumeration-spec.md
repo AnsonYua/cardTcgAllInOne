@@ -40,6 +40,7 @@ type AiActionCandidate = {
   category: AiActionCategory;
   decisionKind: string;
   decisionPayload: Record<string, unknown>;
+  timingClass?: string;
   source: 'enumerator' | 'tactical_override' | 'fallback';
   estimatedComplexity: 'low' | 'medium' | 'high';
   tags: string[];
@@ -47,6 +48,32 @@ type AiActionCandidate = {
 ```
 
 `decisionKind` and `decisionPayload` should align with the existing `AiDecision` execution model so simulated and real execution share the same payload shape whenever possible.
+
+## Timing Descriptor Contract
+
+The enumerator and search layer must use normalized timing metadata, not raw legacy timing guesses.
+
+```ts
+type CompiledEffectTiming = {
+  eventTrigger?: string;
+  activationWindows?: string[];
+  duration?: string;
+  timingClass:
+    | 'event_triggered'
+    | 'player_activated'
+    | 'continuous_passive'
+    | 'temporary_effect'
+    | 'engine_internal';
+};
+```
+
+Rules:
+
+- source card authoring uses `timing.eventTrigger`, `timing.activationWindows`, and `timing.duration`
+- backend runtime may expose bridged legacy fields such as `trigger` or `timing.windows` for compatibility
+- AI enumeration should prefer `compiledTiming`
+- AI should use raw legacy `trigger` only as a backward-compatibility fallback
+- `internalHook` is runtime-only and must not be treated as a normal player-facing action window
 
 ## Action Families To Enumerate
 
@@ -76,6 +103,8 @@ The enumerator must support these categories:
 - preserve grouped target selections when an effect resolves multiple targets together
 - use only hidden-information-safe state when building candidates in production mode
 - never fabricate payload shapes the engine would not accept
+- determine legality from compiled timing descriptors before legacy fields
+- distinguish event-driven rules from player-activated windows instead of treating all timing as one `trigger` string
 
 ### Choice Ownership Rule
 
@@ -181,6 +210,7 @@ These are internal contracts for the AI program, not public gameplay API contrac
 - Candidate payloads are serializable and compatible with the real execution path.
 - Simulation requirements forbid file persistence and duplicated rules.
 - Equivalence requirements are concrete enough for automated validation.
+- AI timing checks can classify rules from compiled timing descriptors without reparsing raw legacy `trigger` strings.
 
 ## Risks
 

@@ -1,19 +1,65 @@
 # Effect Scheme Summary
 
 ## Purpose
-This document is a practical summary of the card effect scheme used in the backend. It is meant to help a reader quickly understand how effect data is structured in card JSON, which timing families appear most often, which action families the engine already supports, and which patterns matter most when reading or implementing effects.
+This document is a practical summary of the card effect scheme used in the backend after the trigger-first timing refactor. It is meant to help a reader quickly understand:
 
-It does not replace the full schema guide in `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/requirement/agentOnboarding/effects_rules_schema_guide.md` or the timing cheat sheet in `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/requirement/agentOnboarding/card_effects_implemented_guide.md`. Instead, it sits between them: more concrete than the schema guide, and more focused on the actual GD/ST card pool.
+- how effect data is authored in card JSON
+- how timing is split into clearer concepts
+- which timing and action families appear most often in the GD/ST card pool
+- which patterns matter most for engine work, frontend timing gates, and AI evaluation
+
+It does not replace the full schema guide in `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/requirement/agentOnboarding/effects_rules_schema_guide.md`. This document is the shorter, more practical version.
 
 ## One-Line Mental Model
-Each effect rule answers four questions:
+Each effect rule answers five questions:
 
 - `type`: what kind of rule is this
-- `trigger` or `timing`: when can it happen
-- `action`: what does it do
-- `target` and `conditions`: who it affects and when it is allowed
+- `timing.eventTrigger`: what game event starts it, if any
+- `timing.activationWindows`: when the player may use it, if any
+- `timing.duration`: how long it lasts, if it persists
+- `action`: what it does
 
-In practice, most cards are not a single flat action. Many effects are built as `sequence`, `conditional`, or choice-driven flows.
+Then `target`, `conditions`, `sourceConditions`, and `parameters` explain who it affects and how it resolves.
+
+## Current Timing Model
+
+### Source authoring timing
+Source card JSON should use:
+
+```json
+{
+  "timing": {
+    "eventTrigger": "ENTERS_PLAY",
+    "activationWindows": ["MAIN_PHASE"],
+    "duration": "UNTIL_END_OF_TURN"
+  }
+}
+```
+
+Not every rule uses all three fields. Typical usage is:
+
+- `triggered` rules use `timing.eventTrigger`
+- `activated`, `play`, and `special` rules use `timing.activationWindows`
+- `continuous` or temporary effects use `timing.duration`
+
+### Compiled runtime timing
+At runtime, the backend also derives:
+
+- `compiledTiming.eventTrigger`
+- `compiledTiming.activationWindows`
+- `compiledTiming.duration`
+- `compiledTiming.timingClass`
+
+And, when compatibility is needed:
+
+- `compiledTiming.legacyTrigger`
+- `compiledTiming.windows`
+
+Important rule:
+
+- new source card JSON should not author top-level `trigger`
+- new source card JSON should not author `timing.windows`
+- `internalHook` is runtime-only and not normal card authoring data
 
 ## Card Data Shape
 At the set-data level, each card file is shaped like this:
@@ -26,7 +72,6 @@ At the set-data level, each card file is shaped like this:
       "id": "GD01-001",
       "name": "Gundam",
       "cardType": "unit",
-      "color": ["blue"],
       "level": 4,
       "cost": 3,
       "ap": 3,
@@ -36,7 +81,9 @@ At the set-data level, each card file is shaped like this:
           {
             "effectId": "pair_draw",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
+            },
             "action": "draw"
           }
         ]
@@ -60,7 +107,9 @@ A typical rule contains these fields:
 {
   "effectId": "deploy_damage_1",
   "type": "triggered",
-  "trigger": "ENTERS_PLAY",
+  "timing": {
+    "eventTrigger": "ENTERS_PLAY"
+  },
   "target": {
     "type": "unit",
     "scope": "opponent",
@@ -79,8 +128,7 @@ Common fields and what they mean:
 |---|---|
 | `effectId` | stable identifier for this rule |
 | `type` | rule family such as `triggered`, `play`, `continuous`, `special`, `activated` |
-| `trigger` | event name for triggered or continuous rules |
-| `timing` | action window or duration metadata |
+| `timing` | source timing metadata using `eventTrigger`, `activationWindows`, and/or `duration` |
 | `action` | effect operation to execute |
 | `target` | which card/player/zone the action applies to |
 | `conditions` | requirements checked on game state or event context |
@@ -88,6 +136,7 @@ Common fields and what they mean:
 | `cost` | payment or usage limit such as `oncePerTurn` |
 | `parameters` | action-specific values and nested flow config |
 | `optional` | whether the effect may be declined |
+| `compiledTiming` | runtime-only normalized timing descriptor |
 
 ## What The Real Card Pool Looks Like
 Across `GD01`, `GD02`, `GD03`, and `ST01` to `ST08`, the card data currently contains:
@@ -111,7 +160,7 @@ This means the backend is mostly dealing with triggered effects, with a meaningf
 ## Rule Types In Practice
 
 ### `triggered`
-This is the most common rule family. It waits for an event such as deploy, pair, attack, burst, destruction, or end of turn.
+This is the most common rule family. It waits for a real event such as deploy, pair, attack, burst, destruction, or end of turn.
 
 Common examples:
 - `ENTERS_PLAY`
@@ -127,7 +176,9 @@ Example:
 {
   "effectId": "pair_draw",
   "type": "triggered",
-  "trigger": "PAIRING_COMPLETE",
+  "timing": {
+    "eventTrigger": "PAIRING_COMPLETE"
+  },
   "action": "draw",
   "conditions": [
     { "type": "unitsInPlay", "value": ">=3" }
@@ -139,18 +190,23 @@ Example:
 This says: when pairing finishes, if you have at least 3 units in play, draw 1.
 
 ### `play`
-This is used for effects that are part of playing a command or using a card during a legal play window, usually `MAIN_PHASE`.
+This is used for effects that are part of playing a command or using a card during a legal window.
 
 Example:
 
 ```json
 {
-  "effectId": "main_bounce_enemy_hp_le_2_or_4_if_link_unit_in_play",
+  "effectId": "main_bounce_enemy",
   "type": "play",
-  "timing": { "windows": ["MAIN_PHASE"] },
+  "timing": {
+    "activationWindows": ["MAIN_PHASE"]
+  },
   "action": "conditional"
 }
 ```
+
+Important note:
+some `play` rules are still event-shaped edge cases, such as cost-replacement rules triggered by `COST`. In those cases, `timing.eventTrigger` is valid for a `play` rule.
 
 This is common for command cards that branch based on current board state.
 
@@ -161,9 +217,8 @@ Example:
 
 ```json
 {
-  "effectId": "continuous_prevent_battle_damage_if_unit_has_breach_during_your_turn",
+  "effectId": "continuous_prevent_battle_damage",
   "type": "continuous",
-  "trigger": "continuous",
   "action": "prevent_battle_damage",
   "conditions": [
     { "type": "turnPlayer", "scope": "self" }
@@ -186,6 +241,9 @@ Example:
 {
   "effectId": "pilot_designation",
   "type": "special",
+  "timing": {
+    "activationWindows": ["MAIN_PHASE"]
+  },
   "action": "designate_pilot",
   "parameters": {
     "pilotName": "Lucrezia Noin",
@@ -206,7 +264,9 @@ Example:
 {
   "effectId": "activate_heal",
   "type": "activated",
-  "timing": { "windows": ["ACTION_STEP"] },
+  "timing": {
+    "activationWindows": ["ACTION_STEP"]
+  },
   "cost": { "oncePerTurn": true },
   "target": {
     "type": "unit",
@@ -223,10 +283,10 @@ Example:
 
 This is the pattern for `[Main]`, `[Action]`, and other opt-in card abilities.
 
-## Trigger Families That Matter Most
-Top trigger families in the current card pool:
+## Event Trigger Families That Matter Most
+Top event-trigger families in the current card pool:
 
-| Trigger | Count | Why it matters |
+| Event trigger | Count | Why it matters |
 |---|---:|---|
 | `BURST_CONDITION` | 134 | shield pressure and burst choice are major parts of the game |
 | `ENTERS_PLAY` | 101 | deploy tempo is a central source of immediate value |
@@ -274,6 +334,25 @@ Top action families in the current card pool:
 
 The important lesson is that a lot of cards are not simple one-shot effects. The data is full of nested branches, multi-step resolution, and timing-sensitive combat actions.
 
+## Activation Windows And Durations
+
+### Activation windows
+
+| Activation window | Meaning |
+|---|---|
+| `MAIN_PHASE` | normal play or main-phase activation |
+| `ACTION_STEP` | battle-response window |
+
+### Durations
+
+| Duration | Meaning |
+|---|---|
+| `continuous` | passive effect stays active |
+| `UNTIL_END_OF_TURN` | temporary effect for the current turn |
+| `UNTIL_END_OF_BATTLE` | temporary battle-only effect |
+
+This tells you the game is not only about board state. Timing is part of both legality and value.
+
 ## Common Schema Patterns
 
 ### 1. Simple targeted effect
@@ -285,7 +364,9 @@ Example: `GD01-008 Guntank`
 {
   "effectId": "deploy_damage_1",
   "type": "triggered",
-  "trigger": "ENTERS_PLAY",
+  "timing": {
+    "eventTrigger": "ENTERS_PLAY"
+  },
   "target": {
     "type": "unit",
     "scope": "opponent",
@@ -307,7 +388,9 @@ Example: `GD01-087 Sayla Mass`
 {
   "effectId": "burst_add_to_hand",
   "type": "triggered",
-  "trigger": "BURST_CONDITION",
+  "timing": {
+    "eventTrigger": "BURST_CONDITION"
+  },
   "target": {
     "type": "card",
     "scope": "self"
@@ -322,7 +405,9 @@ Related burst deploy pattern:
 {
   "effectId": "burst_deploy",
   "type": "triggered",
-  "trigger": "BURST_CONDITION",
+  "timing": {
+    "eventTrigger": "BURST_CONDITION"
+  },
   "target": {
     "type": "card",
     "scope": "self"
@@ -341,7 +426,7 @@ Example: `GD01-014 G-Sky Easy`
   "effectId": "activate_heal",
   "type": "activated",
   "timing": {
-    "windows": ["ACTION_STEP"]
+    "activationWindows": ["ACTION_STEP"]
   },
   "cost": {
     "oncePerTurn": true
@@ -354,10 +439,7 @@ Example: `GD01-014 G-Sky Easy`
   "action": "heal",
   "parameters": {
     "value": 1
-  },
-  "sourceConditions": [
-    { "type": "linked" }
-  ]
+  }
 }
 ```
 
@@ -370,6 +452,9 @@ Example: `GD01-101 Deep Devotion`
 {
   "effectId": "pilot_designation",
   "type": "special",
+  "timing": {
+    "activationWindows": ["MAIN_PHASE"]
+  },
   "action": "designate_pilot",
   "parameters": {
     "pilotName": "Lucrezia Noin",
@@ -387,12 +472,14 @@ Example: `ST01-014 Unforeseen Incident`
 ```json
 {
   "effectId": "burst_activate_main",
-  "trigger": "BURST_CONDITION",
+  "type": "triggered",
+  "timing": {
+    "eventTrigger": "BURST_CONDITION"
+  },
   "action": "activate_ability",
   "parameters": {
     "abilityType": "main"
-  },
-  "type": "triggered"
+  }
 }
 ```
 
@@ -407,7 +494,9 @@ Example: `GD01-045 Duel Gundam (Assault Shroud)`
 {
   "effectId": "pair_look_top_3_deploy_zaft_unit_le_4",
   "type": "triggered",
-  "trigger": "PAIRING_COMPLETE",
+  "timing": {
+    "eventTrigger": "PAIRING_COMPLETE"
+  },
   "action": "select_from_top_deck",
   "parameters": {
     "lookCount": 3,
@@ -420,10 +509,6 @@ Example: `GD01-045 Duel Gundam (Assault Shroud)`
         "traitsAny": ["ZAFT"],
         "level": "<=4"
       }
-    },
-    "rest": {
-      "toZone": "deck_bottom",
-      "order": "random"
     }
   }
 }
@@ -438,7 +523,9 @@ Example: `GD01-027 Big Zam`
 {
   "effectId": "deploy_damage_all_4",
   "type": "triggered",
-  "trigger": "ENTERS_PLAY",
+  "timing": {
+    "eventTrigger": "ENTERS_PLAY"
+  },
   "action": "sequence",
   "parameters": {
     "steps": [
@@ -502,21 +589,6 @@ Common selection notes:
 - `count` controls how many targets or choices are needed.
 - `optional: true` allows the effect to skip the selection path.
 
-## Timing Windows
-Important timing windows seen in the data:
-
-| Window or duration | Count | Meaning |
-|---|---:|---|
-| `MAIN_PHASE` | 206 | normal play or main-phase activation |
-| `UNTIL_END_OF_TURN` | 168 | temporary buff/debuff duration |
-| `ACTION_STEP` | 108 | battle-response window |
-| `continuous` | 57 | persistent effect duration |
-| `YOUR_TURN` | 46 | owner-turn restriction |
-| `UNTIL_END_OF_BATTLE` | 28 | battle-only modifier |
-| `OPPONENT_TURN` | 8 | opponent-turn gating |
-
-This tells you the game is not only about board state. The timing window itself is part of effect value and legality.
-
 ## Common Condition Families
 The most common condition families are board-state or pair-state checks:
 
@@ -551,7 +623,7 @@ Practical reading rule:
 - If the rule uses branch actions, tokens, burst, or blocker redirects, assume the queue may stop for a decision.
 - For AI work, these are real action families, not implementation details.
 
-## What This Means For AI And Tooling
+## What This Means For AI, Frontend, And Debugging
 The effect scheme has several consequences for AI and debugging:
 
 - `BURST_CONDITION` is the largest trigger family, so shield risk is a first-class concern.
@@ -561,6 +633,8 @@ The effect scheme has several consequences for AI and debugging:
 - `sequence` and `conditional` are everywhere, so the evaluator and test tooling must understand nested effect flow.
 - `designate_pilot` means command cards can create alternate play lines, not only one-shot spell lines.
 - `activate_ability` means some rules intentionally route into another ability rather than expressing the full resolution in one node.
+- frontend timing gates should use compiled timing descriptors first, not raw authored timing guesses
+- AI enumeration should use compiled timing metadata instead of reparsing legacy trigger strings
 
 ## Recommended Reading Order
 If you are new to the backend effect system, read these in order:
@@ -574,7 +648,7 @@ If you are new to the backend effect system, read these in order:
 A developer or AI agent should not say an effect is understood until it can answer all of these:
 
 1. What is the rule `type`?
-2. What `trigger` or `timing` makes it legal?
+2. Is the rule driven by `timing.eventTrigger`, `timing.activationWindows`, or `timing.duration`?
 3. What is the real `action` family?
 4. Does it contain nested `sequence` or `conditional` steps?
 5. Does it require `target`, `option`, `token`, `prompt`, `blocker`, or `burst` choice?

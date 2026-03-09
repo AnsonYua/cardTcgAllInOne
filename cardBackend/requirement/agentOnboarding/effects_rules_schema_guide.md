@@ -1,154 +1,262 @@
 # effects.rules Schema Guide (Student-Friendly)
 
 ## 1) What is `effects.rules`?
-`effects.rules` is the instruction list on a card.  
-Think of each rule like: **IF this time happens, THEN do this action**.  
-A card can have one rule or many rules.  
-Each rule is one behavior unit.  
-The backend reads these rules and turns them into game events.  
-If the rule needs player input, the queue pauses and waits.
+`effects.rules` is the instruction list on a card.
+
+Think of each rule like:
+
+- what kind of rule is this
+- what timing makes it legal or causes it to run
+- what action does it do
+- who or what does it affect
+
+A card can have one rule or many rules. Each rule is one behavior unit. The backend reads these rules, normalizes them, compiles timing metadata, and then executes them through the normal engine flow.
 
 ## 2) The One-Line Mental Model
-> `trigger` tells **WHEN**, `action` tells **WHAT**, `target` tells **WHO/WHAT**, and `conditions` tell **IF allowed**.
+> `type` tells **what kind of rule this is**, `timing` tells **when it starts or when you may use it**, `action` tells **what it does**, and `target` plus `conditions` tell **who it affects and when it is allowed**.
 
-## 3) Core Rule Shape (Simple JSON)
+## 3) Source Authoring Model
+Source card JSON now uses a split timing model. At authoring time, do not put top-level `trigger` on a rule.
+
+Use:
+
+- `timing.eventTrigger`
+- `timing.activationWindows`
+- `timing.duration`
+
+Do not author:
+
+- top-level `trigger`
+- `timing.windows`
+- `timing.internalHook`
+
+### Simple triggered rule
 
 ```json
 {
-  "effectId": "example_damage",
+  "effectId": "deploy_damage_1",
   "type": "triggered",
-  "trigger": "ENTERS_PLAY",
+  "timing": {
+    "eventTrigger": "ENTERS_PLAY"
+  },
   "action": "damage",
-  "target": { "scope": "opponent", "type": "unit", "count": 1 }
+  "target": { "scope": "opponent", "type": "unit", "count": 1 },
+  "parameters": { "value": 1 }
 }
 ```
 
-How to read this:
-- `effectId`: this rule's name/id.
-- `type`: rule style (`triggered`, `continuous`, etc.).
-- `trigger`: when the rule starts.
-- `action`: what the rule does.
-- `target`: which card/player is affected.
+### Simple activated rule
 
-## 4) Field-by-Field Student Table
+```json
+{
+  "effectId": "activate_heal",
+  "type": "activated",
+  "timing": {
+    "activationWindows": ["ACTION_STEP"]
+  },
+  "action": "heal",
+  "target": { "scope": "any", "type": "unit", "count": 1 },
+  "parameters": { "value": 1 }
+}
+```
 
-| Field | What it means (simple) | Typical values | Required? | Backend source file |
+### Simple continuous rule
+
+```json
+{
+  "effectId": "during_pair_buff",
+  "type": "continuous",
+  "timing": {
+    "duration": "continuous",
+    "actionTurn": "YOUR_TURN"
+  },
+  "sourceConditions": [{ "type": "paired" }],
+  "action": "modifyAP",
+  "target": { "scope": "self_all_unit", "type": "unit", "count": 1 },
+  "parameters": { "value": 1 }
+}
+```
+
+### Special play-mode rule
+
+```json
+{
+  "effectId": "pilot_designation",
+  "type": "special",
+  "timing": {
+    "activationWindows": ["MAIN_PHASE"]
+  },
+  "action": "designate_pilot",
+  "parameters": {
+    "pilotName": "Lucrezia Noin",
+    "AP": 1,
+    "HP": 0
+  }
+}
+```
+
+## 4) Source Timing vs Compiled Timing
+
+There are now two timing views:
+
+### A) Source card authoring timing
+This is what card JSON should store.
+
+```ts
+type SourceEffectTiming = {
+  eventTrigger?: string;
+  activationWindows?: string[];
+  duration?: string;
+  actionTurn?: string;
+  endOnSourceDestroyed?: boolean;
+};
+```
+
+### B) Compiled runtime timing
+This is what the backend, AI, and frontend consume after card data is normalized.
+
+```ts
+type CompiledEffectTiming = {
+  eventTrigger?: string;
+  activationWindows?: string[];
+  duration?: string;
+  internalHook?: string;
+  timingClass:
+    | "event_triggered"
+    | "player_activated"
+    | "continuous_passive"
+    | "temporary_effect"
+    | "engine_internal";
+  windows?: string[];
+  legacyTrigger?: string;
+};
+```
+
+Important rules:
+
+- `internalHook` is runtime-only.
+- `internalHook` is not normal card text timing.
+- `legacyTrigger` and `windows` may still appear in bridged runtime payloads for compatibility.
+- New source card JSON should not rely on those legacy fields.
+
+## 5) Field-by-Field Student Table
+
+| Field | What it means (simple) | Typical values | Required? | Notes |
 |---|---|---|---|---|
-| `effectId` | Rule ID/name | `"pair_draw"`, `"burst_deploy"` | Recommended (fallback exists) | `src/services/EventQueue/interfaces/GameEvent.ts`, `src/utils/EffectNormalizationUtils.ts` |
-| `type` | Rule category | `triggered`, `continuous`, `activated`, `play` | Optional but strongly recommended | `src/services/EventQueue/interfaces/GameEvent.ts`, `src/services/effects/canonical/EffectCanonicalSchema.ts` |
-| `trigger` | When rule runs | `ENTERS_PLAY`, `PAIRING_COMPLETE`, `ATTACK_PHASE`, `BURST_CONDITION`, `END_OF_TURN`, `continuous` | Required for trigger-driven rules | `src/services/effects/schema/EffectSchema.ts`, `src/utils/EffectNormalizationUtils.ts` |
-| `action` | What rule does | `damage`, `draw`, `deploy`, `rest`, etc. | Required for most runtime rules | `src/services/effects/EffectExecutor.ts`, `src/services/effects/EffectActionRouter.ts` |
-| `target` | Who/what action applies to | `{ scope, type, count, filters }` | Required for targeted actions | `src/services/EventQueue/interfaces/GameEvent.ts`, `src/utils/EffectNormalizationUtils.ts` |
-| `conditions` | Extra IF checks | arrays of condition objects | Optional | `src/services/EventQueue/interfaces/GameEvent.ts`, `src/services/effects/schema/EffectSchema.ts` |
-| `sourceConditions` | Conditions on source card/player | condition objects | Optional | `src/services/EventQueue/interfaces/GameEvent.ts`, `src/utils/EffectNormalizationUtils.ts` |
-| `cost` | Payment before effect | discard/rest/exile-like keys | Optional | `src/services/EventQueue/interfaces/GameEvent.ts`, `src/utils/EffectNormalizationUtils.ts` |
-| `timing` | Duration/window details | `duration`, `windows`, `actionTurn` | Optional | `src/services/EventQueue/interfaces/GameEvent.ts`, `src/utils/EffectNormalizationUtils.ts` |
-| `parameters` | Extra action data | numeric/flag/config object | Optional | `src/services/EventQueue/interfaces/GameEvent.ts`, `src/utils/EffectNormalizationUtils.ts` |
-| `optional` | Can player skip? | `true`, `false` | Optional | `src/services/EventQueue/interfaces/GameEvent.ts` |
-| `description` | Human text note | string or string[] | Optional | `src/services/EventQueue/interfaces/GameEvent.ts` |
+| `effectId` | Rule ID/name | `"pair_draw"`, `"burst_deploy"` | Recommended | Fallback exists, but explicit IDs are safer |
+| `type` | Rule category | `triggered`, `continuous`, `activated`, `play`, `special` | Strongly recommended | Tells the engine what rule family this is |
+| `timing.eventTrigger` | Real game event that starts the rule | `ENTERS_PLAY`, `PAIRING_COMPLETE`, `ATTACK_PHASE`, `BURST_CONDITION` | Required for triggered rules | Replaces authored top-level `trigger` |
+| `timing.activationWindows` | Window where player may use the rule | `MAIN_PHASE`, `ACTION_STEP` | Required for activated/play/special rules unless event-driven | Use explicit arrays |
+| `timing.duration` | How long the effect lasts | `continuous`, `UNTIL_END_OF_TURN`, `UNTIL_END_OF_BATTLE` | Required for continuous or temporary effects | Use canonical casing |
+| `action` | What rule does | `damage`, `draw`, `deploy`, `rest`, etc. | Required for most runtime rules | Flow actions like `sequence` and `conditional` also live here for now |
+| `target` | Who/what action applies to | `{ scope, type, count, filters }` | Required for targeted actions | Target shape must match the action |
+| `conditions` | Extra IF checks | arrays of condition objects | Optional | Checked against current state/event |
+| `sourceConditions` | Conditions on the source card/player | condition objects | Optional | Common for `linked`, `paired`, turn-owner checks |
+| `cost` | Payment before effect | discard/rest/exile-like keys | Optional | Used by activated/play rules |
+| `parameters` | Extra action data | numeric/flag/config object | Optional | Action-specific details |
+| `optional` | Can player skip? | `true`, `false` | Optional | Important for burst and tutor-like flows |
+| `compiledTiming` | Normalized timing metadata | runtime-only | No | Added by backend bridge/compiler |
 
-## 5) Trigger-by-Turn Matrix
+## 6) Timing Matrix
 
-| Turn timing | Trigger examples | Simple meaning | Backend source file |
-|---|---|---|---|
-| Start/Draw | `EFFECT_DRAW` | Runs around draw-related moments | `src/services/GameEngine.ts`, `src/services/effects/EffectDrawTriggeredEffectManager.ts` |
-| Main | `MAIN_PHASE`, some `none`/activated paths | Rule can be used in main phase | `src/services/PlayerActionExecutor.ts`, `src/services/effects/MainPhaseAbilityManager.ts` |
-| Attack / Action Step | `ATTACK_PHASE`, `ATTACK_REDIRECT`, `BATTLE_DESTROY` | Runs in battle flow | `src/services/BattlePhaseManager.ts`, `src/services/effects/AttackPhaseEffectManager.ts` |
-| Pair timing | `PAIRING_COMPLETE`, `PAIRING_COMPLETE_GLOBAL` | Runs after unit+pilot pairing | `src/services/PairingEffectManager.ts`, `src/services/effects/PairingGlobalEffectManager.ts` |
-| End Turn | `END_OF_TURN` | Runs in end-turn checks/cleanup | `src/services/EventQueue/StateBasedActionEngine.ts`, `src/services/effects/EndTurnTriggeredEffectManager.ts` |
-| Burst | `BURST_CONDITION` | Runs when burst condition is met | `src/services/BurstEffectManager.ts` |
-| Continuous | `continuous` | Stays active while condition is true | `src/services/ContinuousEffectManager.ts`, `src/services/effects/continuous/*` |
+| Timing concept | Examples | Simple meaning |
+|---|---|---|
+| `eventTrigger` | `ENTERS_PLAY`, `PAIRING_COMPLETE`, `ATTACK_PHASE`, `BURST_CONDITION` | A real game event causes the rule to run |
+| `activationWindows` | `MAIN_PHASE`, `ACTION_STEP` | Player may choose to use the rule in these windows |
+| `duration` | `continuous`, `UNTIL_END_OF_TURN`, `UNTIL_END_OF_BATTLE` | How long the effect stays active |
+| `timingClass` | `event_triggered`, `player_activated`, `continuous_passive` | Compiler-produced summary for backend/UI/AI |
 
-## 6) Action Families Matrix (Simple)
+Important distinction:
 
-| Action family | Example actions | Plain meaning | Primary code path |
-|---|---|---|---|
-| Card movement | `addToHand`, `deploy`, `deploy_from_hand`, `returnToHand`, `moveFromTrashToDeck` | Move cards between zones or put cards into play | `src/services/effects/EffectExecutor.ts`, `src/services/effects/actions/EffectDeployFromHandActions.ts`, `src/services/effects/actions/EffectDeckActions.ts` |
-| Combat impact | `damage`, `destroy`, `rest`, `setActive`, `allow_attack_target`, `restrict_attack` | Change battle state and target rules | `src/services/effects/EffectExecutor.ts`, `src/services/effects/actions/EffectDamageActions.ts`, `src/services/effects/actions/EffectDestroyActions.ts` |
-| Resource/control | `addBasicEnergy`, `addExtraEnergy`, `discardFromHand`, `exileFromTrash` | Pay/manage resources and hand/trash flow | `src/services/effects/actions/EffectEnergyActions.ts`, `src/services/effects/actions/EffectDiscardActions.ts`, `src/services/effects/actions/EffectExileActions.ts` |
-| Keywords/protection | `grant_keyword`, `grant_breach`, `prevent_battle_damage`, `prevent_damage` | Give abilities or prevent damage | `src/services/effects/actions/EffectKeywordActions.ts`, `src/services/effects/actions/EffectBreachActions.ts`, `src/services/effects/actions/EffectBattleDamagePreventionActions.ts` |
-| Multi-step flows | `sequence`, `conditional`, `draw_then_discard`, `tutor_top_deck` | Run multi-step or branch logic | `src/services/effects/EffectActionRouter.ts`, `src/services/effects/SequenceEffectManager.ts`, `src/services/effects/ConditionalEffectManager.ts` |
+- `ATTACK_PHASE` is an `eventTrigger`
+- `ACTION_STEP` is usually an `activationWindow`
+- `UNTIL_END_OF_TURN` is a `duration`
+
+These are not the same kind of timing.
 
 ## 7) How Backend Reads Your Rule (Pipeline)
 1. Load card JSON from set data files.
-2. Collect matching rules by trigger (`EffectRuleCatalog`).
-3. Normalize fields and aliases (`normalizeEffectRule`).
-4. Route action to executor/router (`EffectExecutor` or `EffectActionRouter`).
-5. If user choice is needed, queue pauses for choice event.
-6. After choice resolve, queue continues until event is done.
+2. Normalize rule fields (`normalizeEffectRule`).
+3. Compile timing metadata (`compileEffectTimingFromRule`).
+4. Bridge compatibility fields for older runtime surfaces if needed.
+5. Collect matching rules by event timing (`EffectRuleCatalog`) or by activation window.
+6. Route action to executor/router.
+7. If user choice is needed, queue pauses for choice event.
+8. After choice resolve, queue continues until event is done.
 
 Main sources:
-- `src/services/effects/EffectRuleCatalog.ts`
+
+- `src/services/effects/timing/EffectTimingCompiler.ts`
 - `src/utils/EffectNormalizationUtils.ts`
+- `src/services/effects/EffectRuleCatalog.ts`
 - `src/services/effects/EffectExecutor.ts`
 - `src/services/effects/EffectActionRouter.ts`
-- `src/models/GameEnvironment.ts`
-- `src/services/StaticEventProcessor.ts`
+- `src/models/CardSystem.ts`
+- `src/services/effects/CardDataResolver.ts`
 
-## 8) Common Mistakes and Fixes
+## 8) How Frontend Reads Timing Now
+Frontend timing checks should read compiled timing descriptors first.
 
-### Mistake 1: wrong trigger spelling
+Main reader:
+
+- `src/phaser/game/effectTiming.ts`
+
+Current consumers:
+
+- `src/phaser/game/actionEligibility.ts`
+- `src/phaser/controllers/ActionStepCoordinator.ts`
+
+Frontend rule:
+
+- do not re-interpret raw authored timing by hand if `compiledTiming` is available
+- prefer `compiledTiming.activationWindows` and `compiledTiming.eventTrigger`
+- use legacy `trigger` or `timing.windows` only as compatibility fallback
+
+## 9) Common Mistakes and Fixes
+
+### Mistake 1: authoring top-level `trigger`
 Bad:
 ```json
-{ "trigger": "ENTER_PLAY", "action": "damage" }
+{ "type": "triggered", "trigger": "ENTERS_PLAY", "action": "damage" }
 ```
 Good:
 ```json
-{ "trigger": "ENTERS_PLAY", "action": "damage" }
+{
+  "type": "triggered",
+  "timing": { "eventTrigger": "ENTERS_PLAY" },
+  "action": "damage"
+}
 ```
 
-### Mistake 2: missing action
+### Mistake 2: using `timing.windows` in new source data
 Bad:
 ```json
-{ "trigger": "ATTACK_PHASE" }
+{ "type": "activated", "timing": { "windows": ["ACTION_STEP"] }, "action": "heal" }
 ```
 Good:
 ```json
-{ "trigger": "ATTACK_PHASE", "action": "damage" }
+{
+  "type": "activated",
+  "timing": { "activationWindows": ["ACTION_STEP"] },
+  "action": "heal"
+}
 ```
 
-### Mistake 3: target count mismatch
+### Mistake 3: missing action
 Bad:
 ```json
-{ "action": "damage", "target": { "count": 0 } }
+{ "type": "triggered", "timing": { "eventTrigger": "ATTACK_PHASE" } }
 ```
 Good:
 ```json
-{ "action": "damage", "target": { "count": 1 } }
+{
+  "type": "triggered",
+  "timing": { "eventTrigger": "ATTACK_PHASE" },
+  "action": "damage"
+}
 ```
 
-### Mistake 4: alias not normalized in docs/data
-Bad:
-```json
-{ "conditions": [{ "type": "sourceAP", "value": ">=5" }] }
-```
-Good:
-```json
-{ "conditions": [{ "type": "sourceAp", "value": ">=5" }] }
-```
-Note: backend alias normalization exists, but canonical naming is safer.
-
-### Mistake 5: ambiguous condition object
-Bad:
-```json
-{ "conditions": [{ "value": 2 }] }
-```
-Good:
-```json
-{ "conditions": [{ "type": "unitsInPlay", "value": ">=2" }] }
-```
-
-### Mistake 6: forgetting `optional` on skippable choice
-Bad:
-```json
-{ "trigger": "BURST_CONDITION", "action": "deploy" }
-```
-Good:
-```json
-{ "trigger": "BURST_CONDITION", "action": "deploy", "optional": true }
-```
-
-### Mistake 7: incorrect timing casing/value
+### Mistake 4: incorrect duration casing
 Bad:
 ```json
 { "timing": { "duration": "until_end_turn" } }
@@ -158,38 +266,36 @@ Good:
 { "timing": { "duration": "UNTIL_END_OF_TURN" } }
 ```
 
-### Mistake 8: invalid scope/type combo
+### Mistake 5: forgetting explicit activation window
 Bad:
 ```json
-{ "target": { "scope": "deck", "type": "unit" } }
+{ "type": "special", "action": "designate_pilot" }
 ```
 Good:
 ```json
-{ "target": { "scope": "opponent", "type": "unit", "zone": ["slot"] } }
+{
+  "type": "special",
+  "timing": { "activationWindows": ["MAIN_PHASE"] },
+  "action": "designate_pilot"
+}
 ```
 
-### Mistake 9: action needs choice but no target setup
+### Mistake 6: action needs choice but no target setup
 Bad:
 ```json
 { "action": "destroy" }
 ```
 Good:
 ```json
-{ "action": "destroy", "target": { "scope": "opponent", "type": "unit", "count": 1 } }
+{
+  "action": "destroy",
+  "target": { "scope": "opponent", "type": "unit", "count": 1 }
+}
 ```
 
-### Mistake 10: wrong cost object shape
-Bad:
-```json
-{ "cost": "discard1" }
-```
-Good:
-```json
-{ "cost": { "discardFromHand": { "count": 1 } } }
-```
-
-## 9) Choice Needed (Mini Section)
+## 10) Choice Needed (Mini Section)
 These events mean player input is required:
+
 - `TARGET_CHOICE`
 - `BLOCKER_CHOICE`
 - `TOKEN_CHOICE`
@@ -198,34 +304,16 @@ These events mean player input is required:
 - `BURST_EFFECT_CHOICE`
 
 Simple rule:
-If one of these is at queue head, resolve it first.
-
-Related files:
-- `src/models/GameEnvironment.ts` (`needsPlayerInput`)
-- `src/routes/gameRoutes.ts` (confirm APIs)
-- `src/services/choices/ChoiceConfirmationService.ts`
-
-## 10) Schema + Current Status
-Current status from audits:
-- ST report markdown: `requirement/review/st_effect_audit_report.md`
-- ST report json: `requirement/review/st_effect_audit_report.json`
-- ST summary at generation time: `Rows: 176 | PASS: 176 | WARN: 0 | FAIL: 0`
-
-GD audit matrices:
-- `GD01_EFFECT_AUDIT_MATRIX.md`
-- `GD02_EFFECT_AUDIT_MATRIX.md`
-- `GD03_EFFECT_AUDIT_MATRIX.md`
-
-Cautious note:
-Current audits show aligned coverage.  
-Re-run audits and quick tests after schema/data changes.
+if one of these is at queue head, resolve it first.
 
 ## 11) Student Checklist: "Is my new rule good?"
-1. Trigger exists in known trigger set.
-2. Action has handler path in executor/router.
-3. Target and conditions match what action needs.
-4. If choice is needed, confirm route/flow exists.
-5. Run scenario/test and confirm real behavior.
+1. Rule `type` is correct.
+2. Timing is expressed with `timing.eventTrigger`, `timing.activationWindows`, or `timing.duration`.
+3. New source data does not author top-level `trigger` or `timing.windows`.
+4. Action has handler path in executor/router.
+5. Target and conditions match what the action needs.
+6. If choice is needed, confirm queue/route flow exists.
+7. Run scenario/test and confirm real behavior.
 
 Useful commands:
 ```bash
@@ -236,7 +324,7 @@ npm run test:quick
 
 ## 12) Appendix: Short Canonical Lists
 
-### Most-used triggers
+### Most-used event triggers
 - `ENTERS_PLAY`
 - `PAIRING_COMPLETE`
 - `ATTACK_PHASE`
@@ -244,20 +332,19 @@ npm run test:quick
 - `END_OF_TURN`
 - `BURST_CONDITION`
 - `BATTLE_DESTROY`
+
+### Most-used activation windows
+- `MAIN_PHASE`
+- `ACTION_STEP`
+
+### Most-used durations
 - `continuous`
+- `UNTIL_END_OF_TURN`
+- `UNTIL_END_OF_BATTLE`
 
 Source:
 - `src/services/effects/schema/EffectSchema.ts`
-
-### Most-used condition types
-- `linked`
-- `paired`
-- `turnPlayer`
-- `sourceAp`
-- `sourceHp`
-- `cardsInTrash`
-- `unitsInPlay`
-- `hasAnotherLinkedUnit`
+- `src/services/effects/timing/EffectTimingCompiler.ts`
 
 Definition note:
 - `paired`: unit and pilot both exist in the same slot.

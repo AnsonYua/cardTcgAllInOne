@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { initializeUnitTurnState } from '../utils/UnitTurnStateUtils';
+import { applyCompiledTimingBridgeToCardData } from '../services/effects/timing/EffectTimingCompiler';
 
 // ============ CARD DATA INTERFACES ============
 
@@ -57,8 +58,17 @@ export interface ActivationLockEffect {
 export interface EffectRule {
     effectId: string;
     type: string;
-    trigger: string;
+    trigger?: string;
     action: string;                 // Direct action property (not nested)
+    compiledTiming?: {
+        eventTrigger?: string;
+        activationWindows?: string[];
+        duration?: string;
+        internalHook?: string;
+        timingClass?: string;
+        windows?: string[];
+        legacyTrigger?: string;
+    };
     sourceLevelScope?: 'paired_unit' | 'source_card';
     cost?: {
         [key: string]: any;
@@ -82,9 +92,12 @@ export interface EffectRule {
         };
     };
     timing?: {
+        eventTrigger?: string;
+        activationWindows?: string[];
         windows?: string[];
         duration?: string;
         actionTurn?: string;
+        endOnSourceDestroyed?: boolean;
     };
     conditions?: any[];
     sourceConditions?: any[];
@@ -556,7 +569,13 @@ export class CardDatabaseManager {
                             }
                         }
                     }
-                    Object.assign(merged, cards);
+                    const compiledCards = Object.fromEntries(
+                        Object.entries(cards).map(([cardId, cardData]) => [
+                            cardId,
+                            applyCompiledTimingBridgeToCardData(cardData)
+                        ])
+                    );
+                    Object.assign(merged, compiledCards);
                 }
 
                 CardDatabaseManager.cardDatabase = merged;

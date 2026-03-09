@@ -207,12 +207,33 @@ export interface TargetReference {
     };
 }
 
-export interface EffectTiming {
+export type TimingClass =
+    | 'event_triggered'
+    | 'player_activated'
+    | 'continuous_passive'
+    | 'temporary_effect'
+    | 'engine_internal';
+
+export interface SourceEffectTiming {
+    eventTrigger?: string;
+    activationWindows?: string[];
     windows?: string[];
     duration?: string;
     actionTurn?: string;
     endOnSourceDestroyed?: boolean;
 }
+
+export interface CompiledEffectTiming {
+    eventTrigger?: string;
+    activationWindows?: string[];
+    duration?: string;
+    internalHook?: string;
+    timingClass: TimingClass;
+    windows?: string[];
+    legacyTrigger?: string;
+}
+
+export interface EffectTiming extends SourceEffectTiming {}
 
 export type SourceLevelScope = 'paired_unit' | 'source_card';
 
@@ -233,6 +254,7 @@ export interface EffectDefinition {
     effectId: string;
     type?: string;
     trigger?: string;
+    compiledTiming?: CompiledEffectTiming;
     sourceLevelScope?: SourceLevelScope;
     restrictions?: string[];
     optional?: boolean;

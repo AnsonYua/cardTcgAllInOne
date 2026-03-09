@@ -11,6 +11,11 @@ import {
     normalizeConditionTypeAlias,
     normalizeSelectionTypeAlias
 } from '../services/effects/schema/EffectSchema';
+import {
+    buildBridgedEffectTiming,
+    compileEffectTimingFromRule,
+    deriveLegacyTriggerFromCompiledTiming
+} from '../services/effects/timing/EffectTimingCompiler';
 
 interface NormalizeEffectRuleOptions {
     fallbackEffectId: string;
@@ -37,7 +42,9 @@ export function normalizeEffectRule(
     }
 
     const raw = rule as Record<string, unknown>;
-    const trigger = resolveTrigger(raw['trigger'], "");
+    const type = typeof raw['type'] === 'string' ? raw['type'] : undefined;
+    const compiledTiming = compileEffectTimingFromRule(raw);
+    const trigger = deriveLegacyTriggerFromCompiledTiming(compiledTiming, type) || resolveTrigger(raw['trigger'], "");
     if (options.expectedTriggers && options.expectedTriggers.length > 0) {
         if (!trigger || !options.expectedTriggers.includes(trigger)) {
             return null;
@@ -51,7 +58,7 @@ export function normalizeEffectRule(
 
     const parameters = normalizeEffectParameters(raw);
     const cost = normalizeEffectCost(raw['cost']);
-    const timing = normalizeEffectTiming(raw['timing']);
+    const timing = normalizeEffectTiming(raw['timing'], compiledTiming);
     const target = normalizeTargetConfig(raw['target'], {
         scope: options.defaultTargetScope,
         type: options.defaultTargetType,
@@ -74,7 +81,6 @@ export function normalizeEffectRule(
         ? raw['effectId']
         : options.fallbackEffectId;
 
-    const type = typeof raw['type'] === 'string' ? raw['type'] : undefined;
     const sourceLevelScope = raw['sourceLevelScope'] === 'paired_unit' || raw['sourceLevelScope'] === 'source_card'
         ? (raw['sourceLevelScope'] as 'paired_unit' | 'source_card')
         : undefined;
@@ -87,6 +93,7 @@ export function normalizeEffectRule(
         effectId,
         type,
         trigger,
+        compiledTiming,
         sourceLevelScope,
         optional,
         target,
@@ -218,49 +225,15 @@ export function normalizeEffectCost(costValue: unknown): Record<string, unknown>
     return costValue as Record<string, unknown>;
 }
 
-export function normalizeEffectTiming(timingValue: unknown): EffectTiming | undefined {
-    if (!timingValue || typeof timingValue !== 'object') {
+export function normalizeEffectTiming(
+    timingValue: unknown,
+    compiledTiming?: EffectDefinition['compiledTiming']
+): EffectTiming | undefined {
+    if (!compiledTiming) {
         return undefined;
     }
 
-    const timing = timingValue as Record<string, unknown>;
-
-    const windowsValue = timing['windows'];
-    let windows: string[] | undefined;
-
-    if (Array.isArray(windowsValue)) {
-        windows = windowsValue
-            .filter(value => typeof value === 'string' && value.length > 0)
-            .map(value => value as string);
-    } else if (typeof windowsValue === 'string' && windowsValue.length > 0) {
-        windows = [windowsValue];
-    }
-
-    const duration = typeof timing['duration'] === 'string' && timing['duration'].length > 0
-        ? (timing['duration'] as string)
-        : undefined;
-
-    const actionTurn = typeof timing['actionTurn'] === 'string' && timing['actionTurn'].length > 0
-        ? (timing['actionTurn'] as string)
-        : undefined;
-
-    if ((!windows || windows.length === 0) && !duration && !actionTurn) {
-        return undefined;
-    }
-
-    const normalized: EffectTiming = {};
-
-    if (windows && windows.length > 0) {
-        normalized.windows = windows;
-    }
-    if (duration) {
-        normalized.duration = duration;
-    }
-    if (actionTurn) {
-        normalized.actionTurn = actionTurn;
-    }
-
-    return normalized;
+    return buildBridgedEffectTiming(timingValue, compiledTiming);
 }
 
 interface TargetDefaults {

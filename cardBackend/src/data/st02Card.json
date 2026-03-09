@@ -33,7 +33,6 @@
           {
             "effectId": "breach_5",
             "type": "triggered",
-            "trigger": "BATTLE_DESTROY",
             "target": {
               "type": "card",
               "scope": "opponent_shield",
@@ -42,16 +41,21 @@
             "action": "damageShield",
             "parameters": {
               "value": 5
+            },
+            "timing": {
+              "eventTrigger": "BATTLE_DESTROY"
             }
           },
           {
             "effectId": "attack_active_low_level",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "allow_attack_target",
             "parameters": {
               "status": "active",
               "level": "<=4"
+            },
+            "timing": {
+              "duration": "continuous"
             }
           }
         ]
@@ -84,10 +88,12 @@
           {
             "effectId": "deploy_place_ex_resource",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "addExtraEnergy",
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -119,14 +125,14 @@
           {
             "effectId": "paired_battle_damage_splash",
             "type": "triggered",
-            "trigger": "BATTLE_DESTROY",
             "sourceConditions": [
               {
                 "type": "paired"
               }
             ],
             "timing": {
-              "actionTurn": "YOUR_TURN"
+              "actionTurn": "YOUR_TURN",
+              "eventTrigger": "BATTLE_DESTROY"
             },
             "target": {
               "type": "unit",
@@ -217,7 +223,7 @@
             "effectId": "activate_set_active",
             "type": "activated",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -282,7 +288,6 @@
         "rules": [
           {
             "effectId": "blocker",
-            "trigger": "ATTACK_REDIRECT",
             "target": {
               "type": "unit",
               "scope": "self"
@@ -291,7 +296,10 @@
             "parameters": {
               "cost": "rest_self"
             },
-            "type": "triggered"
+            "type": "triggered",
+            "timing": {
+              "eventTrigger": "ATTACK_REDIRECT"
+            }
           }
         ]
       }
@@ -319,7 +327,6 @@
         "rules": [
           {
             "effectId": "blocker",
-            "trigger": "ATTACK_REDIRECT",
             "target": {
               "type": "unit",
               "scope": "self"
@@ -328,7 +335,10 @@
             "parameters": {
               "cost": "rest_self"
             },
-            "type": "triggered"
+            "type": "triggered",
+            "timing": {
+              "eventTrigger": "ATTACK_REDIRECT"
+            }
           }
         ]
       }
@@ -356,17 +366,18 @@
         "rules": [
           {
             "effectId": "burst_add_to_hand",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
             "action": "addToHand",
-            "type": "triggered"
+            "type": "triggered",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "link_ap_boost",
-            "trigger": "continuous",
             "sourceConditions": [
               {
                 "type": "linked"
@@ -387,7 +398,6 @@
           },
           {
             "effectId": "link_hp_boost",
-            "trigger": "continuous",
             "sourceConditions": [
               {
                 "type": "linked"
@@ -431,25 +441,27 @@
         "rules": [
           {
             "effectId": "burst_add_to_hand",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
             "action": "addToHand",
-            "type": "triggered"
+            "type": "triggered",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "link_battle_draw",
             "type": "triggered",
-            "trigger": "BATTLE_DESTROY",
             "sourceConditions": [
               {
                 "type": "paired"
               }
             ],
             "timing": {
-              "actionTurn": "YOUR_TURN"
+              "actionTurn": "YOUR_TURN",
+              "eventTrigger": "BATTLE_DESTROY"
             },
             "target": {
               "type": "player",
@@ -487,10 +499,10 @@
             "effectId": "main_grant_breach",
             "type": "play",
             "timing": {
-              "windows": [
+              "duration": "UNTIL_END_OF_TURN",
+              "activationWindows": [
                 "MAIN_PHASE"
-              ],
-              "duration": "UNTIL_END_OF_TURN"
+              ]
             },
             "target": {
               "type": "unit",
@@ -510,7 +522,12 @@
               "AP": 1,
               "HP": 1
             },
-            "type": "special"
+            "type": "special",
+            "timing": {
+              "activationWindows": [
+                "MAIN_PHASE"
+              ]
+            }
           }
         ]
       }
@@ -539,10 +556,10 @@
             "effectId": "action_prevent_shield_damage",
             "type": "play",
             "timing": {
-              "windows": [
+              "duration": "UNTIL_END_OF_BATTLE",
+              "activationWindows": [
                 "ACTION_STEP"
-              ],
-              "duration": "UNTIL_END_OF_BATTLE"
+              ]
             },
             "action": "sequence",
             "parameters": {
@@ -581,7 +598,12 @@
               "AP": 1,
               "HP": 1
             },
-            "type": "special"
+            "type": "special",
+            "timing": {
+              "activationWindows": [
+                "MAIN_PHASE"
+              ]
+            }
           }
         ]
       }
@@ -606,18 +628,20 @@
         "rules": [
           {
             "effectId": "burst_activate_main",
-            "trigger": "BURST_CONDITION",
             "action": "activate_ability",
             "parameters": {
               "abilityType": "main"
             },
-            "type": "triggered"
+            "type": "triggered",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "main_action_rest_low_hp",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE",
                 "ACTION_STEP"
               ]
@@ -662,17 +686,18 @@
           {
             "effectId": "burst_deploy",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "deploy"
+            "action": "deploy",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "deploy_shield_then_scry_two",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "Add 1 of your Shields to your hand. Then look at the top 2 cards of your deck and return 1 to the top and 1 to the bottom.",
@@ -699,6 +724,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -730,17 +758,18 @@
           {
             "effectId": "burst_deploy",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "deploy"
+            "action": "deploy",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "deploy_shield_then_conditional_token",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "Add 1 of your Shields to your hand. Then, if it's your turn, deploy 1 Tallgeese (OZ/AP4/HP2) Unit token. If a \"Corsica Base\" is in your trash, deploy 2 Leo (OZ/AP1/HP1) Unit tokens instead.",
@@ -778,6 +807,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]

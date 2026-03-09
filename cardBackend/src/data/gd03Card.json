@@ -34,7 +34,6 @@
           {
             "effectId": "repair_2",
             "type": "triggered",
-            "trigger": "END_OF_TURN",
             "target": {
               "type": "unit",
               "scope": "source",
@@ -43,12 +42,14 @@
             "action": "heal",
             "parameters": {
               "value": 2
+            },
+            "timing": {
+              "eventTrigger": "END_OF_TURN"
             }
           },
           {
             "effectId": "pair_effect",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "sequence",
             "parameters": {
               "text": "Choose 1 rested enemy Unit. Deal 1 damage to it. When this effect destroys an enemy Unit, draw 1.",
@@ -96,6 +97,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
             }
           }
         ]
@@ -130,7 +134,6 @@
           {
             "effectId": "repair_3",
             "type": "triggered",
-            "trigger": "END_OF_TURN",
             "target": {
               "type": "unit",
               "scope": "source",
@@ -139,12 +142,14 @@
             "action": "heal",
             "parameters": {
               "value": 3
+            },
+            "timing": {
+              "eventTrigger": "END_OF_TURN"
             }
           },
           {
             "effectId": "during_pair_effect",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "sequence",
             "parameters": {
               "text": "When one of your other Units with <Repair> attacks, choose 1 enemy Unit whose Lv. is equal to or lower than that Unit. Rest it.",
@@ -195,7 +200,10 @@
               {
                 "type": "paired"
               }
-            ]
+            ],
+            "timing": {
+              "duration": "continuous"
+            }
           }
         ]
       }
@@ -229,7 +237,6 @@
           {
             "effectId": "blocker",
             "type": "triggered",
-            "trigger": "ATTACK_REDIRECT",
             "target": {
               "type": "unit",
               "scope": "self"
@@ -237,12 +244,14 @@
             "action": "redirect_attack",
             "parameters": {
               "cost": "rest_self"
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_REDIRECT"
             }
           },
           {
             "effectId": "repair_1",
             "type": "triggered",
-            "trigger": "END_OF_TURN",
             "target": {
               "type": "unit",
               "scope": "source",
@@ -251,6 +260,9 @@
             "action": "heal",
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "END_OF_TURN"
             }
           }
         ]
@@ -283,7 +295,6 @@
           {
             "effectId": "attack_rest",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "target": {
               "type": "unit",
               "scope": "opponent",
@@ -296,7 +307,10 @@
               },
               "count": 1
             },
-            "action": "rest"
+            "action": "rest",
+            "timing": {
+              "eventTrigger": "ATTACK_PHASE"
+            }
           }
         ]
       }
@@ -329,7 +343,6 @@
           {
             "effectId": "repair_1",
             "type": "triggered",
-            "trigger": "END_OF_TURN",
             "target": {
               "type": "unit",
               "scope": "source",
@@ -338,15 +351,20 @@
             "action": "heal",
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "END_OF_TURN"
             }
           },
           {
             "effectId": "deploy_draw",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "draw",
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -379,7 +397,6 @@
           {
             "effectId": "deploy_rest",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "target": {
               "type": "unit",
               "scope": "opponent",
@@ -395,7 +412,10 @@
                 "type": "player_choice"
               }
             },
-            "action": "rest"
+            "action": "rest",
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
+            }
           }
         ]
       }
@@ -427,7 +447,6 @@
           {
             "effectId": "destroyed_effect",
             "type": "triggered",
-            "trigger": "DESTROYED",
             "action": "sequence",
             "parameters": {
               "text": "Choose 1 enemy Unit with 3 or less HP. Rest it.",
@@ -448,6 +467,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "DESTROYED"
             }
           }
         ]
@@ -481,7 +503,6 @@
           {
             "effectId": "during_pair_effect",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "grant_keyword",
             "target": {
               "type": "unit",
@@ -493,7 +514,7 @@
               "value": 2
             },
             "timing": {
-              "duration": "CONTINUOUS",
+              "duration": "continuous",
               "endOnSourceDestroyed": true
             },
             "sourceConditions": [
@@ -533,7 +554,6 @@
           {
             "effectId": "deploy_rest",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "optional": true,
             "cost": {
               "exileFromTrash": {
@@ -556,7 +576,10 @@
                 "type": "player_choice"
               }
             },
-            "action": "rest"
+            "action": "rest",
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
+            }
           }
         ]
       }
@@ -588,7 +611,6 @@
           {
             "effectId": "repair_3",
             "type": "triggered",
-            "trigger": "END_OF_TURN",
             "target": {
               "type": "unit",
               "scope": "source",
@@ -597,6 +619,9 @@
             "action": "heal",
             "parameters": {
               "value": 3
+            },
+            "timing": {
+              "eventTrigger": "END_OF_TURN"
             }
           }
         ]
@@ -652,7 +677,6 @@
           {
             "effectId": "repair_1",
             "type": "triggered",
-            "trigger": "END_OF_TURN",
             "target": {
               "type": "unit",
               "scope": "source",
@@ -661,6 +685,9 @@
             "action": "heal",
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "END_OF_TURN"
             }
           }
         ]
@@ -693,7 +720,6 @@
           {
             "effectId": "conditional_ap_plus_1_if_jupitris_ge_2",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "modifyAP",
             "timing": {
               "duration": "continuous"
@@ -721,7 +747,6 @@
           {
             "effectId": "conditional_repair_1_if_jupitris_ge_2",
             "type": "triggered",
-            "trigger": "END_OF_TURN",
             "action": "heal",
             "target": {
               "type": "unit",
@@ -740,6 +765,9 @@
             ],
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "END_OF_TURN"
             }
           }
         ]
@@ -770,7 +798,6 @@
           {
             "effectId": "hand_cost_reduction_1_if_titans_ge_2",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "modifyCost",
             "target": {
               "type": "card",
@@ -789,6 +816,9 @@
             ],
             "parameters": {
               "value": -1
+            },
+            "timing": {
+              "duration": "continuous"
             }
           }
         ]
@@ -822,10 +852,10 @@
             "effectId": "activate_effect",
             "type": "activated",
             "timing": {
-              "windows": [
+              "duration": "UNTIL_END_OF_TURN",
+              "activationWindows": [
                 "MAIN_PHASE"
-              ],
-              "duration": "UNTIL_END_OF_TURN"
+              ]
             },
             "cost": {
               "oncePerTurn": true,
@@ -903,7 +933,6 @@
           {
             "effectId": "burst_effect",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "sequence",
             "parameters": {
               "text": "Choose 1 (Cyclops Team) Pilot card from your trash. Add it to your hand.",
@@ -931,12 +960,14 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "paired_cyclops_allow_attack_target_active_enemy_ap_le_5",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "sequence",
             "conditions": [
               {
@@ -973,6 +1004,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
             }
           }
         ]
@@ -1006,7 +1040,6 @@
           {
             "effectId": "breach_5",
             "type": "triggered",
-            "trigger": "BATTLE_DESTROY",
             "target": {
               "type": "card",
               "scope": "opponent_shield",
@@ -1015,12 +1048,14 @@
             "action": "damageShield",
             "parameters": {
               "value": 5
+            },
+            "timing": {
+              "eventTrigger": "BATTLE_DESTROY"
             }
           },
           {
             "effectId": "attack_effect",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "action": "damage",
             "target": {
               "type": "unit",
@@ -1035,6 +1070,9 @@
             "parameters": {
               "value": 5,
               "notes": "Implemented: keyword-based target filters are resolved during target selection."
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_PHASE"
             }
           }
         ]
@@ -1069,7 +1107,6 @@
           {
             "effectId": "during_pair_effect",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "sequence",
             "parameters": {
               "text": "Enemy Units choose this rested Unit as their attack target if possible when attacking.",
@@ -1097,12 +1134,14 @@
               {
                 "type": "paired"
               }
-            ]
+            ],
+            "timing": {
+              "duration": "continuous"
+            }
           },
           {
             "effectId": "linked_effect",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "sequence",
             "parameters": {
               "text": "Place 1 EX Resource.",
@@ -1120,7 +1159,10 @@
               {
                 "type": "linked"
               }
-            ]
+            ],
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
+            }
           }
         ]
       }
@@ -1154,7 +1196,6 @@
           {
             "effectId": "pair_deploy_2_ad_balloon_tokens_if_cyclops_trash_ge_4",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "conditionalTokenDeploy",
             "conditions": [
               {
@@ -1175,12 +1216,14 @@
                 "rested": true,
                 "notes": "Implemented: conditional token deploy supports rested deployment."
               }
+            },
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
             }
           },
           {
             "effectId": "prevent_enemy_unit_battle_damage_while_ad_balloon_in_play",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "prevent_battle_damage",
             "conditions": [
               {
@@ -1200,6 +1243,9 @@
             "parameters": {
               "from": "enemy_units",
               "notes": "Implemented: nameIncludes filters and enemy-unit battle-damage prevention are supported."
+            },
+            "timing": {
+              "duration": "continuous"
             }
           }
         ]
@@ -1232,7 +1278,6 @@
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "Choose 1 of your (Operation Meteor)/(G Team) Units. During this turn, it may choose an active enemy Unit as its attack target.",
@@ -1262,6 +1307,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -1296,7 +1344,6 @@
           {
             "effectId": "during_link_effect",
             "type": "triggered",
-            "trigger": "BATTLE_DESTROY",
             "conditions": [
               {
                 "type": "turnPlayer",
@@ -1327,7 +1374,10 @@
               {
                 "type": "linked"
               }
-            ]
+            ],
+            "timing": {
+              "eventTrigger": "BATTLE_DESTROY"
+            }
           }
         ]
       }
@@ -1359,7 +1409,6 @@
           {
             "effectId": "grant_high_maneuver_on_ex_resource",
             "type": "triggered",
-            "trigger": "EX_RESOURCE_PLACED",
             "action": "grant_keyword",
             "target": {
               "type": "unit",
@@ -1376,7 +1425,8 @@
               }
             },
             "timing": {
-              "duration": "UNTIL_END_OF_TURN"
+              "duration": "UNTIL_END_OF_TURN",
+              "eventTrigger": "EX_RESOURCE_PLACED"
             },
             "parameters": {
               "keyword": "High-Maneuver",
@@ -1413,7 +1463,6 @@
           {
             "effectId": "linked_deploy_hy_gogg_token_if_cyclops_ge_2",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "conditionalTokenDeploy",
             "sourceConditions": [
               {
@@ -1439,6 +1488,9 @@
                 "rested": true,
                 "notes": "Implemented: conditional token deploy supports rested deployment."
               }
+            },
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
             }
           }
         ]
@@ -1471,7 +1523,6 @@
           {
             "effectId": "force_enemy_attack_target_rested_maganac_corps",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "require_attack_target_if_available",
             "timing": {
               "duration": "continuous"
@@ -1522,7 +1573,6 @@
           {
             "effectId": "breach_3",
             "type": "triggered",
-            "trigger": "BATTLE_DESTROY",
             "target": {
               "type": "card",
               "scope": "opponent_shield",
@@ -1531,6 +1581,9 @@
             "action": "damageShield",
             "parameters": {
               "value": 3
+            },
+            "timing": {
+              "eventTrigger": "BATTLE_DESTROY"
             }
           }
         ]
@@ -1587,7 +1640,6 @@
           {
             "effectId": "attack_effect",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "action": "modifyAP",
             "conditions": [
               {
@@ -1597,7 +1649,8 @@
               }
             ],
             "timing": {
-              "duration": "UNTIL_END_OF_BATTLE"
+              "duration": "UNTIL_END_OF_BATTLE",
+              "eventTrigger": "ATTACK_PHASE"
             },
             "target": {
               "type": "unit",
@@ -1639,9 +1692,9 @@
           {
             "effectId": "battle_destroy_damage_2_to_all_enemy_blockers",
             "type": "triggered",
-            "trigger": "BATTLE_DESTROY",
             "timing": {
-              "actionTurn": "YOUR_TURN"
+              "actionTurn": "YOUR_TURN",
+              "eventTrigger": "BATTLE_DESTROY"
             },
             "action": "damage",
             "target": {
@@ -1691,7 +1744,6 @@
           {
             "effectId": "hand_cost_reduction_1_if_cb_link_unit_in_play",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "modifyCost",
             "target": {
               "type": "card",
@@ -1714,6 +1766,9 @@
             "parameters": {
               "value": -1,
               "notes": "Implemented: isLinkUnit filters are evaluated for units in play."
+            },
+            "timing": {
+              "duration": "continuous"
             }
           }
         ]
@@ -1794,7 +1849,6 @@
           {
             "effectId": "during_pair_zaft_units_ap_plus_2",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "modifyAP",
             "sourceConditions": [
               {
@@ -1828,7 +1882,6 @@
           {
             "effectId": "attack_effect",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "action": "damage",
             "target": {
               "type": "unit",
@@ -1844,6 +1897,9 @@
                 "rounding": "floor"
               },
               "notes": "Deals damage equal to floor(source AP / 4)."
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_PHASE"
             }
           }
         ]
@@ -1878,7 +1934,6 @@
           {
             "effectId": "suppression_2",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "grant_keyword",
             "timing": {
               "duration": "continuous"
@@ -1896,7 +1951,6 @@
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "Choose 1 enemy Unit. Deal 3 damage to it.",
@@ -1917,6 +1971,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -1951,7 +2008,7 @@
             "effectId": "activate_effect",
             "type": "activated",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -2009,7 +2066,6 @@
           {
             "effectId": "linked_effect",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "sequence",
             "parameters": {
               "text": "During this turn, this Unit may choose an active enemy Unit with AP equal to or less than this Unit as its attack target.",
@@ -2036,7 +2092,10 @@
               {
                 "type": "linked"
               }
-            ]
+            ],
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
+            }
           }
         ]
       }
@@ -2068,7 +2127,6 @@
           {
             "effectId": "linked_effect",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "sequence",
             "parameters": {
               "text": "Deal 1 damage to all enemy Units.",
@@ -2091,7 +2149,10 @@
               {
                 "type": "linked"
               }
-            ]
+            ],
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
+            }
           }
         ]
       }
@@ -2123,7 +2184,6 @@
           {
             "effectId": "during_link_effect",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "sequence",
             "parameters": {
               "text": "During your turn, while this Unit is battling an enemy Unit with a",
@@ -2172,7 +2232,10 @@
               {
                 "type": "linked"
               }
-            ]
+            ],
+            "timing": {
+              "duration": "continuous"
+            }
           }
         ]
       }
@@ -2206,10 +2269,10 @@
             "effectId": "activate_effect",
             "type": "activated",
             "timing": {
-              "windows": [
+              "duration": "UNTIL_END_OF_TURN",
+              "activationWindows": [
                 "MAIN_PHASE"
-              ],
-              "duration": "UNTIL_END_OF_TURN"
+              ]
             },
             "cost": {
               "rest": "self"
@@ -2228,11 +2291,11 @@
           {
             "effectId": "unit_rested_by_effect",
             "type": "triggered",
-            "trigger": "UNIT_RESTED_BY_EFFECT",
             "action": "modifyAP",
             "timing": {
               "actionTurn": "YOUR_TURN",
-              "duration": "UNTIL_END_OF_TURN"
+              "duration": "UNTIL_END_OF_TURN",
+              "eventTrigger": "UNIT_RESTED_BY_EFFECT"
             },
             "conditions": [
               {
@@ -2287,7 +2350,6 @@
           {
             "effectId": "deploy_rest",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "Choose 1 other active friendly (Clan) Unit. Rest it. If you do, choose 1 enemy Unit with 2 or less AP. Deal 2 damage to it.",
@@ -2346,6 +2408,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -2379,7 +2444,6 @@
           {
             "effectId": "during_link_effect",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "sequence",
             "parameters": {
               "text": "This Unit gains <High-Maneuver>. (This Unit can't be blocked.)",
@@ -2405,7 +2469,10 @@
               {
                 "type": "linked"
               }
-            ]
+            ],
+            "timing": {
+              "duration": "continuous"
+            }
           }
         ]
       }
@@ -2437,7 +2504,6 @@
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "Deal 3 damage to all Bases.",
@@ -2455,6 +2521,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -2487,7 +2556,6 @@
           {
             "effectId": "allow_attack_target_active_enemy_low_level_if_ap_ge_5",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "allow_attack_target",
             "conditions": [
               {
@@ -2500,6 +2568,9 @@
               "status": "active",
               "level": "<=5",
               "notes": "Implemented: source AP conditions are evaluated dynamically."
+            },
+            "timing": {
+              "duration": "continuous"
             }
           }
         ]
@@ -2532,7 +2603,6 @@
           {
             "effectId": "pair_effect",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "sequence",
             "parameters": {
               "text": "Choose 1 enemy Unit. Deal 1 damage to it.",
@@ -2553,6 +2623,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
             }
           }
         ]
@@ -2583,7 +2656,6 @@
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "conditionalTokenDeploy",
             "parameters": {
               "condition1": {
@@ -2594,6 +2666,9 @@
                 "rested": true
               },
               "notes": "Implemented: shared token id deployment supports rested placement."
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -2624,7 +2699,6 @@
           {
             "effectId": "ap_plus_1_if_any_token_in_play",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "modifyAP",
             "conditions": [
               {
@@ -2725,7 +2799,6 @@
           {
             "effectId": "burst_effect",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "conditionalTokenDeploy",
             "parameters": {
               "condition1": {
@@ -2737,6 +2810,9 @@
                 "rested": true
               },
               "notes": "Implemented: conditionalTokenDeploy supports enemy shield-count checks and rested deployment."
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           }
         ]
@@ -2771,7 +2847,6 @@
           {
             "effectId": "suppression_2",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "grant_keyword",
             "timing": {
               "duration": "continuous"
@@ -2790,10 +2865,10 @@
           {
             "effectId": "shield_destroyed_destroy_lowest_hp_if_cb_trash_ge_10",
             "type": "triggered",
-            "trigger": "DEFENSE_AREA_BATTLE_DAMAGE",
             "action": "destroy",
             "timing": {
-              "actionTurn": "YOUR_TURN"
+              "actionTurn": "YOUR_TURN",
+              "eventTrigger": "DEFENSE_AREA_BATTLE_DAMAGE"
             },
             "conditions": [
               {
@@ -2855,7 +2930,7 @@
             "effectId": "activate_effect",
             "type": "activated",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -2945,7 +3020,6 @@
           {
             "effectId": "linked_effect",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "sequence",
             "parameters": {
               "text": "You may choose 1 Unit card that is Lv.4 or lower from your trash. Pay its cost to deploy it.",
@@ -2976,7 +3050,10 @@
               {
                 "type": "linked"
               }
-            ]
+            ],
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
+            }
           }
         ]
       }
@@ -3011,10 +3088,10 @@
             "effectId": "activate_effect",
             "type": "activated",
             "timing": {
-              "windows": [
+              "duration": "UNTIL_END_OF_TURN",
+              "activationWindows": [
                 "MAIN_PHASE"
-              ],
-              "duration": "UNTIL_END_OF_TURN"
+              ]
             },
             "cost": {
               "rest": "self"
@@ -3033,7 +3110,6 @@
           {
             "effectId": "battle_damage_destroy_if_cb_pilot_in_play",
             "type": "triggered",
-            "trigger": "BATTLE_DAMAGE_TO_UNIT",
             "action": "destroy",
             "conditions": [
               {
@@ -3064,6 +3140,9 @@
             },
             "parameters": {
               "notes": "When this unit deals battle damage to an enemy unit of level 5 or lower, destroy that event defender if you have a CB pilot in play."
+            },
+            "timing": {
+              "eventTrigger": "BATTLE_DAMAGE_TO_UNIT"
             }
           }
         ]
@@ -3098,7 +3177,6 @@
           {
             "effectId": "blocker",
             "type": "triggered",
-            "trigger": "ATTACK_REDIRECT",
             "target": {
               "type": "unit",
               "scope": "self"
@@ -3106,12 +3184,14 @@
             "action": "redirect_attack",
             "parameters": {
               "cost": "rest_self"
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_REDIRECT"
             }
           },
           {
             "effectId": "during_pair_effect",
             "type": "continuous",
-            "trigger": "continuous",
             "restrictions": [
               "once_per_turn"
             ],
@@ -3168,7 +3248,10 @@
               {
                 "type": "paired"
               }
-            ]
+            ],
+            "timing": {
+              "duration": "continuous"
+            }
           }
         ]
       }
@@ -3201,7 +3284,6 @@
           {
             "effectId": "high_maneuver",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "grant_keyword",
             "timing": {
               "duration": "continuous"
@@ -3219,7 +3301,6 @@
           {
             "effectId": "pair_exile_4_vagan_then_destroy_low_level",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "optional": true,
             "action": "destroy",
             "conditions": [
@@ -3248,6 +3329,9 @@
             },
             "parameters": {
               "notes": "Implemented: exileFromTrash costs are enforced before destroy resolution."
+            },
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
             }
           }
         ]
@@ -3281,7 +3365,6 @@
           {
             "effectId": "pair_destroy_low_level_if_purple_pilot",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "destroy",
             "conditions": [
               {
@@ -3297,6 +3380,9 @@
                 "level": "<=2"
               },
               "count": 1
+            },
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
             }
           }
         ]
@@ -3330,7 +3416,6 @@
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "Choose 1 of your Units and 1 enemy Unit. Deal 1 damage to them.",
@@ -3365,6 +3450,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -3398,7 +3486,6 @@
           {
             "effectId": "blocker",
             "type": "triggered",
-            "trigger": "ATTACK_REDIRECT",
             "target": {
               "type": "unit",
               "scope": "self"
@@ -3406,6 +3493,9 @@
             "action": "redirect_attack",
             "parameters": {
               "cost": "rest_self"
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_REDIRECT"
             }
           }
         ]
@@ -3439,7 +3529,6 @@
           {
             "effectId": "trash_cost_reduction_1",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "modifyCost",
             "target": {
               "type": "card",
@@ -3449,6 +3538,9 @@
             "parameters": {
               "value": -1,
               "notes": "Implemented: cost modifier schema is active and available for zone-aware cost calculation flows."
+            },
+            "timing": {
+              "duration": "continuous"
             }
           }
         ]
@@ -3481,7 +3573,6 @@
           {
             "effectId": "attack_effect",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "optional": true,
             "action": "modifyAP",
             "cost": {
@@ -3494,7 +3585,8 @@
               }
             },
             "timing": {
-              "duration": "UNTIL_END_OF_TURN"
+              "duration": "UNTIL_END_OF_TURN",
+              "eventTrigger": "ATTACK_PHASE"
             },
             "target": {
               "type": "unit",
@@ -3541,7 +3633,6 @@
           {
             "effectId": "effect",
             "type": "triggered",
-            "trigger": "EFFECT_DAMAGE_RECEIVED",
             "conditions": [
               {
                 "type": "eventTarget",
@@ -3553,7 +3644,8 @@
             ],
             "action": "conditionalTokenDeploy",
             "timing": {
-              "actionTurn": "YOUR_TURN"
+              "actionTurn": "YOUR_TURN",
+              "eventTrigger": "EFFECT_DAMAGE_RECEIVED"
             },
             "parameters": {
               "condition1": {
@@ -3596,7 +3688,6 @@
           {
             "effectId": "repair_3_if_hp_eq_1",
             "type": "triggered",
-            "trigger": "END_OF_TURN",
             "action": "heal",
             "target": {
               "type": "unit",
@@ -3613,6 +3704,9 @@
             "parameters": {
               "value": 3,
               "notes": "Implemented: sourceHp conditions are evaluated at runtime."
+            },
+            "timing": {
+              "eventTrigger": "END_OF_TURN"
             }
           }
         ]
@@ -3644,7 +3738,6 @@
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "If you deploy this Unit from your trash, choose 1 enemy Unit with 4 or less AP. Deal 2 damage to it.",
@@ -3681,6 +3774,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -3735,7 +3831,6 @@
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "You may choose 1 (X-Rounder) card from your trash and add it to your hand. If you do, discard 1.",
@@ -3791,6 +3886,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -3872,7 +3970,6 @@
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "You may choose 1 of your Units. Deal 1 damage to it. It gets AP+1 during this turn.",
@@ -3922,6 +4019,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -3955,7 +4055,6 @@
           {
             "effectId": "blocker_if_friendly_base_in_play",
             "type": "triggered",
-            "trigger": "ATTACK_REDIRECT",
             "target": {
               "type": "unit",
               "scope": "self"
@@ -3972,6 +4071,9 @@
             "parameters": {
               "cost": "rest_self",
               "notes": "Implemented: blocker redirect conditions support friendly-base checks via cardsInPlay filters."
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_REDIRECT"
             }
           }
         ]
@@ -4005,7 +4107,6 @@
           {
             "effectId": "high_maneuver",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "grant_keyword",
             "timing": {
               "duration": "continuous"
@@ -4022,7 +4123,6 @@
           {
             "effectId": "during_link_effect",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "sequence",
             "parameters": {
               "text": "At the end of the turn when this Unit is paired with a Pilot, set it as active.",
@@ -4058,7 +4158,10 @@
               {
                 "type": "linked"
               }
-            ]
+            ],
+            "timing": {
+              "duration": "continuous"
+            }
           }
         ]
       }
@@ -4090,7 +4193,6 @@
           {
             "effectId": "prevent_shields_battle_damage_from_enemy_units_while_rested",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "prevent_battle_damage",
             "conditions": [
               {
@@ -4106,6 +4208,9 @@
             "parameters": {
               "from": "enemy_units",
               "notes": "Implemented: continuous shield battle-damage prevention from enemy Units while source is rested."
+            },
+            "timing": {
+              "duration": "continuous"
             }
           }
         ]
@@ -4138,7 +4243,6 @@
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "Choose 1 enemy Unit. For each (AEUG) Unit card in your trash, it gets AP-1 during this turn.",
@@ -4174,6 +4278,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -4207,7 +4314,6 @@
           {
             "effectId": "blocker",
             "type": "triggered",
-            "trigger": "ATTACK_REDIRECT",
             "target": {
               "type": "unit",
               "scope": "self"
@@ -4215,12 +4321,14 @@
             "action": "redirect_attack",
             "parameters": {
               "cost": "rest_self"
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_REDIRECT"
             }
           },
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "If you have another (Triple Ship Alliance) Unit in play, draw 1. Then, discard 1.",
@@ -4251,6 +4359,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -4284,7 +4395,6 @@
           {
             "effectId": "blocker",
             "type": "triggered",
-            "trigger": "ATTACK_REDIRECT",
             "target": {
               "type": "unit",
               "scope": "self"
@@ -4292,13 +4402,16 @@
             "action": "redirect_attack",
             "parameters": {
               "cost": "rest_self"
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_REDIRECT"
             }
           },
           {
             "effectId": "activate_effect",
             "type": "activated",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "ACTION_STEP"
               ]
             },
@@ -4380,7 +4493,6 @@
           {
             "effectId": "during_pair_effect",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "sequence",
             "parameters": {
               "text": "While you have another (Superpower Bloc) Unit in play, enemy Units choose this rested Unit as their attack target if possible when attacking.",
@@ -4424,7 +4536,10 @@
               {
                 "type": "paired"
               }
-            ]
+            ],
+            "timing": {
+              "duration": "continuous"
+            }
           }
         ]
       }
@@ -4456,7 +4571,6 @@
           {
             "effectId": "attack_effect",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "action": "modifyAP",
             "sourceConditions": [
               {
@@ -4464,7 +4578,8 @@
               }
             ],
             "timing": {
-              "duration": "UNTIL_END_OF_TURN"
+              "duration": "UNTIL_END_OF_TURN",
+              "eventTrigger": "ATTACK_PHASE"
             },
             "target": {
               "type": "unit",
@@ -4508,14 +4623,14 @@
           {
             "effectId": "effect",
             "type": "triggered",
-            "trigger": "BATTLE_DAMAGE_TO_UNIT",
             "restrictions": [
               "once_per_turn"
             ],
             "action": "returnToHand",
             "optional": true,
             "timing": {
-              "actionTurn": "YOUR_TURN"
+              "actionTurn": "YOUR_TURN",
+              "eventTrigger": "BATTLE_DAMAGE_TO_UNIT"
             },
             "conditions": [
               {
@@ -4568,7 +4683,6 @@
           {
             "effectId": "linked_effect",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "sequence",
             "parameters": {
               "text": "Choose 1 to 3 enemy Units with 3 or less HP. Return them to their owners' hands.",
@@ -4597,7 +4711,10 @@
               {
                 "type": "linked"
               }
-            ]
+            ],
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
+            }
           }
         ]
       }
@@ -4629,7 +4746,6 @@
           {
             "effectId": "during_link_effect",
             "type": "triggered",
-            "trigger": "DESTROYED",
             "action": "sequence",
             "parameters": {
               "text": "Return the card paired with this Unit to your hand.",
@@ -4652,7 +4768,10 @@
               {
                 "type": "linked"
               }
-            ]
+            ],
+            "timing": {
+              "eventTrigger": "DESTROYED"
+            }
           }
         ]
       }
@@ -4684,7 +4803,6 @@
           {
             "effectId": "replace_rest_base_with_rest_this_unit",
             "type": "continuous",
-            "trigger": "continuous",
             "optional": true,
             "action": "replace_cost",
             "parameters": {
@@ -4700,6 +4818,9 @@
                 }
               },
               "notes": "Implemented: replace_cost integrates with rest-base target augmentation for optional replacement to rest this Unit."
+            },
+            "timing": {
+              "duration": "continuous"
             }
           }
         ]
@@ -4733,7 +4854,6 @@
           {
             "effectId": "linked_effect",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "sequence",
             "parameters": {
               "text": "Choose 1 (Gjallarhorn) Command card from your trash. Add it to your hand.",
@@ -4766,7 +4886,10 @@
               {
                 "type": "linked"
               }
-            ]
+            ],
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
+            }
           }
         ]
       }
@@ -4798,7 +4921,6 @@
           {
             "effectId": "restrict_attack_unless_friendly_sb_or_un_deployed_this_turn",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "restrict_attack",
             "parameters": {
               "requires": {
@@ -4809,6 +4931,9 @@
                 ]
               },
               "notes": "Implemented: attack validation enforces deployed-this-turn trait requirement for this Unit's attack eligibility."
+            },
+            "timing": {
+              "duration": "continuous"
             }
           }
         ]
@@ -4839,7 +4964,6 @@
           {
             "effectId": "hand_cost_reduction_1_if_sb_or_un_ge_2",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "modifyCost",
             "target": {
               "type": "card",
@@ -4860,6 +4984,9 @@
             "parameters": {
               "value": -1,
               "notes": "Interprets (Superpower Bloc)/(UN) as having either trait."
+            },
+            "timing": {
+              "duration": "continuous"
             }
           }
         ]
@@ -4890,7 +5017,6 @@
           {
             "effectId": "blocker",
             "type": "triggered",
-            "trigger": "ATTACK_REDIRECT",
             "target": {
               "type": "unit",
               "scope": "self"
@@ -4898,6 +5024,9 @@
             "action": "redirect_attack",
             "parameters": {
               "cost": "rest_self"
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_REDIRECT"
             }
           }
         ]
@@ -4928,17 +5057,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "linked_effect",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "sequence",
             "parameters": {
               "text": "Choose 1 of your other Units. It gains <Repair 2> during this turn. Then, if it is a (Jupitris) Unit, draw 1. (At the end of your turn, this Unit recovers the specified number of HP.)",
@@ -4992,7 +5122,10 @@
               {
                 "type": "linked"
               }
-            ]
+            ],
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
+            }
           }
         ]
       }
@@ -5020,17 +5153,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "play_pair_nt1_as_zero_cost",
             "type": "play",
-            "trigger": "COST",
             "action": "replace_cost",
             "parameters": {
               "replace": {
@@ -5044,6 +5178,9 @@
                   "cost": 0
                 }
               }
+            },
+            "timing": {
+              "eventTrigger": "COST"
             }
           }
         ]
@@ -5072,17 +5209,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "attack_effect",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "action": "modifyAP",
             "sourceConditions": [
               {
@@ -5090,7 +5228,8 @@
               }
             ],
             "timing": {
-              "duration": "UNTIL_END_OF_TURN"
+              "duration": "UNTIL_END_OF_TURN",
+              "eventTrigger": "ATTACK_PHASE"
             },
             "target": {
               "type": "unit",
@@ -5139,17 +5278,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "linked_effect",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "sequence",
             "parameters": {
               "text": "Choose 1 enemy Unit that is Lv.3 or lower. Rest it.",
@@ -5175,7 +5315,10 @@
               {
                 "type": "linked"
               }
-            ]
+            ],
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
+            }
           }
         ]
       }
@@ -5204,17 +5347,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "during_link_effect",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "sequence",
             "parameters": {
               "text": "If this is an (AGE System) Unit, it gets AP+1 and <Breach 1>. (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)",
@@ -5268,7 +5412,10 @@
               {
                 "type": "linked"
               }
-            ]
+            ],
+            "timing": {
+              "duration": "continuous"
+            }
           }
         ]
       }
@@ -5297,17 +5444,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "continuous_ap_plus_unique_cyclops_pilot_or_command_in_trash",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "modifyAP",
             "timing": {
               "duration": "continuous"
@@ -5363,17 +5511,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "attack_effect",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "action": "grant_breach",
             "sourceConditions": [
               {
@@ -5381,7 +5530,8 @@
               }
             ],
             "timing": {
-              "duration": "UNTIL_END_OF_TURN"
+              "duration": "UNTIL_END_OF_TURN",
+              "eventTrigger": "ATTACK_PHASE"
             },
             "target": {
               "type": "unit",
@@ -5426,17 +5576,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "linked_effect",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "sequence",
             "parameters": {
               "text": "Choose 1 (ZAFT) Base card from your trash. Add it to your hand.",
@@ -5469,7 +5620,10 @@
               {
                 "type": "linked"
               }
-            ]
+            ],
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
+            }
           }
         ]
       }
@@ -5498,17 +5652,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "linked_effect",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "sequence",
             "parameters": {
               "text": "Place the top card of your deck into your trash. If you placed a (Zeon)/(Clan) card with this effect, choose 1 enemy Unit. Deal 1 damage to it.",
@@ -5559,7 +5714,10 @@
               {
                 "type": "linked"
               }
-            ]
+            ],
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
+            }
           }
         ]
       }
@@ -5588,17 +5746,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "ap_plus_1_if_no_enemy_base",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "modifyAP",
             "target": {
               "type": "unit",
@@ -5617,6 +5776,9 @@
             ],
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "duration": "continuous"
             }
           }
         ]
@@ -5646,17 +5808,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "pair_effect",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "sequence",
             "parameters": {
               "text": "Place the top 2 cards of your deck into your trash. If you placed a (Vagan) card with this effect, choose 1 enemy Unit. It gets AP-2 during this turn.",
@@ -5702,6 +5865,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
             }
           }
         ]
@@ -5730,17 +5896,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "effect",
             "type": "triggered",
-            "trigger": "EFFECT_DAMAGE_RECEIVED",
             "conditions": [
               {
                 "type": "eventTarget",
@@ -5752,7 +5919,8 @@
             ],
             "action": "modifyAP",
             "timing": {
-              "duration": "UNTIL_END_OF_TURN"
+              "duration": "UNTIL_END_OF_TURN",
+              "eventTrigger": "EFFECT_DAMAGE_RECEIVED"
             },
             "target": {
               "type": "unit",
@@ -5793,17 +5961,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "attack_effect",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "optional": true,
             "cost": {
               "discardFromHand": 1
@@ -5817,6 +5986,9 @@
             "parameters": {
               "value": 1,
               "notes": "Implemented: attack-phase discardFromHand costs gate draw resolution."
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_PHASE"
             }
           }
         ]
@@ -5845,26 +6017,27 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "during_link_effect",
             "type": "triggered",
-            "trigger": "BATTLE_DESTROY",
             "restrictions": [
               "once_per_turn"
             ],
             "action": "scry_top_deck",
             "conditions": [
-                  {
-                    "type": "turnPlayer",
-                    "scope": "self"
-                  },
+              {
+                "type": "turnPlayer",
+                "scope": "self"
+              },
               {
                 "type": "eventAttacker",
                 "value": "self"
@@ -5886,7 +6059,10 @@
               {
                 "type": "linked"
               }
-            ]
+            ],
+            "timing": {
+              "eventTrigger": "BATTLE_DESTROY"
+            }
           }
         ]
       }
@@ -5915,17 +6091,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "during_link_effect",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "sequence",
             "parameters": {
               "text": "When this rested Unit is set as active by an effect, choose 1 enemy Unit with 3 or less HP. Return it to its owner's hand.",
@@ -5972,7 +6149,10 @@
               {
                 "type": "linked"
               }
-            ]
+            ],
+            "timing": {
+              "duration": "continuous"
+            }
           }
         ]
       }
@@ -6000,17 +6180,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "during_link_effect",
             "type": "triggered",
-            "trigger": "DESTROYED",
             "action": "conditional",
             "parameters": {
               "text": "If a friendly white Base is in play, choose 1 enemy Unit whose Lv. is equal to or lower than this Unit. Return it to its owner's hand.",
@@ -6048,7 +6229,10 @@
               {
                 "type": "linked"
               }
-            ]
+            ],
+            "timing": {
+              "eventTrigger": "DESTROYED"
+            }
           }
         ]
       }
@@ -6078,17 +6262,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "destroyed_effect",
             "type": "triggered",
-            "trigger": "DESTROYED",
             "action": "sequence",
             "parameters": {
               "text": "Choose 1 enemy Unit. It gets AP-3 during this turn.",
@@ -6112,6 +6297,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "DESTROYED"
             }
           }
         ]
@@ -6138,7 +6326,7 @@
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -6210,7 +6398,6 @@
           {
             "effectId": "burst_effect",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "sequence",
             "parameters": {
               "text": "Draw 1.",
@@ -6223,13 +6410,16 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "ACTION_STEP"
               ]
             },
@@ -6283,7 +6473,6 @@
           {
             "effectId": "burst_effect",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "sequence",
             "parameters": {
               "text": "Choose 1 enemy Unit with 2 or less HP. Rest it.",
@@ -6304,13 +6493,16 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -6384,7 +6576,7 @@
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE",
                 "ACTION_STEP"
               ]
@@ -6459,6 +6651,11 @@
               "pilotName": "Reccoa Londe",
               "AP": 1,
               "HP": 0
+            },
+            "timing": {
+              "activationWindows": [
+                "MAIN_PHASE"
+              ]
             }
           }
         ]
@@ -6485,18 +6682,20 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -6551,7 +6750,7 @@
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -6615,7 +6814,7 @@
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -6649,6 +6848,11 @@
               "pilotName": "Hardie Steiner",
               "AP": 1,
               "HP": 1
+            },
+            "timing": {
+              "activationWindows": [
+                "MAIN_PHASE"
+              ]
             }
           }
         ]
@@ -6679,7 +6883,7 @@
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -6701,6 +6905,11 @@
               "pilotName": "Gabriel Ramirez Garcia",
               "AP": 1,
               "HP": 0
+            },
+            "timing": {
+              "activationWindows": [
+                "MAIN_PHASE"
+              ]
             }
           }
         ]
@@ -6727,7 +6936,6 @@
           {
             "effectId": "burst_effect",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "sequence",
             "parameters": {
               "text": "Activate this card's",
@@ -6783,13 +6991,16 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE",
                 "ACTION_STEP"
               ]
@@ -6875,7 +7086,7 @@
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE",
                 "ACTION_STEP"
               ]
@@ -6931,7 +7142,7 @@
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE",
                 "ACTION_STEP"
               ]
@@ -6974,6 +7185,11 @@
               "pilotName": "Emeralda Zubin",
               "AP": 0,
               "HP": 1
+            },
+            "timing": {
+              "activationWindows": [
+                "MAIN_PHASE"
+              ]
             }
           }
         ]
@@ -7000,18 +7216,20 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE",
                 "ACTION_STEP"
               ]
@@ -7065,7 +7283,7 @@
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE",
                 "ACTION_STEP"
               ]
@@ -7147,7 +7365,6 @@
           {
             "effectId": "burst_effect",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "sequence",
             "parameters": {
               "text": "Activate this card's",
@@ -7201,13 +7418,16 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "ACTION_STEP"
               ]
             },
@@ -7295,7 +7515,7 @@
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "ACTION_STEP"
               ]
             },
@@ -7373,6 +7593,11 @@
               "pilotName": "Yurin L'Ciel",
               "AP": 1,
               "HP": 0
+            },
+            "timing": {
+              "activationWindows": [
+                "MAIN_PHASE"
+              ]
             }
           }
         ]
@@ -7399,7 +7624,7 @@
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE",
                 "ACTION_STEP"
               ]
@@ -7469,7 +7694,7 @@
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -7517,18 +7742,20 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "ACTION_STEP"
               ]
             },
@@ -7613,7 +7840,7 @@
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -7695,7 +7922,7 @@
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -7755,6 +7982,11 @@
               "pilotName": "Patrick Colasour",
               "AP": 1,
               "HP": 0
+            },
+            "timing": {
+              "activationWindows": [
+                "MAIN_PHASE"
+              ]
             }
           }
         ]
@@ -7785,7 +8017,7 @@
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "ACTION_STEP"
               ]
             },
@@ -7830,6 +8062,11 @@
               "pilotName": "Katz Kobayashi",
               "AP": 1,
               "HP": 0
+            },
+            "timing": {
+              "activationWindows": [
+                "MAIN_PHASE"
+              ]
             }
           }
         ]
@@ -7860,7 +8097,7 @@
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "ACTION_STEP"
               ]
             },
@@ -7897,6 +8134,11 @@
               "pilotName": "Sergei Smirnov",
               "AP": 0,
               "HP": 1
+            },
+            "timing": {
+              "activationWindows": [
+                "MAIN_PHASE"
+              ]
             }
           }
         ]
@@ -7929,7 +8171,6 @@
           {
             "effectId": "burst_effect",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "sequence",
             "parameters": {
               "text": "Deploy this card.",
@@ -7943,12 +8184,14 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "deploy_rest",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "Add 1 of your Shields to your hand. Then, if a friendly (Jupitris) Unit is in play, choose 1 enemy Unit that is Lv.3 or lower. Rest it.",
@@ -7996,6 +8239,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -8028,7 +8274,6 @@
           {
             "effectId": "burst_effect",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "sequence",
             "parameters": {
               "text": "Deploy this card.",
@@ -8042,12 +8287,14 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "Add 1 of your Shields to your hand.",
@@ -8069,12 +8316,14 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           },
           {
             "effectId": "effect",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE_GLOBAL",
             "restrictions": [
               "once_per_turn"
             ],
@@ -8093,6 +8342,9 @@
                 "hp": "<=3",
                 "status": "active"
               }
+            },
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE_GLOBAL"
             }
           }
         ]
@@ -8125,7 +8377,6 @@
           {
             "effectId": "burst_effect",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "sequence",
             "parameters": {
               "text": "Deploy this card.",
@@ -8139,12 +8390,14 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "Add 1 of your Shields to your hand.",
@@ -8166,19 +8419,22 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           },
           {
             "effectId": "effect",
             "type": "triggered",
-            "trigger": "BATTLE_DESTROY",
             "restrictions": [
               "once_per_turn"
             ],
             "action": "heal",
             "optional": true,
             "timing": {
-              "actionTurn": "YOUR_TURN"
+              "actionTurn": "YOUR_TURN",
+              "eventTrigger": "BATTLE_DESTROY"
             },
             "conditions": [
               {
@@ -8237,7 +8493,6 @@
           {
             "effectId": "burst_effect",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "sequence",
             "parameters": {
               "text": "Deploy this card.",
@@ -8251,12 +8506,14 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "deploy_shield_to_hand",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "target": {
               "type": "card",
               "scope": "self_shield",
@@ -8266,12 +8523,14 @@
             "parameters": {
               "value": 1,
               "from": "shield"
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           },
           {
             "effectId": "opponent_turn_tokens_ap_plus_1",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "modifyAP",
             "timing": {
               "actionTurn": "OPPONENT_TURN",
@@ -8318,7 +8577,6 @@
           {
             "effectId": "burst_effect",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "sequence",
             "parameters": {
               "text": "Deploy this card.",
@@ -8332,12 +8590,14 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "Add 1 of your Shields to your hand. Then, Choose 1 friendly (ZAFT) Unit. It gets AP+3 during this turn.",
@@ -8381,6 +8641,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -8413,7 +8676,6 @@
           {
             "effectId": "burst_effect",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "sequence",
             "parameters": {
               "text": "Deploy this card.",
@@ -8427,12 +8689,14 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "Add 1 of your Shields to your hand.",
@@ -8454,18 +8718,21 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           },
           {
             "effectId": "effect",
             "type": "triggered",
-            "trigger": "UNIT_RESTED_BY_EFFECT",
             "restrictions": [
               "once_per_turn"
             ],
             "action": "damage",
             "timing": {
-              "actionTurn": "OPPONENT_TURN"
+              "actionTurn": "OPPONENT_TURN",
+              "eventTrigger": "UNIT_RESTED_BY_EFFECT"
             },
             "conditions": [
               {
@@ -8516,7 +8783,6 @@
           {
             "effectId": "burst_effect",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "sequence",
             "parameters": {
               "text": "Deploy this card.",
@@ -8530,12 +8796,14 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "Add 1 of your Shields to your hand.",
@@ -8557,15 +8825,18 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           },
           {
             "effectId": "during_your_turn_when_friendly_tte_effect_damaged_optional_rest_self_then_mill_1",
             "type": "triggered",
-            "trigger": "EFFECT_DAMAGE_RECEIVED",
             "action": "sequence",
             "timing": {
-              "actionTurn": "YOUR_TURN"
+              "actionTurn": "YOUR_TURN",
+              "eventTrigger": "EFFECT_DAMAGE_RECEIVED"
             },
             "conditions": [
               {
@@ -8649,7 +8920,6 @@
           {
             "effectId": "burst_effect",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "sequence",
             "parameters": {
               "text": "Deploy this card.",
@@ -8663,12 +8933,14 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "Add 1 of your Shields to your hand. Then, if it is your turn, you may choose 1 (Vagan) Unit card that is Lv.4 or lower from your trash. Pay its cost to deploy it.",
@@ -8725,6 +8997,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -8756,7 +9031,6 @@
           {
             "effectId": "burst_effect",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "sequence",
             "parameters": {
               "text": "Deploy this card.",
@@ -8770,12 +9044,14 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "Add 1 of your Shields to your hand. Then, if you have 2 or more (Triple Ship Alliance) Units in play, choose 1 enemy Unit that is Lv.4 or lower. Return it to its owner's hand.",
@@ -8831,6 +9107,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -8863,7 +9142,6 @@
           {
             "effectId": "burst_effect",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "sequence",
             "parameters": {
               "text": "Deploy this card.",
@@ -8877,12 +9155,14 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "Add 1 of your Shields to your hand.",
@@ -8904,12 +9184,14 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           },
           {
             "effectId": "destroyed_effect",
             "type": "triggered",
-            "trigger": "DESTROYED",
             "action": "conditional",
             "parameters": {
               "text": "If you have an (AEUG) Link Unit in play, choose 1 enemy Unit with 4 or less HP. Rest it.",
@@ -8943,6 +9225,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "DESTROYED"
             }
           }
         ]
@@ -9126,7 +9411,6 @@
           {
             "effectId": "cannot_be_set_active",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "restrict_set_active",
             "target": {
               "type": "unit",
@@ -9136,12 +9420,14 @@
             "parameters": {
               "disallow": true,
               "notes": "Implemented: restrict_set_active rules block set-active transitions."
+            },
+            "timing": {
+              "duration": "continuous"
             }
           },
           {
             "effectId": "cannot_be_paired_with_pilot",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "restrict_pairing",
             "target": {
               "type": "unit",
@@ -9151,6 +9437,9 @@
             "parameters": {
               "disallow": true,
               "notes": "Implemented: restrict_pairing rules block pilot pairing attempts."
+            },
+            "timing": {
+              "duration": "continuous"
             }
           }
         ]

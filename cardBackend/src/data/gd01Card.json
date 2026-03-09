@@ -34,7 +34,6 @@
           {
             "effectId": "grant_repair_1",
             "type": "continuous",
-            "trigger": "continuous",
             "target": {
               "type": "unit",
               "scope": "self_all_unit",
@@ -57,7 +56,6 @@
           {
             "effectId": "pair_draw",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "draw",
             "conditions": [
               {
@@ -67,6 +65,9 @@
             ],
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
             }
           }
         ]
@@ -100,12 +101,12 @@
           {
             "effectId": "play_destroy_linked_unicorn_mode_lv5_as_zero",
             "type": "play",
-            "trigger": "COST",
             "optional": true,
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
-              ]
+              ],
+              "eventTrigger": "COST"
             },
             "action": "replace_cost",
             "parameters": {
@@ -129,7 +130,6 @@
           {
             "effectId": "attack_rest",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "target": {
               "type": "unit",
               "scope": "opponent",
@@ -141,7 +141,10 @@
                 "status": "active"
               }
             },
-            "action": "rest"
+            "action": "rest",
+            "timing": {
+              "eventTrigger": "ATTACK_PHASE"
+            }
           }
         ]
       }
@@ -173,7 +176,6 @@
           {
             "effectId": "attack_effect",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "sourceConditions": [
               {
                 "type": "linked"
@@ -214,6 +216,9 @@
                 }
               ],
               "notes": "Implemented: moveFromTrashToDeck attack costs gate sequence resolution."
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_PHASE"
             }
           }
         ]
@@ -248,7 +253,6 @@
           {
             "effectId": "repair_1",
             "type": "triggered",
-            "trigger": "END_OF_TURN",
             "target": {
               "type": "unit",
               "scope": "source",
@@ -257,12 +261,14 @@
             "action": "heal",
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "END_OF_TURN"
             }
           },
           {
             "effectId": "pair_rest",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "target": {
               "type": "unit",
               "scope": "opponent",
@@ -275,7 +281,10 @@
                 "type": "player_choice"
               }
             },
-            "action": "rest"
+            "action": "rest",
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
+            }
           }
         ]
       }
@@ -307,7 +316,6 @@
           {
             "effectId": "during_link_destroyed_return_paired_pilot_then_discard",
             "type": "triggered",
-            "trigger": "DESTROYED",
             "sourceConditions": [
               {
                 "type": "linked"
@@ -336,6 +344,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "DESTROYED"
             }
           }
         ]
@@ -369,7 +380,6 @@
           {
             "effectId": "repair_1",
             "type": "triggered",
-            "trigger": "END_OF_TURN",
             "target": {
               "type": "unit",
               "scope": "source",
@@ -378,12 +388,14 @@
             "action": "heal",
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "END_OF_TURN"
             }
           },
           {
             "effectId": "during_link_hp_plus_1",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "modifyHP",
             "sourceConditions": [
               {
@@ -432,7 +444,6 @@
           {
             "effectId": "destroyed_conditional_draw",
             "type": "triggered",
-            "trigger": "DESTROYED",
             "action": "draw",
             "conditions": [
               {
@@ -445,6 +456,9 @@
             ],
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "DESTROYED"
             }
           }
         ]
@@ -476,7 +490,6 @@
           {
             "effectId": "deploy_damage_1",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "target": {
               "type": "unit",
               "scope": "opponent",
@@ -491,6 +504,9 @@
             "action": "damage",
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -524,7 +540,6 @@
           {
             "effectId": "deploy_grant_high_maneuver",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "target": {
               "type": "unit",
               "scope": "self_all_unit",
@@ -543,7 +558,8 @@
               "keyword": "High-Maneuver"
             },
             "timing": {
-              "duration": "UNTIL_END_OF_TURN"
+              "duration": "UNTIL_END_OF_TURN",
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -576,7 +592,6 @@
           {
             "effectId": "pair_rest",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "target": {
               "type": "unit",
               "scope": "opponent",
@@ -589,7 +604,10 @@
                 "type": "player_choice"
               }
             },
-            "action": "rest"
+            "action": "rest",
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
+            }
           }
         ]
       }
@@ -645,7 +663,6 @@
           {
             "effectId": "pair_rest",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "target": {
               "type": "unit",
               "scope": "opponent",
@@ -655,7 +672,10 @@
               },
               "count": 1
             },
-            "action": "rest"
+            "action": "rest",
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
+            }
           }
         ]
       }
@@ -714,7 +734,7 @@
             "effectId": "activate_heal",
             "type": "activated",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "ACTION_STEP"
               ]
             },
@@ -763,7 +783,6 @@
           {
             "effectId": "attack_effect",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "action": "heal",
             "target": {
               "type": "unit",
@@ -775,6 +794,9 @@
             },
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_PHASE"
             }
           }
         ]
@@ -805,7 +827,6 @@
           {
             "effectId": "hand_cost_reduction_1",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "modifyCost",
             "target": {
               "type": "card",
@@ -824,6 +845,9 @@
             ],
             "parameters": {
               "value": -1
+            },
+            "timing": {
+              "duration": "continuous"
             }
           }
         ]
@@ -856,7 +880,6 @@
           {
             "effectId": "repair_1",
             "type": "triggered",
-            "trigger": "END_OF_TURN",
             "target": {
               "type": "unit",
               "scope": "source",
@@ -865,6 +888,9 @@
             "action": "heal",
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "END_OF_TURN"
             }
           }
         ]
@@ -917,7 +943,6 @@
           {
             "effectId": "gain_blocker_if_enemy_units_ge_4",
             "type": "triggered",
-            "trigger": "ATTACK_REDIRECT",
             "conditions": [
               {
                 "type": "unitsInPlay",
@@ -933,6 +958,9 @@
             "action": "redirect_attack",
             "parameters": {
               "cost": "rest_self"
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_REDIRECT"
             }
           }
         ]
@@ -962,7 +990,6 @@
           {
             "effectId": "deploy_damage_1",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "target": {
               "type": "unit",
               "scope": "opponent",
@@ -974,6 +1001,9 @@
             "action": "damage",
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -1049,7 +1079,7 @@
             "effectId": "activate_effect",
             "type": "activated",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -1119,7 +1149,6 @@
           {
             "effectId": "high_maneuver",
             "type": "continuous",
-            "trigger": "continuous",
             "target": {
               "type": "unit",
               "scope": "self",
@@ -1128,12 +1157,14 @@
             "action": "grant_keyword",
             "parameters": {
               "keyword": "High-Maneuver"
+            },
+            "timing": {
+              "duration": "continuous"
             }
           },
           {
             "effectId": "deploy_damage_all_3",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "target": {
               "type": "unit",
               "scope": "any_all_unit",
@@ -1144,6 +1175,9 @@
             "action": "damage",
             "parameters": {
               "value": 3
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -1175,7 +1209,6 @@
           {
             "effectId": "pair_operation_meteor_place_resource_then_gain_first_strike",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "sequence",
             "sourceConditions": [
               {
@@ -1213,6 +1246,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
             }
           }
         ]
@@ -1245,7 +1281,6 @@
           {
             "effectId": "destroyed_effect",
             "type": "triggered",
-            "trigger": "DESTROYED",
             "action": "conditionalTokenDeploy",
             "sourceConditions": [
               {
@@ -1261,6 +1296,9 @@
                 "rested": true,
                 "notes": "Implemented: conditional token deploy supports rested deployment."
               }
+            },
+            "timing": {
+              "eventTrigger": "DESTROYED"
             }
           }
         ]
@@ -1294,7 +1332,6 @@
           {
             "effectId": "breach_4",
             "type": "triggered",
-            "trigger": "BATTLE_DESTROY",
             "target": {
               "type": "card",
               "scope": "opponent_shield",
@@ -1303,12 +1340,14 @@
             "action": "damageShield",
             "parameters": {
               "value": 4
+            },
+            "timing": {
+              "eventTrigger": "BATTLE_DESTROY"
             }
           },
           {
             "effectId": "deploy_damage_all_4",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "If there are 10 or more (Zeon)/(Neo Zeon) Unit cards in your trash, deal 4 damage to all Units with <Blocker>.",
@@ -1349,6 +1388,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -1380,7 +1422,6 @@
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "optional": true,
             "action": "deploy_from_hand",
             "target": {
@@ -1395,6 +1436,9 @@
             },
             "parameters": {
               "notes": "Implemented: deploy_from_hand resolves with standard target selection and slot checks."
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -1427,7 +1471,6 @@
           {
             "effectId": "breach_4",
             "type": "triggered",
-            "trigger": "BATTLE_DESTROY",
             "target": {
               "type": "card",
               "scope": "opponent_shield",
@@ -1436,12 +1479,14 @@
             "action": "damageShield",
             "parameters": {
               "value": 4
+            },
+            "timing": {
+              "eventTrigger": "BATTLE_DESTROY"
             }
           },
           {
             "effectId": "attack_effect",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "action": "destroy",
             "target": {
               "type": "unit",
@@ -1456,6 +1501,9 @@
             },
             "parameters": {
               "notes": "Implemented: keyword-based target filters are resolved during target selection."
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_PHASE"
             }
           }
         ]
@@ -1485,7 +1533,6 @@
           {
             "effectId": "breach_2",
             "type": "triggered",
-            "trigger": "BATTLE_DESTROY",
             "target": {
               "type": "card",
               "scope": "opponent_shield",
@@ -1494,6 +1541,9 @@
             "action": "damageShield",
             "parameters": {
               "value": 2
+            },
+            "timing": {
+              "eventTrigger": "BATTLE_DESTROY"
             }
           }
         ]
@@ -1550,7 +1600,6 @@
           {
             "effectId": "pair_destroy_blocker_low_level",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "destroy",
             "sourceConditions": [
               {
@@ -1577,6 +1626,9 @@
             },
             "parameters": {
               "notes": "Implemented: keyword-based target filters are resolved during target selection."
+            },
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
             }
           }
         ]
@@ -1608,7 +1660,6 @@
           {
             "effectId": "repair_1",
             "type": "triggered",
-            "trigger": "END_OF_TURN",
             "target": {
               "type": "unit",
               "scope": "source",
@@ -1617,6 +1668,9 @@
             "action": "heal",
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "END_OF_TURN"
             }
           }
         ]
@@ -1648,7 +1702,6 @@
           {
             "effectId": "breach_3",
             "type": "triggered",
-            "trigger": "BATTLE_DESTROY",
             "action": "damageShield",
             "sourceConditions": [
               {
@@ -1662,6 +1715,9 @@
             },
             "parameters": {
               "value": 3
+            },
+            "timing": {
+              "eventTrigger": "BATTLE_DESTROY"
             }
           }
         ]
@@ -1757,7 +1813,6 @@
           {
             "effectId": "deploy_damage_1",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "conditions": [
               {
                 "type": "unitsInPlay",
@@ -1773,6 +1828,9 @@
             "action": "damage",
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -1802,7 +1860,6 @@
           {
             "effectId": "deploy_scry_top_1",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "scry_top_deck",
             "parameters": {
               "count": 1,
@@ -1810,6 +1867,9 @@
               "choice": "top_or_bottom",
               "notes": "Implemented: scry supports choosing top or bottom placement.",
               "rest": "bottom"
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -1865,7 +1925,6 @@
           {
             "effectId": "breach_3",
             "type": "triggered",
-            "trigger": "BATTLE_DESTROY",
             "target": {
               "type": "card",
               "scope": "opponent_shield",
@@ -1874,6 +1933,9 @@
             "action": "damageShield",
             "parameters": {
               "value": 3
+            },
+            "timing": {
+              "eventTrigger": "BATTLE_DESTROY"
             }
           }
         ]
@@ -1906,11 +1968,13 @@
           {
             "effectId": "attack_active_low_level_2",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "allow_attack_target",
             "parameters": {
               "status": "active",
               "level": "<=2"
+            },
+            "timing": {
+              "duration": "continuous"
             }
           }
         ]
@@ -1943,10 +2007,10 @@
           {
             "effectId": "deploy_allow_attack_target_active_enemy_ap_le_4",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "allow_attack_target",
             "timing": {
-              "duration": "UNTIL_END_OF_TURN"
+              "duration": "UNTIL_END_OF_TURN",
+              "eventTrigger": "ENTERS_PLAY"
             },
             "target": {
               "type": "unit",
@@ -1994,7 +2058,6 @@
           {
             "effectId": "pair_damage_1_to_1_or_2",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "damage",
             "sourceConditions": [
               {
@@ -2024,6 +2087,9 @@
             },
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
             }
           }
         ]
@@ -2056,7 +2122,6 @@
           {
             "effectId": "pair_look_top_3_deploy_zaft_unit_le_4",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "select_from_top_deck",
             "parameters": {
               "lookCount": 3,
@@ -2077,6 +2142,9 @@
                 "order": "random"
               },
               "notes": "Implemented: select_from_top_deck supports look, optional play selection, and bottom placement."
+            },
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
             }
           }
         ]
@@ -2111,10 +2179,10 @@
             "effectId": "activate_support_3",
             "type": "activated",
             "timing": {
-              "windows": [
+              "duration": "UNTIL_END_OF_TURN",
+              "activationWindows": [
                 "MAIN_PHASE"
-              ],
-              "duration": "UNTIL_END_OF_TURN"
+              ]
             },
             "cost": {
               "rest": "self"
@@ -2133,7 +2201,6 @@
           {
             "effectId": "support_ap_up_zaft_set_self_active_once_per_turn",
             "type": "triggered",
-            "trigger": "SUPPORT_AP_INCREASED",
             "cost": {
               "oncePerTurn": true
             },
@@ -2159,7 +2226,10 @@
               "scope": "source",
               "count": 1
             },
-            "action": "setActive"
+            "action": "setActive",
+            "timing": {
+              "eventTrigger": "SUPPORT_AP_INCREASED"
+            }
           }
         ]
       }
@@ -2191,7 +2261,6 @@
           {
             "effectId": "attack_effect",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "action": "damage",
             "conditions": [
               {
@@ -2210,6 +2279,9 @@
             "parameters": {
               "value": 3,
               "notes": "Implemented: unitsInPlayWithStatus supports excludeSource filtering."
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_PHASE"
             }
           }
         ]
@@ -2244,10 +2316,10 @@
             "effectId": "activate_support_1",
             "type": "activated",
             "timing": {
-              "windows": [
+              "duration": "UNTIL_END_OF_TURN",
+              "activationWindows": [
                 "MAIN_PHASE"
-              ],
-              "duration": "UNTIL_END_OF_TURN"
+              ]
             },
             "cost": {
               "rest": "self"
@@ -2266,7 +2338,6 @@
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "select_from_top_deck",
             "parameters": {
               "lookCount": 1,
@@ -2288,6 +2359,9 @@
                 "order": "preserve"
               },
               "notes": "Implemented: select_from_top_deck supports reveal/select from top-of-deck."
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -2320,10 +2394,10 @@
           {
             "effectId": "deploy_grant_first_strike_to_zaft_ap_ge_5",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "grant_keyword",
             "timing": {
-              "duration": "UNTIL_END_OF_TURN"
+              "duration": "UNTIL_END_OF_TURN",
+              "eventTrigger": "ENTERS_PLAY"
             },
             "target": {
               "type": "unit",
@@ -2372,7 +2446,6 @@
           {
             "effectId": "attack_effect",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "action": "damage",
             "conditions": [
               {
@@ -2394,6 +2467,9 @@
             "parameters": {
               "value": 2,
               "notes": "Implemented: attack-target card-type conditions are evaluated at runtime."
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_PHASE"
             }
           }
         ]
@@ -2448,7 +2524,6 @@
           {
             "effectId": "deploy_damage_1",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "target": {
               "type": "unit",
               "scope": "opponent",
@@ -2457,6 +2532,9 @@
             "action": "damage",
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -2488,7 +2566,7 @@
             "effectId": "activate_effect",
             "type": "activated",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -2539,7 +2617,6 @@
           {
             "effectId": "gain_breach_3_if_ap_ge_5",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "grant_breach",
             "target": {
               "type": "unit",
@@ -2555,6 +2632,9 @@
             ],
             "parameters": {
               "value": 3
+            },
+            "timing": {
+              "duration": "continuous"
             }
           }
         ]
@@ -2585,10 +2665,10 @@
             "effectId": "activate_support_2",
             "type": "activated",
             "timing": {
-              "windows": [
+              "duration": "UNTIL_END_OF_TURN",
+              "activationWindows": [
                 "MAIN_PHASE"
-              ],
-              "duration": "UNTIL_END_OF_TURN"
+              ]
             },
             "cost": {
               "rest": "self"
@@ -2632,7 +2712,6 @@
           {
             "effectId": "destroyed_damage_enemy_ap_le_5",
             "type": "triggered",
-            "trigger": "DESTROYED",
             "action": "damage",
             "target": {
               "type": "unit",
@@ -2644,6 +2723,9 @@
             },
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "DESTROYED"
             }
           }
         ]
@@ -2697,10 +2779,10 @@
             "effectId": "activate_effect",
             "type": "activated",
             "timing": {
-              "windows": [
+              "duration": "UNTIL_END_OF_BATTLE",
+              "activationWindows": [
                 "ACTION_STEP"
-              ],
-              "duration": "UNTIL_END_OF_BATTLE"
+              ]
             },
             "cost": {
               "resource": 1,
@@ -2746,7 +2828,6 @@
           {
             "effectId": "attack_ap_boost",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "target": {
               "type": "unit",
               "scope": "source",
@@ -2757,7 +2838,8 @@
               "value": 2
             },
             "timing": {
-              "duration": "UNTIL_END_OF_TURN"
+              "duration": "UNTIL_END_OF_TURN",
+              "eventTrigger": "ATTACK_PHASE"
             }
           }
         ]
@@ -2809,10 +2891,10 @@
             "effectId": "activate_support_1",
             "type": "activated",
             "timing": {
-              "windows": [
+              "duration": "UNTIL_END_OF_TURN",
+              "activationWindows": [
                 "MAIN_PHASE"
-              ],
-              "duration": "UNTIL_END_OF_TURN"
+              ]
             },
             "cost": {
               "rest": "self"
@@ -2878,10 +2960,10 @@
           {
             "effectId": "first_strike_vs_low_level_during_your_turn",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "grant_keyword",
             "timing": {
-              "actionTurn": "YOUR_TURN"
+              "actionTurn": "YOUR_TURN",
+              "duration": "continuous"
             },
             "target": {
               "type": "unit",
@@ -2951,7 +3033,6 @@
           {
             "effectId": "blocker",
             "type": "triggered",
-            "trigger": "ATTACK_REDIRECT",
             "target": {
               "type": "unit",
               "scope": "self"
@@ -2959,12 +3040,14 @@
             "action": "redirect_attack",
             "parameters": {
               "cost": "rest_self"
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_REDIRECT"
             }
           },
           {
             "effectId": "paired_on_pilot_pairing_reduce_enemy_ap_2",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE_GLOBAL",
             "restrictions": [
               "once_per_turn"
             ],
@@ -2976,7 +3059,8 @@
             ],
             "timing": {
               "actionTurn": "YOUR_TURN",
-              "duration": "UNTIL_END_OF_TURN"
+              "duration": "UNTIL_END_OF_TURN",
+              "eventTrigger": "PAIRING_COMPLETE_GLOBAL"
             },
             "action": "modifyAP",
             "target": {
@@ -3023,7 +3107,6 @@
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "conditionalTokenDeploy",
             "parameters": {
               "condition1": {
@@ -3033,12 +3116,14 @@
                 "count": 1
               },
               "notes": "Implemented: token deployment resolves token cardId at runtime."
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           },
           {
             "effectId": "attack_effect",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "action": "allow_attack_target",
             "sourceConditions": [
               {
@@ -3046,7 +3131,8 @@
               }
             ],
             "timing": {
-              "duration": "UNTIL_END_OF_TURN"
+              "duration": "UNTIL_END_OF_TURN",
+              "eventTrigger": "ATTACK_PHASE"
             },
             "target": {
               "type": "unit",
@@ -3097,7 +3183,6 @@
           {
             "effectId": "pair_add_command_from_trash_le_5",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "addToHand",
             "target": {
               "type": "card",
@@ -3112,6 +3197,9 @@
               "value": 1,
               "from": "trash",
               "notes": "Implemented: addToHand supports selecting and transferring specific trash cards to hand."
+            },
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
             }
           }
         ]
@@ -3145,7 +3233,6 @@
           {
             "effectId": "blocker",
             "type": "triggered",
-            "trigger": "ATTACK_REDIRECT",
             "target": {
               "type": "unit",
               "scope": "self"
@@ -3153,12 +3240,14 @@
             "action": "redirect_attack",
             "parameters": {
               "cost": "rest_self"
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_REDIRECT"
             }
           },
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "returnToHand",
             "target": {
               "type": "unit",
@@ -3170,6 +3259,9 @@
             },
             "parameters": {
               "notes": "Implemented: returns the selected Unit to its owner's hand."
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -3203,7 +3295,7 @@
             "effectId": "activate_effect",
             "type": "activated",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -3280,7 +3372,6 @@
           {
             "effectId": "hand_cost_reduction_2_if_trash_commands_ge_4",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "modifyCost",
             "target": {
               "type": "card",
@@ -3297,6 +3388,9 @@
             ],
             "parameters": {
               "value": -2
+            },
+            "timing": {
+              "duration": "continuous"
             }
           }
         ]
@@ -3329,7 +3423,6 @@
           {
             "effectId": "attack_effect",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "action": "modifyAP",
             "sourceConditions": [
               {
@@ -3337,7 +3430,8 @@
               }
             ],
             "timing": {
-              "duration": "UNTIL_END_OF_BATTLE"
+              "duration": "UNTIL_END_OF_BATTLE",
+              "eventTrigger": "ATTACK_PHASE"
             },
             "target": {
               "type": "unit",
@@ -3378,7 +3472,6 @@
           {
             "effectId": "blocker",
             "type": "triggered",
-            "trigger": "ATTACK_REDIRECT",
             "target": {
               "type": "unit",
               "scope": "self"
@@ -3386,6 +3479,9 @@
             "action": "redirect_attack",
             "parameters": {
               "cost": "rest_self"
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_REDIRECT"
             }
           }
         ]
@@ -3418,7 +3514,6 @@
           {
             "effectId": "attack_effect",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "action": "returnToHand",
             "sourceConditions": [
               {
@@ -3432,6 +3527,9 @@
                 "hp": "<=2"
               },
               "count": 1
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_PHASE"
             }
           }
         ]
@@ -3464,11 +3562,13 @@
           {
             "effectId": "attack_effect",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "action": "draw_then_discard",
             "parameters": {
               "draw": 1,
               "discard": 1
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_PHASE"
             }
           }
         ]
@@ -3501,7 +3601,6 @@
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "returnToHand",
             "target": {
               "type": "unit",
@@ -3513,6 +3612,9 @@
             },
             "parameters": {
               "notes": "Implemented: returns the selected Unit to its owner's hand."
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -3546,7 +3648,6 @@
           {
             "effectId": "ap_boost_if_trash_commands_ge_4",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "modifyAP",
             "target": {
               "type": "unit",
@@ -3563,12 +3664,14 @@
             ],
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "duration": "continuous"
             }
           },
           {
             "effectId": "hp_boost_if_trash_commands_ge_4",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "modifyHP",
             "target": {
               "type": "unit",
@@ -3585,6 +3688,9 @@
             ],
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "duration": "continuous"
             }
           }
         ]
@@ -3638,10 +3744,10 @@
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "modifyAP",
             "timing": {
-              "duration": "UNTIL_END_OF_TURN"
+              "duration": "UNTIL_END_OF_TURN",
+              "eventTrigger": "ENTERS_PLAY"
             },
             "target": {
               "type": "unit",
@@ -3704,7 +3810,6 @@
           {
             "effectId": "destroyed_bounce_enemy_le_2",
             "type": "triggered",
-            "trigger": "DESTROYED",
             "action": "returnToHand",
             "target": {
               "type": "unit",
@@ -3716,6 +3821,9 @@
             },
             "parameters": {
               "notes": "Implemented: returns the selected Unit to its owner's hand."
+            },
+            "timing": {
+              "eventTrigger": "DESTROYED"
             }
           }
         ]
@@ -3747,7 +3855,6 @@
           {
             "effectId": "ap_boost_if_another_tsa_unit",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "modifyAP",
             "target": {
               "type": "unit",
@@ -3765,12 +3872,14 @@
             ],
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "duration": "continuous"
             }
           },
           {
             "effectId": "gain_blocker_if_another_tsa_unit",
             "type": "triggered",
-            "trigger": "ATTACK_REDIRECT",
             "conditions": [
               {
                 "type": "hasAnotherUnitWithTrait",
@@ -3788,6 +3897,9 @@
             "action": "redirect_attack",
             "parameters": {
               "cost": "rest_self"
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_REDIRECT"
             }
           }
         ]
@@ -3821,10 +3933,10 @@
             "effectId": "activate_effect",
             "type": "activated",
             "timing": {
-              "windows": [
+              "duration": "UNTIL_END_OF_BATTLE",
+              "activationWindows": [
                 "ACTION_STEP"
-              ],
-              "duration": "UNTIL_END_OF_BATTLE"
+              ]
             },
             "cost": {
               "resource": 2,
@@ -3941,7 +4053,6 @@
           {
             "effectId": "blocker",
             "type": "triggered",
-            "trigger": "ATTACK_REDIRECT",
             "target": {
               "type": "unit",
               "scope": "self"
@@ -3949,6 +4060,9 @@
             "action": "redirect_attack",
             "parameters": {
               "cost": "rest_self"
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_REDIRECT"
             }
           }
         ]
@@ -3979,17 +4093,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "continuous_gain_repair_1_if_blue_unit",
             "type": "continuous",
-            "trigger": "continuous",
             "sourceConditions": [
               {
                 "type": "paired"
@@ -4011,6 +4126,9 @@
             "parameters": {
               "keyword": "Repair",
               "value": 1
+            },
+            "timing": {
+              "duration": "continuous"
             }
           }
         ]
@@ -4040,17 +4158,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "pair_draw_1_when_linked",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "sourceConditions": [
               {
                 "type": "linked"
@@ -4059,6 +4178,9 @@
             "action": "draw",
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
             }
           }
         ]
@@ -4087,17 +4209,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "continuous_ap_plus_1_if_unit_has_repair",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "modifyAP",
             "target": {
               "type": "unit",
@@ -4111,6 +4234,9 @@
             },
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "duration": "continuous"
             }
           }
         ]
@@ -4139,17 +4265,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "during_link_prevent_enemy_ap_reduction",
             "type": "continuous",
-            "trigger": "continuous",
             "sourceConditions": [
               {
                 "type": "linked"
@@ -4195,17 +4322,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "continuous_prevent_battle_damage_if_unit_has_breach_during_your_turn",
             "type": "continuous",
-            "trigger": "continuous",
             "action": "prevent_battle_damage",
             "target": {
               "type": "unit",
@@ -4258,17 +4386,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "continuous_gain_breach_1_if_zeon_unit",
             "type": "continuous",
-            "trigger": "continuous",
             "sourceConditions": [
               {
                 "type": "paired"
@@ -4289,6 +4418,9 @@
             },
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "duration": "continuous"
             }
           }
         ]
@@ -4318,17 +4450,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "attack_effect",
             "type": "triggered",
-            "trigger": "ATTACK_PHASE",
             "action": "damage",
             "sourceConditions": [
               {
@@ -4346,6 +4479,9 @@
             "parameters": {
               "value": 1,
               "notes": "Implemented: target level comparison uses SOURCE_LEVEL dynamically."
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_PHASE"
             }
           }
         ]
@@ -4375,17 +4511,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "linked_battle_destroy_draw_once_per_turn",
             "type": "triggered",
-            "trigger": "BATTLE_DESTROY",
             "action": "draw",
             "sourceConditions": [
               {
@@ -4396,7 +4533,8 @@
               "once_per_turn"
             ],
             "timing": {
-              "actionTurn": "YOUR_TURN"
+              "actionTurn": "YOUR_TURN",
+              "eventTrigger": "BATTLE_DESTROY"
             },
             "conditions": [
               {
@@ -4439,17 +4577,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "linked_discard_then_draw",
             "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
             "action": "sequence",
             "sourceConditions": [
               {
@@ -4498,6 +4637,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "PAIRING_COMPLETE"
             }
           }
         ]
@@ -4526,17 +4668,18 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "continuous_gain_blocker_if_white_unit",
             "type": "triggered",
-            "trigger": "ATTACK_REDIRECT",
             "sourceConditions": [
               {
                 "type": "paired"
@@ -4557,6 +4700,9 @@
             "action": "redirect_attack",
             "parameters": {
               "cost": "rest_self"
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_REDIRECT"
             }
           }
         ]
@@ -4585,18 +4731,20 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "activate_effect",
             "type": "activated",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -4665,18 +4813,20 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "activate_heal",
             "type": "activated",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "ACTION_STEP"
               ]
             },
@@ -4727,7 +4877,6 @@
           {
             "effectId": "burst_rest",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "unit",
               "scope": "opponent",
@@ -4737,13 +4886,16 @@
               },
               "count": 1
             },
-            "action": "rest"
+            "action": "rest",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "rest",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE",
                 "ACTION_STEP"
               ]
@@ -4789,7 +4941,7 @@
             "effectId": "draw",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -4825,7 +4977,7 @@
             "effectId": "heal",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE",
                 "ACTION_STEP"
               ]
@@ -4851,6 +5003,11 @@
               "pilotName": "Lucrezia Noin",
               "AP": 1,
               "HP": 0
+            },
+            "timing": {
+              "activationWindows": [
+                "MAIN_PHASE"
+              ]
             }
           }
         ]
@@ -4877,7 +5034,7 @@
             "effectId": "heal_friendly_units_le_4",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -4921,7 +5078,7 @@
             "effectId": "rest",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -4974,6 +5131,11 @@
               "pilotName": "Daguza Mackle",
               "AP": 0,
               "HP": 1
+            },
+            "timing": {
+              "activationWindows": [
+                "MAIN_PHASE"
+              ]
             }
           }
         ]
@@ -5000,17 +5162,19 @@
           {
             "effectId": "burst_draw_1",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "draw",
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "main_damage_rested_enemy_2",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -5051,21 +5215,23 @@
           {
             "effectId": "burst_add_to_hand",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "addToHand"
+            "action": "addToHand",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "main_all_friendly_units_ap_plus_2",
             "type": "play",
             "timing": {
-              "windows": [
+              "duration": "UNTIL_END_OF_TURN",
+              "activationWindows": [
                 "MAIN_PHASE"
-              ],
-              "duration": "UNTIL_END_OF_TURN"
+              ]
             },
             "action": "modifyAP",
             "target": {
@@ -5104,7 +5270,7 @@
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -5127,6 +5293,11 @@
               "pilotName": "Dozle Zabi",
               "AP": 1,
               "HP": 0
+            },
+            "timing": {
+              "activationWindows": [
+                "MAIN_PHASE"
+              ]
             }
           }
         ]
@@ -5153,17 +5324,19 @@
           {
             "effectId": "burst_place_ex_resource",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "addExtraEnergy",
             "parameters": {
               "value": 1
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "main_place_rested_resource",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -5198,7 +5371,7 @@
             "effectId": "main_damage_all_blockers_2",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -5241,7 +5414,7 @@
             "effectId": "play_effect",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -5298,10 +5471,10 @@
             "effectId": "allow_attack_target_active_enemy_ap_le_6_for_unit_ge_4",
             "type": "play",
             "timing": {
-              "windows": [
+              "duration": "UNTIL_END_OF_TURN",
+              "activationWindows": [
                 "MAIN_PHASE"
-              ],
-              "duration": "UNTIL_END_OF_TURN"
+              ]
             },
             "action": "allow_attack_target",
             "target": {
@@ -5325,6 +5498,11 @@
               "pilotName": "Rasid Kurama",
               "AP": 0,
               "HP": 1
+            },
+            "timing": {
+              "activationWindows": [
+                "MAIN_PHASE"
+              ]
             }
           }
         ]
@@ -5351,7 +5529,6 @@
           {
             "effectId": "burst_damage_enemy_2",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "damage",
             "target": {
               "type": "unit",
@@ -5360,13 +5537,16 @@
             },
             "parameters": {
               "value": 2
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "main_damage_damaged_enemy_3",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE",
                 "ACTION_STEP"
               ]
@@ -5413,7 +5593,7 @@
             "effectId": "rest",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -5478,6 +5658,11 @@
               "pilotName": "Loni Garvey",
               "AP": 1,
               "HP": 0
+            },
+            "timing": {
+              "activationWindows": [
+                "MAIN_PHASE"
+              ]
             }
           }
         ]
@@ -5508,11 +5693,11 @@
             "effectId": "modify_ap",
             "type": "play",
             "timing": {
-              "windows": [
+              "duration": "UNTIL_END_OF_TURN",
+              "activationWindows": [
                 "MAIN_PHASE",
                 "ACTION_STEP"
-              ],
-              "duration": "UNTIL_END_OF_TURN"
+              ]
             },
             "target": {
               "type": "unit",
@@ -5537,6 +5722,11 @@
               "pilotName": "Andrew Waldfeld",
               "AP": 1,
               "HP": 0
+            },
+            "timing": {
+              "activationWindows": [
+                "MAIN_PHASE"
+              ]
             }
           }
         ]
@@ -5566,10 +5756,10 @@
             "effectId": "boost_ap",
             "type": "play",
             "timing": {
-              "windows": [
+              "duration": "UNTIL_END_OF_TURN",
+              "activationWindows": [
                 "ACTION_STEP"
-              ],
-              "duration": "UNTIL_END_OF_TURN"
+              ]
             },
             "target": {
               "type": "unit",
@@ -5589,6 +5779,11 @@
               "pilotName": "Yonem Kirks",
               "AP": 1,
               "HP": 0
+            },
+            "timing": {
+              "activationWindows": [
+                "MAIN_PHASE"
+              ]
             }
           }
         ]
@@ -5615,7 +5810,7 @@
             "effectId": "main_damage_enemy_1",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE",
                 "ACTION_STEP"
               ]
@@ -5658,7 +5853,7 @@
             "effectId": "main_damage_enemy_ap_le_2_for_2",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE",
                 "ACTION_STEP"
               ]
@@ -5684,6 +5879,11 @@
               "pilotName": "Nicol Amarfi",
               "AP": 0,
               "HP": 1
+            },
+            "timing": {
+              "activationWindows": [
+                "MAIN_PHASE"
+              ]
             }
           }
         ]
@@ -5710,18 +5910,20 @@
           {
             "effectId": "burst_resolve_main",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "activate_ability",
             "parameters": {
               "effectId": "main_action",
               "notes": "Implemented: Burst activate_ability resolves the card's selected main/play effect."
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "main_action",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE",
                 "ACTION_STEP"
               ]
@@ -5763,7 +5965,7 @@
             "effectId": "draw",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -5800,11 +6002,11 @@
             "effectId": "modify_ap",
             "type": "play",
             "timing": {
-              "windows": [
+              "duration": "UNTIL_END_OF_TURN",
+              "activationWindows": [
                 "MAIN_PHASE",
                 "ACTION_STEP"
-              ],
-              "duration": "UNTIL_END_OF_TURN"
+              ]
             },
             "target": {
               "type": "unit",
@@ -5827,6 +6029,11 @@
               "pilotName": "Chuatury Panlunch",
               "AP": 1,
               "HP": 0
+            },
+            "timing": {
+              "activationWindows": [
+                "MAIN_PHASE"
+              ]
             }
           }
         ]
@@ -5853,10 +6060,10 @@
           {
             "effectId": "burst_enemy_ap_minus_3",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "modifyAP",
             "timing": {
-              "duration": "UNTIL_END_OF_TURN"
+              "duration": "UNTIL_END_OF_TURN",
+              "eventTrigger": "BURST_CONDITION"
             },
             "target": {
               "type": "unit",
@@ -5871,10 +6078,10 @@
             "effectId": "modify_ap",
             "type": "play",
             "timing": {
-              "windows": [
+              "duration": "UNTIL_END_OF_TURN",
+              "activationWindows": [
                 "ACTION_STEP"
-              ],
-              "duration": "UNTIL_END_OF_TURN"
+              ]
             },
             "target": {
               "type": "unit",
@@ -5918,18 +6125,20 @@
           {
             "effectId": "burst_resolve_main",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "action": "activate_ability",
             "parameters": {
               "effectId": "main_action",
               "notes": "Implemented: Burst activate_ability resolves the card's selected main/play effect."
+            },
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
             }
           },
           {
             "effectId": "main_action",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -5995,7 +6204,7 @@
             "effectId": "main_bounce_enemy_hp_le_2_or_4_if_link_unit_in_play",
             "type": "play",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -6060,6 +6269,11 @@
               "pilotName": "Shaddiq Zenelli",
               "AP": 1,
               "HP": 0
+            },
+            "timing": {
+              "activationWindows": [
+                "MAIN_PHASE"
+              ]
             }
           }
         ]
@@ -6092,17 +6306,18 @@
           {
             "effectId": "burst_deploy",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "deploy"
+            "action": "deploy",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "deploy_rest",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "text": "Add 1 of your Shields to your hand. Then, choose 1 enemy Unit with 3 or less HP. Rest it.",
@@ -6140,6 +6355,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -6172,17 +6390,18 @@
           {
             "effectId": "burst_deploy",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "deploy"
+            "action": "deploy",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "target": {
               "type": "card",
               "scope": "self_shield"
@@ -6191,13 +6410,16 @@
             "parameters": {
               "value": 1,
               "from": "shield"
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           },
           {
             "effectId": "activate_heal",
             "type": "activated",
             "timing": {
-              "windows": [
+              "activationWindows": [
                 "MAIN_PHASE"
               ]
             },
@@ -6245,17 +6467,18 @@
           {
             "effectId": "burst_deploy",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "deploy"
+            "action": "deploy",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "deploy_shield_to_hand_then_optional_deploy_zeon_unit_le_4_if_your_turn",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "steps": [
@@ -6303,6 +6526,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -6334,17 +6560,18 @@
           {
             "effectId": "burst_deploy",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "deploy"
+            "action": "deploy",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "target": {
               "type": "card",
               "scope": "self_shield"
@@ -6353,6 +6580,9 @@
             "parameters": {
               "value": 1,
               "from": "shield"
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -6385,17 +6615,18 @@
           {
             "effectId": "burst_deploy",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "deploy"
+            "action": "deploy",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "target": {
               "type": "card",
               "scope": "self_shield"
@@ -6404,16 +6635,19 @@
             "parameters": {
               "value": 1,
               "from": "shield"
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           },
           {
             "effectId": "activate_effect",
             "type": "activated",
             "timing": {
-              "windows": [
+              "duration": "UNTIL_END_OF_BATTLE",
+              "activationWindows": [
                 "ACTION_STEP"
-              ],
-              "duration": "UNTIL_END_OF_BATTLE"
+              ]
             },
             "cost": {
               "restSelf": true,
@@ -6468,17 +6702,18 @@
           {
             "effectId": "burst_deploy",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "deploy"
+            "action": "deploy",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "target": {
               "type": "card",
               "scope": "self_shield"
@@ -6487,6 +6722,9 @@
             "parameters": {
               "value": 1,
               "from": "shield"
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -6518,17 +6756,18 @@
           {
             "effectId": "burst_deploy",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "deploy"
+            "action": "deploy",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "deploy_shield_to_hand_then_bounce_enemy_hp_le_3",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "action": "sequence",
             "parameters": {
               "steps": [
@@ -6558,6 +6797,9 @@
                   }
                 }
               ]
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           }
         ]
@@ -6590,17 +6832,18 @@
           {
             "effectId": "burst_deploy",
             "type": "triggered",
-            "trigger": "BURST_CONDITION",
             "target": {
               "type": "card",
               "scope": "self"
             },
-            "action": "deploy"
+            "action": "deploy",
+            "timing": {
+              "eventTrigger": "BURST_CONDITION"
+            }
           },
           {
             "effectId": "deploy_effect",
             "type": "triggered",
-            "trigger": "ENTERS_PLAY",
             "target": {
               "type": "card",
               "scope": "self_shield"
@@ -6609,16 +6852,19 @@
             "parameters": {
               "value": 1,
               "from": "shield"
+            },
+            "timing": {
+              "eventTrigger": "ENTERS_PLAY"
             }
           },
           {
             "effectId": "activate_effect",
             "type": "activated",
             "timing": {
-              "windows": [
+              "duration": "UNTIL_END_OF_TURN",
+              "activationWindows": [
                 "MAIN_PHASE"
-              ],
-              "duration": "UNTIL_END_OF_TURN"
+              ]
             },
             "cost": {
               "restSelf": true,
@@ -6716,7 +6962,6 @@
           {
             "effectId": "blocker",
             "type": "triggered",
-            "trigger": "ATTACK_REDIRECT",
             "target": {
               "type": "unit",
               "scope": "self"
@@ -6724,6 +6969,9 @@
             "action": "redirect_attack",
             "parameters": {
               "cost": "rest_self"
+            },
+            "timing": {
+              "eventTrigger": "ATTACK_REDIRECT"
             }
           }
         ]

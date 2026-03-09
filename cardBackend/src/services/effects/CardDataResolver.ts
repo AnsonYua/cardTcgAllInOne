@@ -2,6 +2,7 @@
 // Centralized helpers for resolving full card data (including effects rules) when game state stores minimized cardData.
 
 import { CardDatabaseManager } from '../../models/CardSystem';
+import { applyCompiledTimingBridgeToCardData } from './timing/EffectTimingCompiler';
 
 export class CardDataResolver {
     static resolveWithEffectRules(cardData: any): any {
@@ -11,7 +12,7 @@ export class CardDataResolver {
 
         const hasRules = Array.isArray((cardData as any).effects?.rules) && (cardData as any).effects.rules.length > 0;
         if (hasRules) {
-            return cardData;
+            return applyCompiledTimingBridgeToCardData(cardData);
         }
 
         const cardId = typeof (cardData as any).id === 'string' ? ((cardData as any).id as string) : null;
@@ -19,7 +20,8 @@ export class CardDataResolver {
             return cardData;
         }
 
-        return CardDatabaseManager.getCardDetails(cardId) || cardData;
+        const resolved = CardDatabaseManager.getCardDetails(cardId) || cardData;
+        return applyCompiledTimingBridgeToCardData(resolved);
     }
 }
 

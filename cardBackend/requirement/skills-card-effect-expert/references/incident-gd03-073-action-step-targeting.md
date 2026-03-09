@@ -14,7 +14,7 @@
 
 ### 1) Frontend action-step button false positive (P1 UX/action mismatch)
 - `ActionStepCoordinator` used a broad heuristic:
-  - "does this card have any rule with `timing.windows` containing `ACTION_STEP`?"
+  - "does this card have any rule with `compiledTiming.activationWindows` or `timing.activationWindows` containing `ACTION_STEP`?"
 - This did **not** check:
   - `rule.type === "activated"`
   - server-provided `currentBattle.actionTargets[playerId][].effectIds`
@@ -101,7 +101,7 @@ Treat as high risk when all are true:
 
 Treat as high risk when:
 1. backend/gameEnv phase names use enum variants (e.g. `ACTION_STEP_PHASE`)
-2. effect `timing.windows` uses canonical tokens (e.g. `ACTION_STEP`)
+2. effect timing uses canonical activation-window tokens (e.g. `ACTION_STEP`)
 3. frontend uses exact string equality for timing checks
 
 Also treat as high risk when:
