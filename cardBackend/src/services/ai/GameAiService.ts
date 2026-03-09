@@ -1,5 +1,6 @@
 import type { AiDecision } from './AiTypes';
 import type { AiGameEnvView } from './AiViewTypes';
+import type { GameEnvironment } from '../../models/GameEnvironment';
 import { validateScopeMatrix } from './AiScopeValidator';
 import { decideSetupPhase } from './AiSetupDecider';
 import { decideChoiceIfPending } from './AiChoiceResolver';
@@ -8,9 +9,14 @@ import { getOpponentId } from './AiPlayerUtils';
 import { findNonAttackAction } from './AiAbilityDecider';
 import { findWinningShieldAttack, findBestUnitAttack, findSafeShieldAttack } from './AiAttackDecider';
 import { findBestPlayCard } from './AiPlayDecider';
+import { GameAiV1Service } from './v1/GameAiV1Service';
+
+type GameAiDecisionRuntime = {
+    rawGameEnv?: GameEnvironment;
+};
 
 export class GameAiService {
-    static decide(gameEnvView: AiGameEnvView, aiPlayerId: string): AiDecision {
+    static async decide(gameEnvView: AiGameEnvView, aiPlayerId: string, runtime: GameAiDecisionRuntime = {}): Promise<AiDecision> {
         const scopeIssue = validateScopeMatrix(gameEnvView, aiPlayerId);
         if (scopeIssue) {
             return {
@@ -19,6 +25,19 @@ export class GameAiService {
             };
         }
 
+        try {
+            const v1Decision = await GameAiV1Service.decide(gameEnvView, aiPlayerId, runtime);
+            if (v1Decision) {
+                return v1Decision;
+            }
+        } catch (error) {
+            console.error('❌ AI v1 pipeline failed, falling back to legacy heuristics:', error);
+        }
+
+        return this.decideLegacy(gameEnvView, aiPlayerId);
+    }
+
+    private static decideLegacy(gameEnvView: AiGameEnvView, aiPlayerId: string): AiDecision {
         const setupDecision = decideSetupPhase(gameEnvView, aiPlayerId);
         if (setupDecision) {
             return setupDecision;

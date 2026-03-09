@@ -27,6 +27,8 @@ export interface AiDeckView {
     hand?: AiHandCard[];
     handUids?: string[];
     mainDeck?: string[];
+    handCount?: number;
+    deckCount?: number;
     [key: string]: unknown;
 }
 
@@ -84,6 +86,7 @@ export interface AiZonesView {
     shieldArea?: Array<Record<string, unknown>>;
     shieldCount?: number;
     energyArea?: Array<{ isRested?: boolean; [key: string]: unknown }>;
+    trashArea?: Array<Record<string, unknown>>;
     [key: string]: unknown;
 }
 
@@ -111,6 +114,20 @@ export interface AiQueueEvent {
     [key: string]: unknown;
 }
 
+export interface AiNotificationEvent {
+    id?: string;
+    type?: string;
+    metadata?: {
+        timestamp?: number;
+        expiresAt?: number;
+        requiresAcknowledgment?: boolean;
+        priority?: string;
+        [key: string]: unknown;
+    };
+    payload?: Record<string, unknown>;
+    [key: string]: unknown;
+}
+
 export interface AiGameEnvView {
     phase?: string;
     playerId_1?: string | null;
@@ -121,5 +138,6 @@ export interface AiGameEnvView {
     currentBattle?: AiBattleContextView | null;
     players?: Record<string, AiPlayerView>;
     processingQueue?: AiQueueEvent[];
+    notificationQueue?: AiNotificationEvent[];
     [key: string]: unknown;
 }

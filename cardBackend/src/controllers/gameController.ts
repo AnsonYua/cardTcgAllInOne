@@ -1189,7 +1189,7 @@ export class GameController {
             }
 
             const aiView = GameEnvViewBuilder.toPlayerView(gameState.gameEnv, playerId);
-            const decision = GameAiService.decide(aiView, playerId);
+            const decision = await GameAiService.decide(aiView, playerId, { rawGameEnv: gameState.gameEnv });
 
             if (decision.kind === 'wait') {
                 res.json({

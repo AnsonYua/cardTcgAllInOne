@@ -15,6 +15,7 @@ export interface AiDecision {
     kind: AiDecisionKind;
     reason: string;
     payload?: Record<string, unknown>;
+    telemetry?: Record<string, unknown>;
 }
 
 export const SLOT_NAMES = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'];

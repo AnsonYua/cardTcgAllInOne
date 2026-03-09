@@ -104,7 +104,7 @@ export class AiAutoplayCoordinator {
 
             for (const aiPlayerId of aiPlayerIds) {
                 const aiView = GameEnvViewBuilder.toPlayerView(gameEnv, aiPlayerId);
-                const decision = GameAiService.decide(aiView, aiPlayerId);
+                const decision = await GameAiService.decide(aiView, aiPlayerId, { rawGameEnv: gameEnv });
                 if (decision.kind === 'wait') {
                     continue;
                 }
