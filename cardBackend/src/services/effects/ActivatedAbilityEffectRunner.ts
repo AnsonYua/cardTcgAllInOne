@@ -8,6 +8,7 @@ import { DeployTargetManager } from '../DeployTargetManager';
 import { EffectExecutor } from './EffectExecutor';
 import { ConditionalTokenDeployManager, ConditionalTokenPlan } from './ConditionalTokenDeployManager';
 import { PairFromTrashActivatedAbility } from './PairFromTrashActivatedAbility';
+import { getEffectOperation } from './EffectActionAccess';
 
 export class ActivatedAbilityEffectRunner {
     static execute(
@@ -38,7 +39,7 @@ export class ActivatedAbilityEffectRunner {
                 : { success: true };
         }
 
-        const action = EffectExecutor.getEffectAction(normalizedEffect);
+        const action = getEffectOperation(normalizedEffect) || EffectExecutor.getEffectAction(normalizedEffect);
         if (action === 'conditionalTokenDeploy') {
             if (!pendingTokenPlan) {
                 return { success: false, error: 'Conditional token deploy plan missing' };
@@ -62,4 +63,3 @@ export class ActivatedAbilityEffectRunner {
             : { success: true };
     }
 }
-

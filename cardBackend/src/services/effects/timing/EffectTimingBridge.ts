@@ -1,4 +1,5 @@
 import type { CompiledEffectTiming, EffectTiming } from '../../EventQueue/interfaces/GameEvent';
+import { compileEffectActionNodeFromRule } from '../EffectActionCompiler';
 import { compileEffectTimingFromRule } from './EffectTimingCompiler';
 
 type RawRule = Record<string, unknown>;
@@ -61,9 +62,15 @@ export function buildLegacyEffectTiming(
 
 export function applyCompiledTimingBridgeToRule(rule: RawRule): RawRule {
     const compiledTiming = compileEffectTimingFromRule(rule);
+    const compiledEffectNode = compileEffectActionNodeFromRule(rule, compiledTiming);
     const nextRule: RawRule = {
         ...rule,
-        compiledTiming
+        compiledTiming,
+        compiledEffectNode,
+        structure: compiledEffectNode.structure,
+        operation: compiledEffectNode.operation,
+        playMode: compiledEffectNode.playMode,
+        metaRef: compiledEffectNode.metaRef
     };
 
     const bridgedTiming = buildLegacyEffectTiming(rule.timing, compiledTiming);

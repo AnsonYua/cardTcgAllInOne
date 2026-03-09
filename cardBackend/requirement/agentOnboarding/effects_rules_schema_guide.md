@@ -7,13 +7,14 @@ Think of each rule like:
 
 - what kind of rule is this
 - what timing makes it legal or causes it to run
-- what action does it do
+- what authored action does it use
+- what canonical runtime meaning does that action compile into
 - who or what does it affect
 
 A card can have one rule or many rules. Each rule is one behavior unit. The backend reads these rules, normalizes them, compiles timing metadata, and then executes them through the normal engine flow.
 
 ## 2) The One-Line Mental Model
-> `type` tells **what kind of rule this is**, `timing` tells **when it starts or when you may use it**, `action` tells **what it does**, and `target` plus `conditions` tell **who it affects and when it is allowed**.
+> `type` tells **what kind of rule this is**, `timing` tells **when it starts or when you may use it**, `action` is the current authored action field, and `compiledEffectNode` is the canonical runtime meaning the backend, frontend, and AI should prefer.
 
 ## 3) Source Authoring Model
 Source card JSON now uses a split timing model.

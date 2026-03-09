@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { initializeUnitTurnState } from '../utils/UnitTurnStateUtils';
+import { getEffectPlayMode } from '../services/effects/EffectActionAccess';
 import { applyCompiledTimingBridgeToCardData } from '../services/effects/timing/EffectTimingBridge';
 
 // ============ CARD DATA INTERFACES ============
@@ -67,7 +68,27 @@ export interface EffectRule {
         internalHook?: string;
         timingClass?: string;
     };
+    compiledEffectNode?: {
+        structure: 'primitive' | 'sequence' | 'conditional';
+        operation?: string;
+        playMode?: string;
+        metaRef?: {
+            type: string;
+            abilityType?: string;
+        };
+        aiTags?: {
+            mechanical?: string[];
+            strategic?: string[];
+        };
+    };
     sourceLevelScope?: 'paired_unit' | 'source_card';
+    structure?: 'primitive' | 'sequence' | 'conditional';
+    operation?: string;
+    playMode?: string;
+    metaRef?: {
+        type: string;
+        abilityType?: string;
+    };
     cost?: {
         [key: string]: any;
     };
@@ -274,7 +295,7 @@ export function createZoneCard(
                 
                 // ✅ FIXED: Use correct data structure matching actual card data
                 const designatePilotEffect = cardData.effects?.rules?.find(rule => 
-                    rule.action === 'designate_pilot'
+                    getEffectPlayMode(rule as any) === 'designate_pilot'
                 );
                 
                 if (designatePilotEffect && designatePilotEffect.parameters) {

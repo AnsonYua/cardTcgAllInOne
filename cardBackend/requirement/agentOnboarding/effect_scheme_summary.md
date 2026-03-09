@@ -1,23 +1,25 @@
 # Effect Scheme Summary
 
 ## Purpose
-This document is a practical summary of the card effect scheme used in the backend after the trigger-first timing refactor. It is meant to help a reader quickly understand:
+This document is a practical summary of the card effect scheme used in the backend after the trigger-first timing refactor and the compiler-driven action refactor. It is meant to help a reader quickly understand:
 
 - how effect data is authored in card JSON
 - how timing is split into clearer concepts
 - which timing and action families appear most often in the GD/ST card pool
+- how authored action values map to clearer canonical runtime meaning
 - which patterns matter most for engine work, frontend timing gates, and AI evaluation
 
 It does not replace the full schema guide in `/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/requirement/agentOnboarding/effects_rules_schema_guide.md`. This document is the shorter, more practical version.
 
 ## One-Line Mental Model
-Each effect rule answers five questions:
+Each effect rule answers six questions:
 
 - `type`: what kind of rule is this
 - `timing.eventTrigger`: what game event starts it, if any
 - `timing.activationWindows`: when the player may use it, if any
 - `timing.duration`: how long it lasts, if it persists
-- `action`: what it does
+- `action`: the current authored action field
+- `compiledEffectNode`: the canonical runtime action meaning
 
 Then `target`, `conditions`, `sourceConditions`, and `parameters` explain who it affects and how it resolves.
 
@@ -25,6 +27,7 @@ Important wording rule for this document:
 
 - when this document says `event trigger`, it means `timing.eventTrigger`
 - source card data should be written with `timing.*` fields only
+- runtime, frontend, and AI should prefer compiled descriptors when available
 
 ## Current Timing Model
 
@@ -59,6 +62,41 @@ Important rule:
 
 - new source card JSON should use `timing.eventTrigger`, `timing.activationWindows`, and `timing.duration`
 - `internalHook` is runtime-only and not normal card authoring data
+
+## Current Action Model
+
+### Source authoring action
+Source card JSON still mostly uses one authored `action` field.
+
+Examples:
+
+- primitive operation: `damage`
+- structural flow: `sequence`
+- structural flow: `conditional`
+- play-mode rule: `designate_pilot`
+- meta rule: `activate_ability`
+
+### Compiled runtime action
+At runtime, the backend now derives:
+
+- `compiledEffectNode.structure`
+- `compiledEffectNode.operation`
+- `compiledEffectNode.playMode`
+- `compiledEffectNode.metaRef`
+- `compiledEffectNode.aiTags`
+
+Simple meaning:
+
+- `structure`: how the effect is organized
+- `operation`: what primitive gameplay result it produces
+- `playMode`: how the card may be used or played
+- `metaRef`: the rule tells the engine to run another ability
+
+Important rule:
+
+- source card data has not been fully rewritten yet
+- backend compiles canonical action meaning from the current authored shape
+- frontend and AI should prefer `compiledEffectNode` over inferring everything from raw `action`
 
 ## Card Data Shape
 At the set-data level, each card file is shaped like this:
@@ -305,8 +343,8 @@ What this means in gameplay terms:
 - Attack and blocker timing are a major part of effect value.
 - End-of-turn healing and delayed effects change whether a board is actually safe.
 
-## Action Families That Matter Most
-Top action families in the current card pool:
+## Authored Action Families That Matter Most
+Top authored `action` values in the current card pool:
 
 | Action | Count | What it usually means |
 |---|---:|---|
@@ -333,6 +371,30 @@ Top action families in the current card pool:
 
 The important lesson is that a lot of cards are not simple one-shot effects. The data is full of nested branches, multi-step resolution, and timing-sensitive combat actions.
 
+The more important architecture lesson is:
+
+- not every authored `action` value is a primitive effect operation
+- some authored `action` values really describe structure
+- some authored `action` values really describe play mode
+- some authored `action` values really describe meta ability routing
+
+## Canonical Action Interpretation
+
+The runtime now interprets common authored action patterns like this:
+
+| Authored action pattern | Canonical runtime meaning |
+|---|---|
+| `damage`, `heal`, `deploy`, `addToHand`, `rest`, `destroy`, `grant_keyword`, `damageShield` | `structure: primitive` + `operation: <action>` |
+| `sequence` | `structure: sequence` |
+| `conditional` | `structure: conditional` |
+| `designate_pilot` | `structure: primitive` + `playMode: designate_pilot` |
+| `activate_ability` | `structure: primitive` + `metaRef.type: activate_ability` |
+
+This is the key change:
+
+- source JSON may still say `action`
+- runtime meaning should now be read from `compiledEffectNode`
+
 ## Activation Windows And Durations
 
 ### Activation windows
@@ -355,7 +417,7 @@ This tells you the game is not only about board state. Timing is part of both le
 ## Common Schema Patterns
 
 ### 1. Simple targeted effect
-This is the easiest pattern: event timing plus target plus one action.
+This is the easiest pattern: event timing plus target plus one primitive operation.
 
 Example: `GD01-008 Guntank`
 
@@ -463,6 +525,11 @@ Example: `GD01-101 Deep Devotion`
 }
 ```
 
+Canonical runtime interpretation:
+
+- `structure: "primitive"`
+- `playMode: "designate_pilot"`
+
 ### 5. Burst telling the engine to run another ability
 Some burst cards do not directly express the whole effect body. They tell the engine to activate another defined ability, usually the card's main effect.
 
@@ -483,6 +550,12 @@ Example: `ST01-014 Unforeseen Incident`
 ```
 
 This matters because the runtime must support burst-triggered ability activation as a distinct decision path.
+
+Canonical runtime interpretation:
+
+- `structure: "primitive"`
+- `metaRef.type: "activate_ability"`
+- `metaRef.abilityType: "main"`
 
 ### 6. Top-deck selection flow
 This is a structured tutor/search pattern. The rule looks at a fixed number of cards, optionally selects one that matches filters, then moves the rest somewhere else.
@@ -560,7 +633,7 @@ Example: `GD01-027 Big Zam`
 }
 ```
 
-If you only read the top-level action name, you miss the real effect logic. This is why effect parsing, auditing, and AI evaluation must understand nested structure.
+If you only read the top-level authored `action` value, you miss the real effect logic. This is why effect parsing, auditing, and AI evaluation must understand nested structure and compiled action meaning.
 
 ## Target And Scope Patterns
 Common target concepts:
@@ -633,7 +706,9 @@ The effect scheme has several consequences for AI and debugging:
 - `designate_pilot` means command cards can create alternate play lines, not only one-shot spell lines.
 - `activate_ability` means some rules intentionally route into another ability rather than expressing the full resolution in one node.
 - frontend timing gates should use compiled timing descriptors first, not raw authored timing guesses
+- frontend effect meaning should use compiled action descriptors first, not raw authored action guesses
 - AI enumeration should use compiled timing metadata instead of reparsing ad hoc timing values
+- AI categorization should use `compiledEffectNode` so it can distinguish primitive effects, structure nodes, play-mode rules, and meta ability routing
 
 ## Recommended Reading Order
 If you are new to the backend effect system, read these in order:
@@ -648,11 +723,12 @@ A developer or AI agent should not say an effect is understood until it can answ
 
 1. What is the rule `type`?
 2. Is the rule driven by `timing.eventTrigger`, `timing.activationWindows`, or `timing.duration`?
-3. What is the real `action` family?
-4. Does it contain nested `sequence` or `conditional` steps?
-5. Does it require `target`, `option`, `token`, `prompt`, `blocker`, or `burst` choice?
-6. Does it depend on traits, link state, trash count, AP, or attack target filters?
-7. Is it one-shot, end-of-turn, until-end-of-battle, or continuous?
-8. Does it create a normal play line, an activated line, a burst line, or a command-as-pilot line?
+3. What is the authored `action` value?
+4. What is the canonical runtime action meaning in `compiledEffectNode`?
+5. Does it contain nested `sequence` or `conditional` steps?
+6. Does it require `target`, `option`, `token`, `prompt`, `blocker`, or `burst` choice?
+7. Does it depend on traits, link state, trash count, AP, or attack target filters?
+8. Is it one-shot, end-of-turn, until-end-of-battle, or continuous?
+9. Does it create a normal play line, an activated line, a burst line, or a command-as-pilot line?
 
 If any of those answers are missing, the effect is not fully summarized yet.

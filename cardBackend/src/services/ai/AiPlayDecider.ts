@@ -4,6 +4,7 @@ import { UnitRestrictionUtils } from '../restrictions/UnitRestrictionUtils';
 import { getAvailableEnergyCount, getTotalEnergyCount } from './AiEnergyUtils';
 import type { AiGameEnvView, AiHandCard, AiSlotView } from './AiViewTypes';
 import type { ZoneCard } from '../../models/CardSystem';
+import { getEffectPlayMode } from '../effects/EffectActionAccess';
 
 type PlayableCard = {
     carduid: string;
@@ -113,7 +114,7 @@ export function findBestPlayCard(gameEnvView: AiGameEnvView, aiPlayerId: string)
         .filter((card) => card.cardType === 'command' && unitWithoutPilot?.unit?.carduid)
         .map((card) => {
             const ruleList = Array.isArray(card?.cardData?.effects?.rules) ? card.cardData.effects.rules : [];
-            const hasDesignatePilot = ruleList.some((rule) => rule?.action === 'designate_pilot');
+            const hasDesignatePilot = ruleList.some((rule) => getEffectPlayMode(rule as any) === 'designate_pilot');
             return { ...card, hasDesignatePilot };
         })
         .filter((card) => card.hasDesignatePilot)

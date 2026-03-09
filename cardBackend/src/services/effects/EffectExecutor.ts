@@ -41,6 +41,7 @@ import { DrawNotificationPublisher } from './DrawNotificationPublisher';
 import { applyDeployEffect } from './actions/EffectDeployActions';
 import { normalizeCarduid } from '../../utils/CardUtils';
 import { isSequenceExecutionActive } from './sequence/SequenceExecutionContext';
+import { getLegacyEffectAction } from './EffectActionAccess';
 
 interface EffectActionContext {
     gameEnv: GameEnvironment;
@@ -426,8 +427,7 @@ export class EffectExecutor {
      * Determine effect action
      */
     static getEffectAction(effect: EffectDefinition): string | undefined {
-        const directAction = typeof effect.action === 'string' ? effect.action : undefined;
-        return directAction && directAction.length > 0 ? directAction : undefined;
+        return getLegacyEffectAction(effect);
     }
 
     /**

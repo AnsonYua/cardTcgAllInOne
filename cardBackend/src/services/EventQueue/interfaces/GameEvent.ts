@@ -231,6 +231,43 @@ export interface CompiledEffectTiming {
     timingClass: TimingClass;
 }
 
+export type EffectStructure = 'primitive' | 'sequence' | 'conditional';
+
+export interface CompiledMetaEffectRef {
+    type: string;
+    abilityType?: string;
+}
+
+export interface CompiledAiEffectTags {
+    mechanical: Array<
+        'triggered'
+        | 'activated'
+        | 'continuous'
+        | 'choice_required'
+        | 'sequence'
+        | 'conditional'
+        | 'burst_triggered'
+    >;
+    strategic: Array<
+        'removal'
+        | 'tempo'
+        | 'combat_trick'
+        | 'recovery'
+        | 'shield_pressure'
+        | 'pair_payoff'
+        | 'resource_gain'
+        | 'resilience'
+    >;
+}
+
+export interface CompiledEffectNode {
+    structure: EffectStructure;
+    operation?: string;
+    playMode?: string;
+    metaRef?: CompiledMetaEffectRef;
+    aiTags?: CompiledAiEffectTags;
+}
+
 export interface EffectTiming extends SourceEffectTiming {}
 
 export type SourceLevelScope = 'paired_unit' | 'source_card';
@@ -253,6 +290,11 @@ export interface EffectDefinition {
     type?: string;
     trigger?: string;
     compiledTiming?: CompiledEffectTiming;
+    structure?: EffectStructure;
+    operation?: string;
+    playMode?: string;
+    metaRef?: CompiledMetaEffectRef;
+    compiledEffectNode?: CompiledEffectNode;
     sourceLevelScope?: SourceLevelScope;
     restrictions?: string[];
     optional?: boolean;

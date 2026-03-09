@@ -11,6 +11,8 @@ import {
     normalizeConditionTypeAlias,
     normalizeSelectionTypeAlias
 } from '../services/effects/schema/EffectSchema';
+import { compileEffectActionNodeFromRule } from '../services/effects/EffectActionCompiler';
+import { getLegacyEffectAction } from '../services/effects/EffectActionAccess';
 import {
     compileEffectTimingFromRule
 } from '../services/effects/timing/EffectTimingCompiler';
@@ -46,6 +48,7 @@ export function normalizeEffectRule(
     const raw = rule as Record<string, unknown>;
     const type = typeof raw['type'] === 'string' ? raw['type'] : undefined;
     const compiledTiming = compileEffectTimingFromRule(raw);
+    const compiledEffectNode = compileEffectActionNodeFromRule(raw, compiledTiming);
     const trigger = deriveLegacyTriggerFromCompiledTiming(compiledTiming, type) || resolveTrigger(raw['trigger'], "");
     if (options.expectedTriggers && options.expectedTriggers.length > 0) {
         if (!trigger || !options.expectedTriggers.includes(trigger)) {
@@ -53,7 +56,7 @@ export function normalizeEffectRule(
         }
     }
 
-    const action = resolveEffectActionFromRule(raw);
+    const action = getLegacyEffectAction({ compiledEffectNode, action: resolveAction(raw['action']) });
     if (options.requireAction && !action) {
         return null;
     }
@@ -96,6 +99,11 @@ export function normalizeEffectRule(
         type,
         trigger,
         compiledTiming,
+        structure: compiledEffectNode.structure,
+        operation: compiledEffectNode.operation,
+        playMode: compiledEffectNode.playMode,
+        metaRef: compiledEffectNode.metaRef,
+        compiledEffectNode,
         sourceLevelScope,
         optional,
         target,
@@ -130,10 +138,16 @@ export function resolveEffectActionFromRule(rule: unknown): string | undefined {
     }
 
     const raw = rule as Record<string, unknown>;
-
-    const direct = resolveAction(raw['action']);
-    if (direct) {
-        return direct;
+    const compiledTiming = raw['compiledTiming'] && typeof raw['compiledTiming'] === 'object'
+        ? (raw['compiledTiming'] as any)
+        : undefined;
+    const compiledEffectNode = compileEffectActionNodeFromRule(raw, compiledTiming);
+    const resolved = getLegacyEffectAction({
+        ...(raw as any),
+        compiledEffectNode
+    });
+    if (resolved) {
+        return resolved;
     }
 
     const nestedEffect = raw['effect'];
@@ -147,11 +161,6 @@ export function resolveEffectActionFromRule(rule: unknown): string | undefined {
     const legacy = resolveAction(raw['effectAction']);
     if (legacy) {
         return legacy;
-    }
-
-    const operation = resolveAction(raw['operation']);
-    if (operation) {
-        return operation;
     }
 
     const parameters = raw['parameters'];

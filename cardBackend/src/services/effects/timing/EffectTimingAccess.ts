@@ -26,7 +26,7 @@ function getTimingRecord(effect: TimingReadable | null | undefined): Record<stri
 function getCompiledTimingRecord(effect: TimingReadable | null | undefined): Record<string, unknown> | undefined {
     const timing = effect?.compiledTiming;
     return timing && typeof timing === 'object' && !Array.isArray(timing)
-        ? (timing as Record<string, unknown>)
+        ? (timing as unknown as Record<string, unknown>)
         : undefined;
 }
 

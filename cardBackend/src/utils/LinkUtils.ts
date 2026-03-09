@@ -2,6 +2,7 @@
 // Shared helpers for determining whether a Unit+Pilot pair is linked.
 
 import type { PilotZoneCard, UnitZoneCard } from '../models/CardSystem';
+import { getEffectPlayMode } from '../services/effects/EffectActionAccess';
 
 export class LinkUtils {
     static isLinkedPair(unit: UnitZoneCard | undefined | null, pilot: PilotZoneCard | undefined | null): boolean {
@@ -29,7 +30,7 @@ export class LinkUtils {
     private static resolvePilotIdentityForLink(pilot: PilotZoneCard): { name: string | null; traits: string[] } {
         if (pilot.cardData?.cardType === 'command') {
             const designatePilotEffect = pilot.cardData?.effects?.rules?.find((rule: any) =>
-                rule.action === 'designate_pilot'
+                getEffectPlayMode(rule) === 'designate_pilot'
             );
             if (designatePilotEffect?.parameters?.pilotName) {
                 return { name: designatePilotEffect.parameters.pilotName as string, traits: [] };

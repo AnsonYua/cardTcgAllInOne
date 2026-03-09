@@ -8,6 +8,7 @@ import { TopDeckSelectionManager } from './TopDeckSelectionManager';
 import { SequenceEffectManager } from './SequenceEffectManager';
 import { ConditionalEffectManager } from './ConditionalEffectManager';
 import { ConditionalTokenDeployFlowManager } from './ConditionalTokenDeployFlowManager';
+import { getEffectStructure } from './EffectActionAccess';
 
 export class EffectActionRouter {
     static tryProcessEffectAction(
@@ -18,6 +19,7 @@ export class EffectActionRouter {
         cardPlayNotificationId?: string
     ): DeployTargetResult | null {
         const effectAction = EffectExecutor.getEffectAction(effect);
+        const effectStructure = getEffectStructure(effect);
 
         if (effectAction === 'choose_one_then_deploy_token') {
             return TokenChoiceManager.processTokenChoiceEffect(
@@ -49,7 +51,7 @@ export class EffectActionRouter {
             ) as DeployTargetResult;
         }
 
-        if (effectAction === 'sequence') {
+        if (effectStructure === 'sequence') {
             return SequenceEffectManager.processSequenceEffect(
                 gameEnv,
                 playerId,
@@ -59,7 +61,7 @@ export class EffectActionRouter {
             ) as DeployTargetResult;
         }
 
-        if (effectAction === 'conditional') {
+        if (effectStructure === 'conditional') {
             return ConditionalEffectManager.processConditionalEffect(
                 gameEnv,
                 playerId,
