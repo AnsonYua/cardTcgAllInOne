@@ -28,7 +28,7 @@ function setupOwnerWithShield(gameEnv, ownerId) {
 
 describe('GD02-125 (Gwadan) deploy effect', () => {
     const deployEffect = gd02.cards['GD02-125'].effects.rules.find(
-        (rule) => rule.effectId === 'deploy_effect' && rule.trigger === 'ENTERS_PLAY'
+        (rule) => rule.effectId === 'deploy_effect' && rule.timing?.eventTrigger === 'ENTERS_PLAY'
     );
 
     test('on opponent turn, only shield add resolves (no discard/draw)', () => {

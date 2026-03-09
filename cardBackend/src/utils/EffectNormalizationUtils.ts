@@ -12,10 +12,12 @@ import {
     normalizeSelectionTypeAlias
 } from '../services/effects/schema/EffectSchema';
 import {
-    buildBridgedEffectTiming,
-    compileEffectTimingFromRule,
-    deriveLegacyTriggerFromCompiledTiming
+    compileEffectTimingFromRule
 } from '../services/effects/timing/EffectTimingCompiler';
+import {
+    buildLegacyEffectTiming,
+    deriveLegacyTriggerFromCompiledTiming
+} from '../services/effects/timing/EffectTimingBridge';
 
 interface NormalizeEffectRuleOptions {
     fallbackEffectId: string;
@@ -233,7 +235,7 @@ export function normalizeEffectTiming(
         return undefined;
     }
 
-    return buildBridgedEffectTiming(timingValue, compiledTiming);
+    return buildLegacyEffectTiming(timingValue, compiledTiming);
 }
 
 interface TargetDefaults {

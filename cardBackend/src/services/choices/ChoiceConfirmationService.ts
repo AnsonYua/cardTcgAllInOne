@@ -5,6 +5,7 @@ import { EventType } from '../../models/GameEnums';
 import { ChoiceNotificationEmitter } from '../notifications/ChoiceNotificationEmitter';
 import { BattlePhaseManager } from '../BattlePhaseManager';
 import { CardPlayNotificationLifecycle } from '../notifications/CardPlayNotificationLifecycle';
+import { getEffectEventTrigger } from '../effects/timing/EffectTimingAccess';
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { GameEvent, TargetChoiceEvent, TargetReference, TokenChoiceEvent, OptionChoiceEvent, PromptChoiceEvent } from '../EventQueue/interfaces/GameEvent';
 import type { GameLogicResult } from '../GameLogic';
@@ -115,7 +116,7 @@ export class ChoiceConfirmationService {
             }
 
             const isOptional = event.data.effect?.optional === true;
-            const isCostChoice = event.data.effect?.trigger === 'COST';
+            const isCostChoice = getEffectEventTrigger(event.data.effect) === 'COST';
             const requiredCount = typeof event.data.effect?.target?.count === 'number'
                 ? event.data.effect.target.count
                 : undefined;

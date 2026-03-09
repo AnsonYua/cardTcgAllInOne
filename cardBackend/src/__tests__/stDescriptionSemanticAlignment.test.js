@@ -1,5 +1,9 @@
 const fs = require('fs');
 const path = require('path');
+const {
+    getEventTrigger,
+    normalizeActivationWindows
+} = require('./helpers/effectTimingSourceTestUtils');
 
 const ST_CARD_FILES = [
     'st01Card.json',
@@ -16,13 +20,6 @@ function loadCards(file) {
     const filePath = path.join(__dirname, '..', 'data', file);
     const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     return data.cards || {};
-}
-
-function normalizeWindows(rule) {
-    if (!Array.isArray(rule?.timing?.windows)) {
-        return [];
-    }
-    return rule.timing.windows.map((window) => String(window).toUpperCase());
 }
 
 function ruleHasAction(rule, actionName) {
@@ -53,7 +50,7 @@ describe('ST description semantic alignment', () => {
 
                 const rules = Array.isArray(card?.effects?.rules) ? card.effects.rules : [];
                 const hasBurstAddRule = rules.some((rule) =>
-                    String(rule?.trigger || '').toUpperCase() === 'BURST_CONDITION'
+                    getEventTrigger(rule) === 'BURST_CONDITION'
                     && String(rule?.action || '') === 'addToHand'
                 );
                 if (!hasBurstAddRule) {
@@ -170,7 +167,7 @@ describe('ST description semantic alignment', () => {
                     if ((rule?.type || '').toLowerCase() !== 'play') {
                         return;
                     }
-                    normalizeWindows(rule).forEach((window) => playWindows.add(window));
+                    normalizeActivationWindows(rule).forEach((window) => playWindows.add(window));
                 });
 
                 const hasMainTag = descriptions.some((line) =>

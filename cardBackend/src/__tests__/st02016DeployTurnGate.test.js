@@ -30,7 +30,7 @@ describe('ST02-016 (Corsica Base) turn gate on conditional token branches', () =
         );
 
         const effect = st02.cards['ST02-016'].effects.rules.find(
-            (rule) => rule.effectId === 'deploy_shield_then_conditional_token' && rule.trigger === 'ENTERS_PLAY'
+            (rule) => rule.effectId === 'deploy_shield_then_conditional_token' && rule.timing?.eventTrigger === 'ENTERS_PLAY'
         );
 
         const beforeUnits = countUnitsInSlots(owner);

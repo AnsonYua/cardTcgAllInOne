@@ -324,7 +324,7 @@ export class BurstEffectManager {
             if (!rule || typeof rule !== 'object') {
                 return false;
             }
-            if (rule.trigger !== 'BURST_CONDITION') {
+            if (EffectTimingWindowUtils.getEventTrigger(rule as EffectDefinition) !== 'BURST_CONDITION') {
                 return false;
             }
             if (desiredEffectId && typeof rule.effectId === 'string' && rule.effectId === desiredEffectId) {
@@ -342,7 +342,7 @@ export class BurstEffectManager {
         }
 
         // Fallback: first BURST_CONDITION rule.
-        const fallback = rules.find((rule: any) => rule?.trigger === 'BURST_CONDITION');
+        const fallback = rules.find((rule: any) => EffectTimingWindowUtils.getEventTrigger(rule as EffectDefinition) === 'BURST_CONDITION');
         return fallback ? (fallback as EffectDefinition) : null;
     }
 
@@ -452,7 +452,7 @@ export class BurstEffectManager {
         const burstEffects: BurstEffectSummary[] = [];
 
         for (const effect of cardData.effects.rules) {
-            if (effect.trigger && effect.trigger === 'BURST_CONDITION') {
+            if (EffectTimingWindowUtils.getEventTrigger(effect as EffectDefinition) === 'BURST_CONDITION') {
                 const effectAction = resolveEffectActionFromRule(effect) || 'unknown';
                 const effectParameters = this.extractBurstParameters(effect);
                 const description = this.createBurstEffectDescription(effect, cardData, effectAction);

@@ -6,7 +6,7 @@ const { EnergyManager } = require('../services/EnergyManager');
 const { CardDatabaseManager } = require('../models/CardSystem');
 
 describe('GD01-110 command play timing fallback', () => {
-    test('play command defaults to MAIN_PHASE when timing.windows is missing and queues TARGET_CHOICE', async () => {
+    test('play command defaults to MAIN_PHASE when activation windows are missing and queues TARGET_CHOICE', async () => {
         const cardData = CardDatabaseManager.getCardDetails('GD01-110');
         const playRule = (cardData?.effects?.rules || []).find(
             (rule) => rule?.effectId === 'allow_attack_target_active_enemy_ap_le_6_for_unit_ge_4'
@@ -16,7 +16,12 @@ describe('GD01-110 command play timing fallback', () => {
         if (!playRule.timing || typeof playRule.timing !== 'object') {
             playRule.timing = {};
         }
+        const originalCompiledTiming = playRule?.compiledTiming ? { ...playRule.compiledTiming } : undefined;
+        delete playRule.timing.activationWindows;
         delete playRule.timing.windows;
+        if (playRule.compiledTiming && typeof playRule.compiledTiming === 'object') {
+            delete playRule.compiledTiming.activationWindows;
+        }
 
         try {
             const gameEnv = new GameEnvironment();
@@ -88,6 +93,11 @@ describe('GD01-110 command play timing fallback', () => {
                 playRule.timing = originalTiming;
             } else {
                 delete playRule.timing;
+            }
+            if (originalCompiledTiming) {
+                playRule.compiledTiming = originalCompiledTiming;
+            } else {
+                delete playRule.compiledTiming;
             }
         }
     });

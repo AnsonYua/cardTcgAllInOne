@@ -9,7 +9,7 @@ describe('GD03-078 destroyed paired pilot return schema', () => {
         expect(rule).toBeTruthy();
 
         expect(rule.type).toBe('triggered');
-        expect(rule.trigger).toBe('DESTROYED');
+        expect(rule.timing?.eventTrigger).toBe('DESTROYED');
         expect(rule.action).toBe('sequence');
 
         const step = rule.parameters?.steps?.[0];

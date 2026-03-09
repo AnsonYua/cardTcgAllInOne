@@ -2,6 +2,7 @@
 
 import type { UnitZoneCard, PilotZoneCard } from '../models/CardSystem';
 import { isBlockerRedirectRule } from './BlockerRuleUtils';
+import { getEffectEventTrigger } from '../services/effects/timing/EffectTimingAccess';
 
 export class KeywordUtils {
     static hasKeyword(card: UnitZoneCard | PilotZoneCard, keyword: string): boolean {
@@ -106,11 +107,10 @@ export class KeywordUtils {
         }
 
         return rules.some((rule: any) => {
-            const trigger = typeof rule?.trigger === 'string' ? rule.trigger : '';
             const action = typeof rule?.action === 'string' ? rule.action : '';
             const value = typeof rule?.parameters?.value === 'number' ? rule.parameters.value : 0;
             const conditions = Array.isArray(rule?.conditions) ? rule.conditions : [];
-            return trigger === 'END_OF_TURN' && action === 'heal' && value > 0 && conditions.length === 0;
+            return getEffectEventTrigger(rule) === 'END_OF_TURN' && action === 'heal' && value > 0 && conditions.length === 0;
         });
     }
 
@@ -121,11 +121,10 @@ export class KeywordUtils {
         }
 
         return rules.some((rule: any) => {
-            const trigger = typeof rule?.trigger === 'string' ? rule.trigger : '';
             const action = typeof rule?.action === 'string' ? rule.action : '';
             const value = typeof rule?.parameters?.value === 'number' ? rule.parameters.value : 0;
             const conditions = Array.isArray(rule?.conditions) ? rule.conditions : [];
-            return trigger === 'BATTLE_DESTROY' && action === 'damageShield' && value > 0 && conditions.length === 0;
+            return getEffectEventTrigger(rule) === 'BATTLE_DESTROY' && action === 'damageShield' && value > 0 && conditions.length === 0;
         });
     }
 }

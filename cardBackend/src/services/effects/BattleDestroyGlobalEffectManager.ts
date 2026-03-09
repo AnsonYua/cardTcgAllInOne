@@ -13,6 +13,7 @@ import { EffectUsageTracker } from './EffectUsageTracker';
 import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 import { DeployTargetManager } from '../DeployTargetManager';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
+import { getEffectEventTrigger } from './timing/EffectTimingAccess';
 
 type SlotCard = { card: UnitZoneCard | PilotZoneCard | BaseCard; slotName: string };
 
@@ -184,11 +185,7 @@ export class BattleDestroyGlobalEffectManager {
     }
 
     private static isBattleDestroyTrigger(effect: EffectDefinition): boolean {
-        return (
-            effect.type === 'triggered' &&
-            typeof effect.trigger === 'string' &&
-            effect.trigger.toUpperCase() === 'BATTLE_DESTROY'
-        );
+        return effect.type === 'triggered' && getEffectEventTrigger(effect) === 'BATTLE_DESTROY';
     }
 
     private static isGlobalBattleDestroyListener(effect: EffectDefinition): boolean {

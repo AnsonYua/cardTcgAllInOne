@@ -229,8 +229,6 @@ export interface CompiledEffectTiming {
     duration?: string;
     internalHook?: string;
     timingClass: TimingClass;
-    windows?: string[];
-    legacyTrigger?: string;
 }
 
 export interface EffectTiming extends SourceEffectTiming {}

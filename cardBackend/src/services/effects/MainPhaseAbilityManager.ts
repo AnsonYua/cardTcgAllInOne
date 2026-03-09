@@ -16,6 +16,7 @@ import { ExecutionResult } from '../ExecutionResult';
 import { BattlePhaseManager } from '../BattlePhaseManager';
 import { EffectTargetResolver, ResolvedTargetContext } from './EffectTargetResolver';
 import { TargetStateFilterUtils } from '../targets/TargetStateFilterUtils';
+import { EffectTimingWindowUtils } from '../../utils/EffectTimingWindowUtils';
 
 interface MainPhaseAbilityParams {
     playerId: string;
@@ -240,44 +241,12 @@ export class MainPhaseAbilityManager {
             }
 
             const windows = this.getTimingWindows(effect);
-            if (windows.size === 0 && typeof effect.trigger === 'string') {
-                return effect.trigger.toUpperCase() === 'MAIN_PHASE';
-            }
-
             return windows.has('MAIN_PHASE');
         });
     }
 
     private static getTimingWindows(effect: EffectDefinition): Set<string> {
-        const windows = new Set<string>();
-        const timingRecord = effect.timing as Record<string, unknown> | undefined;
-
-        if (timingRecord && typeof timingRecord === 'object') {
-            const windowValues = timingRecord['windows'];
-            if (Array.isArray(windowValues)) {
-                windowValues.forEach(value => {
-                    if (typeof value === 'string') {
-                        windows.add(value.toUpperCase());
-                    }
-                });
-            }
-
-            const durationValue = timingRecord['duration'];
-            if (typeof durationValue === 'string') {
-                windows.add(durationValue.toUpperCase());
-            }
-
-            const actionTurnValue = timingRecord['actionTurn'];
-            if (typeof actionTurnValue === 'string') {
-                windows.add(actionTurnValue.toUpperCase());
-            }
-        }
-
-        if (typeof effect.trigger === 'string') {
-            windows.add(effect.trigger.toUpperCase());
-        }
-
-        return windows;
+        return new Set(EffectTimingWindowUtils.getActivationWindows(effect));
     }
 
     private static resolveTargets(

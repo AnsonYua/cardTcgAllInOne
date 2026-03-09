@@ -245,7 +245,7 @@ describe('effectSchemaCanonicalValidation utilities', () => {
         expect(diagnostics).toHaveLength(0);
     });
 
-    test('warns when command play effect omits timing.windows', () => {
+    test('warns when command play effect omits timing.activationWindows', () => {
         const diagnostics = [];
         detectCommandPlayTimingWindowWarnings('mock.json', {
             'MOCK-CMD-001': {
@@ -264,11 +264,11 @@ describe('effectSchemaCanonicalValidation utilities', () => {
         }, diagnostics);
 
         expect(
-            diagnostics.some((d) => d.severity === 'warning' && /timing\.windows/.test(d.jsonPath))
+            diagnostics.some((d) => d.severity === 'warning' && /timing\.activationWindows/.test(d.jsonPath))
         ).toBe(true);
     });
 
-    test('does not warn when command play effect includes timing.windows', () => {
+    test('does not warn when command play effect includes timing.activationWindows', () => {
         const diagnostics = [];
         detectCommandPlayTimingWindowWarnings('mock.json', {
             'MOCK-CMD-002': {
@@ -278,7 +278,7 @@ describe('effectSchemaCanonicalValidation utilities', () => {
                         {
                             effectId: 'cmd_play_main',
                             type: 'play',
-                            timing: { windows: ['MAIN_PHASE'], duration: 'UNTIL_END_OF_TURN' },
+                            timing: { activationWindows: ['MAIN_PHASE'], duration: 'UNTIL_END_OF_TURN' },
                             action: 'draw'
                         }
                     ]

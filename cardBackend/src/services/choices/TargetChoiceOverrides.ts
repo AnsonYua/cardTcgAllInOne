@@ -1,5 +1,6 @@
 import type { EffectDefinition, TargetReference } from '../EventQueue/interfaces/GameEvent';
 import type { ResolvedTargetConfig } from '../targets/TargetResolver';
+import { getEffectEventTrigger } from '../effects/timing/EffectTimingAccess';
 
 function isDeterministicSourceAllowAttackTarget(
     action: string,
@@ -23,7 +24,7 @@ export function overrideRequiresChoice(
     effect: EffectDefinition
 ): boolean | undefined {
     const action = typeof effect.action === 'string' ? effect.action.toLowerCase() : '';
-    const trigger = typeof effect.trigger === 'string' ? effect.trigger.toUpperCase() : '';
+    const trigger = getEffectEventTrigger(effect) || '';
     const scopeValue = typeof targetConfig.scope === 'string' ? targetConfig.scope.toLowerCase() : '';
     const targetType = typeof targetConfig.type === 'string' ? targetConfig.type.toLowerCase() : '';
 

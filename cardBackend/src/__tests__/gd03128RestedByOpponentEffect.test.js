@@ -165,7 +165,7 @@ describe('GD03-128 UNIT_RESTED_BY_EFFECT trigger', () => {
         const rule = card.effects.rules.find((r) => r.effectId === 'effect');
 
         expect(rule).toBeTruthy();
-        expect(rule.trigger).toBe('UNIT_RESTED_BY_EFFECT');
+        expect(rule.timing?.eventTrigger).toBe('UNIT_RESTED_BY_EFFECT');
         expect(rule.restrictions).toContain('once_per_turn');
         expect(rule.timing?.actionTurn).toBe('OPPONENT_TURN');
         expect(rule.action).toBe('damage');

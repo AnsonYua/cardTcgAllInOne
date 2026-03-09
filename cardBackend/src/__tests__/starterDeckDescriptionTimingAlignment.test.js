@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { normalizeActivationWindows } = require('./helpers/effectTimingSourceTestUtils');
 
 const STARTER_FILES = [
     'st01Card.json',
@@ -11,13 +12,6 @@ const STARTER_FILES = [
     'st07Card.json',
     'st08Card.json'
 ];
-
-function normalizeWindows(rule) {
-    if (!Array.isArray(rule?.timing?.windows)) {
-        return [];
-    }
-    return rule.timing.windows.map((window) => String(window).toUpperCase());
-}
 
 describe('Starter deck description timing alignment', () => {
     test('all starter deck play rules define explicit timing windows', () => {
@@ -34,7 +28,7 @@ describe('Starter deck description timing alignment', () => {
                     if ((rule?.type || '').toLowerCase() !== 'play') {
                         return;
                     }
-                    if (normalizeWindows(rule).length > 0) {
+                    if (normalizeActivationWindows(rule).length > 0) {
                         return;
                     }
                     failures.push(`${file}:${cardId} rules[${index}] ${rule?.effectId || 'unknown'}`);
@@ -66,7 +60,7 @@ describe('Starter deck description timing alignment', () => {
                     if ((rule?.type || '').toLowerCase() !== 'play') {
                         return;
                     }
-                    normalizeWindows(rule).forEach((window) => playWindows.add(window));
+                    normalizeActivationWindows(rule).forEach((window) => playWindows.add(window));
                 });
 
                 const hasMainTag = descriptions.some((line) => typeof line === 'string' && /(?:\[Main\]|【Main】)/i.test(line));

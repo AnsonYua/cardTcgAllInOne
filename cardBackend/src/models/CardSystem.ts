@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { initializeUnitTurnState } from '../utils/UnitTurnStateUtils';
-import { applyCompiledTimingBridgeToCardData } from '../services/effects/timing/EffectTimingCompiler';
+import { applyCompiledTimingBridgeToCardData } from '../services/effects/timing/EffectTimingBridge';
 
 // ============ CARD DATA INTERFACES ============
 
@@ -66,8 +66,6 @@ export interface EffectRule {
         duration?: string;
         internalHook?: string;
         timingClass?: string;
-        windows?: string[];
-        legacyTrigger?: string;
     };
     sourceLevelScope?: 'paired_unit' | 'source_card';
     cost?: {

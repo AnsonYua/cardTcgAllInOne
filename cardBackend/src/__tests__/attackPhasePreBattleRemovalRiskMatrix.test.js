@@ -73,7 +73,7 @@ describe('ATTACK_PHASE pre-battle removal risk matrix', () => {
         expect(cardData).toBeTruthy();
 
         const attackRule = (cardData.effects?.rules || []).find((rule) =>
-            rule.trigger === 'ATTACK_PHASE' && ['damage', 'destroy', 'returnToHand'].includes(rule.action)
+            rule.timing?.eventTrigger === 'ATTACK_PHASE' && ['damage', 'destroy', 'returnToHand'].includes(rule.action)
         );
         expect(attackRule).toBeTruthy();
 

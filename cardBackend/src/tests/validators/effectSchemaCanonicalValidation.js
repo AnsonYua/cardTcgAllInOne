@@ -1082,7 +1082,7 @@ function detectCommandPlayTimingWindowWarnings(fileName, cards, diagnostics) {
         return;
       }
 
-      const windows = Array.isArray(rule?.timing?.windows) ? rule.timing.windows : [];
+      const windows = Array.isArray(rule?.timing?.activationWindows) ? rule.timing.activationWindows : [];
       if (windows.length > 0) {
         return;
       }
@@ -1091,8 +1091,8 @@ function detectCommandPlayTimingWindowWarnings(fileName, cards, diagnostics) {
         severity: 'warning',
         cardId,
         effectId: typeof rule.effectId === 'string' ? rule.effectId : 'unknown',
-        jsonPath: `cards.${cardId}.effects.rules[${index}].timing.windows`,
-        message: `${fileName}: command play effect should define explicit timing.windows (MAIN_PHASE/ACTION_STEP)`
+        jsonPath: `cards.${cardId}.effects.rules[${index}].timing.activationWindows`,
+        message: `${fileName}: command play effect should define explicit timing.activationWindows (MAIN_PHASE/ACTION_STEP)`
       });
     });
   }

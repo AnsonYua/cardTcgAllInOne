@@ -30,6 +30,7 @@ import { EffectScalingResolver } from './effects/scaling/EffectScalingResolver';
 import { EffectCompiler } from './effects/canonical/EffectCompiler';
 import { EffectOperationRegistry } from './effects/canonical/EffectOperationRegistry';
 import { DeployTargetManager } from './DeployTargetManager';
+import { EffectTimingWindowUtils } from '../utils/EffectTimingWindowUtils';
 
 export interface EffectResult {
     success: boolean;
@@ -60,7 +61,11 @@ export class ContinuousEffectManager {
      * Supports both legacy string triggers and structured { event: ... } forms.
      */
     static extractTrigger(rule: any): string {
-        return typeof rule?.trigger === 'string' ? rule.trigger : rule?.trigger?.event || '';
+        const eventTrigger = EffectTimingWindowUtils.getEventTrigger(rule as EffectDefinition);
+        if (eventTrigger) {
+            return eventTrigger;
+        }
+        return EffectTimingWindowUtils.isContinuousEffect(rule as EffectDefinition) ? 'continuous' : '';
     }
 
     // ============================================================================

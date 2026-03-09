@@ -1,12 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-
-function normalizeWindows(rule) {
-    if (!Array.isArray(rule?.timing?.windows)) {
-        return [];
-    }
-    return rule.timing.windows.map((window) => String(window).toUpperCase());
-}
+const { normalizeActivationWindows } = require('./helpers/effectTimingSourceTestUtils');
 
 describe('GD02 description timing alignment', () => {
     const filePath = path.join(__dirname, '..', 'data', 'gd02Card.json');
@@ -22,7 +16,7 @@ describe('GD02 description timing alignment', () => {
                 if ((rule?.type || '').toLowerCase() !== 'play') {
                     return;
                 }
-                if (normalizeWindows(rule).length > 0) {
+                if (normalizeActivationWindows(rule).length > 0) {
                     return;
                 }
                 failures.push(`${cardId} rules[${index}] ${rule?.effectId || 'unknown'}`);
@@ -48,7 +42,7 @@ describe('GD02 description timing alignment', () => {
                 if ((rule?.type || '').toLowerCase() !== 'play') {
                     return;
                 }
-                normalizeWindows(rule).forEach((window) => playWindows.add(window));
+                normalizeActivationWindows(rule).forEach((window) => playWindows.add(window));
             });
 
             const hasMainTag = descriptions.some((line) => typeof line === 'string' && /(?:\[Main\]|【Main】)/i.test(line));

@@ -170,7 +170,7 @@ describe('Deploy effect order choice', () => {
             )
         );
         const card = st02.cards['ST02-016'];
-        const effects = (card?.effects?.rules || []).filter((rule) => rule && rule.trigger === 'ENTERS_PLAY');
+        const effects = (card?.effects?.rules || []).filter((rule) => rule && rule.timing?.eventTrigger === 'ENTERS_PLAY');
         expect(effects).toHaveLength(1);
         expect(effects[0].action).toBe('sequence');
 

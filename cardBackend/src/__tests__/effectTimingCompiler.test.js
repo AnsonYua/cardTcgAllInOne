@@ -1,4 +1,5 @@
-const { compileEffectTimingFromRule, applyCompiledTimingBridgeToCardData } = require('../services/effects/timing/EffectTimingCompiler');
+const { compileEffectTimingFromRule } = require('../services/effects/timing/EffectTimingCompiler');
+const { bridgeCardData } = require('./helpers/effectTimingRuntimeTestUtils');
 
 const gd01Cards = require('../data/gd01Card.json');
 const gd02Cards = require('../data/gd02Card.json');
@@ -112,13 +113,15 @@ describe('EffectTimingCompiler', () => {
                 expect(rule?.timing?.activationWindows).toEqual(['MAIN_PHASE']);
             }
 
-            const bridgedCard = applyCompiledTimingBridgeToCardData({
+            const bridgedCard = bridgeCardData({
                 id: cardId,
                 effects: { rules: [rule] }
             });
             const bridgedRule = bridgedCard.effects.rules[0];
             expect(bridgedRule.compiledTiming).toBeDefined();
             expect(typeof bridgedRule.compiledTiming.timingClass).toBe('string');
+            expect(bridgedRule.compiledTiming.windows).toBeUndefined();
+            expect(bridgedRule.compiledTiming.legacyTrigger).toBeUndefined();
             expect(bridgedRule.timing).toBeDefined();
         }
     });

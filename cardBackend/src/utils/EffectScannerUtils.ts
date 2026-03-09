@@ -15,6 +15,10 @@ import { EffectDefinition } from '../services/EventQueue/interfaces/GameEvent';
 import { resolveEffectActionFromRule } from './EffectNormalizationUtils';
 import { ActionStepTargetSummary } from '../models/BattleContext';
 import { extractActionStepEffectIds } from './ActionStepTargetPolicy';
+import {
+    getEffectEventTrigger,
+    isContinuousEffectTiming
+} from '../services/effects/timing/EffectTimingAccess';
 
 export interface EffectScanResult {
     carduid: string;
@@ -72,7 +76,7 @@ export class EffectScannerUtils {
      */
     static scanForRepairAbilities(gameEnv: GameEnvironment, playerId: string): EffectScanResult[] {
         const repairFilter: EffectFilter = (effect) => 
-            effect.trigger === 'END_OF_TURN' && 
+            getEffectEventTrigger(effect) === 'END_OF_TURN' &&
             resolveEffectActionFromRule(effect) === 'heal';
             
         return this.scanPlayerForEffects(gameEnv, playerId, repairFilter);
@@ -83,7 +87,7 @@ export class EffectScannerUtils {
      */
     static scanForContinuousEffects(gameEnv: GameEnvironment, playerId: string): EffectScanResult[] {
         const continuousFilter: EffectFilter = (effect) => 
-            effect.trigger === 'continuous' || 
+            isContinuousEffectTiming(effect) || 
             effect.type === 'static';
             
         return this.scanPlayerForEffects(gameEnv, playerId, continuousFilter);
@@ -100,7 +104,14 @@ export class EffectScannerUtils {
         effectId?: string
     ): EffectScanResult[] {
         const genericFilter: EffectFilter = (effect) => {
-            if (trigger && effect.trigger !== trigger) return false;
+            if (trigger) {
+                const normalizedTrigger = trigger.toUpperCase();
+                if (normalizedTrigger === 'CONTINUOUS') {
+                    if (!isContinuousEffectTiming(effect)) return false;
+                } else if (getEffectEventTrigger(effect) !== normalizedTrigger) {
+                    return false;
+                }
+            }
             if (action && resolveEffectActionFromRule(effect) !== action) return false;
             if (effectId && effect.effectId !== effectId) return false;
             return true;

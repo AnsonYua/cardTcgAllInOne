@@ -5,6 +5,7 @@ import type { EffectDefinition } from '../EventQueue/interfaces/GameEvent';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { ConditionEvaluators } from '../conditions/ConditionEvaluators';
 import { EffectScalingResolver } from './scaling/EffectScalingResolver';
+import { EffectTimingWindowUtils } from '../../utils/EffectTimingWindowUtils';
 
 export class HandContinuousModifier {
     static applyModifiersForHandCardPlay(
@@ -18,10 +19,9 @@ export class HandContinuousModifier {
 
         const rules: EffectDefinition[] = cardData.effects.rules as EffectDefinition[];
         const handRules = rules.filter(rule => {
-            const trigger = rule.trigger;
             const type = rule.type;
             const scope = rule.target?.scope;
-            return trigger === 'continuous'
+            return EffectTimingWindowUtils.isContinuousEffect(rule)
                 && type === 'continuous'
                 && typeof scope === 'string'
                 && scope.includes('hand');

@@ -25,6 +25,7 @@ import { EffectNotifier } from './EffectNotifier';
 import { SlotHealthService } from '../health/SlotHealthService';
 import { SlotHealthStorage } from '../health/SlotHealthStorage';
 import { EffectConditionEvaluator } from '../conditions/EffectConditionEvaluator';
+import { getEffectEventTrigger } from './timing/EffectTimingAccess';
 
 interface ExecutionResult {
     success: boolean;
@@ -234,7 +235,7 @@ export class RepairEffectManager implements StandardEffectManager {
                     cardData.effects.rules.forEach((effect: any, index: number) => {
                         const resolvedAction = resolveEffectActionFromRule(effect);
                         
-                        if (effect.trigger === 'END_OF_TURN' && resolvedAction === 'heal') {
+                        if (getEffectEventTrigger(effect) === 'END_OF_TURN' && resolvedAction === 'heal') {
                             if (!RepairEffectManager.areEndOfTurnHealConditionsMet(
                                 gameEnv,
                                 playerId,

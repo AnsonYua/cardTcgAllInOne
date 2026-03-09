@@ -37,7 +37,7 @@ function collectHandContinuousModifiers(cardFiles) {
             for (const rule of rules) {
                 const scope = rule?.target?.scope;
                 if (rule?.type !== 'continuous') continue;
-                if (rule?.trigger !== 'continuous') continue;
+                if (rule?.timing?.duration !== 'continuous') continue;
                 if (!['modifyCost', 'modifyLevel'].includes(rule?.action)) continue;
                 if (typeof scope !== 'string' || !scope.includes('hand')) continue;
                 rows.push({

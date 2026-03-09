@@ -20,6 +20,7 @@ import {
     flushDeferredEffectDamageReceivedTriggers,
     runWithinSequenceExecutionContext
 } from './sequence/SequenceExecutionContext';
+import { getEffectEventTrigger } from './timing/EffectTimingAccess';
 
 export type SequenceStep = {
     action: string;
@@ -77,7 +78,7 @@ export class SequenceEffectManager {
             movedCardsByStepId: {},
             resolvedStepIds: new Set<string>(),
             sequenceEffectId: typeof effect.effectId === 'string' ? effect.effectId : undefined,
-            sequenceTrigger: typeof effect.trigger === 'string' ? effect.trigger : undefined,
+            sequenceTrigger: getEffectEventTrigger(effect),
             previousTargets: []
         };
 

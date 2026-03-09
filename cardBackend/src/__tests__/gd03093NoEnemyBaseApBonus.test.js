@@ -24,7 +24,7 @@ describe('GD03-093 no-enemy-base continuous AP bonus', () => {
         const rule = card.effects.rules.find((entry) => entry.effectId === 'ap_plus_1_if_no_enemy_base');
         expect(rule).toBeTruthy();
         expect(rule.type).toBe('continuous');
-        expect(rule.trigger).toBe('continuous');
+        expect(rule.timing?.duration).toBe('continuous');
         expect(rule.action).toBe('modifyAP');
         expect(rule.target).toEqual({
             type: 'unit',

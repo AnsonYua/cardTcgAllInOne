@@ -30,7 +30,7 @@ function collectAttackPhaseRulesWithBattleTargetTypeCondition() {
         for (const [cardId, card] of Object.entries(data?.cards || {})) {
             const rules = Array.isArray(card?.effects?.rules) ? card.effects.rules : [];
             for (const rule of rules) {
-                if (String(rule?.trigger || '').toUpperCase() !== 'ATTACK_PHASE') continue;
+                if (String(rule?.timing?.eventTrigger || '').toUpperCase() !== 'ATTACK_PHASE') continue;
                 if (String(rule?.type || '').toLowerCase() !== 'triggered') continue;
                 const conditions = Array.isArray(rule?.conditions) ? rule.conditions : [];
                 const hasAttackTargetType = conditions.some((condition) =>

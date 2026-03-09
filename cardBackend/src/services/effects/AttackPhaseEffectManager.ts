@@ -32,6 +32,7 @@ import { ChoiceDisplayBuilder } from '../choices/ChoiceDisplayBuilder';
 import { TargetResolver } from '../targets/TargetResolver';
 import { TargetSelectionPipeline } from '../targets/TargetSelectionPipeline';
 import { TargetChoicePolicy } from '../choices/TargetChoicePolicy';
+import { getEffectEventTrigger } from './timing/EffectTimingAccess';
 
 export interface AttackPhaseEffectResult {
     success: boolean;
@@ -361,11 +362,7 @@ export class AttackPhaseEffectManager {
             return false;
         }
 
-        return (
-            effect.type === 'triggered' &&
-            typeof effect.trigger === 'string' &&
-            effect.trigger.toUpperCase() === 'ATTACK_PHASE'
-        );
+        return effect.type === 'triggered' && getEffectEventTrigger(effect) === 'ATTACK_PHASE';
     }
 
     private static sourceConditionsSatisfied(

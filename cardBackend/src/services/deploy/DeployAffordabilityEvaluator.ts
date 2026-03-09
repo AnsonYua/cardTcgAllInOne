@@ -3,6 +3,7 @@ import { GameEnvironment } from '../../models/GameEnvironment';
 import type { EffectDefinition, TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { EnergyManager } from '../EnergyManager';
 import type { EnergyRequirement } from '../../utils/EnergyUtils';
+import { EffectTimingWindowUtils } from '../../utils/EffectTimingWindowUtils';
 
 type DeployAffordabilityResult = {
     isAffordable: boolean;
@@ -32,11 +33,10 @@ function applySelfZoneContinuousModifiers(cardData: any, zone: string): { effect
     for (const rule of rules) {
         if (!rule || typeof rule !== 'object') continue;
         const ruleType = String((rule as any).type || '').toLowerCase();
-        const trigger = String((rule as any).trigger || '').toLowerCase();
         const action = String((rule as any).action || '').toLowerCase();
         const scope = String((rule as any).target?.scope || '').toLowerCase();
 
-        if (ruleType !== 'continuous' || trigger !== 'continuous') continue;
+        if (ruleType !== 'continuous' || !EffectTimingWindowUtils.isContinuousEffect(rule as any)) continue;
         if (scope !== expectedScope) continue;
 
         const deltaRaw = Number((rule as any).parameters?.value ?? 0);
@@ -107,4 +107,3 @@ export class DeployAffordabilityEvaluator {
         };
     }
 }
-

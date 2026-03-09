@@ -1,4 +1,5 @@
 import { resolveEffectActionFromRule } from './EffectNormalizationUtils';
+import { EffectTimingWindowUtils } from './EffectTimingWindowUtils';
 
 export function isBlockerRedirectRule(rule: unknown): boolean {
     if (!rule || typeof rule !== 'object') {
@@ -6,8 +7,7 @@ export function isBlockerRedirectRule(rule: unknown): boolean {
     }
 
     const raw = rule as Record<string, unknown>;
-    const trigger = typeof raw['trigger'] === 'string' ? raw['trigger'] : undefined;
-    if (trigger !== 'ATTACK_REDIRECT') {
+    if (EffectTimingWindowUtils.getEventTrigger(raw as any) !== 'ATTACK_REDIRECT') {
         return false;
     }
 
@@ -19,4 +19,3 @@ export function isBlockerRedirectRule(rule: unknown): boolean {
     const effectId = typeof raw['effectId'] === 'string' ? raw['effectId'] : '';
     return effectId.toLowerCase().includes('blocker');
 }
-

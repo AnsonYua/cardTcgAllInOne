@@ -1,3 +1,5 @@
+const { bridgeCardData } = require('./effectTimingRuntimeTestUtils');
+
 function createZoneCard({
     carduid,
     cardId,
@@ -12,6 +14,18 @@ function createZoneCard({
     cardDataExtras = {},
     zoneExtras = {}
 }) {
+    const cardData = bridgeCardData({
+        id: cardId,
+        name,
+        cardType,
+        traits,
+        link,
+        ap,
+        hp,
+        effects: { description: [], rules: effectsRules },
+        ...cardDataExtras
+    });
+
     return {
         carduid,
         cardId,
@@ -27,17 +41,7 @@ function createZoneCard({
         temporaryEffects: [],
         effectUsage: {},
         ...zoneExtras,
-        cardData: {
-            id: cardId,
-            name,
-            cardType,
-            traits,
-            link,
-            ap,
-            hp,
-            effects: { description: [], rules: effectsRules },
-            ...cardDataExtras
-        }
+        cardData
     };
 }
 

@@ -91,8 +91,7 @@ export class DeployEffectManager {
                 fallbackEffectId: 'deploy_effect',
                 expectedTriggers: ['ENTERS_PLAY'],
                 preFilter: (rawRule) => {
-                    const triggerValue = rawRule['trigger'];
-                    return typeof triggerValue === 'string' && triggerValue === 'ENTERS_PLAY';
+                    return EffectTimingWindowUtils.getEventTrigger(rawRule as unknown as EffectDefinition) === 'ENTERS_PLAY';
                 }
             }).map(effect => ensureEffectDefaults(effect));
 
@@ -216,7 +215,7 @@ export class DeployEffectManager {
 
         if (!result.success && !result.requiresSelection) {
             const isEnterPlayDeploy =
-                typeof normalizedEffect.trigger === 'string' && normalizedEffect.trigger === 'ENTERS_PLAY';
+                EffectTimingWindowUtils.getEventTrigger(normalizedEffect) === 'ENTERS_PLAY';
             if (isEnterPlayDeploy && result.failureKind === 'NO_TARGETS_REQUIRED') {
                 console.log(
                     `ℹ️ Deploy effect ${normalizedEffect.effectId || 'deploy_effect'} fizzled: no required targets available`

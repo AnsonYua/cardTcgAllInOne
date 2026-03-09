@@ -208,7 +208,7 @@ describe('GD03-053 (Gundam Gusion Rebake Full City) effect-damage trigger', () =
         });
 
         const deployEffect = gd03.cards['GD03-067'].effects.rules.find(
-            (rule) => rule.effectId === 'deploy_effect' && rule.trigger === 'ENTERS_PLAY'
+            (rule) => rule.effectId === 'deploy_effect' && rule.timing?.eventTrigger === 'ENTERS_PLAY'
         );
         expect(deployEffect).toBeTruthy();
 

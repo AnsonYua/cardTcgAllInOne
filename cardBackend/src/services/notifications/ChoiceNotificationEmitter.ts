@@ -6,13 +6,14 @@ import { BlockerChoiceEvent, BurstEffectChoiceEvent, TargetChoiceEvent, TokenCho
 import { GameNotificationManager } from '../GameNotificationManager';
 import { TargetCountUtils } from '../targets/TargetCountUtils';
 import { deriveTargetChoiceKind } from './TargetChoiceKindResolver';
+import { getEffectEventTrigger } from '../effects/timing/EffectTimingAccess';
 
 export class ChoiceNotificationEmitter {
     private static buildTargetChoicePayload(event: TargetChoiceEvent): Record<string, unknown> {
         const allowEmptySelection = event.data?.effect?.optional === true;
         const rawCount = event.data?.effect?.target?.count;
         const countRange = TargetCountUtils.parseRange(rawCount, { min: 1, max: 1 });
-        const isCostChoice = event.data?.effect?.trigger === 'COST';
+        const isCostChoice = getEffectEventTrigger(event.data?.effect) === 'COST';
         const effectAction = event.data?.effect?.action;
         const effectId = event.data?.effect?.effectId;
         const contextKind = (event.data as any)?.context?.kind;

@@ -20,7 +20,7 @@ describe('GD03 full-set audit fixes', () => {
         const gd03017 = gd03.cards['GD03-017'];
         const pairedRule = gd03017.effects.rules.find((rule) => rule.effectId === 'paired_cyclops_allow_attack_target_active_enemy_ap_le_5');
         expect(pairedRule).toBeTruthy();
-        expect(pairedRule.trigger).toBe('PAIRING_COMPLETE');
+        expect(pairedRule.timing?.eventTrigger).toBe('PAIRING_COMPLETE');
         expect(pairedRule.action).toBe('sequence');
         expect(pairedRule.conditions).toEqual(expect.arrayContaining([{ type: 'pairedPilotTrait', scope: 'source', value: 'Cyclops Team' }]));
 
@@ -29,7 +29,7 @@ describe('GD03 full-set audit fixes', () => {
         expect(gd03052.effects.rules).toHaveLength(2);
         const battleDamageRule = gd03052.effects.rules.find((rule) => rule.effectId === 'battle_damage_destroy_if_cb_pilot_in_play');
         expect(battleDamageRule).toBeTruthy();
-        expect(battleDamageRule.trigger).toBe('BATTLE_DAMAGE_TO_UNIT');
+        expect(battleDamageRule.timing?.eventTrigger).toBe('BATTLE_DAMAGE_TO_UNIT');
         expect(battleDamageRule.action).toBe('destroy');
 
         const gd03053 = gd03.cards['GD03-053'];

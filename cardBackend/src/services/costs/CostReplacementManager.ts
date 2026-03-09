@@ -1,6 +1,7 @@
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { EffectDefinition, TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { SLOT_ZONES } from '../../config/gameConstants';
+import { EffectTimingWindowUtils } from '../../utils/EffectTimingWindowUtils';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 
 type ReplaceCostRule = {
@@ -107,7 +108,7 @@ export class CostReplacementManager {
             return false;
         }
 
-        if (rule.trigger && String(rule.trigger).toLowerCase() !== 'continuous') {
+        if (!EffectTimingWindowUtils.isContinuousEffect(rule as any)) {
             return false;
         }
 

@@ -1,5 +1,6 @@
 import { CardDatabaseManager } from '../../models/CardSystem';
 import type { EffectDefinition } from '../EventQueue/interfaces/GameEvent';
+import { getEffectEventTrigger } from './timing/EffectTimingAccess';
 
 /**
  * Centralized presenter for player-facing deploy effect option labels.
@@ -51,13 +52,13 @@ export class DeployEffectOptionPresenter {
 
         const effectId = typeof effect?.effectId === 'string' ? effect.effectId : '';
         const action = typeof effect?.action === 'string' ? effect.action : '';
-        const trigger = typeof (effect as any)?.trigger === 'string' ? (effect as any).trigger : '';
+        const trigger = getEffectEventTrigger(effect) || '';
 
         let idx = rules.findIndex((rule: any) => {
             if (!rule || typeof rule !== 'object') return false;
             if (effectId && rule.effectId !== effectId) return false;
             if (action && rule.action !== action) return false;
-            if (trigger && rule.trigger !== trigger) return false;
+            if (trigger && getEffectEventTrigger(rule) !== trigger) return false;
             return true;
         });
 
@@ -107,4 +108,3 @@ export class DeployEffectOptionPresenter {
         return name.length > 0 ? name : cardId;
     }
 }
-

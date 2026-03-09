@@ -7,7 +7,7 @@ const { createUnitZoneCard } = require('./helpers/zoneCardFactory');
 
 function getDeployEffect() {
     return gd03.cards['GD03-067'].effects.rules.find(
-        (rule) => rule.effectId === 'deploy_effect' && rule.trigger === 'ENTERS_PLAY'
+        (rule) => rule.effectId === 'deploy_effect' && rule.timing?.eventTrigger === 'ENTERS_PLAY'
     );
 }
 

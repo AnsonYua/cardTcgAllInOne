@@ -10,7 +10,7 @@ function getCard(db, cardId) {
 function collectDestroyedOrBattleDestroyRules(card) {
     const rules = Array.isArray(card?.effects?.rules) ? card.effects.rules : [];
     return rules.filter((rule) => {
-        const trigger = String(rule?.trigger || '').toUpperCase();
+        const trigger = String(rule?.timing?.eventTrigger || '').toUpperCase();
         return trigger === 'DESTROYED' || trigger === 'BATTLE_DESTROY';
     });
 }

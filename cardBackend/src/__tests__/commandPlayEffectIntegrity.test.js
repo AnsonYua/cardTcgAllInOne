@@ -16,8 +16,8 @@ const CARD_FILES = [
 ];
 
 function getWindows(rule) {
-    return Array.isArray(rule?.timing?.windows)
-        ? rule.timing.windows.map(window => String(window).toUpperCase())
+    return Array.isArray(rule?.timing?.activationWindows)
+        ? rule.timing.activationWindows.map(window => String(window).toUpperCase())
         : [];
 }
 

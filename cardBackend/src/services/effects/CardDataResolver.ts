@@ -2,7 +2,7 @@
 // Centralized helpers for resolving full card data (including effects rules) when game state stores minimized cardData.
 
 import { CardDatabaseManager } from '../../models/CardSystem';
-import { applyCompiledTimingBridgeToCardData } from './timing/EffectTimingCompiler';
+import { applyCompiledTimingBridgeToCardData } from './timing/EffectTimingBridge';
 
 export class CardDataResolver {
     static resolveWithEffectRules(cardData: any): any {
@@ -24,4 +24,3 @@ export class CardDataResolver {
         return applyCompiledTimingBridgeToCardData(resolved);
     }
 }
-

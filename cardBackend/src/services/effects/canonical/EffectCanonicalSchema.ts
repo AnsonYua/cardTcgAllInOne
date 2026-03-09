@@ -5,6 +5,7 @@ import type {
     EffectTargetConfig,
     EffectTiming
 } from '../../EventQueue/interfaces/GameEvent';
+import { isContinuousEffectTiming } from '../timing/EffectTimingAccess';
 
 export type CanonicalEffectKind = 'continuous' | 'triggered' | 'activated' | 'play' | 'replacement';
 
@@ -69,9 +70,8 @@ export class EffectCanonicalSchema {
 
     static fromLegacyKind(effect: EffectDefinition): CanonicalEffectKind {
         const type = typeof effect?.type === 'string' ? effect.type.toLowerCase() : '';
-        const trigger = typeof effect?.trigger === 'string' ? effect.trigger.toLowerCase() : '';
 
-        if (type === 'continuous' || trigger === 'continuous') {
+        if (type === 'continuous' || isContinuousEffectTiming(effect)) {
             return 'continuous';
         }
         if (type === 'activated') {
