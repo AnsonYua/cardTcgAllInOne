@@ -31,7 +31,7 @@ The first production CPU opponent is not intended to:
 
 - use an online LLM as the live move chooser
 - start with reinforcement learning as the primary implementation path
-- cheat by reading exact opponent hand, deck order, or facedown shield identity
+- cheat by reading the exact cards in the opponent's hand, the exact order of cards in either player's main deck, or the exact identities of facedown shield cards on either side
 - become a full research platform before the first production release is ready
 - solve every future AI mode in the same milestone
 
@@ -72,8 +72,8 @@ The first production CPU opponent is not intended to:
 Production AI must not know:
 
 - the exact cards in the opponent's hand
-- the exact order of cards in the opponent's main deck
-- the exact identities of facedown shield cards
+- the exact order of cards in either player's main deck, unless that order was legally revealed and has not been invalidated by shuffling or other randomization
+- the exact identities of facedown shield cards on either side, unless those identities were legally revealed and are still known
 
 Production AI may use:
 

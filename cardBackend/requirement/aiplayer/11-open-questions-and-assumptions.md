@@ -34,7 +34,7 @@ This document captures unresolved product and delivery questions without blockin
 - live architecture: TypeScript backend
 - preferred move budget: `2-3s`
 - acceptable hard cap: `5s`
-- production AI does not know the exact cards in the opponent's hand, the exact order of cards in the opponent's main deck, or the exact identities of facedown shield cards
+- production AI does not know the exact cards in the opponent's hand, the exact order of cards in either player's main deck by default, or the exact identities of facedown shield cards on either side by default unless those facts were legally revealed and remain valid
 - Python is offline-only at first
 - RL is deferred until simulation, action encoding, and benchmarks are mature
 

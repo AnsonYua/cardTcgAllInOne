@@ -517,8 +517,8 @@ Later search phases may:
 Production AI must not use:
 
 - the exact cards in the opponent's hand
-- the exact order of cards in the opponent's main deck
-- the exact identities of facedown shield cards
+- the exact order of cards in either player's main deck, unless that order was legally revealed and has not been invalidated by shuffling or other randomization
+- the exact identities of facedown shield cards on either side, unless those identities were legally revealed and are still known
 
 ## Search Tuning Policy
 

@@ -21,7 +21,7 @@ The v1 CPU opponent must:
 Supported action families must include:
 
 - play unit card as unit
-- play printed pilot card as pilot
+- play a pilot card as pilot
 - play command card as pilot when it has `designate_pilot`
 - play base card as base
 - play command card as command
@@ -55,8 +55,8 @@ Supported action families must include:
 Production mode must not use:
 
 - the exact cards in the opponent's hand
-- the exact order of cards in the opponent's main deck
-- the exact identities of facedown shield cards
+- the exact order of cards in either player's main deck, unless that order was legally revealed and has not been invalidated by shuffling or other randomization
+- the exact identities of facedown shield cards on either side, unless those identities were legally revealed and are still known
 
 Production mode may use:
 
@@ -228,7 +228,7 @@ The supported action-family list in this document is normative for the AI progra
 This means:
 
 - if `PROMPT_CHOICE` is a required action family, AI decision contracts must expose a prompt-choice resolution path
-- if command cards can be played as pilots, play-card candidate generation must expose that family separately from printed pilot play
+- if command cards can be played as pilots, play-card candidate generation must expose that family separately from normal pilot-card play
 - if activated abilities are required, action enumeration must distinguish source card category and timing window
 
 Current implementation note:
@@ -249,7 +249,7 @@ Current implementation note:
 
 ## Required Test Scenarios
 
-- playing a printed pilot as pilot
+- playing a pilot card as pilot
 - playing a command card as pilot through `designate_pilot`
 - activating a unit ability in main phase
 - activating a pilot ability

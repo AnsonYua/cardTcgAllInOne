@@ -30,7 +30,7 @@ The requirement set in this folder is based on these decisions:
 
 - live gameplay AI stays inside the TypeScript backend
 - v1 is a fair `CPU opponent`, not an oracle and not an online LLM move chooser
-- production AI must not know the exact cards in the opponent's hand, the exact order of cards in the opponent's main deck, or the exact identities of facedown shield cards
+- production AI must not know the exact cards in the opponent's hand. It must also treat the exact order of cards in either player's main deck and the exact identities of facedown shield cards on either side as unknown by default, unless that information was legally revealed or explicitly established by a game effect and has not since been invalidated by shuffling or other randomization
 - v1 strength comes from `legal action enumeration + simulation + board evaluator + bounded search`
 - Python is reserved for offline tooling and analysis later
 - reinforcement learning is deferred until the simulator, action encoding, telemetry, and benchmark stack are mature
@@ -92,7 +92,7 @@ Use these terms consistently across this folder:
 ## Global Rules Across All Documents
 
 - The AI must act through the normal backend legality and execution path.
-- The AI must not inspect the exact hidden cards in production-hidden zones.
+- The AI must not inspect exact hidden-card identities in production-hidden zones unless that information was legally revealed and is still valid.
 - The AI may use public information, public counts, observed history, and inferred probabilities.
 - The AI must be compatible with current autoplay and player-view flows.
 - Advanced methods must degrade to safe legal heuristics on timeout or internal failure.
