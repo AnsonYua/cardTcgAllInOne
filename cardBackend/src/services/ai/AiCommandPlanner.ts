@@ -77,9 +77,13 @@ type BoardContext = {
     handSize: number;
 };
 
-type DecisionCandidate = {
+export type CommandDecisionCandidate = {
     decision: AiDecision;
     score: number;
+    action?: string;
+    carduid?: string;
+    effectId?: string;
+    selectedTargets?: TargetReference[];
 };
 
 type DecisionContext = {
@@ -195,12 +199,47 @@ const buildBoardContext = (gameEnvView: AiGameEnvView, aiPlayerId: string): Boar
 const getUnitSnapshot = (gameEnvView: AiGameEnvView, carduid: string): AiUnitSnapshot | null =>
     findUnitSnapshotByCarduid(gameEnvView, carduid);
 
-const evaluateTargets = (
+const buildTargetCombinations = <T>(
+    entries: T[],
+    selectionSize: number,
+    limit: number
+): T[][] => {
+    if (selectionSize <= 0 || entries.length < selectionSize) {
+        return [];
+    }
+
+    const combinations: T[][] = [];
+    const stack: T[] = [];
+
+    const walk = (startIndex: number): void => {
+        if (combinations.length >= limit) {
+            return;
+        }
+        if (stack.length === selectionSize) {
+            combinations.push([...stack]);
+            return;
+        }
+        for (let index = startIndex; index < entries.length; index += 1) {
+            stack.push(entries[index]);
+            walk(index + 1);
+            stack.pop();
+            if (combinations.length >= limit) {
+                return;
+            }
+        }
+    };
+
+    walk(0);
+    return combinations;
+};
+
+const enumerateTargetEvaluations = (
     context: DecisionContext,
     command: CommandCardCandidate,
     effect: EffectDefinition,
-    targetConfig: ResolvedTargetConfig
-): TargetEvaluation | null => {
+    targetConfig: ResolvedTargetConfig,
+    options: { maxTargetVariants?: number } = {}
+): TargetEvaluation[] => {
     const availableTargets = TargetResolver.generateAvailableTargets(
         context.adapter as unknown as GameEnvironment,
         context.aiPlayerId,
@@ -208,7 +247,7 @@ const evaluateTargets = (
         command.carduid
     );
     if (!Array.isArray(availableTargets) || availableTargets.length === 0) {
-        return null;
+        return [];
     }
 
     const targetCount = Math.max(1, Math.min(targetConfig.count || 1, availableTargets.length));
@@ -220,14 +259,22 @@ const evaluateTargets = (
         .sort((left, right) => right.score - left.score);
 
     if (rankedTargets.length === 0 || rankedTargets[0].score <= -25) {
-        return null;
+        return [];
     }
 
-    const selected = rankedTargets.slice(0, targetCount);
-    return {
-        selectedTargets: selected.map((entry) => entry.target),
-        score: selected.reduce((total, entry) => total + entry.score, 0)
-    };
+    const maxTargetVariants = Math.max(1, options.maxTargetVariants ?? 1);
+    const candidatePoolSize = Math.min(
+        rankedTargets.length,
+        Math.max(targetCount, maxTargetVariants * Math.max(2, targetCount))
+    );
+    const candidatePool = rankedTargets.slice(0, candidatePoolSize);
+
+    return buildTargetCombinations(candidatePool, targetCount, maxTargetVariants)
+        .map((selected) => ({
+            selectedTargets: selected.map((entry) => entry.target),
+            score: selected.reduce((total, entry) => total + entry.score, 0)
+        }))
+        .sort((left, right) => right.score - left.score);
 };
 
 const scoreCommandTarget = (
@@ -400,55 +447,68 @@ const buildDecisionForCommandEffect = (
     context: DecisionContext,
     command: CommandCardCandidate,
     effect: EffectDefinition,
-    playstyle: AiPlaystyle
-): DecisionCandidate | null => {
+    playstyle: AiPlaystyle,
+    options: { maxTargetVariants?: number } = {}
+): CommandDecisionCandidate[] => {
     if (!effect.effectId || !effect.action) {
-        return null;
+        return [];
     }
 
     const requiresTargets = !EffectExecutor.actionSupportsNoTargets(effect.action);
-    let targetEvaluation: TargetEvaluation | null = null;
+    let targetEvaluations: TargetEvaluation[] = [];
     let targetScope: unknown = effect.target?.scope;
 
     if (requiresTargets) {
         const targetConfig = TargetResolver.resolveTargetConfig(effect);
         targetScope = targetConfig.scope;
-        targetEvaluation = evaluateTargets(context, command, effect, targetConfig);
-        if (!targetEvaluation || targetEvaluation.selectedTargets.length === 0) {
-            return null;
+        targetEvaluations = enumerateTargetEvaluations(context, command, effect, targetConfig, options);
+        if (targetEvaluations.length === 0) {
+            return [];
         }
+    } else {
+        targetEvaluations = [{ selectedTargets: [], score: 0 }];
     }
 
-    const score = scoreCommandAction(context, command, effect, targetEvaluation, targetScope, playstyle);
-    const payloadTargets = targetEvaluation
-        ? buildPayloadTargets(targetEvaluation.selectedTargets)
-        : {};
+    return targetEvaluations.map((targetEvaluation, targetIndex) => {
+        const score = scoreCommandAction(context, command, effect, targetEvaluation, targetScope, playstyle);
+        const payloadTargets = targetEvaluation.selectedTargets.length > 0
+            ? buildPayloadTargets(targetEvaluation.selectedTargets)
+            : {};
 
-    return {
-        score,
-        decision: {
-            kind: 'playerAction',
-            reason: `use_command_${effect.action}`,
-            payload: {
-                actionType: 'useCommandCard',
-                carduid: command.carduid,
-                effectId: effect.effectId,
-                ...payloadTargets
+        return {
+            score,
+            action: effect.action,
+            carduid: command.carduid,
+            effectId: effect.effectId,
+            selectedTargets: targetEvaluation.selectedTargets,
+            decision: {
+                kind: 'playerAction',
+                reason: `use_command_${effect.action}:${targetIndex}`,
+                payload: {
+                    actionType: 'useCommandCard',
+                    carduid: command.carduid,
+                    effectId: effect.effectId,
+                    ...payloadTargets
+                }
             }
-        }
-    };
+        };
+    });
 };
 
-export function findBestCommandAction(gameEnvView: AiGameEnvView, aiPlayerId: string): AiDecision | null {
+export function enumerateCommandActionCandidates(
+    gameEnvView: AiGameEnvView,
+    aiPlayerId: string,
+    options: { respectThreshold?: boolean; maxTargetVariants?: number } = {}
+): CommandDecisionCandidate[] {
     const self = gameEnvView?.players?.[aiPlayerId];
     const hand = Array.isArray(self?.deck?.hand) ? self.deck.hand : [];
     if (hand.length === 0) {
-        return null;
+        return [];
     }
 
     const phase = resolvePhase(gameEnvView?.phase);
     if (!phase) {
-        return null;
+        return [];
     }
     const playstyle = getAiPlaystyle();
 
@@ -461,7 +521,7 @@ export function findBestCommandAction(gameEnvView: AiGameEnvView, aiPlayerId: st
         adapter: buildViewAdapter(gameEnvView)
     };
 
-    const decisions: DecisionCandidate[] = [];
+    const decisions: CommandDecisionCandidate[] = [];
 
     for (const handCard of hand) {
         const command = toCommandCard(handCard);
@@ -480,21 +540,30 @@ export function findBestCommandAction(gameEnvView: AiGameEnvView, aiPlayerId: st
             if (!EffectTimingWindowUtils.allowsPhase(rule, phase, { defaultToMainPhaseWhenMissing: true })) {
                 continue;
             }
-            const candidate = buildDecisionForCommandEffect(context, command, rule, playstyle);
-            if (!candidate) {
+            const candidateList = buildDecisionForCommandEffect(context, command, rule, playstyle, options);
+            if (candidateList.length === 0) {
                 continue;
             }
-            decisions.push(candidate);
+            decisions.push(...candidateList);
         }
     }
 
     if (decisions.length === 0) {
-        return null;
+        return [];
     }
 
-    const best = decisions.sort((left, right) => right.score - left.score)[0];
     const minScore = adjustDecisionThreshold(MIN_COMMAND_SCORE, playstyle);
-    if (!best || best.score < minScore) {
+    const sorted = decisions.sort((left, right) => right.score - left.score);
+    if (options.respectThreshold === true) {
+        return sorted.filter((candidate) => candidate.score >= minScore);
+    }
+    return sorted;
+}
+
+export function findBestCommandAction(gameEnvView: AiGameEnvView, aiPlayerId: string): AiDecision | null {
+    const decisions = enumerateCommandActionCandidates(gameEnvView, aiPlayerId, { respectThreshold: true });
+    const best = decisions[0];
+    if (!best) {
         return null;
     }
 

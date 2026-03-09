@@ -66,9 +66,14 @@ type BoardContext = {
     openSelfSlots: number;
 };
 
-type Candidate = {
+export type FieldAbilityDecisionCandidate = {
     decision: AiDecision;
     score: number;
+    action?: string;
+    carduid?: string;
+    sourceType?: ZoneSourceType;
+    effectId?: string;
+    selectedTargets?: TargetReference[];
 };
 
 const GAME_PHASE_SET = new Set<string>(Object.values(GamePhase));
@@ -208,12 +213,47 @@ const buildBoardContext = (gameEnvView: AiGameEnvView, aiPlayerId: string): Boar
     };
 };
 
-const evaluateTargets = (
+const buildTargetCombinations = <T>(
+    entries: T[],
+    selectionSize: number,
+    limit: number
+): T[][] => {
+    if (selectionSize <= 0 || entries.length < selectionSize) {
+        return [];
+    }
+
+    const combinations: T[][] = [];
+    const stack: T[] = [];
+
+    const walk = (startIndex: number): void => {
+        if (combinations.length >= limit) {
+            return;
+        }
+        if (stack.length === selectionSize) {
+            combinations.push([...stack]);
+            return;
+        }
+        for (let index = startIndex; index < entries.length; index += 1) {
+            stack.push(entries[index]);
+            walk(index + 1);
+            stack.pop();
+            if (combinations.length >= limit) {
+                return;
+            }
+        }
+    };
+
+    walk(0);
+    return combinations;
+};
+
+const enumerateTargetEvaluations = (
     gameEnvView: AiGameEnvView,
     aiPlayerId: string,
     sourceCarduid: string,
-    effect: EffectDefinition
-): TargetEvaluation | null => {
+    effect: EffectDefinition,
+    options: { maxTargetVariants?: number } = {}
+): TargetEvaluation[] => {
     const adapter = buildViewAdapter(gameEnvView);
     const targetConfig = TargetResolver.resolveTargetConfig(effect);
     const availableTargets = TargetResolver.generateAvailableTargets(
@@ -223,7 +263,7 @@ const evaluateTargets = (
         sourceCarduid
     );
     if (!Array.isArray(availableTargets) || availableTargets.length === 0) {
-        return null;
+        return [];
     }
 
     const selectCount = Math.max(1, Math.min(targetConfig.count || 1, availableTargets.length));
@@ -235,14 +275,22 @@ const evaluateTargets = (
         .sort((left, right) => right.score - left.score);
 
     if (ranked.length === 0 || ranked[0].score <= -20) {
-        return null;
+        return [];
     }
 
-    const selected = ranked.slice(0, selectCount);
-    return {
-        selectedTargets: selected.map((entry) => entry.target),
-        score: selected.reduce((sum, entry) => sum + entry.score, 0)
-    };
+    const maxTargetVariants = Math.max(1, options.maxTargetVariants ?? 1);
+    const candidatePoolSize = Math.min(
+        ranked.length,
+        Math.max(selectCount, maxTargetVariants * Math.max(2, selectCount))
+    );
+    const candidatePool = ranked.slice(0, candidatePoolSize);
+
+    return buildTargetCombinations(candidatePool, selectCount, maxTargetVariants)
+        .map((selected) => ({
+            selectedTargets: selected.map((entry) => entry.target),
+            score: selected.reduce((sum, entry) => sum + entry.score, 0)
+        }))
+        .sort((left, right) => right.score - left.score);
 };
 
 const scoreEffect = (
@@ -299,10 +347,14 @@ const scoreEffect = (
     return score * actionMultiplier;
 };
 
-export function findBestFieldAbilityAction(gameEnvView: AiGameEnvView, aiPlayerId: string): AiDecision | null {
+export function enumerateFieldAbilityCandidates(
+    gameEnvView: AiGameEnvView,
+    aiPlayerId: string,
+    options: { respectThreshold?: boolean; maxTargetVariants?: number } = {}
+): FieldAbilityDecisionCandidate[] {
     const phase = resolvePhase(gameEnvView?.phase);
     if (!phase) {
-        return null;
+        return [];
     }
     const playstyle = getAiPlaystyle();
 
@@ -310,7 +362,7 @@ export function findBestFieldAbilityAction(gameEnvView: AiGameEnvView, aiPlayerI
     const availableEnergy = getAvailableEnergyCount(self);
     const currentTurn = toNumber(gameEnvView?.currentTurn, 0);
     const boardContext = buildBoardContext(gameEnvView, aiPlayerId);
-    const candidates: Candidate[] = [];
+    const candidates: FieldAbilityDecisionCandidate[] = [];
     const sources = collectSources(gameEnvView, aiPlayerId);
 
     for (const source of sources) {
@@ -348,38 +400,56 @@ export function findBestFieldAbilityAction(gameEnvView: AiGameEnvView, aiPlayerI
                 continue;
             }
 
-            let targetEvaluation: TargetEvaluation | null = null;
             const action = EffectExecutor.getEffectAction(rule);
-            if (!EffectExecutor.actionSupportsNoTargets(action)) {
-                targetEvaluation = evaluateTargets(gameEnvView, aiPlayerId, source.carduid, rule);
-                if (!targetEvaluation) {
+            const targetEvaluations = EffectExecutor.actionSupportsNoTargets(action)
+                ? [{ selectedTargets: [], score: 0 }]
+                : enumerateTargetEvaluations(gameEnvView, aiPlayerId, source.carduid, rule, options);
+
+            if (targetEvaluations.length === 0) {
+                if (!EffectExecutor.actionSupportsNoTargets(action)) {
                     continue;
                 }
             }
 
-            const score = scoreEffect(boardContext, rule, source.sourceType, targetEvaluation, playstyle) - energyCost * 2.2;
-            candidates.push({
-                score,
-                decision: {
-                    kind: 'playerAction',
-                    reason: `activate_${action || 'ability'}:${Math.round(score)}`,
-                    payload: {
-                        actionType: 'activateCardAbility',
-                        carduid: source.carduid,
-                        effectId: rule.effectId
+            for (const [targetIndex, targetEvaluation] of targetEvaluations.entries()) {
+                const score = scoreEffect(boardContext, rule, source.sourceType, targetEvaluation, playstyle) - energyCost * 2.2;
+                candidates.push({
+                    score,
+                    action,
+                    carduid: source.carduid,
+                    sourceType: source.sourceType,
+                    effectId: rule.effectId,
+                    selectedTargets: targetEvaluation.selectedTargets,
+                    decision: {
+                        kind: 'playerAction',
+                        reason: `activate_${action || 'ability'}:${targetIndex}`,
+                        payload: {
+                            actionType: 'activateCardAbility',
+                            carduid: source.carduid,
+                            effectId: rule.effectId
+                        }
                     }
-                }
-            });
+                });
+            }
         }
     }
 
     if (candidates.length === 0) {
-        return null;
+        return [];
     }
 
-    const best = candidates.sort((left, right) => right.score - left.score)[0];
     const minScore = adjustDecisionThreshold(MIN_FIELD_ABILITY_SCORE, playstyle);
-    if (!best || best.score < minScore) {
+    const sorted = candidates.sort((left, right) => right.score - left.score);
+    if (options.respectThreshold === true) {
+        return sorted.filter((candidate) => candidate.score >= minScore);
+    }
+    return sorted;
+}
+
+export function findBestFieldAbilityAction(gameEnvView: AiGameEnvView, aiPlayerId: string): AiDecision | null {
+    const candidates = enumerateFieldAbilityCandidates(gameEnvView, aiPlayerId, { respectThreshold: true });
+    const best = candidates[0];
+    if (!best) {
         return null;
     }
 

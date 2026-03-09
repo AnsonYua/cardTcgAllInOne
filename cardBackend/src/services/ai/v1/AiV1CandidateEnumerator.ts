@@ -1,7 +1,7 @@
 import { getEffectPlayMode } from '../../effects/EffectActionAccess';
-import { findBestCommandAction } from '../AiCommandPlanner';
+import { enumerateCommandActionCandidates } from '../AiCommandPlanner';
 import { getAvailableEnergyCount, getTotalEnergyCount } from '../AiEnergyUtils';
-import { findBestFieldAbilityAction } from '../AiFieldAbilityPlanner';
+import { enumerateFieldAbilityCandidates } from '../AiFieldAbilityPlanner';
 import { SLOT_NAMES, type AiDecision } from '../AiTypes';
 import { extractTargetCount, scoreTargetForAction } from '../AiTargetUtils';
 import type {
@@ -25,6 +25,40 @@ const asRecord = (value: unknown): Record<string, unknown> =>
         : {};
 
 const asString = (value: unknown): string => (typeof value === 'string' ? value : '');
+
+const buildTargetCombinations = <T>(
+    entries: T[],
+    selectionSize: number,
+    limit: number
+): T[][] => {
+    if (selectionSize <= 0 || entries.length < selectionSize) {
+        return [];
+    }
+
+    const combinations: T[][] = [];
+    const stack: T[] = [];
+
+    const walk = (startIndex: number): void => {
+        if (combinations.length >= limit) {
+            return;
+        }
+        if (stack.length === selectionSize) {
+            combinations.push([...stack]);
+            return;
+        }
+        for (let index = startIndex; index < entries.length; index += 1) {
+            stack.push(entries[index]);
+            walk(index + 1);
+            stack.pop();
+            if (combinations.length >= limit) {
+                return;
+            }
+        }
+    };
+
+    walk(0);
+    return combinations;
+};
 
 const createCandidate = (
     kind: AiActionCandidate['kind'],
@@ -106,32 +140,62 @@ const tagsForCardEffects = (
 };
 
 const buildAbilityCandidates = (context: AiDecisionContext): AiActionCandidate[] => {
-    const candidates: AiActionCandidate[] = [];
-    const bestCommand = findBestCommandAction(context.gameEnvView, context.aiPlayerId);
-    if (bestCommand) {
-        candidates.push(createCandidate(
-            'activate',
-            context.windowKind,
-            bestCommand,
-            32,
-            [],
-            { source: 'command_planner' }
-        ));
-    }
+    const commandCandidates = enumerateCommandActionCandidates(context.gameEnvView, context.aiPlayerId, { maxTargetVariants: 3 })
+        .map((candidate) =>
+            ({
+                ...createCandidate(
+                    'activate',
+                    context.windowKind,
+                    candidate.decision,
+                    candidate.score,
+                    tagsForCardEffects(context, candidate.action ? [candidate.action] : []),
+                    {
+                        source: 'command_planner',
+                        action: candidate.action,
+                        carduid: candidate.carduid,
+                        effectId: candidate.effectId,
+                        selectedTargets: candidate.selectedTargets?.map((target) => ({
+                            carduid: target.carduid,
+                            zone: target.zone,
+                            playerId: target.playerId
+                        }))
+                    }
+                ),
+                targetCarduid: typeof candidate.decision.payload?.targetCarduid === 'string'
+                    ? (candidate.decision.payload?.targetCarduid as string)
+                    : undefined
+            })
+        );
 
-    const bestFieldAbility = findBestFieldAbilityAction(context.gameEnvView, context.aiPlayerId);
-    if (bestFieldAbility) {
-        candidates.push(createCandidate(
-            'activate',
-            context.windowKind,
-            bestFieldAbility,
-            30,
-            [],
-            { source: 'field_ability_planner' }
-        ));
-    }
+    const fieldAbilityCandidates = enumerateFieldAbilityCandidates(context.gameEnvView, context.aiPlayerId, { maxTargetVariants: 3 })
+        .map((candidate) =>
+            ({
+                ...createCandidate(
+                    'activate',
+                    context.windowKind,
+                    candidate.decision,
+                    candidate.score,
+                    tagsForCardEffects(context, candidate.action ? [candidate.action] : []),
+                    {
+                        source: 'field_ability_planner',
+                        action: candidate.action,
+                        carduid: candidate.carduid,
+                        effectId: candidate.effectId,
+                        sourceType: candidate.sourceType,
+                        selectedTargets: candidate.selectedTargets?.map((target) => ({
+                            carduid: target.carduid,
+                            zone: target.zone,
+                            playerId: target.playerId
+                        }))
+                    }
+                ),
+                targetCarduid: candidate.selectedTargets?.length === 1
+                    ? candidate.selectedTargets[0].carduid
+                    : undefined
+            })
+        );
 
-    return candidates;
+    return [...commandCandidates, ...fieldAbilityCandidates];
 };
 
 const buildSetupCandidates = (context: AiDecisionContext): AiActionCandidate[] => {
@@ -228,30 +292,44 @@ const buildPromptCandidates = (context: AiDecisionContext): AiActionCandidate[] 
                 )
             }))
             .sort((left, right) => right.score - left.score);
-
-        const selectedTargets = rankedTargets.slice(0, targetCount).map((entry) => entry.target);
         const bestScore = rankedTargets[0]?.score ?? 0;
-        const candidates = [
-            createCandidate(
+        const targetPoolSize = Math.min(
+            rankedTargets.length,
+            Math.max(targetCount, 6)
+        );
+        const targetSelections = buildTargetCombinations(
+            rankedTargets.slice(0, targetPoolSize),
+            targetCount,
+            3
+        );
+        const candidates = targetSelections.map((selectedEntries, selectionIndex) => {
+            const selectedTargets = selectedEntries.map((entry) => entry.target);
+            const selectionScore = selectedEntries.reduce((sum, entry) => sum + entry.score, 0);
+            return createCandidate(
                 'prompt',
                 context.windowKind,
                 {
                     kind: 'confirmTargetChoice',
-                    reason: 'v1_target_choice',
+                    reason: `v1_target_choice:${selectionIndex}`,
                     payload: {
                         eventId: prompt.eventId,
                         selectedTargets
                     }
                 },
-                20 + bestScore,
+                20 + selectionScore,
                 [],
                 {
                     promptType: prompt.type,
                     selectedTargetCount: selectedTargets.length,
+                    selectedTargets: selectedTargets.map((target) => ({
+                        carduid: target.carduid,
+                        zone: target.zone,
+                        playerId: target.playerId
+                    })),
                     effectAction: prompt.effectAction
                 }
-            )
-        ];
+            );
+        });
 
         if (prompt.allowsDecline) {
             candidates.push(createCandidate(
@@ -439,13 +517,6 @@ const buildAttackCandidates = (context: AiDecisionContext): AiActionCandidate[] 
     return candidates;
 };
 
-const getLowestValueReplacementSlot = (context: AiDecisionContext): string | undefined => {
-    const sorted = [...context.self.units].sort((left, right) =>
-        (left.valueScore + left.hp.remainingHp) - (right.valueScore + right.hp.remainingHp)
-    );
-    return sorted[0]?.slotName;
-};
-
 const buildPlayCandidates = (context: AiDecisionContext): AiActionCandidate[] => {
     if (context.windowKind !== 'MAIN_PHASE') {
         return [];
@@ -455,9 +526,13 @@ const buildPlayCandidates = (context: AiDecisionContext): AiActionCandidate[] =>
     const hand = Array.isArray(self?.deck?.hand) ? self.deck.hand : [];
     const availableEnergy = getAvailableEnergyCount(self);
     const totalEnergy = getTotalEnergyCount(self);
-    const unitWithoutPilot = context.self.units.find((unit) => !unit.slot?.pilot);
+    const unitsWithoutPilot = context.self.units.filter((unit) => !unit.slot?.pilot);
     const emptySlotNames = SLOT_NAMES.filter((slotName) => !(self?.zones?.[slotName] as { unit?: unknown } | undefined)?.unit);
-    const replacementSlot = emptySlotNames.length === 0 ? getLowestValueReplacementSlot(context) : undefined;
+    const replacementSlots = emptySlotNames.length === 0
+        ? [...context.self.units]
+            .sort((left, right) => (left.valueScore + left.hp.remainingHp) - (right.valueScore + right.hp.remainingHp))
+            .map((unit) => unit.slotName)
+        : [];
 
     const playableCards = hand
         .map((handCard) => {
@@ -508,31 +583,39 @@ const buildPlayCandidates = (context: AiDecisionContext): AiActionCandidate[] =>
         }
 
         if (card.cardType === 'unit') {
-            if (emptySlotNames.length > 0 || replacementSlot) {
+            const destinations = emptySlotNames.length > 0 ? emptySlotNames : replacementSlots;
+            for (const destination of destinations) {
+                const isReplacement = emptySlotNames.length === 0;
                 candidates.push(createCandidate(
                     'playCard',
                     context.windowKind,
                     {
                         kind: 'playCard',
-                        reason: replacementSlot ? 'v1_replace_unit' : 'v1_play_unit',
+                        reason: isReplacement ? 'v1_replace_unit' : 'v1_play_unit',
                         payload: {
                             action: {
                                 type: 'PlayCard',
                                 carduid: card.carduid,
                                 playAs: 'unit',
-                                ...(replacementSlot ? { replaceSlot: replacementSlot } : {})
+                                ...(isReplacement ? { replaceSlot: destination } : { slotName: destination })
                             }
                         }
                     },
-                    26 + card.cost * 7 + (emptySlotNames.length === 0 ? 8 : 0),
+                    26 + card.cost * 7 + (isReplacement ? 8 : 0),
                     effectTags,
-                    { cardName: name, playAs: 'unit', effectActions, replaceSlot: replacementSlot }
+                    {
+                        cardName: name,
+                        playAs: 'unit',
+                        effectActions,
+                        destinationSlot: destination,
+                        isReplacement
+                    }
                 ));
             }
             continue;
         }
 
-        if ((card.cardType === 'pilot' || card.cardType === 'command') && unitWithoutPilot) {
+        if ((card.cardType === 'pilot' || card.cardType === 'command') && unitsWithoutPilot.length > 0) {
             const playMode = effectActions.length > 0
                 ? effectActions[0]
                 : '';
@@ -541,25 +624,33 @@ const buildPlayCandidates = (context: AiDecisionContext): AiActionCandidate[] =>
                 : [];
             const canDesignatePilot = rules.some((rule) => getEffectPlayMode(rule as never) === 'designate_pilot');
             if (card.cardType === 'pilot' || canDesignatePilot) {
-                candidates.push(createCandidate(
-                    'playCard',
-                    context.windowKind,
-                    {
-                        kind: 'playCard',
-                        reason: card.cardType === 'pilot' ? 'v1_pair_pilot' : 'v1_pair_command_pilot',
-                        payload: {
-                            action: {
-                                type: 'PlayCard',
-                                carduid: card.carduid,
-                                playAs: 'pilot',
-                                targetUnit: unitWithoutPilot.carduid
+                for (const unitWithoutPilot of unitsWithoutPilot) {
+                    candidates.push(createCandidate(
+                        'playCard',
+                        context.windowKind,
+                        {
+                            kind: 'playCard',
+                            reason: card.cardType === 'pilot' ? 'v1_pair_pilot' : 'v1_pair_command_pilot',
+                            payload: {
+                                action: {
+                                    type: 'PlayCard',
+                                    carduid: card.carduid,
+                                    playAs: 'pilot',
+                                    targetUnit: unitWithoutPilot.carduid
+                                }
                             }
+                        },
+                        24 + unitWithoutPilot.valueScore + card.cost * 4,
+                        effectTags,
+                        {
+                            cardName: name,
+                            playAs: 'pilot',
+                            targetUnit: unitWithoutPilot.carduid,
+                            effectActions,
+                            playMode
                         }
-                    },
-                    24 + unitWithoutPilot.valueScore + card.cost * 4,
-                    effectTags,
-                    { cardName: name, playAs: 'pilot', targetUnit: unitWithoutPilot.carduid, effectActions, playMode }
-                ));
+                    ));
+                }
                 continue;
             }
         }
