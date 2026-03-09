@@ -144,6 +144,7 @@ export const SEQUENCE_SUPPORTED_STEP_ACTIONS = new Set<string>([
     'rest',
     'restrict_attack',
     'returnToHand',
+    'select_from_top_deck',
     'scry_top_deck',
     'setActive'
 ]);

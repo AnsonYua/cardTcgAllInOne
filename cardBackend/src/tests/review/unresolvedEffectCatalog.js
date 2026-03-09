@@ -68,8 +68,8 @@ function mapOwnerModule(entry) {
   if (action === 'conditional' || action === 'sequence') {
     return 'src/services/effects/SequenceEffectManager.ts';
   }
-  if (action === 'tutor_top_deck' || action === 'scry_top_deck' || /top|deck|reveal|bottom/.test(reason)) {
-    return 'src/services/effects/actions/EffectScryActions.ts + src/services/effects/DeployTargetManager.ts';
+  if (action === 'select_from_top_deck' || action === 'scry_top_deck' || /top|deck|reveal|bottom/.test(reason)) {
+    return 'src/services/effects/TopDeckSelectionManager.ts + src/services/effects/ScryTopDeckManager.ts';
   }
   if (action === 'replace_cost' || /cost|discard|exile/.test(reason)) {
     return 'src/services/costs/CostReplacementManager.ts + src/services/effects/actions/EffectDiscardActions.ts';

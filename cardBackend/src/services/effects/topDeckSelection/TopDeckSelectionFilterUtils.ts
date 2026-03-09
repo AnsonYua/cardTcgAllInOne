@@ -1,15 +1,21 @@
 import { type CardData } from '../../../models/CardSystem';
 import { getEffectiveCardNames } from '../../../utils/CardNameMatcher';
+import { validateComparisonFilter } from '../../../utils/EffectNormalizationUtils';
 
-export type TutorCardFilter = {
+export type TopDeckSelectionFilter = {
     cardType?: string;
     cardTypeAny?: string[];
     color?: string;
     traitsAny?: string[];
     nameContainsAny?: string[];
+    level?: string;
 };
 
-export function matchesSingleTutorFilter(cardData: CardData | null, filters: TutorCardFilter, nameAliases?: string[]): boolean {
+export function matchesTopDeckSelectionFilter(
+    cardData: CardData | null,
+    filters: TopDeckSelectionFilter,
+    nameAliases?: string[]
+): boolean {
     if (!cardData) {
         return false;
     }
@@ -17,6 +23,7 @@ export function matchesSingleTutorFilter(cardData: CardData | null, filters: Tut
     const actualCardType = typeof cardData.cardType === 'string' ? cardData.cardType : '';
     const actualColor = typeof cardData.color === 'string' ? cardData.color : '';
     const actualTraits = Array.isArray(cardData.traits) ? cardData.traits : [];
+    const actualLevel = typeof cardData.level === 'number' ? cardData.level : 0;
     const effectiveNames = getEffectiveCardNames({ cardData, nameAliases }).map((name) => name.toLowerCase());
 
     const traitsAny = Array.isArray(filters.traitsAny)
@@ -33,6 +40,7 @@ export function matchesSingleTutorFilter(cardData: CardData | null, filters: Tut
     const matchesCardType = !filters.cardType || actualCardType === filters.cardType;
     const matchesCardTypeAny = cardTypeAny.length === 0 ? true : cardTypeAny.includes(actualCardType);
     const matchesColor = !filters.color || actualColor === filters.color;
+    const matchesLevel = !filters.level || validateComparisonFilter(actualLevel, filters.level);
     const matchesNameContains = nameContainsAny.length === 0
         ? true
         : nameContainsAny.some((fragment) => {
@@ -40,5 +48,5 @@ export function matchesSingleTutorFilter(cardData: CardData | null, filters: Tut
             return effectiveNames.some((name) => name.includes(needle));
         });
 
-    return matchesTraits && matchesCardType && matchesCardTypeAny && matchesColor && matchesNameContains;
+    return matchesTraits && matchesCardType && matchesCardTypeAny && matchesColor && matchesLevel && matchesNameContains;
 }

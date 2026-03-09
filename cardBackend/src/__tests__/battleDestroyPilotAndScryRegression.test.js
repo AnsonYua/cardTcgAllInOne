@@ -256,6 +256,6 @@ describe('battle destroy pilot self + scry regression', () => {
         const gd02038 = gd02.cards['GD02-038'].effects.rules.find((rule) => rule.effectId === 'deploy_scry');
         expect(gd03097).toBeTruthy();
         expect(gd02093).toBeTruthy();
-        expect(gd02038?.action).toBe('deploy_from_top_deck');
+        expect(gd02038?.action).toBe('select_from_top_deck');
     });
 });

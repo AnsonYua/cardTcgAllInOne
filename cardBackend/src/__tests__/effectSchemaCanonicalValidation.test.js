@@ -478,6 +478,74 @@ describe('effectSchemaCanonicalValidation utilities', () => {
         expect(diagnostics.some((d) => d.severity === 'error')).toBe(false);
     });
 
+    test('accepts canonical select_from_top_deck parameters', () => {
+        const diagnostics = [];
+        walkEffects(
+            {
+                effectId: 'select_ok',
+                type: 'triggered',
+                trigger: 'ENTERS_PLAY',
+                action: 'select_from_top_deck',
+                parameters: {
+                    lookCount: 3,
+                    select: {
+                        count: 1,
+                        optional: true,
+                        toZone: 'hand',
+                        reveal: true,
+                        filters: {
+                            cardType: 'unit',
+                            traitsAny: ['Zeon']
+                        }
+                    },
+                    rest: {
+                        toZone: 'deck_bottom',
+                        order: 'random'
+                    }
+                }
+            },
+            { cardId: 'MOCK-SELECT-OK', effectId: 'select_ok', jsonPath: 'cards.MOCK-SELECT-OK.effects.rules[0]' },
+            diagnostics
+        );
+
+        expect(diagnostics.some((d) => d.severity === 'error')).toBe(false);
+    });
+
+    test('rejects legacy select_from_top_deck aliases', () => {
+        const diagnostics = [];
+        walkEffects(
+            {
+                effectId: 'select_bad',
+                type: 'triggered',
+                trigger: 'ENTERS_PLAY',
+                optional: true,
+                action: 'select_from_top_deck',
+                parameters: {
+                    count: 3,
+                    select: {
+                        count: 1,
+                        toZone: 'play'
+                    },
+                    rest: {
+                        toZone: 'bottom'
+                    }
+                }
+            },
+            { cardId: 'MOCK-SELECT-BAD', effectId: 'select_bad', jsonPath: 'cards.MOCK-SELECT-BAD.effects.rules[0]' },
+            diagnostics
+        );
+
+        expect(
+            diagnostics.some((d) => d.severity === 'error' && /canonical lookCount/.test(d.message))
+        ).toBe(true);
+        expect(
+            diagnostics.some((d) => d.severity === 'error' && /parameters\.select\.optional/.test(d.message))
+        ).toBe(true);
+        expect(
+            diagnostics.some((d) => d.severity === 'error' && /rest\.toZone must be deck_bottom/.test(d.message))
+        ).toBe(true);
+    });
+
     test('rejects conflicting scry choice and rest schema', () => {
         const diagnostics = [];
         walkEffects(

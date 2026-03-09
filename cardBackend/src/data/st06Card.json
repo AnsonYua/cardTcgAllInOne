@@ -377,9 +377,9 @@
                                 "type": "linked"
                             }
                         ],
-                        "action": "tutor_top_deck",
+                        "action": "select_from_top_deck",
                         "parameters": {
-                            "count": 1,
+                            "lookCount": 1,
                             "select": {
                                 "count": 1,
                                 "optional": true,
@@ -395,7 +395,7 @@
                                 "toZone": "deck_bottom",
                                 "order": "preserve"
                             },
-                            "notes": "Implemented: tutor_top_deck supports optional top-deck reveal/selection."
+                            "notes": "Implemented: select_from_top_deck supports optional top-deck reveal/selection."
                         }
                     }
                 ]
@@ -553,9 +553,9 @@
                                 "MAIN_PHASE"
                             ]
                         },
-                        "action": "tutor_top_deck",
+                        "action": "select_from_top_deck",
                         "parameters": {
-                            "count": 3,
+                            "lookCount": 3,
                             "select": {
                                 "count": 1,
                                 "optional": true,
@@ -575,7 +575,7 @@
                                 "toZone": "deck_bottom",
                                 "order": "random"
                             },
-                            "notes": "Implemented: tutor supports reveal/select from top and random bottom placement."
+                            "notes": "Implemented: select_from_top_deck supports reveal/select from top and random bottom placement."
                         }
                     }
                 ]

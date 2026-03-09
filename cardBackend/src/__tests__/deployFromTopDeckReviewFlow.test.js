@@ -4,7 +4,7 @@ const { EventStatus } = require('../services/EventQueue/interfaces/GameEvent');
 const { PromptChoiceManager } = require('../services/effects/PromptChoiceManager');
 const { OptionChoiceManager } = require('../services/effects/OptionChoiceManager');
 const { PlayerCardManager } = require('../services/PlayerCardManager');
-const { DeployFromTopDeckManager } = require('../services/effects/DeployFromTopDeckManager');
+const { TopDeckSelectionManager } = require('../services/effects/TopDeckSelectionManager');
 const gd01 = require('../data/gd01Card.json');
 const gd02 = require('../data/gd02Card.json');
 
@@ -48,7 +48,7 @@ function fillBoard(gameEnv, playerId) {
     }
 }
 
-describe('deploy_from_top_deck review flow', () => {
+describe('select_from_top_deck play review flow', () => {
     test('GD02-038 emits TOP_DECK_VIEWED with eligibility and queues review prompt first', () => {
         const gameEnv = buildEnv();
         const player = gameEnv.players.playerId_1;
@@ -61,7 +61,7 @@ describe('deploy_from_top_deck review flow', () => {
             'GD02-039_next_0004',
         ];
 
-        const result = DeployFromTopDeckManager.processDeployFromTopDeckEffect(
+        const result = TopDeckSelectionManager.processEffect(
             gameEnv,
             'playerId_1',
             'GD02-038_src_0001',
@@ -79,9 +79,9 @@ describe('deploy_from_top_deck review flow', () => {
 
         const promptEvent = gameEnv.processingQueue.find((event) => event.type === EventType.PROMPT_CHOICE);
         expect(promptEvent).toBeTruthy();
-        expect(promptEvent.data.choiceId).toBe('deploy_from_top_deck_review_confirm');
-        expect(promptEvent.data.context.kind).toBe('DEPLOY_FROM_TOP_DECK_REVIEW_CONFIRM');
-        expect(promptEvent.data.context.deployFromTopDeck.lookedCards).toHaveLength(3);
+        expect(promptEvent.data.choiceId).toBe('top_deck_selection_review_confirm');
+        expect(promptEvent.data.context.kind).toBe('TOP_DECK_SELECTION_REVIEW_CONFIRM');
+        expect(promptEvent.data.context.topDeckSelection.lookedCards).toHaveLength(3);
 
         const optionEvent = gameEnv.processingQueue.find((event) => event.type === EventType.OPTION_CHOICE);
         expect(optionEvent).toBeFalsy();
@@ -98,7 +98,7 @@ describe('deploy_from_top_deck review flow', () => {
             'GD02-043_top_0003',
         ];
 
-        const staged = DeployFromTopDeckManager.processDeployFromTopDeckEffect(
+        const staged = TopDeckSelectionManager.processEffect(
             gameEnv,
             'playerId_1',
             'GD02-038_src_0001',
@@ -118,7 +118,7 @@ describe('deploy_from_top_deck review flow', () => {
         expect(optionEvent.data.availableOptions[0].payload.action).toBe('DEPLOY');
         expect(optionEvent.data.availableOptions[0].payload.cardId).toBe('GD02-041');
         expect(optionEvent.data.availableOptions[1].payload.action).toBe('BOTTOM');
-        expect(optionEvent.data.context.deployFromTopDeck.lookedCarduids).toEqual([
+        expect(optionEvent.data.context.topDeckSelection.lookedCarduids).toEqual([
             'GD02-041_top_0001',
             'GD02-040_top_0002',
             'GD02-043_top_0003',
@@ -137,7 +137,7 @@ describe('deploy_from_top_deck review flow', () => {
             'GD02-039_next_0004',
         ];
 
-        DeployFromTopDeckManager.processDeployFromTopDeckEffect(gameEnv, 'playerId_1', 'GD02-038_src_0001', effect);
+        TopDeckSelectionManager.processEffect(gameEnv, 'playerId_1', 'GD02-038_src_0001', effect);
         const promptEvent = gameEnv.processingQueue.find((event) => event.type === EventType.PROMPT_CHOICE);
         expect(resolvePromptChoice(gameEnv, promptEvent).success).toBe(true);
 
@@ -153,7 +153,7 @@ describe('deploy_from_top_deck review flow', () => {
 
         const bottomNote = getLatestNotification(gameEnv, 'CARDS_MOVED_TO_DECK_BOTTOM');
         expect(bottomNote).toBeTruthy();
-        expect(bottomNote.payload.reason).toBe('deploy_from_top_deck_choice_bottom');
+        expect(bottomNote.payload.reason).toBe('select_from_top_deck_choice_bottom');
 
         const resolved = getLatestNotification(gameEnv, 'DEPLOY_FROM_TOP_DECK_RESOLVED');
         expect(resolved).toBeTruthy();
@@ -172,7 +172,7 @@ describe('deploy_from_top_deck review flow', () => {
             'GD02-039_next_0004',
         ];
 
-        DeployFromTopDeckManager.processDeployFromTopDeckEffect(gameEnv, 'playerId_1', 'GD02-038_src_0001', effect);
+        TopDeckSelectionManager.processEffect(gameEnv, 'playerId_1', 'GD02-038_src_0001', effect);
         const promptEvent = gameEnv.processingQueue.find((event) => event.type === EventType.PROMPT_CHOICE);
         expect(resolvePromptChoice(gameEnv, promptEvent).success).toBe(true);
 
@@ -204,7 +204,7 @@ describe('deploy_from_top_deck review flow', () => {
             'GD02-041_next_0004',
         ];
 
-        const result = DeployFromTopDeckManager.processDeployFromTopDeckEffect(
+        const result = TopDeckSelectionManager.processEffect(
             gameEnv,
             'playerId_1',
             'GD02-038_src_0001',
@@ -234,7 +234,7 @@ describe('deploy_from_top_deck review flow', () => {
             'GD02-039_next_0004',
         ];
 
-        const result = DeployFromTopDeckManager.processDeployFromTopDeckEffect(
+        const result = TopDeckSelectionManager.processEffect(
             gameEnv,
             'playerId_1',
             'GD02-038_src_0001',
@@ -254,7 +254,7 @@ describe('deploy_from_top_deck review flow', () => {
     test('GD01 deploy-from-top-deck card also uses review prompt flow', () => {
         const gameEnv = buildEnv();
         const player = gameEnv.players.playerId_1;
-        const effect = gd01.cards['GD01-045'].effects.rules.find((rule) => rule.action === 'deploy_from_top_deck');
+        const effect = gd01.cards['GD01-045'].effects.rules.find((rule) => rule.action === 'select_from_top_deck');
 
         player.deck.mainDeck = [
             'GD01-046_top_0001',
@@ -262,7 +262,7 @@ describe('deploy_from_top_deck review flow', () => {
             'GD02-040_top_0003',
         ];
 
-        const result = DeployFromTopDeckManager.processDeployFromTopDeckEffect(
+        const result = TopDeckSelectionManager.processEffect(
             gameEnv,
             'playerId_1',
             'GD01-045_src_0001',
@@ -274,7 +274,7 @@ describe('deploy_from_top_deck review flow', () => {
 
         const promptEvent = gameEnv.processingQueue.find((event) => event.type === EventType.PROMPT_CHOICE);
         expect(promptEvent).toBeTruthy();
-        expect(promptEvent.data.context.kind).toBe('DEPLOY_FROM_TOP_DECK_REVIEW_CONFIRM');
+        expect(promptEvent.data.context.kind).toBe('TOP_DECK_SELECTION_REVIEW_CONFIRM');
         expect(getLatestNotification(gameEnv, 'TOP_DECK_VIEWED')).toBeTruthy();
     });
 });

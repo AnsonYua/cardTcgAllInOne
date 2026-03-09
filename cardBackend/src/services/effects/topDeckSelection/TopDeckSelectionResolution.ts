@@ -1,45 +1,69 @@
-// src/services/effects/deployFromTopDeck/DeployFromTopDeckResolution.ts
-
 import type { GameEnvironment } from '../../../models/GameEnvironment';
 import { CardDatabaseManager, type CardData } from '../../../models/CardSystem';
-import { DeckZoneManager, type DeckBottomOrder } from '../../zones/DeckZoneManager';
 import { getCardIdFromUid } from '../../../utils/CardUtils';
 import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
+import { DeckZoneManager, type DeckBottomOrder } from '../../zones/DeckZoneManager';
+import { HandZoneManager } from '../../zones/HandZoneManager';
 import { UnitDeployService } from '../../deploy/UnitDeployService';
 import {
-    emitDeployCardsMovedToBottom,
-    emitDeployFromTopDeckResolved
-} from './DeployFromTopDeckNotificationUtils';
+    emitTopDeckSelectionCardsMovedToBottom,
+    emitTopDeckSelectionResolved
+} from './TopDeckSelectionNotificationUtils';
 
-export function resolveDeployFromTopDeckSelection(
+function shuffleInPlace<T>(items: T[]): void {
+    for (let i = items.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [items[i], items[j]] = [items[j], items[i]];
+    }
+}
+
+export function resolveTopDeckSelection(
     gameEnv: GameEnvironment,
     deck: string[],
     lookedCarduids: string[],
-    chosenUid: string,
+    chosenUid: string | undefined,
     params: {
         order: DeckBottomOrder;
+        toZone: 'hand' | 'play';
+        reveal: boolean;
         playerId: string;
         sourceCarduid: string;
-        destinationSlot: string;
         effectId?: string;
+        destinationSlot?: string;
     }
 ): void {
     const extracted = DeckZoneManager.extractSpecific(deck, lookedCarduids);
-    const chosenIndex = extracted.indexOf(chosenUid);
-    const chosenCarduid = chosenIndex >= 0 ? extracted.splice(chosenIndex, 1)[0] : undefined;
+    const chosenIndex = chosenUid ? extracted.indexOf(chosenUid) : -1;
+    const selectedCarduid = chosenIndex >= 0 ? extracted.splice(chosenIndex, 1)[0] : undefined;
     const restCarduids = [...extracted];
 
-    if (chosenCarduid) {
-        const cardId = getCardIdFromUid(chosenCarduid);
+    if (selectedCarduid && params.toZone === 'hand') {
+        const cardId = getCardIdFromUid(selectedCarduid);
+        const cardData = CardDatabaseManager.getCardDetails(cardId) as CardData;
+        HandZoneManager.addCardToHand(gameEnv, params.playerId, selectedCarduid, cardData, {
+            eventType: 'CARD_ADDED_TO_HAND',
+            sourceZone: 'deck',
+            reason: 'select_from_top_deck',
+            extraPayload: {
+                reveal: params.reveal,
+                revealToOpponent: params.reveal,
+                sourceCarduid: params.sourceCarduid,
+                effectId: params.effectId
+            }
+        });
+    }
+
+    if (selectedCarduid && params.toZone === 'play') {
+        const cardId = getCardIdFromUid(selectedCarduid);
         const cardData = CardDatabaseManager.getCardDetails(cardId) as CardData | undefined;
-        if (cardData?.cardType === 'unit') {
+        if (cardData?.cardType === 'unit' && params.destinationSlot) {
             const player = gameEnv.getPlayer(params.playerId);
             const slotResult = player?.zones ? SlotZoneUtils.getSlotZone(player.zones, params.destinationSlot) : null;
             if (slotResult?.isValid && slotResult.slot) {
                 const deployResult = UnitDeployService.deployUnitCardToSlot(gameEnv, {
                     playerId: params.playerId,
                     destinationSlot: params.destinationSlot,
-                    carduid: chosenCarduid,
+                    carduid: selectedCarduid,
                     cardId,
                     cardData,
                     sourceCarduid: params.sourceCarduid,
@@ -50,13 +74,14 @@ export function resolveDeployFromTopDeckSelection(
                     }
                 });
                 if (!deployResult.success) {
-                    emitDeployFromTopDeckResolved({
+                    emitTopDeckSelectionResolved({
                         gameEnv,
                         playerId: params.playerId,
                         sourceCarduid: params.sourceCarduid,
                         effectId: params.effectId,
+                        toZone: params.toZone,
                         result: 'FAILED_DEPLOY',
-                        deployedCarduid: chosenCarduid,
+                        selectedCarduid,
                         error: deployResult.error
                     });
                 }
@@ -65,30 +90,31 @@ export function resolveDeployFromTopDeckSelection(
     }
 
     if (params.order === 'random') {
-        for (let i = restCarduids.length - 1; i > 0; i -= 1) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [restCarduids[i], restCarduids[j]] = [restCarduids[j], restCarduids[i]];
-        }
+        shuffleInPlace(restCarduids);
     }
     deck.push(...restCarduids);
 
     if (restCarduids.length > 0) {
-        emitDeployCardsMovedToBottom({
+        emitTopDeckSelectionCardsMovedToBottom({
             gameEnv,
             playerId: params.playerId,
             sourceCarduid: params.sourceCarduid,
             effectId: params.effectId,
             carduids: restCarduids,
-            reason: 'deploy_from_top_deck_resolve_bottom'
+            reason: params.toZone === 'play' ? 'select_from_top_deck_resolve_bottom_play' : 'select_from_top_deck_resolve_bottom_hand'
         });
     }
-    emitDeployFromTopDeckResolved({
+
+    emitTopDeckSelectionResolved({
         gameEnv,
         playerId: params.playerId,
         sourceCarduid: params.sourceCarduid,
         effectId: params.effectId,
-        result: chosenCarduid ? 'DEPLOYED' : 'MOVED_TO_BOTTOM',
-        deployedCarduid: chosenCarduid,
-        movedCarduids: restCarduids
+        toZone: params.toZone,
+        result: selectedCarduid
+            ? (params.toZone === 'play' ? 'DEPLOYED' : 'ADDED_TO_HAND')
+            : 'MOVED_TO_BOTTOM',
+        selectedCarduid,
+        movedCarduids: restCarduids,
     });
 }

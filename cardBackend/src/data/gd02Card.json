@@ -953,9 +953,9 @@
             "effectId": "deploy_tutor_green_zeon_pilot_from_top_5",
             "type": "triggered",
             "trigger": "ENTERS_PLAY",
-            "action": "tutor_top_deck",
+            "action": "select_from_top_deck",
             "parameters": {
-              "count": 5,
+              "lookCount": 5,
               "select": {
                 "count": 1,
                 "optional": true,
@@ -973,7 +973,7 @@
                 "toZone": "deck_bottom",
                 "order": "random"
               },
-              "notes": "Implemented: tutor supports reveal/select from top and random bottom placement."
+              "notes": "Implemented: select_from_top_deck supports reveal/select from top and random bottom placement."
             }
           },
           {
@@ -1906,12 +1906,12 @@
             "effectId": "deploy_scry",
             "type": "triggered",
             "trigger": "ENTERS_PLAY",
-            "optional": true,
-            "action": "deploy_from_top_deck",
+            "action": "select_from_top_deck",
             "parameters": {
               "lookCount": 3,
               "select": {
                 "count": 1,
+                "optional": true,
                 "toZone": "play",
                 "filters": {
                   "cardType": "unit",
@@ -1925,7 +1925,7 @@
                 "toZone": "deck_bottom",
                 "order": "random"
               },
-              "notes": "Implemented: deploy_from_top_deck supports look, optional deploy, and random bottom placement."
+              "notes": "Implemented: select_from_top_deck supports look, optional play selection, and random bottom placement."
             }
           }
         ]
@@ -4447,14 +4447,14 @@
             "effectId": "linked_tutor_from_top_3",
             "type": "triggered",
             "trigger": "PAIRING_COMPLETE",
-            "action": "tutor_top_deck",
+            "action": "select_from_top_deck",
             "sourceConditions": [
               {
                 "type": "linked"
               }
             ],
             "parameters": {
-              "count": 3,
+              "lookCount": 3,
               "select": {
                 "count": 1,
                 "optional": true,
@@ -4479,7 +4479,7 @@
                 "toZone": "deck_bottom",
                 "order": "random"
               },
-              "notes": "Implemented: tutor_top_deck supports OR filter groups and random-bottom placement."
+              "notes": "Implemented: select_from_top_deck supports OR filter groups and random-bottom placement."
             }
           }
         ]
@@ -4845,9 +4845,9 @@
             "cost": {
               "discardFromHand": 1
             },
-            "action": "tutor_top_deck",
+            "action": "select_from_top_deck",
             "parameters": {
-              "count": 3,
+              "lookCount": 3,
               "select": {
                 "count": 1,
                 "optional": true,
@@ -4864,7 +4864,7 @@
                 "toZone": "deck_bottom",
                 "order": "random"
               },
-              "notes": "Implemented: discard-from-hand costs are enforced before tutor resolution."
+              "notes": "Implemented: discard-from-hand costs are enforced before select_from_top_deck resolution."
             }
           }
         ]

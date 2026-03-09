@@ -419,11 +419,92 @@ function validateScryTopDeckParameters(node, context, diagnostics) {
   }
 }
 
+function validateSelectFromTopDeckParameters(node, context, diagnostics) {
+  if (!node || typeof node !== 'object' || node.action !== 'select_from_top_deck') {
+    return;
+  }
+
+  const parameters = node.parameters && typeof node.parameters === 'object' ? node.parameters : {};
+  const paramsPath = `${context.jsonPath}.parameters`;
+  const lookCount = typeof parameters.lookCount === 'number' ? parameters.lookCount : Number(parameters.lookCount);
+  if (!Number.isFinite(lookCount) || lookCount <= 0) {
+    pushDiagnostic(diagnostics, context, `${paramsPath}.lookCount`, 'select_from_top_deck requires lookCount > 0');
+  }
+
+  if (Object.prototype.hasOwnProperty.call(parameters, 'count')) {
+    pushDiagnostic(
+      diagnostics,
+      context,
+      `${paramsPath}.count`,
+      'select_from_top_deck uses canonical lookCount; legacy count is not allowed'
+    );
+  }
+
+  if (Object.prototype.hasOwnProperty.call(node, 'optional')) {
+    pushDiagnostic(
+      diagnostics,
+      context,
+      `${context.jsonPath}.optional`,
+      'select_from_top_deck optionality must be encoded in parameters.select.optional'
+    );
+  }
+
+  const select = parameters.select && typeof parameters.select === 'object' ? parameters.select : null;
+  if (!select) {
+    pushDiagnostic(diagnostics, context, `${paramsPath}.select`, 'select_from_top_deck requires parameters.select');
+    return;
+  }
+
+  const toZone = typeof select.toZone === 'string' ? select.toZone : '';
+  if (toZone !== 'hand' && toZone !== 'play') {
+    pushDiagnostic(
+      diagnostics,
+      context,
+      `${paramsPath}.select.toZone`,
+      `select_from_top_deck select.toZone must be hand or play (got ${toZone || 'missing'})`
+    );
+  }
+
+  const selectCount = typeof select.count === 'number' ? select.count : Number(select.count);
+  if (!Number.isFinite(selectCount) || selectCount <= 0) {
+    pushDiagnostic(
+      diagnostics,
+      context,
+      `${paramsPath}.select.count`,
+      'select_from_top_deck select.count must be a positive integer'
+    );
+  } else if (selectCount > 1) {
+    pushDiagnostic(
+      diagnostics,
+      context,
+      `${paramsPath}.select.count`,
+      'select_from_top_deck select.count > 1 is not supported'
+    );
+  }
+
+  const rest = parameters.rest && typeof parameters.rest === 'object' ? parameters.rest : null;
+  if (!rest) {
+    pushDiagnostic(diagnostics, context, `${paramsPath}.rest`, 'select_from_top_deck requires parameters.rest');
+    return;
+  }
+
+  const restToZone = typeof rest.toZone === 'string' ? rest.toZone : '';
+  if (restToZone !== 'deck_bottom') {
+    pushDiagnostic(
+      diagnostics,
+      context,
+      `${paramsPath}.rest.toZone`,
+      `select_from_top_deck rest.toZone must be deck_bottom (got ${restToZone || 'missing'})`
+    );
+  }
+}
+
 const ACTION_SEMANTIC_VALIDATORS = [
   validatePreventBattleDamageParameters,
   validatePreventDamageParameters,
   validateSetNameAliasParameters,
-  validateScryTopDeckParameters
+  validateScryTopDeckParameters,
+  validateSelectFromTopDeckParameters
 ];
 
 function validateActionSemantics(node, context, diagnostics) {
@@ -437,5 +518,6 @@ module.exports = {
   validatePreventBattleDamageParameters,
   validatePreventDamageParameters,
   validateSetNameAliasParameters,
-  validateScryTopDeckParameters
+  validateScryTopDeckParameters,
+  validateSelectFromTopDeckParameters
 };

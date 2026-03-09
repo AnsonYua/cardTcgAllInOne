@@ -4,8 +4,7 @@ import type { DeployTargetResult } from '../DeployTargetResult';
 import { EffectExecutor } from './EffectExecutor';
 import { TokenChoiceManager } from './TokenChoiceManager';
 import { DrawThenDiscardManager } from './DrawThenDiscardManager';
-import { TutorTopDeckManager } from './TutorTopDeckManager';
-import { DeployFromTopDeckManager } from './DeployFromTopDeckManager';
+import { TopDeckSelectionManager } from './TopDeckSelectionManager';
 import { SequenceEffectManager } from './SequenceEffectManager';
 import { ConditionalEffectManager } from './ConditionalEffectManager';
 import { ConditionalTokenDeployFlowManager } from './ConditionalTokenDeployFlowManager';
@@ -40,18 +39,8 @@ export class EffectActionRouter {
             ) as DeployTargetResult;
         }
 
-        if (effectAction === 'tutor_top_deck') {
-            return TutorTopDeckManager.processTutorTopDeckEffect(
-                gameEnv,
-                playerId,
-                sourceCarduid,
-                effect,
-                cardPlayNotificationId
-            ) as DeployTargetResult;
-        }
-
-        if (effectAction === 'deploy_from_top_deck') {
-            return DeployFromTopDeckManager.processDeployFromTopDeckEffect(
+        if (effectAction === 'select_from_top_deck') {
+            return TopDeckSelectionManager.processEffect(
                 gameEnv,
                 playerId,
                 sourceCarduid,

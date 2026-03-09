@@ -4,8 +4,7 @@
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import { EventStatus, OptionChoiceEvent } from '../EventQueue/interfaces/GameEvent';
 import type { ExecutionResult } from '../ExecutionResult';
-import { TutorTopDeckManager } from './TutorTopDeckManager';
-import { DeployFromTopDeckManager } from './DeployFromTopDeckManager';
+import { TopDeckSelectionManager } from './TopDeckSelectionManager';
 import { PairingEffectOrderManager } from './PairingEffectOrderManager';
 import { DeployEffectOrderManager } from './DeployEffectOrderManager';
 import { ScryTopDeckManager } from './ScryTopDeckManager';
@@ -19,10 +18,8 @@ export class OptionChoiceManager {
 
         const action = event.data.effect?.action;
         switch (action) {
-            case 'tutor_top_deck':
-                return TutorTopDeckManager.executeOptionChoice(event, gameEnv);
-            case 'deploy_from_top_deck':
-                return DeployFromTopDeckManager.executeOptionChoice(event, gameEnv);
+            case 'select_from_top_deck':
+                return TopDeckSelectionManager.executeOptionChoice(event, gameEnv);
             case 'scry_top_deck':
                 return ScryTopDeckManager.executeOptionChoice(event, gameEnv);
             case 'pairing_effect_order':

@@ -2057,12 +2057,12 @@
             "effectId": "pair_look_top_3_deploy_zaft_unit_le_4",
             "type": "triggered",
             "trigger": "PAIRING_COMPLETE",
-            "optional": true,
-            "action": "deploy_from_top_deck",
+            "action": "select_from_top_deck",
             "parameters": {
               "lookCount": 3,
               "select": {
                 "count": 1,
+                "optional": true,
                 "toZone": "play",
                 "filters": {
                   "cardType": "unit",
@@ -2076,7 +2076,7 @@
                 "toZone": "deck_bottom",
                 "order": "random"
               },
-              "notes": "Implemented: deploy_from_top_deck supports look, optional deploy, and bottom placement."
+              "notes": "Implemented: select_from_top_deck supports look, optional play selection, and bottom placement."
             }
           }
         ]
@@ -2267,9 +2267,9 @@
             "effectId": "deploy_effect",
             "type": "triggered",
             "trigger": "ENTERS_PLAY",
-            "action": "tutor_top_deck",
+            "action": "select_from_top_deck",
             "parameters": {
-              "count": 1,
+              "lookCount": 1,
               "select": {
                 "count": 1,
                 "optional": true,
@@ -2287,7 +2287,7 @@
                 "toZone": "deck_bottom",
                 "order": "preserve"
               },
-              "notes": "Implemented: tutor supports reveal/select from top-of-deck."
+              "notes": "Implemented: select_from_top_deck supports reveal/select from top-of-deck."
             }
           }
         ]
@@ -5245,9 +5245,9 @@
                 "MAIN_PHASE"
               ]
             },
-            "action": "tutor_top_deck",
+            "action": "select_from_top_deck",
             "parameters": {
-              "count": 5,
+              "lookCount": 5,
               "select": {
                 "count": 1,
                 "optional": true,
@@ -5268,7 +5268,7 @@
                 "toZone": "deck_bottom",
                 "order": "random"
               },
-              "notes": "Implemented: tutor supports reveal/select from top and random bottom placement."
+              "notes": "Implemented: select_from_top_deck supports reveal/select from top and random bottom placement."
             }
           }
         ]

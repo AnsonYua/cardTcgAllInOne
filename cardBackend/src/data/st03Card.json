@@ -250,9 +250,9 @@
             "effectId": "destroyed_tutor_zeon_unit_from_top_3",
             "type": "triggered",
             "trigger": "DESTROYED",
-            "action": "tutor_top_deck",
+            "action": "select_from_top_deck",
             "parameters": {
-              "count": 3,
+              "lookCount": 3,
               "select": {
                 "count": 1,
                 "optional": true,
@@ -270,7 +270,7 @@
                 "toZone": "deck_bottom",
                 "order": "random"
               },
-              "notes": "Implemented: DESTROYED-triggered tutor_top_deck flows are supported."
+              "notes": "Implemented: DESTROYED-triggered select_from_top_deck flows are supported."
             }
           }
         ]

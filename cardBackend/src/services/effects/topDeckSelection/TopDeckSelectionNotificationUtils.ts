@@ -1,7 +1,7 @@
 import type { GameEnvironment } from '../../../models/GameEnvironment';
 import { GameNotificationManager } from '../../GameNotificationManager';
 
-export function emitDeployTopDeckViewed(params: {
+export function emitTopDeckSelectionViewed(params: {
     gameEnv: GameEnvironment;
     playerId: string;
     sourceCarduid: string;
@@ -24,7 +24,7 @@ export function emitDeployTopDeckViewed(params: {
     );
 }
 
-export function emitDeployCardsMovedToBottom(params: {
+export function emitTopDeckSelectionCardsMovedToBottom(params: {
     gameEnv: GameEnvironment;
     playerId: string;
     sourceCarduid: string;
@@ -47,29 +47,30 @@ export function emitDeployCardsMovedToBottom(params: {
     );
 }
 
-export function emitDeployFromTopDeckResolved(params: {
+export function emitTopDeckSelectionResolved(params: {
     gameEnv: GameEnvironment;
     playerId: string;
     sourceCarduid: string;
     effectId?: string;
+    toZone: 'hand' | 'play';
     result: string;
     movedCarduids?: string[];
-    deployedCarduid?: string;
+    selectedCarduid?: string;
+    leftCarduids?: string[];
     error?: string;
 }) {
     const notificationManager = new GameNotificationManager(params.gameEnv);
-    notificationManager.addNotificationEvent(
-        'DEPLOY_FROM_TOP_DECK_RESOLVED',
-        {
-            playerId: params.playerId,
-            sourceCarduid: params.sourceCarduid,
-            effectId: params.effectId,
-            result: params.result,
-            movedCarduids: params.movedCarduids,
-            deployedCarduid: params.deployedCarduid,
-            error: params.error,
-            timestamp: Date.now(),
-        },
-        params.error ? 'high' : 'normal',
-    );
+    const eventType = params.toZone === 'play' ? 'DEPLOY_FROM_TOP_DECK_RESOLVED' : 'TUTOR_TOP_DECK_RESOLVED';
+    const payload = {
+        playerId: params.playerId,
+        sourceCarduid: params.sourceCarduid,
+        effectId: params.effectId,
+        result: params.result,
+        movedCarduids: params.movedCarduids,
+        timestamp: Date.now(),
+        ...(params.toZone === 'play'
+            ? { deployedCarduid: params.selectedCarduid, error: params.error }
+            : { addedCarduid: params.selectedCarduid, leftCarduids: params.leftCarduids }),
+    };
+    notificationManager.addNotificationEvent(eventType, payload, params.error ? 'high' : 'normal');
 }

@@ -1,9 +1,9 @@
 const { GameEnvironment } = require('../models/GameEnvironment');
 const { CardDatabaseManager } = require('../models/CardSystem');
-const { TutorTopDeckManager } = require('../services/effects/TutorTopDeckManager');
+const { TopDeckSelectionManager } = require('../services/effects/TopDeckSelectionManager');
 const { EventType } = require('../models/GameEnums');
 
-describe('TutorTopDeck option choice metadata', () => {
+describe('TopDeckSelection option choice metadata', () => {
     test('stages reveal-confirm PROMPT_CHOICE first with looked cards and staged options', () => {
         const gameEnv = new GameEnvironment();
         const player = gameEnv.addPlayer('playerId_1', 'P1');
@@ -18,9 +18,9 @@ describe('TutorTopDeck option choice metadata', () => {
             effectId: 'destroyed_tutor_zeon_unit_from_top_3',
             type: 'triggered',
             trigger: 'DESTROYED',
-            action: 'tutor_top_deck',
+            action: 'select_from_top_deck',
             parameters: {
-                count: 3,
+                lookCount: 3,
                 select: {
                     count: 1,
                     optional: true,
@@ -38,7 +38,7 @@ describe('TutorTopDeck option choice metadata', () => {
             },
         };
 
-        const result = TutorTopDeckManager.processTutorTopDeckEffect(
+        const result = TopDeckSelectionManager.processEffect(
             gameEnv,
             'playerId_1',
             'ST03-006_8c5de4d8-58b3-46c4-8507-9445e994d58d',
@@ -50,13 +50,13 @@ describe('TutorTopDeck option choice metadata', () => {
 
         const promptChoiceEvent = gameEnv.processingQueue.find((e) => e.type === EventType.PROMPT_CHOICE);
         expect(promptChoiceEvent).toBeTruthy();
-        expect(promptChoiceEvent.data.choiceId).toBe('tutor_top_deck_reveal_confirm');
+        expect(promptChoiceEvent.data.choiceId).toBe('top_deck_selection_review_confirm');
         expect(promptChoiceEvent.data.headerText).toBe('Top of Deck');
-        expect(promptChoiceEvent.data.context.kind).toBe('TUTOR_TOP_DECK_REVEAL_CONFIRM');
-        expect(Array.isArray(promptChoiceEvent.data.context.tutor.lookedCards)).toBe(true);
-        expect(promptChoiceEvent.data.context.tutor.lookedCards).toHaveLength(3);
-        expect(promptChoiceEvent.data.context.tutor.availableOptions[0].label).toBe('Reveal and add Gelgoog to hand');
-        expect(promptChoiceEvent.data.context.tutor.availableOptions[1].display.mode).toBe('text');
+        expect(promptChoiceEvent.data.context.kind).toBe('TOP_DECK_SELECTION_REVIEW_CONFIRM');
+        expect(Array.isArray(promptChoiceEvent.data.context.topDeckSelection.lookedCards)).toBe(true);
+        expect(promptChoiceEvent.data.context.topDeckSelection.lookedCards).toHaveLength(3);
+        expect(promptChoiceEvent.data.context.topDeckSelection.availableOptions[0].label).toBe('Reveal and add Gelgoog to hand');
+        expect(promptChoiceEvent.data.context.topDeckSelection.availableOptions[1].display.mode).toBe('text');
 
         const optionChoiceEvent = gameEnv.processingQueue.find((e) => e.type === EventType.OPTION_CHOICE);
         expect(optionChoiceEvent).toBeFalsy();
@@ -100,9 +100,9 @@ describe('TutorTopDeck option choice metadata', () => {
             effectId: 'filter_combo_tutor',
             type: 'play',
             timing: { windows: ['MAIN_PHASE'] },
-            action: 'tutor_top_deck',
+            action: 'select_from_top_deck',
             parameters: {
-                count: 3,
+                lookCount: 3,
                 select: {
                     count: 1,
                     optional: true,
@@ -121,7 +121,7 @@ describe('TutorTopDeck option choice metadata', () => {
             },
         };
 
-        const result = TutorTopDeckManager.processTutorTopDeckEffect(
+        const result = TopDeckSelectionManager.processEffect(
             gameEnv,
             'playerId_1',
             `${matchUnit.id}_source_card`,
@@ -133,7 +133,7 @@ describe('TutorTopDeck option choice metadata', () => {
 
         const promptChoiceEvent = gameEnv.processingQueue.find((e) => e.type === EventType.PROMPT_CHOICE);
         expect(promptChoiceEvent).toBeTruthy();
-        const options = promptChoiceEvent.data.context.tutor.availableOptions;
+        const options = promptChoiceEvent.data.context.topDeckSelection.availableOptions;
         const takeCarduids = options
             .filter((opt) => opt.payload && opt.payload.action === 'TAKE')
             .map((opt) => opt.payload.carduid);
@@ -180,9 +180,9 @@ describe('TutorTopDeck option choice metadata', () => {
             effectId: 'or_filter_tutor',
             type: 'triggered',
             trigger: 'PAIRING_COMPLETE',
-            action: 'tutor_top_deck',
+            action: 'select_from_top_deck',
             parameters: {
-                count: 3,
+                lookCount: 3,
                 select: {
                     count: 1,
                     optional: true,
@@ -206,7 +206,7 @@ describe('TutorTopDeck option choice metadata', () => {
             },
         };
 
-        const result = TutorTopDeckManager.processTutorTopDeckEffect(
+        const result = TopDeckSelectionManager.processEffect(
             gameEnv,
             'playerId_1',
             `${greenEfUnit.id}_source_card`,
@@ -218,7 +218,7 @@ describe('TutorTopDeck option choice metadata', () => {
 
         const promptChoiceEvent = gameEnv.processingQueue.find((e) => e.type === EventType.PROMPT_CHOICE);
         expect(promptChoiceEvent).toBeTruthy();
-        const options = promptChoiceEvent.data.context.tutor.availableOptions;
+        const options = promptChoiceEvent.data.context.topDeckSelection.availableOptions;
         const takeCarduids = options
             .filter((opt) => opt.payload && opt.payload.action === 'TAKE')
             .map((opt) => opt.payload.carduid);
