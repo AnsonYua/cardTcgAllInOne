@@ -2,304 +2,178 @@
 
 ## Purpose
 
-This document breaks the AI player program into execution-ready phases. Each phase is defined by objective, inputs, outputs, dependencies, risks, acceptance criteria, and definition of done.
+Turn the requirement set into an execution sequence with clear outputs, dependencies, and completion criteria.
 
-## Design
+## Delivery Principles
+
+- lock contracts before optimization
+- keep legality and simulation fidelity ahead of search sophistication
+- benchmark each major step before moving deeper into research work
+- treat fallback behavior as part of the production design, not a last-minute patch
 
 ## Phase 0: Requirement Lock
 
-### Objective
+Objective:
+- freeze terminology, scope, fairness policy, and the v1 architecture
 
-Freeze terminology, scope, fairness policy, and v1 architecture.
-
-### Required Inputs
-
+Inputs:
 - current backend AI structure
 - rule constraints
 - this requirement set
 
-### Outputs
-
+Outputs:
 - finalized requirement documents
 - frozen difficulty-tier policy
 - frozen hidden-information policy
 
-### Dependencies
-
-- none
-
-### Risks
-
-- architecture drift before implementation starts
-
-### Acceptance Criteria
-
-- all documents in `requirement/aiplayer` exist
-- production path is unambiguous
+Done when:
+- the production path is unambiguous
 - fairness rules are explicit
-
-### Definition Of Done
-
-- no unresolved architecture ambiguity blocks Phase 1
+- no architecture ambiguity blocks implementation
 
 ## Phase 1: Simulation Foundation
 
-### Objective
+Objective:
+- define and implement a pure in-memory simulation contract
 
-Define and implement a pure in-memory simulation contract.
-
-### Required Inputs
-
+Inputs:
 - current `GameEnvironment` serialization and reconstruction path
 - authoritative execution path
 
-### Outputs
-
+Outputs:
 - clone contract
 - simulation API
 - simulation trace schema
 - equivalence test policy
 
-### Dependencies
-
-- Phase 0
-
-### Risks
-
-- simulation drift from real execution
-- accidental file persistence during simulation
-
-### Acceptance Criteria
-
-- simulated actions can run without touching persisted game files
+Done when:
+- simulated actions run without touching persisted game files
 - equivalence expectations are documented and testable
-
-### Definition Of Done
-
-- simulation contract is stable enough for search work
+- the simulation contract is stable enough for search work
 
 ## Phase 2: Legal Action Enumeration
 
-### Objective
+Objective:
+- define every AI-owned action type and its payload contract
 
-Define every AI-owned action type and its payload contract.
-
-### Required Inputs
-
+Inputs:
 - current AI decision kinds
 - controller and execution payload shapes
 - timing-window rules
 
-### Outputs
-
-- action class inventory
+Outputs:
+- action family inventory
 - payload schemas
 - candidate metadata for pruning
 - choice-ownership rules
 
-### Dependencies
-
-- Phase 1
-
-### Risks
-
-- missing action families
-- payload mismatch with real execution
-
-### Acceptance Criteria
-
+Done when:
 - all AI-owned action families are represented
 - candidate actions are serializable and executable
-
-### Definition Of Done
-
-- enumeration can feed search without inventing new payload formats
+- search can consume enumeration output without inventing new payload formats
 
 ## Phase 3: Evaluator Foundation
 
-### Objective
+Objective:
+- define the board evaluator and its scoring breakdown
 
-Define the board evaluator and its scoring breakdown.
-
-### Required Inputs
-
+Inputs:
 - simulated state output
 - tactical priorities
 - hidden-information policy
 
-### Outputs
-
+Outputs:
 - feature definitions
 - score bands
 - breakdown schema
 - deterministic debug mode policy
 
-### Dependencies
-
-- Phase 2
-
-### Risks
-
-- wrong score hierarchy
-- overfitting to simple board stats
-
-### Acceptance Criteria
-
-- evaluator formula and score hierarchy are documented
-- risk and uncertainty handling are explicit
-
-### Definition Of Done
-
-- evaluator can rank simulated states in a way that engineering can implement directly
+Done when:
+- evaluator formulas and score hierarchy are documented
+- uncertainty handling is explicit
+- engineering can implement the evaluator directly from the spec
 
 ## Phase 4: Bounded Search
 
-### Objective
+Objective:
+- define the bounded search loop and fallback behavior
 
-Define the bounded search loop and fallback behavior.
-
-### Required Inputs
-
+Inputs:
 - enumerated legal candidates
 - simulation API
 - evaluator
 
-### Outputs
-
+Outputs:
 - search loop definition
-- candidate pruning rules
+- pruning rules
 - budget handling policy
 - fallback ordering
 
-### Dependencies
-
-- Phase 3
-
-### Risks
-
-- latency spikes
-- pruning removes critical tactical lines
-
-### Acceptance Criteria
-
+Done when:
 - each difficulty tier has a documented search budget
 - fallback order is deterministic and safe
-
-### Definition Of Done
-
-- the production AI search path for the CPU opponent is fully specified
+- the production AI search path is fully specified
 
 ## Phase 5: Benchmark And Telemetry
 
-### Objective
+Objective:
+- define how to measure strength, latency, legality, and stability
 
-Define how to measure strength, latency, legality, and stability.
-
-### Required Inputs
-
+Inputs:
 - search outputs
 - evaluator outputs
-- game replay capability
+- replay capability
 
-### Outputs
-
+Outputs:
 - metric catalog
 - scenario suites
 - matchup benchmark plan
 - telemetry field list
 
-### Dependencies
-
-- Phase 4
-
-### Risks
-
-- subjective success criteria
-- weak regression visibility
-
-### Acceptance Criteria
-
-- measurable strength and stability targets exist
-- telemetry can explain search and evaluator choices
-
-### Definition Of Done
-
+Done when:
+- success criteria are measurable
+- telemetry is sufficient to explain search and evaluator behavior
 - the team can compare versions of the AI objectively
 
 ## Phase 6: Offline Python Tooling
 
-### Objective
+Objective:
+- support offline analysis and experimentation without changing the live architecture
 
-Support offline analysis and experimentation without changing the live architecture.
-
-### Required Inputs
-
+Inputs:
 - replay exports
 - telemetry exports
 - benchmark outputs
 
-### Outputs
-
+Outputs:
 - export schemas
 - Python analysis job definitions
 - tooling boundaries
 
-### Dependencies
-
-- Phase 5
-
-### Risks
-
-- tooling drift into live runtime responsibilities
-
-### Acceptance Criteria
-
+Done when:
 - Python responsibilities are useful and bounded
 - production decisioning still belongs to the TypeScript backend
-
-### Definition Of Done
-
 - offline analysis can proceed without architecture ambiguity
 
 ## Phase 7: Future Research Gate
 
-### Objective
+Objective:
+- decide whether learned priors, imitation, or RL are justified after the baseline matures
 
-Decide whether learned priors, imitation, or RL are justified after the baseline matures.
-
-### Required Inputs
-
+Inputs:
 - stable search baseline
 - benchmark history
 - replay datasets
 
-### Outputs
+Outputs:
+- a go or no-go decision for imitation, value-model, or RL work
 
-- go or no-go decision for imitation/value model/RL work
-
-### Dependencies
-
-- Phase 6
-
-### Risks
-
-- research expansion before baseline maturity
-
-### Acceptance Criteria
-
+Done when:
 - stop/go gates are evaluated using benchmark evidence
-
-### Definition Of Done
-
 - future learning work is either justified by data or explicitly deferred
 
-## Acceptance Criteria
+## Cross-Phase Risks
 
-- Phases cover the full path from requirements to future research gating.
-- Each phase has concrete outputs and completion conditions.
-- The phase breakdown is detailed enough to convert into implementation tickets later.
-
-## Risks
-
-- If the phase order changes without reason, later work can build on unstable contracts.
-- If a phase is marked complete before its outputs are benchmarkable, downstream work will be built on weak assumptions.
+- changing phase order without reason can put later work on unstable contracts
+- marking a phase complete before its outputs are testable will weaken downstream work
+- expanding research before benchmark maturity will blur the production path

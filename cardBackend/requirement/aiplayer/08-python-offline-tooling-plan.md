@@ -2,15 +2,13 @@
 
 ## Purpose
 
-This document defines the role of Python in the AI program without allowing Python to become the live production decision path for v1.
+Define where Python is useful in this program without allowing it to become the live production decision path for v1.
 
-## Requirements
+## Policy
 
-Python is permitted only for offline or batch responsibilities in the initial roadmap.
+Python is allowed only for offline, batch, or research workflows in the initial roadmap.
 
-## Design
-
-## Allowed Python Responsibilities
+## Allowed Responsibilities
 
 - batch self-play orchestration
 - replay analysis
@@ -20,22 +18,22 @@ Python is permitted only for offline or batch responsibilities in the initial ro
 - benchmark report generation
 - offline model experiments
 
-These uses are valuable because Python has a rich ecosystem for data analysis and experimentation, but they do not need to sit in the live match loop.
+These jobs benefit from Python's data and analysis ecosystem, but none of them need to sit inside the live match loop.
 
-## Prohibited V1 Python Responsibilities
+## Prohibited Responsibilities In V1
 
-- real-time live move choice in production matches
-- duplicated rule engine implementation
+- real-time move choice in production matches
+- a duplicated rule engine
 - direct mutation of authoritative game state files without validation
 - bypassing the TypeScript execution path for live gameplay
 
-## Interface Requirements
+## Data Contracts
 
-Offline tooling should consume exports from the backend, not raw ad hoc scraping.
+Offline tooling should consume structured exports from the backend, not ad hoc scraping.
 
-### Replay Export Format
+### Replay Export
 
-Must capture:
+Must include:
 
 - initial state snapshot
 - ordered action trace
@@ -43,27 +41,27 @@ Must capture:
 - winner and termination reason
 - metadata such as difficulty and seed
 
-### State Snapshot Format
+### State Snapshot
 
 Must support:
 
-- fair-mode player-visible snapshot
-- optional oracle snapshot for benchmark or debug experiments
-- clear mode labeling so fair and oracle data are never mixed accidentally
+- fair-mode player-visible snapshots
+- optional oracle snapshots for benchmark or debug experiments
+- explicit mode labels so fair and oracle data are never mixed accidentally
 
-### Action Trace Format
+### Action Trace
 
-Must capture:
+Must include:
 
 - action kind
 - payload
 - acting player
-- timestamps or ordering index
+- timestamps or an ordering index
 - search metadata when available
 
-### Benchmark Result Format
+### Benchmark Result
 
-Must capture:
+Must include:
 
 - matchup identity
 - game count
@@ -75,11 +73,11 @@ Must capture:
 
 ## Acceptance Criteria
 
-- Python's role is explicitly offline-only for v1.
-- Export formats are defined well enough to support later tooling.
-- The document prevents accidental drift into a live Python sidecar without a separate architecture decision.
+- Python is clearly limited to offline use in v1
+- backend export formats are defined well enough for later tooling
+- the document blocks accidental drift into a live Python sidecar without a new architecture decision
 
 ## Risks
 
-- If Python exports are not standardized, later offline analysis will become fragmented and untrustworthy.
-- If Python begins to own live decisioning informally, the system will split across two runtimes without a clear contract.
+- weak export contracts will fragment later analysis work
+- informal live Python decisioning will split the system across runtimes without a clear boundary

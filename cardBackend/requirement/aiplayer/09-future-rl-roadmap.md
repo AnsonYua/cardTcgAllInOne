@@ -2,27 +2,25 @@
 
 ## Purpose
 
-This document preserves the long-term option of reinforcement learning without letting it distort the v1 production plan.
+Preserve the long-term RL option without letting it distort the v1 production plan.
 
-## Requirements
+## Rule
 
-RL must not begin until the baseline simulator and benchmark stack are mature enough to support it responsibly.
+Do not start RL work until the baseline simulator, action encoding, and benchmark stack are mature enough to support it responsibly.
 
-## Design
+## Preconditions
 
-## Preconditions Before RL
+All of the following should exist before RL starts:
 
-All of the following must exist first:
-
-- pure in-memory simulation path
+- pure in-memory simulation
 - stable legal action encoding
+- reproducible self-play
 - benchmark harness
-- reproducible self-play loop
 - evaluator baseline
-- replay and telemetry dataset export
+- replay and telemetry exports
 - difficulty-tier baseline for comparison
 
-If any of these prerequisites are missing, RL work is premature.
+If any of these are missing, RL work is premature.
 
 ## Staged Roadmap
 
@@ -33,7 +31,7 @@ Goal:
 
 Expected value:
 - faster policy approximation
-- potential candidate ranking prior
+- better candidate ordering priors
 
 ### Stage B: Value Model For Ranking And Pruning
 
@@ -55,35 +53,35 @@ Expected value:
 ### Stage D: Self-Play RL
 
 Goal:
-- improve beyond the search-generated or imitation baseline when justified
+- improve beyond the search or imitation baseline when justified
 
 Expected value:
-- long-term strategic improvement if the environment is stable enough
+- long-term strategic improvement in a stable environment
 
-## Stop/Go Gates
+## Stop And Go Gates
 
 Do not start RL if:
 
-- the search baseline still has obvious untapped strength
+- the search baseline still has obvious untapped gains
 - action encoding is unstable
-- simulator fidelity is not proven
+- simulator fidelity is unproven
 - benchmarks are not reproducible
-- telemetry does not explain regressions clearly
+- telemetry cannot explain regressions
 
-Proceed to RL only if:
+Proceed only if:
 
 - the v1 search-based CPU opponent is stable and benchmarked
-- action interfaces are frozen enough for training data reuse
+- action interfaces are stable enough for dataset reuse
 - offline evaluation shows likely value from a learned prior or value model
 
 ## Acceptance Criteria
 
-- RL is clearly separated from the v1 production path.
-- Preconditions and stop/go gates are explicit.
-- The staged roadmap preserves a practical order of work.
+- RL is clearly separated from the v1 production path
+- prerequisites and stop/go gates are explicit
+- the roadmap keeps learning work in a practical order
 
 ## Risks
 
-- RL started too early can hide simulator flaws instead of solving them.
-- If action encoding changes constantly, training data becomes disposable.
-- Without a strong baseline, RL progress cannot be measured honestly.
+- RL started too early will hide simulator flaws instead of solving them
+- unstable action encoding will make training data disposable
+- a weak baseline will make RL progress impossible to measure honestly

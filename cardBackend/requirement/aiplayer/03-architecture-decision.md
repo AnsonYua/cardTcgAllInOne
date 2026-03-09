@@ -2,214 +2,147 @@
 
 ## Purpose
 
-This document records the architecture options considered for the AI player program and the final decision selected for implementation.
+Record the architecture options considered for the AI player and the chosen production path for v1.
 
-## Requirements
+## Decision Criteria
 
-The architecture choice must optimize for:
+The v1 architecture should optimize for:
 
 - legality correctness
-- integration fit with the current backend
+- fit with the current backend
 - low operational complexity
-- strong near-term delivery value
-- ability to benchmark and debug
+- near-term delivery value
+- debuggability and benchmarkability
 
-## Design
+## Options Considered
 
-### Option A: Heuristics Only
+### Option A: Extend The Heuristic Bot
 
-Description:
-- Keep extending the current heuristic bot without adding simulation or bounded search.
+Summary:
+- Keep improving the current heuristic bot without adding simulation or bounded search.
 
-Strengths:
-- lowest implementation complexity
-- fastest incremental changes
-- directly compatible with current AI files
+Pros:
+- lowest implementation cost
+- fastest short-term iteration
+- direct compatibility with current AI files
 
-Weaknesses:
-- tactical ceiling is limited
-- difficult to capture complex timing and line planning
-- strength degrades as card pool complexity grows
+Cons:
+- limited tactical ceiling
+- brittle as the card pool grows
+- poor fit for multi-step timing and line planning
 
-Fit With Current Repo:
-- strong
-
-Legality Risk:
-- low if it uses existing execution paths
-
-Latency Risk:
-- very low
-
-Operational Cost:
-- low
-
-Debugging Cost:
-- moderate, because heuristics become brittle and ad hoc over time
-
-Expected Time-To-Value:
-- fast short-term, poor long-term payoff
+Assessment:
+- good emergency fallback path
+- not strong enough as the main long-term production direction
 
 ### Option B: TypeScript Search AI In Backend
 
-Description:
+Summary:
 - Keep live AI inside the backend and add legal action enumeration, in-memory simulation, board evaluation, and bounded search.
 
-Strengths:
-- highest fit with current architecture
-- authoritative legality stays in one codebase
-- easy to benchmark against current heuristic AI
-- compatible with current autoplay and hidden-info player view
-- supports graceful fallback and deterministic debugging
+Pros:
+- best fit with the current architecture
+- legality stays anchored to one authoritative rules path
+- easy to benchmark against the current heuristic bot
+- compatible with current autoplay and hidden-info player views
+- supports deterministic debugging and safe fallback
 
-Weaknesses:
-- more engineering work than heuristics-only
-- search and simulation performance need careful control
-- hidden-information handling requires explicit belief-state design
+Cons:
+- more engineering work than heuristics only
+- requires careful control of simulation cost and search breadth
+- hidden-information handling must be explicit
 
-Fit With Current Repo:
-- highest
-
-Legality Risk:
-- low, because it can reuse the current engine path
-
-Latency Risk:
-- moderate but manageable with bounded budgets and pruning
-
-Operational Cost:
-- moderate
-
-Debugging Cost:
-- moderate, but structured and tractable
-
-Expected Time-To-Value:
-- strong balance of short-term delivery and long-term value
+Assessment:
+- best balance of delivery speed, strength ceiling, and operational simplicity
 
 ### Option C: Python Sidecar For Live Decisioning
 
-Description:
-- Keep the engine in TypeScript, but ask a Python process or service to choose moves during live matches.
+Summary:
+- Keep the engine in TypeScript but ask a Python process or service to choose moves during live matches.
 
-Strengths:
-- easier access to analysis and ML libraries
-- can separate research code from production engine code
+Pros:
+- convenient for analysis and ML experimentation
+- separates research code from production code
 
-Weaknesses:
-- adds inter-process or service communication
-- creates duplicated integration logic
-- increases deployment and debugging complexity
-- risks schema drift between the engine and the decision service
+Cons:
+- adds runtime communication and deployment complexity
+- creates schema drift risk between engine and chooser
+- makes legality mapping and debugging harder
 
-Fit With Current Repo:
-- medium
-
-Legality Risk:
-- medium, because candidate generation and payload mapping can drift
-
-Latency Risk:
-- medium to high
-
-Operational Cost:
-- medium to high
-
-Debugging Cost:
-- high
-
-Expected Time-To-Value:
-- worse than in-backend search for the first production CPU opponent
+Assessment:
+- useful for offline tooling later
+- unnecessary complexity for the first production bot
 
 ### Option D: Online LLM Or Agent
 
-Description:
-- Use a live model call as the main move chooser.
+Summary:
+- Use live model calls as the main move chooser.
 
-Strengths:
-- flexible language-driven reasoning
-- useful for explanations or offline analysis
+Pros:
+- flexible reasoning
+- potentially useful for offline explanation or analysis tools
 
-Weaknesses:
+Cons:
 - poor determinism
 - high latency and cost
-- hard to guarantee legality
-- weak fit for a rule-heavy event engine
+- weak legality guarantees
+- poor fit for a rules-heavy event engine
 
-Fit With Current Repo:
-- low
-
-Legality Risk:
-- high
-
-Latency Risk:
-- high
-
-Operational Cost:
-- high
-
-Debugging Cost:
-- high
-
-Expected Time-To-Value:
-- poor for the production CPU opponent goal
+Assessment:
+- not suitable for the v1 production path
 
 ### Option E: RL-First System
 
-Description:
-- Build the first strong CPU opponent around self-play reinforcement learning from the start.
+Summary:
+- Build the first strong CPU opponent around self-play RL from the start.
 
-Strengths:
-- long-term upside if the simulator and action encoding are mature
-- can eventually improve beyond hand-tuned heuristics
+Pros:
+- long-term upside if the simulator and data pipeline are mature
+- may eventually surpass hand-tuned heuristics
 
-Weaknesses:
-- requires stable simulator, action encoding, datasets, and benchmark loops first
-- large infrastructure cost
-- hard to interpret and debug early
-- likely slower to the first production-ready CPU opponent
+Cons:
+- depends on stable simulation, encoding, and benchmarks first
+- expensive to build and hard to debug early
+- slower route to a reliable production opponent
 
-Fit With Current Repo:
-- low for v1, higher only after groundwork exists
+Assessment:
+- viable only after the search baseline is proven
+- wrong starting point for v1
 
-Legality Risk:
-- medium, depending on action masking quality
+## Chosen Architecture
 
-Latency Risk:
-- variable
+The v1 production path is `TypeScript search AI in backend`.
 
-Operational Cost:
-- high
+That means:
 
-Debugging Cost:
-- very high
-
-Expected Time-To-Value:
-- poor for v1
-
-## Decision
-
-Choose `TypeScript search AI in backend` for the production path.
-
-The chosen v1 architecture is:
-
-- legal action enumeration from the current backend state
-- in-memory simulation using the authoritative engine path
-- board evaluator that scores resulting states
-- bounded search under strict time limits
-- fallback to current-style legal heuristics when search fails or times out
+- enumerate legal actions from the current backend state
+- simulate candidate lines in memory through the authoritative engine path
+- score resulting states with a board evaluator
+- run bounded search inside strict time limits
+- fall back to safe legal heuristics when search fails or times out
 
 Supporting decisions:
 
-- keep the existing heuristic bot as fallback and baseline
-- keep live decisioning inside the TypeScript backend
-- allow Python only for offline analysis and tooling later
-- defer RL until after simulator fidelity, action encoding, and benchmark maturity are proven
+- keep the existing heuristic bot as the fallback and baseline
+- keep live decisioning in the TypeScript backend
+- keep Python offline-only in v1
+- defer RL until simulator fidelity, action encoding, and benchmark maturity are proven
+
+## Why This Choice Wins
+
+- It preserves legality by reusing the current engine path.
+- It fits the existing repository and avoids cross-runtime drift.
+- It can be shipped incrementally and benchmarked against the current bot.
+- It leaves room for offline tooling and later learned components without committing to them too early.
 
 ## Acceptance Criteria
 
-- There is a single clear production-path decision.
-- Rejected alternatives are documented with concrete reasons.
-- The decision explains why live Python, online LLMs, and RL-first are not v1 choices.
+- one clear production architecture is selected
+- rejected options are documented with concrete reasons
+- the document explains why live Python, online-model decisioning, and RL-first are not v1 choices
 
 ## Risks
 
-- Search performance may become difficult if candidate enumeration is too broad.
-- Without strict hidden-information rules, the in-backend search path could accidentally cheat.
-- Without benchmark discipline, later offline experiments may distract from production progress.
+- search latency can spike if candidate generation is too broad
+- hidden-information mistakes can still create accidental cheating if view boundaries are weak
+- offline research can distract from production delivery if not gated by benchmarks
