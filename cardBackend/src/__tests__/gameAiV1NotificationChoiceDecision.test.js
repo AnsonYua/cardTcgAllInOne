@@ -91,4 +91,97 @@ describe('GameAiService v1 notification-first prompt handling', () => {
             expect.objectContaining({ carduid: 'enemy_big' })
         ]);
     });
+
+    test('surfaces simulated prompt-chain telemetry on the chosen v1 decision', async () => {
+        const gameEnv = new GameEnvironment();
+        const aiPlayerId = 'playerId_1';
+        const opponentId = 'playerId_2';
+        const aiPlayer = gameEnv.addPlayer(aiPlayerId, 'P1');
+        gameEnv.addPlayer(opponentId, 'P2');
+        gameEnv.phase = GamePhase.MAIN_PHASE;
+        gameEnv.currentPlayer = aiPlayerId;
+        gameEnv.currentTurn = 4;
+        gameEnv.gameStarted = true;
+
+        aiPlayer.zones.slot1.unit = {
+            carduid: 'ai_source_unit',
+            cardId: 'AI-SOURCE',
+            cardData: {
+                cardType: 'unit',
+                name: 'AI Source Unit',
+                ap: 3,
+                hp: 4,
+                effects: {
+                    rules: [
+                        {
+                            effectId: 'activate_damage',
+                            type: 'activated',
+                            action: 'damage',
+                            target: {
+                                type: 'unit',
+                                scope: 'opponent',
+                                count: 1
+                            },
+                            parameters: {
+                                value: 2
+                            },
+                            timing: {
+                                windows: ['MAIN_PHASE']
+                            }
+                        }
+                    ]
+                }
+            },
+            originalAP: 3,
+            originalHP: 4,
+            damageReceived: 0,
+            isRested: true,
+            playedThisTurn: false,
+            canAttackThisTurn: false,
+            canAttackOnPlayTurn: false,
+            effectsRules: [
+                {
+                    effectId: 'activate_damage',
+                    type: 'activated',
+                    action: 'damage',
+                    target: {
+                        type: 'unit',
+                        scope: 'opponent',
+                        count: 1
+                    },
+                    parameters: {
+                        value: 2
+                    },
+                    timing: {
+                        windows: ['MAIN_PHASE']
+                    }
+                }
+            ]
+        };
+
+        gameEnv.players[opponentId].zones.slot1.unit = createUnit('enemy_small', 1, 2, true);
+        gameEnv.players[opponentId].zones.slot2.unit = createUnit('enemy_big', 4, 5, true);
+
+        const view = GameEnvViewBuilder.toPlayerView(gameEnv, aiPlayerId);
+        const decision = await GameAiService.decide(view, aiPlayerId, { rawGameEnv: gameEnv });
+
+        expect(decision.kind).toBe('playerAction');
+        expect(decision.payload).toEqual(expect.objectContaining({
+            actionType: 'activateCardAbility',
+            carduid: 'ai_source_unit',
+            effectId: 'activate_damage'
+        }));
+        expect(decision.telemetry.promptChain).toEqual([
+            expect.objectContaining({
+                source: 'follow_up',
+                promptType: 'TARGET_CHOICE',
+                decisionKind: 'confirmTargetChoice',
+                success: true
+            })
+        ]);
+        expect(decision.telemetry.simulation).toEqual(expect.objectContaining({
+            success: true,
+            promptChain: expect.any(Array)
+        }));
+    });
 });

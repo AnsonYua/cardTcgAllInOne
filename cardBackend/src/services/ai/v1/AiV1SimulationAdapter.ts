@@ -7,7 +7,14 @@ import { ChoiceConfirmationService } from '../../choices/ChoiceConfirmationServi
 import type { BlockerChoiceEvent, BurstEffectChoiceEvent } from '../../EventQueue/interfaces/GameEvent';
 import { SlotHealthService } from '../../health/SlotHealthService';
 import { GameEnvViewBuilder } from '../../views/GameEnvViewBuilder';
-import type { AiActionCandidate, AiDecisionContext, AiSimulationAdapter, AiSimulationResult } from './AiV1Types';
+import type {
+    AiActionCandidate,
+    AiDecisionContext,
+    AiOwnedPromptSnapshot,
+    AiSimulationAdapter,
+    AiSimulationPromptTrace,
+    AiSimulationResult
+} from './AiV1Types';
 import { GameEnvAiActionAdapter } from './AiV1CandidateEnumerator';
 import { GameEnvAiContextAdapter } from './AiV1ContextAdapter';
 import { evaluateBoardState, scoreAiCandidates } from './AiV1TacticalScorer';
@@ -110,6 +117,33 @@ const collectRemainingHp = (gameEnv: GameEnvironment): Record<string, number> =>
         }
     }
     return remainingHpByCarduid;
+};
+
+const buildPromptTrace = (
+    decision: AiActionCandidate['decision'],
+    prompt: AiOwnedPromptSnapshot | null | undefined,
+    source: 'initial' | 'follow_up',
+    success: boolean
+): AiSimulationPromptTrace => {
+    const payload = asRecord(decision.payload);
+    return {
+        source,
+        eventId: typeof payload.eventId === 'string'
+            ? payload.eventId
+            : (prompt?.eventId || ''),
+        promptType: prompt?.type || '',
+        decisionKind: decision.kind,
+        decisionReason: decision.reason,
+        success,
+        confirmed: typeof payload.confirmed === 'boolean' ? payload.confirmed : undefined,
+        selectedTargets: asTargetSelections(payload.selectedTargets),
+        selectedChoiceIndex: typeof payload.selectedChoiceIndex === 'number'
+            ? payload.selectedChoiceIndex
+            : undefined,
+        selectedOptionIndex: typeof payload.selectedOptionIndex === 'number'
+            ? payload.selectedOptionIndex
+            : undefined
+    };
 };
 
 export class AiLocalSimulationAdapter implements AiSimulationAdapter {
@@ -357,7 +391,8 @@ export class AiLocalSimulationAdapter implements AiSimulationAdapter {
     private async resolveFollowUpPrompts(
         baseContext: AiDecisionContext,
         candidate: AiActionCandidate,
-        clone: GameEnvironment
+        clone: GameEnvironment,
+        promptChain: AiSimulationPromptTrace[]
     ): Promise<{ success: boolean; reason?: string }> {
         let usePlannedTargetSelection = true;
         const seenPromptStates = new Set<string>();
@@ -395,6 +430,7 @@ export class AiLocalSimulationAdapter implements AiSimulationAdapter {
             }
 
             const success = await this.executePromptDecision(clone, baseContext.aiPlayerId, promptDecision);
+            promptChain.push(buildPromptTrace(promptDecision, promptContext.activePrompt, 'follow_up', success));
             if (plannedDecision) {
                 usePlannedTargetSelection = false;
             }
@@ -426,6 +462,7 @@ export class AiLocalSimulationAdapter implements AiSimulationAdapter {
         const beforeScore = evaluateBoardState(beforeContext);
         const beforeRemainingHp = collectRemainingHp(clone);
         const beforeCarduids = new Set(Object.keys(beforeRemainingHp));
+        const promptChain: AiSimulationPromptTrace[] = [];
 
         if (action) {
             const result = await processAction(clone, action);
@@ -438,11 +475,14 @@ export class AiLocalSimulationAdapter implements AiSimulationAdapter {
                     summary: String(result?.error || 'simulation_failed'),
                     destroyedCarduids: [],
                     remainingHpByCarduid: beforeRemainingHp,
-                    hpDeltas: {}
+                    hpDeltas: {},
+                    promptChain
                 };
             }
         } else {
+            promptChain.push(buildPromptTrace(candidate.decision, context.activePrompt, 'initial', false));
             const success = await this.executePromptDecision(clone, context.aiPlayerId, candidate.decision);
+            promptChain[promptChain.length - 1].success = success;
             if (!success) {
                 return {
                     supported: true,
@@ -452,12 +492,13 @@ export class AiLocalSimulationAdapter implements AiSimulationAdapter {
                     summary: 'prompt_simulation_failed',
                     destroyedCarduids: [],
                     remainingHpByCarduid: beforeRemainingHp,
-                    hpDeltas: {}
+                    hpDeltas: {},
+                    promptChain
                 };
             }
         }
 
-        const followUpPromptResult = await this.resolveFollowUpPrompts(context, candidate, clone);
+        const followUpPromptResult = await this.resolveFollowUpPrompts(context, candidate, clone, promptChain);
         if (!followUpPromptResult.success) {
             return {
                 supported: true,
@@ -467,7 +508,8 @@ export class AiLocalSimulationAdapter implements AiSimulationAdapter {
                 summary: followUpPromptResult.reason || 'follow_up_prompt_failed',
                 destroyedCarduids: [],
                 remainingHpByCarduid: beforeRemainingHp,
-                hpDeltas: {}
+                hpDeltas: {},
+                promptChain
             };
         }
 
@@ -495,7 +537,8 @@ export class AiLocalSimulationAdapter implements AiSimulationAdapter {
             summary: `delta=${Math.round(afterScore - beforeScore)} destroyed=${destroyedCarduids.length}`,
             destroyedCarduids,
             remainingHpByCarduid: afterRemainingHp,
-            hpDeltas
+            hpDeltas,
+            promptChain
         };
     }
 }

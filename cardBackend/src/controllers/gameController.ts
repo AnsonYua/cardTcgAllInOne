@@ -73,6 +73,14 @@ export class GameController {
         return `player_${uuidv4()}`;
     }
 
+    private async removeLobbyRoomSafely(gameId: string, context: string): Promise<void> {
+        try {
+            await lobbyManager.removeRoom(gameId);
+        } catch (error) {
+            console.error(`❌ Failed to remove lobby room for ${gameId} (${context}):`, error);
+        }
+    }
+
     private async applyAiAutoplayOrRespond(
         res: Response,
         gameId: string,
@@ -524,6 +532,7 @@ export class GameController {
             }
 
             if (!joinToken || typeof joinToken !== 'string' || joinToken.trim().length === 0) {
+                await this.removeLobbyRoomSafely(gameId, 'joinRoom missing join token');
                 res.status(400).json({
                     errorCode: ErrorCodes.JOIN_TOKEN_REQUIRED,
                     error: 'joinToken is required',
@@ -535,6 +544,7 @@ export class GameController {
 
             const joinTokenValidation = sessionManager.validateJoinToken(gameId, joinToken.trim());
             if (!joinTokenValidation.ok) {
+                await this.removeLobbyRoomSafely(gameId, `joinRoom invalid join token: ${joinTokenValidation.reason}`);
                 res.status(403).json({
                     errorCode: mapJoinTokenFailureReason(joinTokenValidation.reason),
                     error: joinTokenValidation.reason === 'expired' ? 'Join token has expired' : 'Invalid join token',
@@ -544,6 +554,7 @@ export class GameController {
                 return;
             }
             if (joinTokenValidation.record.seat !== 'seat2') {
+                await this.removeLobbyRoomSafely(gameId, 'joinRoom invalid seat');
                 res.status(403).json({
                     errorCode: ErrorCodes.JOIN_TOKEN_INVALID,
                     error: 'Join token is not valid for this seat',

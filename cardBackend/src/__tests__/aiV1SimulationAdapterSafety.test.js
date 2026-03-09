@@ -479,6 +479,28 @@ describe('AiLocalSimulationAdapter', () => {
         expect(result.success).toBe(true);
         expect(result.remainingHpByCarduid.enemy_big).toBe(3);
         expect(result.remainingHpByCarduid.enemy_small).toBe(2);
+        expect(result.promptChain).toEqual([
+            expect.objectContaining({
+                source: 'initial',
+                promptType: 'BURST_EFFECT_CHOICE',
+                decisionKind: 'confirmBurstChoice',
+                confirmed: true,
+                success: true
+            }),
+            expect.objectContaining({
+                source: 'follow_up',
+                promptType: 'BURST_EFFECT_CHOICE',
+                decisionKind: 'confirmBurstChoice',
+                confirmed: true,
+                success: true
+            }),
+            expect.objectContaining({
+                source: 'follow_up',
+                promptType: 'TARGET_CHOICE',
+                decisionKind: 'confirmTargetChoice',
+                success: true
+            })
+        ]);
         expect(gameEnv.toPersistenceJSON()).toEqual(before);
     });
 
@@ -646,6 +668,20 @@ describe('AiLocalSimulationAdapter', () => {
         expect(result.success).toBe(true);
         expect(result.remainingHpByCarduid.follow_up_big).toBe(3);
         expect(result.remainingHpByCarduid.follow_up_small).toBe(2);
+        expect(result.promptChain).toEqual([
+            expect.objectContaining({
+                source: 'initial',
+                promptType: 'BLOCKER_CHOICE',
+                decisionKind: 'confirmBlockerChoice',
+                success: true
+            }),
+            expect.objectContaining({
+                source: 'follow_up',
+                promptType: 'TARGET_CHOICE',
+                decisionKind: 'confirmTargetChoice',
+                success: true
+            })
+        ]);
         expect(gameEnv.toPersistenceJSON()).toEqual(before);
     });
 });

@@ -150,6 +150,24 @@ export interface AiSimulationResult {
     destroyedCarduids: string[];
     remainingHpByCarduid: Record<string, number>;
     hpDeltas: Record<string, number>;
+    promptChain: AiSimulationPromptTrace[];
+}
+
+export interface AiSimulationPromptTrace {
+    source: 'initial' | 'follow_up';
+    eventId: string;
+    promptType: string;
+    decisionKind: string;
+    decisionReason: string;
+    success: boolean;
+    confirmed?: boolean;
+    selectedTargets?: Array<{
+        carduid: string;
+        zone: string;
+        playerId: string;
+    }>;
+    selectedChoiceIndex?: number;
+    selectedOptionIndex?: number;
 }
 
 export interface AiContextAdapter {

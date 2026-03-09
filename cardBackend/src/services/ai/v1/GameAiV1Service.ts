@@ -11,15 +11,29 @@ type DecisionRuntime = {
     rawGameEnv?: GameEnvironment;
 };
 
+const asRecord = (value: unknown): Record<string, unknown> =>
+    value && typeof value === 'object' && !Array.isArray(value)
+        ? (value as Record<string, unknown>)
+        : {};
+
+const getSimulationTelemetry = (telemetry: Record<string, unknown> | undefined): Record<string, unknown> | undefined => {
+    const simulation = asRecord(telemetry?.simulation);
+    return Object.keys(simulation).length > 0 ? simulation : undefined;
+};
+
 const summarizeTopCandidates = (candidates: ReturnType<typeof scoreAiCandidates>): Array<Record<string, unknown>> =>
     candidates.slice(0, 5).map((candidate) => ({
+        simulation: getSimulationTelemetry(candidate.telemetry),
         candidateId: candidate.candidateId,
         kind: candidate.kind,
         reason: candidate.decision.reason,
         tacticalScore: candidate.tacticalScore,
         simulationScore: candidate.simulationScore,
         totalScore: candidate.totalScore,
-        tags: candidate.tags
+        tags: candidate.tags,
+        promptChainLength: Array.isArray(asRecord(candidate.telemetry?.simulation).promptChain)
+            ? (asRecord(candidate.telemetry?.simulation).promptChain as unknown[]).length
+            : 0
     }));
 
 export class GameAiV1Service {
@@ -68,6 +82,7 @@ export class GameAiV1Service {
 
         scoredCandidates.sort((left, right) => (right.totalScore || 0) - (left.totalScore || 0));
         const best = scoredCandidates[0];
+        const bestSimulation = getSimulationTelemetry(best.telemetry);
         return {
             ...best.decision,
             telemetry: {
@@ -77,6 +92,10 @@ export class GameAiV1Service {
                 tacticalScore: best.tacticalScore,
                 simulationScore: best.simulationScore,
                 totalScore: best.totalScore,
+                simulation: bestSimulation,
+                promptChain: Array.isArray(asRecord(bestSimulation).promptChain)
+                    ? asRecord(bestSimulation).promptChain
+                    : [],
                 topCandidates: summarizeTopCandidates(scoredCandidates)
             }
         };
