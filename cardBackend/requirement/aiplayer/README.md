@@ -1,8 +1,8 @@
-# AI Player Program Requirements
+# Computer Opponent Requirements
 
 ## Overview
 
-This folder is the implementation plan for the next-generation AI player. The immediate goal is a production-ready `CPU opponent` that runs inside the current TypeScript backend, uses the normal game engine, and respects hidden information.
+This folder is the implementation plan for the next-generation computer opponent. The immediate goal is a production-ready `CPU opponent` that runs inside the current TypeScript backend, uses the normal game engine, and respects hidden information.
 
 This is not a greenfield AI project. The backend already has:
 
@@ -24,7 +24,7 @@ The plan in this folder builds on that foundation instead of replacing it.
 
 These decisions are assumed across the whole requirement set:
 
-- live gameplay AI stays in the TypeScript backend
+- live gameplay decision logic stays in the TypeScript backend
 - v1 is a fair `CPU opponent`, not an oracle and not an online-model system
 - v1 strength comes from legal action enumeration, in-memory simulation, board evaluation, and bounded search
 - Python is offline-only in v1
@@ -32,9 +32,9 @@ These decisions are assumed across the whole requirement set:
 
 ## Global Rules
 
-- Production AI must act through the normal backend execution path.
-- Production AI must not use exact hidden-card identities unless that information was legally revealed and is still valid.
-- Production AI may use public information, observed history, revealed cards, public counts, and probability-based inference.
+- Production bot must act through the normal backend execution path.
+- Production bot must not use exact hidden-card identities unless that information was legally revealed and is still valid.
+- Production bot may use public information, observed history, revealed cards, public counts, and probability-based inference.
 - The system must remain compatible with current autoplay and player-view flows.
 - Advanced decision logic must degrade to safe legal fallback behavior on timeout or internal failure.
 
@@ -50,10 +50,10 @@ The v1 release should deliver:
 
 ## Terminology
 
-- `AI player`: the decision-making system, including search, evaluator, simulation, and supporting logic
-- `CPU opponent`: the player-facing in-game bot and its difficulty levels
+- `computer opponent` or `CPU opponent`: the player-facing in-game bot
+- `decision logic`: the backend code that chooses legal actions for the computer opponent
 - `heuristic bot`: the current simpler rules-based baseline
-- `production AI`: the live backend AI used in normal matches
+- `production bot`: the live backend computer-opponent logic used in normal matches
 
 ## Reading Order
 
@@ -68,6 +68,7 @@ The v1 release should deliver:
 9. [09-future-rl-roadmap.md](./09-future-rl-roadmap.md)
 10. [10-subtasks-and-delivery-phases.md](./10-subtasks-and-delivery-phases.md)
 11. [11-open-questions-and-assumptions.md](./11-open-questions-and-assumptions.md)
+12. [12-computer-opponent-implementation-plan.md](./12-computer-opponent-implementation-plan.md)
 
 ## Document Map
 
@@ -85,3 +86,4 @@ The v1 release should deliver:
 | `09-future-rl-roadmap.md` | Post-baseline learning roadmap |
 | `10-subtasks-and-delivery-phases.md` | Delivery sequence and implementation phases |
 | `11-open-questions-and-assumptions.md` | Open product questions and current defaults |
+| `12-computer-opponent-implementation-plan.md` | Concrete plan for the first playable computer opponent |

@@ -2,48 +2,40 @@
 
 ## Purpose
 
-This document defines the vocabulary used throughout the AI player requirement set. These terms should be used consistently in design docs, code comments, telemetry, and benchmark reports.
+This document defines the vocabulary used throughout the computer-opponent requirement set. These terms should be used consistently in design docs, code comments, telemetry, and benchmark reports.
 
 ## Requirements
 
-The following definitions are normative for this AI program.
+The following definitions are normative for this program.
 
 ## Definitions
 
-### Core AI Terms
+### Core Computer Opponent Terms
 
-- `CPU opponent`
+- `computer opponent`
   - A computer-controlled opponent that players can face in the game.
-- `strong CPU opponent`
-  - A CPU opponent whose AI player plays legally, finishes games reliably, and materially outperforms the current heuristic bot under fair information constraints.
+- `decision logic`
+  - The backend logic that chooses actions for the computer opponent during a match.
 - `legal action`
   - An action that the current game state, rules, timing window, and engine validators would accept if submitted through the normal backend flow.
 - `candidate action`
-  - A legal action considered by the AI during selection, usually enriched with metadata used for pruning, simulation, and ranking.
+  - A legal action considered by the decision logic, usually enriched with metadata used for filtering, simulation, and ranking.
 - `simulation`
   - Executing a candidate action against an in-memory cloned game state using the same authoritative rule path as real gameplay.
 - `simulation fidelity`
   - The degree to which a simulated result matches real execution for the same starting state and action, ignoring only approved non-semantic fields.
-- `determinization`
-  - Sampling one plausible fully specified hidden-information world from the set of states consistent with the public information.
-- `belief state`
-  - A structured representation of what hidden cards are still plausible, with optional coarse probabilities or risk tags.
-- `evaluation function`
-  - A scoring function that converts a simulated state into a scalar score plus a structured breakdown.
-- `rollout policy`
-  - A cheaper default action-selection policy used when search depth is capped or when continuation requires fast approximations.
-- `principal variation`
-  - The best action sequence found by the search procedure within its budget.
-- `search budget`
-  - The maximum time, nodes, determinizations, or depth allowed for one decision.
+- `hidden-information-safe view`
+  - The game-state view exposed to production decision logic, excluding exact hidden information that was not legally revealed.
+- `state score`
+  - A score used to compare simulated outcomes, usually based on lethal pressure, board state, survivability, and card advantage.
+- `decision budget`
+  - The maximum time or work allowed for one decision.
 - `difficulty tier`
-  - A configuration profile that changes search depth, pruning aggressiveness, and evaluation sophistication without cheating.
-- `production AI`
-  - The live backend decision system that powers the fair CPU opponent in normal gameplay.
-- `research tooling`
-  - Non-production tools used for analysis, self-play, telemetry processing, or experimental model work.
+  - A configuration profile that changes how far the bot looks ahead and how aggressively it filters actions without cheating.
+- `production bot`
+  - The live backend decision system that powers the computer opponent in normal gameplay.
 
-### Game-AI Concepts
+### Game Logic Concepts
 
 - `tactical line`
   - A short sequence of actions whose value comes from immediate consequences in the current timing window, such as lethal, anti-lethal defense, blocker bypass, burst choice, attack-step trick, or a pairing/deploy line that changes the board immediately.
@@ -107,7 +99,7 @@ The following definitions are normative for this AI program.
 - `pruning`
   - Removing low-value, redundant, or dominated candidate actions before deeper simulation.
 - `fallback mode`
-  - A safe policy used when search or enumeration fails, usually a simpler heuristic chooser that still respects legality.
+  - A safe policy used when simulation or selection fails, usually a simpler heuristic chooser that still respects legality.
 - `deterministic mode`
   - A debugging mode where random seeds, candidate ordering, and sampling are fixed for reproducibility.
 - `equivalence test`
@@ -119,17 +111,17 @@ The following definitions are normative for this AI program.
 
 - Use `fair` to mean hidden information is respected.
 - Use `oracle` only for explicit debug or analysis modes.
-- Use `CPU opponent` for player-facing behavior and difficulty descriptions.
-- Use `AI player` for technical design, search, evaluator, and simulation discussions.
-- Use `search` to mean bounded lookahead over legal actions; do not use it as a synonym for simple heuristics.
+- Use `computer opponent` or `CPU opponent` for player-facing behavior and difficulty descriptions.
+- Use `decision logic` for implementation discussions.
+- Use `search` only when the bot is actually doing bounded lookahead over future legal actions.
 
 ## Acceptance Criteria
 
 - All downstream documents can reference these terms without re-defining them inconsistently.
 - Hidden-information and simulation terminology is explicit enough for engineering and test work.
-- The difference between production AI and research tooling is unambiguous.
+- Player-facing and implementation-facing terminology are clearly separated.
 
 ## Risks
 
-- If `legal action` and `candidate action` are conflated, later enumeration and pruning code will become inconsistent.
+- If `legal action` and `candidate action` are conflated, later enumeration and filtering code will become inconsistent.
 - If `fair_cpu` and `oracle` are not clearly separated, benchmark results will be misleading.

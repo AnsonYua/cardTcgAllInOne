@@ -4,6 +4,8 @@
 
 Turn the requirement set into an execution sequence with clear outputs, dependencies, and completion criteria.
 
+This is the high-level delivery order. The concrete logic plan for the first playable bot is defined in `12-computer-opponent-implementation-plan.md`.
+
 ## Delivery Principles
 
 - lock contracts before optimization
@@ -54,7 +56,7 @@ Done when:
 ## Phase 2: Legal Action Enumeration
 
 Objective:
-- define every AI-owned action type and its payload contract
+- define every computer-opponent-owned action type and its payload contract
 
 Inputs:
 - current AI decision kinds
@@ -64,7 +66,7 @@ Inputs:
 Outputs:
 - action family inventory
 - payload schemas
-- candidate metadata for pruning
+- candidate metadata for filtering
 - choice-ownership rules
 
 Done when:
@@ -96,7 +98,7 @@ Done when:
 ## Phase 4: Bounded Search
 
 Objective:
-- define the bounded search loop and fallback behavior
+- define the bounded lookahead loop and fallback behavior
 
 Inputs:
 - enumerated legal candidates
@@ -105,14 +107,14 @@ Inputs:
 
 Outputs:
 - search loop definition
-- pruning rules
+- filtering rules
 - budget handling policy
 - fallback ordering
 
 Done when:
 - each difficulty tier has a documented search budget
 - fallback order is deterministic and safe
-- the production AI search path is fully specified
+- the production bot search path is fully specified
 
 ## Phase 5: Benchmark And Telemetry
 
