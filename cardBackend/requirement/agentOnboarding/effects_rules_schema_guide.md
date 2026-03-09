@@ -16,19 +16,13 @@ A card can have one rule or many rules. Each rule is one behavior unit. The back
 > `type` tells **what kind of rule this is**, `timing` tells **when it starts or when you may use it**, `action` tells **what it does**, and `target` plus `conditions` tell **who it affects and when it is allowed**.
 
 ## 3) Source Authoring Model
-Source card JSON now uses a split timing model. At authoring time, do not put top-level `trigger` on a rule.
+Source card JSON now uses a split timing model.
 
 Use:
 
 - `timing.eventTrigger`
 - `timing.activationWindows`
 - `timing.duration`
-
-Do not author:
-
-- top-level `trigger`
-- `timing.windows`
-- `timing.internalHook`
 
 ### Simple triggered rule
 
@@ -127,8 +121,6 @@ type CompiledEffectTiming = {
     | "continuous_passive"
     | "temporary_effect"
     | "engine_internal";
-  windows?: string[];
-  legacyTrigger?: string;
 };
 ```
 
@@ -136,8 +128,7 @@ Important rules:
 
 - `internalHook` is runtime-only.
 - `internalHook` is not normal card text timing.
-- `legacyTrigger` and `windows` may still appear in bridged runtime payloads for compatibility.
-- New source card JSON should not rely on those legacy fields.
+- Source card JSON should be authored with `timing.eventTrigger`, `timing.activationWindows`, and `timing.duration`.
 
 ## 5) Field-by-Field Student Table
 
@@ -145,7 +136,7 @@ Important rules:
 |---|---|---|---|---|
 | `effectId` | Rule ID/name | `"pair_draw"`, `"burst_deploy"` | Recommended | Fallback exists, but explicit IDs are safer |
 | `type` | Rule category | `triggered`, `continuous`, `activated`, `play`, `special` | Strongly recommended | Tells the engine what rule family this is |
-| `timing.eventTrigger` | Real game event that starts the rule | `ENTERS_PLAY`, `PAIRING_COMPLETE`, `ATTACK_PHASE`, `BURST_CONDITION` | Required for triggered rules | Replaces authored top-level `trigger` |
+| `timing.eventTrigger` | Real game event that starts the rule | `ENTERS_PLAY`, `PAIRING_COMPLETE`, `ATTACK_PHASE`, `BURST_CONDITION` | Required for triggered rules | Used for event-driven rules |
 | `timing.activationWindows` | Window where player may use the rule | `MAIN_PHASE`, `ACTION_STEP` | Required for activated/play/special rules unless event-driven | Use explicit arrays |
 | `timing.duration` | How long the effect lasts | `continuous`, `UNTIL_END_OF_TURN`, `UNTIL_END_OF_BATTLE` | Required for continuous or temporary effects | Use canonical casing |
 | `action` | What rule does | `damage`, `draw`, `deploy`, `rest`, etc. | Required for most runtime rules | Flow actions like `sequence` and `conditional` also live here for now |
@@ -210,14 +201,13 @@ Frontend rule:
 
 - do not re-interpret raw authored timing by hand if `compiledTiming` is available
 - prefer `compiledTiming.activationWindows` and `compiledTiming.eventTrigger`
-- use legacy `trigger` or `timing.windows` only as compatibility fallback
 
 ## 9) Common Mistakes and Fixes
 
-### Mistake 1: authoring top-level `trigger`
+### Mistake 1: missing `timing.eventTrigger`
 Bad:
 ```json
-{ "type": "triggered", "trigger": "ENTERS_PLAY", "action": "damage" }
+{ "type": "triggered", "action": "damage" }
 ```
 Good:
 ```json
@@ -228,10 +218,10 @@ Good:
 }
 ```
 
-### Mistake 2: using `timing.windows` in new source data
+### Mistake 2: missing `timing.activationWindows`
 Bad:
 ```json
-{ "type": "activated", "timing": { "windows": ["ACTION_STEP"] }, "action": "heal" }
+{ "type": "activated", "action": "heal" }
 ```
 Good:
 ```json
@@ -309,11 +299,10 @@ if one of these is at queue head, resolve it first.
 ## 11) Student Checklist: "Is my new rule good?"
 1. Rule `type` is correct.
 2. Timing is expressed with `timing.eventTrigger`, `timing.activationWindows`, or `timing.duration`.
-3. New source data does not author top-level `trigger` or `timing.windows`.
-4. Action has handler path in executor/router.
-5. Target and conditions match what the action needs.
-6. If choice is needed, confirm queue/route flow exists.
-7. Run scenario/test and confirm real behavior.
+3. Action has handler path in executor/router.
+4. Target and conditions match what the action needs.
+5. If choice is needed, confirm queue/route flow exists.
+6. Run scenario/test and confirm real behavior.
 
 Useful commands:
 ```bash

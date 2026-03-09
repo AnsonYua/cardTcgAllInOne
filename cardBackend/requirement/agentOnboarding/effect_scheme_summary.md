@@ -21,6 +21,11 @@ Each effect rule answers five questions:
 
 Then `target`, `conditions`, `sourceConditions`, and `parameters` explain who it affects and how it resolves.
 
+Important wording rule for this document:
+
+- when this document says `event trigger`, it means `timing.eventTrigger`
+- source card data should be written with `timing.*` fields only
+
 ## Current Timing Model
 
 ### Source authoring timing
@@ -50,15 +55,9 @@ At runtime, the backend also derives:
 - `compiledTiming.duration`
 - `compiledTiming.timingClass`
 
-And, when compatibility is needed:
-
-- `compiledTiming.legacyTrigger`
-- `compiledTiming.windows`
-
 Important rule:
 
-- new source card JSON should not author top-level `trigger`
-- new source card JSON should not author `timing.windows`
+- new source card JSON should use `timing.eventTrigger`, `timing.activationWindows`, and `timing.duration`
 - `internalHook` is runtime-only and not normal card authoring data
 
 ## Card Data Shape
@@ -356,7 +355,7 @@ This tells you the game is not only about board state. Timing is part of both le
 ## Common Schema Patterns
 
 ### 1. Simple targeted effect
-This is the easiest pattern: trigger plus target plus one action.
+This is the easiest pattern: event timing plus target plus one action.
 
 Example: `GD01-008 Guntank`
 
@@ -626,7 +625,7 @@ Practical reading rule:
 ## What This Means For AI, Frontend, And Debugging
 The effect scheme has several consequences for AI and debugging:
 
-- `BURST_CONDITION` is the largest trigger family, so shield risk is a first-class concern.
+- `BURST_CONDITION` is the largest event-trigger family, so shield risk is a first-class concern.
 - `ENTERS_PLAY` and `PAIRING_COMPLETE` are common, so tempo must reward deploy and pair timing.
 - `ATTACK_REDIRECT`, `allow_attack_target`, and `grant_keyword` mean combat access is a separate concept from raw AP/HP.
 - `heal`, `prevent_battle_damage`, and `END_OF_TURN` effects mean survival math cannot stop at current damage totals.
@@ -634,7 +633,7 @@ The effect scheme has several consequences for AI and debugging:
 - `designate_pilot` means command cards can create alternate play lines, not only one-shot spell lines.
 - `activate_ability` means some rules intentionally route into another ability rather than expressing the full resolution in one node.
 - frontend timing gates should use compiled timing descriptors first, not raw authored timing guesses
-- AI enumeration should use compiled timing metadata instead of reparsing legacy trigger strings
+- AI enumeration should use compiled timing metadata instead of reparsing ad hoc timing values
 
 ## Recommended Reading Order
 If you are new to the backend effect system, read these in order:
