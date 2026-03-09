@@ -187,7 +187,7 @@ Define the bounded search loop and fallback behavior.
 
 ### Definition Of Done
 
-- the production CPU search path is fully specified
+- the production AI search path for the CPU opponent is fully specified
 
 ## Phase 5: Benchmark And Telemetry
 

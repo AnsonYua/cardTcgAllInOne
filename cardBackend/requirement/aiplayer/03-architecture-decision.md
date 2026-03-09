@@ -115,7 +115,7 @@ Debugging Cost:
 - high
 
 Expected Time-To-Value:
-- worse than in-backend search for the first production CPU
+- worse than in-backend search for the first production CPU opponent
 
 ### Option D: Online LLM Or Agent
 
@@ -148,12 +148,12 @@ Debugging Cost:
 - high
 
 Expected Time-To-Value:
-- poor for the production CPU goal
+- poor for the production CPU opponent goal
 
 ### Option E: RL-First System
 
 Description:
-- Build the first strong CPU around self-play reinforcement learning from the start.
+- Build the first strong CPU opponent around self-play reinforcement learning from the start.
 
 Strengths:
 - long-term upside if the simulator and action encoding are mature
@@ -163,7 +163,7 @@ Weaknesses:
 - requires stable simulator, action encoding, datasets, and benchmark loops first
 - large infrastructure cost
 - hard to interpret and debug early
-- likely slower to first shippable CPU
+- likely slower to the first production-ready CPU opponent
 
 Fit With Current Repo:
 - low for v1, higher only after groundwork exists

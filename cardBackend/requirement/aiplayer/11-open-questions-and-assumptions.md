@@ -29,12 +29,12 @@ This document captures unresolved product and delivery questions without blockin
 ## Assumptions Locked Now
 
 - language: English
-- scope: full roadmap, with v1 production CPU as the center
-- first shipping target: one solid `normal/hard` fair CPU
+- scope: full roadmap, with the v1 production CPU opponent as the center
+- first shipping target: one solid `normal/hard` fair CPU opponent
 - live architecture: TypeScript backend
 - preferred move budget: `2-3s`
 - acceptable hard cap: `5s`
-- production AI does not know exact opponent hidden zones
+- production AI does not know the exact cards in the opponent's hand, the exact order of cards in the opponent's main deck, or the exact identities of facedown shield cards
 - Python is offline-only at first
 - RL is deferred until simulation, action encoding, and benchmarks are mature
 

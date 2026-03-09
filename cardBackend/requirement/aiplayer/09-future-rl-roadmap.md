@@ -72,7 +72,7 @@ Do not start RL if:
 
 Proceed to RL only if:
 
-- v1 search CPU is stable and benchmarked
+- the v1 search-based CPU opponent is stable and benchmarked
 - action interfaces are frozen enough for training data reuse
 - offline evaluation shows likely value from a learned prior or value model
 

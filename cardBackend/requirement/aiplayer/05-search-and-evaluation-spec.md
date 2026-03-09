@@ -490,7 +490,7 @@ The AI may use:
 - board state
 - trash and other public zones
 - revealed cards
-- hand count, deck count, shield count
+- public counts such as hand size, deck count, shield count, and energy count
 - known triggered effects and observed sequence history
 
 ### Layer 2: Coarse Threat Tags
@@ -516,9 +516,9 @@ Later search phases may:
 
 Production AI must not use:
 
-- exact opponent hand contents
-- exact opponent deck order
-- exact facedown shield identity
+- the exact cards in the opponent's hand
+- the exact order of cards in the opponent's main deck
+- the exact identities of facedown shield cards
 
 ## Search Tuning Policy
 

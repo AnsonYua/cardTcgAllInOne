@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines how the AI program will be measured, tested, and compared so that `strong CPU` has a concrete meaning rather than a subjective one.
+This document defines how the AI program will be measured, tested, and compared so that `strong CPU opponent` has a concrete meaning rather than a subjective one.
 
 ## Requirements
 
@@ -43,7 +43,7 @@ The AI program must be measurable across:
 ### AI vs Current Heuristic Bot
 
 Purpose:
-- establish whether the new CPU actually improves strength
+- establish whether the new CPU opponent actually improves strength
 
 ### AI Mirror Matches
 
@@ -127,7 +127,7 @@ Telemetry must not leak hidden information into production-facing logs when runn
 
 ### Benchmark Validation
 
-- compare new CPU against heuristic baseline under fixed deck matchups
+- compare the new CPU opponent against the heuristic baseline under fixed deck matchups
 - compare difficulty tiers under the same fairness rules
 
 ## Acceptance Criteria

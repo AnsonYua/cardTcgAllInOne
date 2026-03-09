@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document freezes the intent and boundaries of the AI player program so implementation work does not drift into a research-only system, a cheating oracle, or an overbuilt platform before the first production CPU ships.
+This document defines the goal and limits of the AI player project so development stays focused on releasing the first fair, production-ready CPU opponent for the game.
 
 ## Requirements
 
@@ -27,19 +27,19 @@ The AI must:
 
 ### Explicit Non-Goals For V1
 
-The v1 production CPU is not intended to:
+The first production CPU opponent is not intended to:
 
 - use an online LLM as the live move chooser
 - start with reinforcement learning as the primary implementation path
 - cheat by reading exact opponent hand, deck order, or facedown shield identity
-- become a full research platform before the first strong CPU ships
+- become a full research platform before the first production release is ready
 - solve every future AI mode in the same milestone
 
 ## Scope
 
 ### In Scope
 
-- a production `strong CPU` that runs in the TypeScript backend
+- a production `CPU opponent` whose AI logic runs in the TypeScript backend
 - legal action enumeration
 - in-memory simulation on cloned game states
 - a board evaluator with risk and uncertainty handling
@@ -71,15 +71,15 @@ The v1 production CPU is not intended to:
 
 Production AI must not know:
 
-- exact opponent hand contents
-- exact opponent deck order
-- exact facedown shield card identities
+- the exact cards in the opponent's hand
+- the exact order of cards in the opponent's main deck
+- the exact identities of facedown shield cards
 
 Production AI may use:
 
 - public board state
 - public trash/exile data
-- counts of hand, deck, shield, energy
+- public counts such as hand size, deck count, shield count, and energy count
 - previously revealed cards
 - observed colors, factions, card families, and deck composition clues
 - coarse probability or belief estimates over unseen cards
@@ -88,7 +88,7 @@ Production AI may use:
 
 ### Product Positioning
 
-The first production target is a fair CPU opponent that feels strong because it reasons through legal actions and future states, not because it cheats with hidden information or relies on an external model.
+The first production target is a fair CPU opponent that feels strong because its AI player reasons through legal actions and future states, not because it cheats with hidden information or relies on an external model.
 
 ### Required Operational Modes
 
@@ -106,7 +106,7 @@ Only `fair_cpu` is in scope for player-facing release.
 
 ## Acceptance Criteria
 
-- A written architecture and implementation plan exists for a fair production CPU.
+- A written architecture and implementation plan exists for a fair production CPU opponent.
 - Every downstream spec assumes the AI uses the existing backend execution path.
 - The hidden-information rules are unambiguous and consistent across all documents.
 - The move-time budget and v1 scope boundaries are frozen.
