@@ -2,126 +2,174 @@
 
 ## Purpose
 
-This document defines the vocabulary used throughout the computer-opponent requirement set. These terms should be used consistently in design docs, code comments, telemetry, and benchmark reports.
+This document explains the main words used in the computer-opponent requirement set.
+Use these meanings consistently in design docs, code comments, telemetry, and tests.
 
 ## Requirements
 
-The following definitions are normative for this program.
+The definitions below are the standard meanings for this project.
 
 ## Definitions
 
 ### Core Computer Opponent Terms
 
 - `computer opponent`
-  - A computer-controlled opponent that players can face in the game.
+  - The in-game bot that plays against a human player.
+  - Example: the side controlled by the game during a normal match.
+
 - `decision logic`
-  - The backend logic that chooses actions for the computer opponent during a match.
+  - The backend code that decides what the computer opponent should do next.
+  - Example: choosing whether `GD01-027 Big Zam` should attack now or wait.
+
 - `legal action`
-  - An action that the current game state, rules, timing window, and engine validators would accept if submitted through the normal backend flow.
+  - A move the rules allow right now in the current game state and timing window.
+  - Example: using `ST01-014 Unforeseen Incident` is legal only in its `[Main]` or `[Action]` timing.
+
 - `candidate action`
-  - A legal action considered by the decision logic, usually enriched with metadata used for filtering, simulation, and ranking.
+  - One legal move that the bot is thinking about before it picks the best one.
+  - Example: “attack with `GD01-042 Duo's Leo`” and “end turn” can both be candidate actions.
+
 - `simulation`
-  - Executing a candidate action against an in-memory cloned game state using the same authoritative rule path as real gameplay.
+  - A test run in memory to see what may happen after a move.
+  - Example: the bot can simulate pairing `GD01-001 Gundam` before deciding whether the extra draw is worth it.
+
 - `simulation fidelity`
-  - The degree to which a simulated result matches real execution for the same starting state and action, ignoring only approved non-semantic fields.
+  - How closely the test run matches the real game engine.
+  - Example: if simulated combat with `GD01-025 Gundam Deathscythe` gives the same result as real combat, fidelity is high.
+
 - `hidden-information-safe view`
-  - The game-state view exposed to production decision logic, excluding exact hidden information that was not legally revealed.
+  - The game view the bot is allowed to use in a fair match, without secret information.
+  - Example: the bot must not know a facedown shield is `GD01-123 Nahel Argama` unless it was legally revealed.
+
 - `state score`
-  - A score used to compare simulated outcomes, usually based on lethal pressure, board state, survivability, and card advantage.
+  - A simple rating of how good the board looks after a move.
+  - Example: a board with healthy Units like `GD01-004 Guncannon`, ready attackers, and better shield pressure gets a better score.
+
 - `decision budget`
-  - The maximum time or work allowed for one decision.
+  - How much time or work the bot is allowed to spend on one choice.
+  - Example: the bot may only have a few seconds to decide whether to attack or play another card first.
+
 - `difficulty tier`
-  - A configuration profile that changes how far the bot looks ahead and how aggressively it filters actions without cheating.
+  - A bot level that changes how carefully the bot thinks without letting it cheat.
+  - Example: `easy` may check fewer options, while `hard` may compare more legal lines.
+
 - `production bot`
-  - The live backend decision system that powers the computer opponent in normal gameplay.
+  - The real bot used in live matches, not a debug or test version.
+  - Example: the bot a player faces when starting a normal game against the computer opponent.
 
 ### Game Logic Concepts
 
 - `tactical line`
-  - A short sequence of actions whose value comes from immediate consequences in the current timing window, such as lethal, anti-lethal defense, blocker bypass, burst choice, attack-step trick, or a pairing/deploy line that changes the board immediately.
-  - Example: a line that pairs `GD01-025 Gundam Deathscythe` to place a rested Resource and gain `First Strike` this turn is a tactical line because it changes combat immediately.
+  - A short move sequence that gives value right away.
+  - Example: pair `GD01-025 Gundam Deathscythe`, gain `First Strike`, then attack in the same turn.
+
 - `tempo`
-  - Short-term initiative measured by the ability to develop board, pressure shields or base, improve attack access, and force the opponent to spend their next action window answering your line instead of advancing their own plan.
-  - Example: `GD01-008 Guntank` dealing 1 damage to a rested enemy Unit on deploy is tempo because it develops a body while changing the board at once.
+  - Getting ahead so the opponent must react to you instead of following their own plan.
+  - Example: `GD01-008 Guntank` deals damage when deployed, so it changes the board immediately and gives tempo.
+
 - `synergy tempo`
-  - Immediate value created by `ENTERS_PLAY`, `PAIRING_COMPLETE`, link, continuous aura setup, or trait/faction synergy lines that become relevant this turn or by the next action window.
-  - Example: `GD01-001 Gundam` granting `Repair 1` to your White Base Team Units and drawing on pairing is synergy tempo because the value comes from tribal and pairing structure, not only raw stats.
+  - Fast value that comes from cards working well together, not just from raw stats.
+  - Example: `GD01-001 Gundam` helps `White Base Team` Units with `Repair` and can draw when paired.
+
 - `board control`
-  - Advantage in battlefield influence, including ready attackers, blockers, paired strength, durable threats, attack target access, and the ability to deny or weaken the opponent's combat options.
-  - Example: if your board keeps multiple ready attackers while the opponent's best unit is rested or damaged, you have board control even before direct shield damage happens.
+  - Having the stronger position on the battlefield.
+  - Example: if your Units are still active and the opponent's best Unit is rested, you have good board control.
+
 - `combat access`
-  - The ability to convert board presence into meaningful attacks despite blockers, redirect effects, target restrictions, or combat keywords. This includes access created by `High-Maneuver`, `First Strike`, `Suppression`, `allow_attack_target`, `grant_breach`, or blocker denial.
-  - Example: `GD01-042 Duo's Leo` can attack an active enemy Unit of Lv.2 or lower, and `High-Maneuver` lines from cards in `st03` can bypass blockers entirely. Both improve combat access.
+  - How easily your Units can hit the targets you want.
+  - Example: `GD01-042 Duo's Leo` can attack an active enemy Unit of Lv.2 or lower, so it has better combat access than a normal Unit.
+
 - `shield race`
-  - A game state where relative speed toward breaking the opponent's shields or base matters more than slower resource gain, and where the main question is which player reaches a decisive defense-area break first.
-  - Example: once both players already have boards, a `Breach` attacker like `GD01-027 Big Zam` can make the shield race more important than drawing one extra card.
+  - A situation where both players mainly care about breaking shields faster.
+  - Example: `GD01-027 Big Zam` with `Breach` can make shield damage more important than slow value plays.
+
 - `burst pressure`
-  - The value or risk created by interacting with facedown shields. This includes the upside of breaking shields quickly and the downside of triggering plausible `BURST_CONDITION` effects such as free deployment, free add-to-hand, or burst tempo reversal.
-  - Example: attacking a shield is higher risk when burst effects like `GD01-123 Nahel Argama` can deploy for free or `GD01-087 Sayla Mass` can jump to hand.
+  - The reward and danger that come from attacking facedown shields.
+  - Example: attacking shields is risky because a card like `GD01-123 Nahel Argama` may deploy for free.
+
 - `base pressure`
-  - Threat level against the opponent's base once shields are no longer the main defensive layer, including whether current AP and attack access can convert into immediate or near-immediate game-ending damage.
-  - Example: a high-AP attacker with open combat access against an unprotected base creates base pressure even before it is technically lethal.
+  - How close you are to threatening the enemy base directly.
+  - Example: if blockers are gone and your strong attackers are still ready, your base pressure is high.
+
 - `crackback risk`
-  - The risk that after your current line resolves, the opponent can punish you on their next turn or next action window with a strong counter-attack, combat trick, or tempo swing.
-  - Example: a shield attack that leaves your best unit rested and exposed to an opponent counterattack has high crackback risk.
+  - The chance that the opponent can punish your move on their next turn.
+  - Example: if you attack with everything and leave no defense, the opponent may hit back hard.
+
 - `burst exposure`
-  - The likelihood that a line is weak against plausible facedown shield burst outcomes, especially when a shield attack gains little immediate value but opens the door to strong burst tempo for the opponent.
-  - Example: a low-value shield poke into an opponent who may reveal burst deploy or burst add-to-hand has high burst exposure.
+  - How badly your plan loses if the opponent's shield burst is strong.
+  - Example: a weak shield attack looks worse if the top shield might be `GD01-123 Nahel Argama` or `ST01-010 Amuro Ray`.
+
 - `overextension`
-  - Committing too many resources to the current line such that common opposing responses, burst triggers, action-step tricks, or removal effects create a large negative swing.
-  - Example: spending too many cards to force one shield break can be overextension if a burst deploy and an action-step trick immediately reverse the board.
+  - Using too many cards or Units for one push and leaving yourself open.
+  - Example: spending your whole hand to force one attack can backfire if the opponent survives and turns the game around.
+
 - `lethal line`
-  - A line that produces immediate game win or creates a forced win sequence unless the opponent has one of a narrow set of valid answers.
-  - Example: when the opponent has no shields or base left, any successful player attack from a legal attacker becomes a lethal line.
+  - A move sequence that wins the game right now, or almost certainly wins it.
+  - Example: if the opponent has no shields left and you still have a legal attack on player, that can be a lethal line.
+
 - `forced response`
-  - A situation where the opponent must answer a specific threat in the next legal window or lose overwhelming value, such as immediate lethal, base collapse, loss of combat access, or a premium board swing.
-  - Example: if your next attack will break the last layer of defense unless stopped, the opponent is under a forced response.
+  - A threat so strong that the opponent must answer it soon.
+  - Example: if your next attack will finish the game unless stopped, the opponent is under a forced response.
+
 - `action-step leverage`
-  - The degree to which a player can gain value in combat or end-step interaction windows through `ACTION_STEP` cards, AP swing, prevention, return-to-hand, rest, or set-active effects.
-  - Example: combat tricks like AP boosts, prevention, or bounce effects in the attack window give high action-step leverage because they can flip combat after attackers are already committed.
+  - How much value you can gain during battle tricks and response windows.
+  - Example: `ST01-014 Unforeseen Incident` can reduce an enemy Unit's AP during `[Action]` and swing combat.
+
 - `blocker posture`
-  - The quality of a player's current defensive redirection setup, including whether blockers exist, whether they can legally trigger, whether they are turned off by keywords like `High-Maneuver`, and whether redirect lines still preserve a favorable trade.
-  - Example: `GD01-019 Byarlant Custom` gaining `Blocker` when the enemy has four or more Units changes blocker posture because it creates a live redirect defender.
+  - How strong your defense is when blockers and attack redirection matter.
+  - Example: `GD01-019 Byarlant Custom` gaining `Blocker` makes your defense much better.
+
 - `resilience`
-  - The ability of a position to remain favorable after damage exchange or turn pass, including `heal`, `Repair`, `prevent_battle_damage`, `prevent_damage`, `prevent_shield_damage`, and recovery of key units or base thresholds.
-  - Example: `GD01-004 Guncannon` with `Repair 1` or `GD01-091 Chang Wufei` preventing some battle damage both increase resilience.
+  - How well your board survives damage and recovers later.
+  - Example: `GD01-004 Guncannon` with `Repair 1` and `GD01-091 Chang Wufei` preventing some battle damage both add resilience.
+
 - `line volatility`
-  - How much the value of a line changes across plausible hidden-information worlds, especially due to burst outcomes, unknown combat tricks, or unseen removal.
-  - Example: a shield attack that is excellent if no burst appears but bad if burst deploy appears is a high-volatility line.
+  - How much a plan changes between best case and worst case.
+  - Example: a shield attack is high-volatility if it is great when no burst appears but bad when burst appears.
+
 - `event-order sensitivity`
-  - The degree to which a line depends on exact effect ordering, such as burst priority, newly triggered effects interrupting older queue items, or same-window trigger resolution order.
-  - Example: a shield-damage line can be event-order sensitive because burst resolution and newly triggered effects may change the board before older queued effects finish.
+  - When the order of effects matters a lot for the final result.
+  - Example: burst effects and newly triggered effects can change what happens next during a complicated battle.
 
 ### Execution Terms
 
 - `tactical override`
-  - A hard-priority rule that short-circuits normal scoring, such as immediate lethal, required defense against immediate loss, or mandatory choice resolution.
+  - A simple top-priority rule that beats normal scoring.
+  - Example: if the bot sees a lethal attack, it should take it even if another move also looks good.
+
 - `pruning`
-  - Removing low-value, redundant, or dominated candidate actions before deeper simulation.
+  - Cutting away weak options so the bot does not waste time checking everything.
+  - Example: if `ST01-015 White Base` clearly gives the best board development, the bot may ignore obviously bad low-value actions.
+
 - `fallback mode`
-  - A safe policy used when simulation or selection fails, usually a simpler heuristic chooser that still respects legality.
+  - A safe backup way to choose moves if deeper logic fails.
+  - Example: if simulation times out, the bot can still pick a simple legal attack or end turn safely.
+
 - `deterministic mode`
-  - A debugging mode where random seeds, candidate ordering, and sampling are fixed for reproducibility.
+  - A debug mode where the same state gives the same choice every time.
+  - Example: this helps engineers check why the bot attacked with `GD02-001 Psycho Gundam` in one test case.
+
 - `equivalence test`
-  - A test that checks simulated execution and real execution produce the same meaningful outcome.
+  - A test that checks whether simulation and real execution give the same important result.
+  - Example: simulating `GD01-008 Guntank` deploy damage should match what the real engine does.
 
 ## Design
 
 ### Terminology Policy
 
-- Use `fair` to mean hidden information is respected.
-- Use `oracle` only for explicit debug or analysis modes.
-- Use `computer opponent` or `CPU opponent` for player-facing behavior and difficulty descriptions.
-- Use `decision logic` for implementation discussions.
-- Use `search` only when the bot is actually doing bounded lookahead over future legal actions.
+- Use `fair` to mean the bot respects hidden information.
+- Use `oracle` only for explicit debug or analysis modes that can see secret information.
+- Use `computer opponent` or `CPU opponent` for the player-facing bot.
+- Use `decision logic` for the backend code that chooses legal actions.
+- Use `search` only when the bot is truly looking ahead through future legal actions.
 
 ## Acceptance Criteria
 
-- All downstream documents can reference these terms without re-defining them inconsistently.
-- Hidden-information and simulation terminology is explicit enough for engineering and test work.
-- Player-facing and implementation-facing terminology are clearly separated.
+- Other requirement docs can use these terms without redefining them.
+- The wording is simple enough for engineers and designers to read quickly.
+- Player-facing words and implementation words stay clearly separated.
 
 ## Risks
 
-- If `legal action` and `candidate action` are conflated, later enumeration and filtering code will become inconsistent.
-- If `fair_cpu` and `oracle` are not clearly separated, benchmark results will be misleading.
+- If `legal action` and `candidate action` are mixed up, action selection code may become inconsistent.
+- If `fair` and `oracle` are mixed up, tests and benchmarks may accidentally let the bot cheat.
