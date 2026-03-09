@@ -90,6 +90,50 @@ Use:
 }
 ```
 
+## 3A) Source Action vs Compiled Action
+
+The action refactor is now compiler-driven.
+
+Important current-state rule:
+
+- source card JSON still mostly authors effects with one `action` field
+- runtime now compiles that authored shape into a clearer canonical action descriptor
+
+Use this mental model:
+
+- `action` in source JSON = current authored encoding
+- `compiledEffectNode` in runtime data = the real canonical meaning
+
+Canonical runtime shape:
+
+```ts
+type CompiledEffectNode = {
+  structure: 'primitive' | 'sequence' | 'conditional';
+  operation?: string;
+  playMode?: string;
+  metaRef?: {
+    type: string;
+    abilityType?: string;
+  };
+  aiTags?: string[];
+};
+```
+
+What each field means:
+
+- `structure`: whether the rule is a primitive effect, a sequence, or a conditional branch
+- `operation`: the primitive gameplay operation like `damage`, `heal`, or `deploy`
+- `playMode`: how the card may be used or played, such as `designate_pilot`
+- `metaRef`: the rule invokes another ability rather than directly doing a primitive operation
+
+Examples:
+
+- `action: "damage"` -> `structure: "primitive"`, `operation: "damage"`
+- `action: "sequence"` -> `structure: "sequence"`
+- `action: "conditional"` -> `structure: "conditional"`
+- `action: "designate_pilot"` -> `structure: "primitive"`, `playMode: "designate_pilot"`
+- `action: "activate_ability"` -> `structure: "primitive"`, `metaRef.type: "activate_ability"`
+
 ## 4) Source Timing vs Compiled Timing
 
 There are now two timing views:
@@ -140,7 +184,7 @@ Important rules:
 | `timing.eventTrigger` | Real game event that starts the rule | `ENTERS_PLAY`, `PAIRING_COMPLETE`, `ATTACK_PHASE`, `BURST_CONDITION` | Required for triggered rules | Used for event-driven rules |
 | `timing.activationWindows` | Window where player may use the rule | `MAIN_PHASE`, `ACTION_STEP` | Required for activated/play/special rules unless event-driven | Use explicit arrays |
 | `timing.duration` | How long the effect lasts | `continuous`, `UNTIL_END_OF_TURN`, `UNTIL_END_OF_BATTLE` | Required for continuous or temporary effects | Use canonical casing |
-| `action` | What rule does | `damage`, `draw`, `deploy`, `rest`, etc. | Required for most runtime rules | Flow actions like `sequence` and `conditional` also live here for now |
+| `action` | Current authored action field | `damage`, `draw`, `deploy`, `rest`, `sequence`, `conditional`, `designate_pilot` | Required for current source rules | Source authoring is still in migration |
 | `target` | Who/what action applies to | `{ scope, type, count, filters }` | Required for targeted actions | Target shape must match the action |
 | `conditions` | Extra IF checks | arrays of condition objects | Optional | Checked against current state/event |
 | `sourceConditions` | Conditions on the source card/player | condition objects | Optional | Common for `linked`, `paired`, turn-owner checks |
@@ -148,6 +192,7 @@ Important rules:
 | `parameters` | Extra action data | numeric/flag/config object | Optional | Action-specific details |
 | `optional` | Can player skip? | `true`, `false` | Optional | Important for burst and tutor-like flows |
 | `compiledTiming` | Normalized timing metadata | runtime-only | No | Added by backend bridge/compiler |
+| `compiledEffectNode` | Canonical runtime action descriptor | runtime-only | No | Preferred for backend, frontend, and AI interpretation |
 
 ## 6) Timing Matrix
 
@@ -170,15 +215,18 @@ These are not the same kind of timing.
 1. Load card JSON from set data files.
 2. Normalize rule fields (`normalizeEffectRule`).
 3. Compile timing metadata (`compileEffectTimingFromRule`).
-4. Bridge compatibility fields for older runtime surfaces if needed.
-5. Collect matching rules by event timing (`EffectRuleCatalog`) or by activation window.
-6. Route action to executor/router.
-7. If user choice is needed, queue pauses for choice event.
-8. After choice resolve, queue continues until event is done.
+4. Compile canonical action metadata (`compiledEffectNode`).
+5. Bridge compatibility fields for older runtime surfaces if needed.
+6. Collect matching rules by event timing (`EffectRuleCatalog`) or by activation window.
+7. Route effect structure and operation to executor/router.
+8. If user choice is needed, queue pauses for choice event.
+9. After choice resolve, queue continues until event is done.
 
 Main sources:
 
 - `src/services/effects/timing/EffectTimingCompiler.ts`
+- `src/services/effects/EffectActionCompiler.ts`
+- `src/services/effects/EffectActionAccess.ts`
 - `src/utils/EffectNormalizationUtils.ts`
 - `src/services/effects/EffectRuleCatalog.ts`
 - `src/services/effects/EffectExecutor.ts`
@@ -202,6 +250,7 @@ Frontend rule:
 
 - do not re-interpret raw authored timing by hand if `compiledTiming` is available
 - prefer `compiledTiming.activationWindows` and `compiledTiming.eventTrigger`
+- do not infer special action meaning from raw `action` when `compiledEffectNode` is available
 
 ## 9) Common Mistakes and Fixes
 

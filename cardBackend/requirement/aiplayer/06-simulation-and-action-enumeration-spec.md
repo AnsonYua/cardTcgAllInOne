@@ -49,6 +49,31 @@ type AiActionCandidate = {
 
 `decisionKind` and `decisionPayload` should align with the existing `AiDecision` execution model so simulated and real execution share the same payload shape whenever possible.
 
+## Effect Descriptor Contract
+
+The enumerator should not classify effects from raw authored `action` strings alone when compiled descriptors are available.
+
+```ts
+type CompiledEffectNode = {
+  structure: 'primitive' | 'sequence' | 'conditional';
+  operation?: string;
+  playMode?: string;
+  metaRef?: {
+    type: string;
+    abilityType?: string;
+  };
+  aiTags?: string[];
+};
+```
+
+Rules:
+
+- source card data still mostly authors one `action` field
+- runtime/backend/AI should prefer `compiledEffectNode`
+- `sequence` and `conditional` should be treated as structure, not as normal primitive operations
+- `designate_pilot` should be treated as play-mode metadata
+- `activate_ability` should be treated as meta ability routing
+
 ## Timing Descriptor Contract
 
 The enumerator and search layer must use normalized timing metadata.
@@ -93,6 +118,13 @@ The enumerator must support these categories:
 - burst choice
 - end turn
 
+### Effect-Aware Enumeration Rules
+
+- use `compiledEffectNode.playMode === "designate_pilot"` to recognize command-as-pilot lines
+- use `compiledEffectNode.metaRef` to recognize ability-invoking effects such as burst-activated main abilities
+- use `compiledEffectNode.structure` to distinguish primitive direct effects from nested flow nodes
+- do not assume the top-level authored `action` string is enough to classify AI-relevant meaning
+
 ### Enumeration Rules
 
 - emit only actions legal in the current timing window
@@ -102,6 +134,7 @@ The enumerator must support these categories:
 - use only hidden-information-safe state when building candidates in production mode
 - never fabricate payload shapes the engine would not accept
 - determine legality from compiled timing descriptors
+- prefer compiled action descriptors when determining whether an effect creates a play-mode line, a direct activation line, or a meta ability line
 - distinguish event-driven rules from player-activated windows instead of treating all timing as one `trigger` string
 
 ### Choice Ownership Rule
@@ -209,6 +242,7 @@ These are internal contracts for the AI program, not public gameplay API contrac
 - Simulation requirements forbid file persistence and duplicated rules.
 - Equivalence requirements are concrete enough for automated validation.
 - AI timing checks can classify rules from compiled timing descriptors alone.
+- AI action classification can distinguish structure, primitive operation, play mode, and meta ability routing from compiled effect descriptors.
 
 ## Risks
 

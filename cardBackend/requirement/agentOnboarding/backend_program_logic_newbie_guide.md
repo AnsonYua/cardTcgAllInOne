@@ -119,6 +119,7 @@ Game-end call path example:
 ### Effect execution
 - Direct handlers: `src/services/effects/EffectExecutor.ts`
 - Routed multi-step actions: `src/services/effects/EffectActionRouter.ts`
+- Canonical action compile/access: `src/services/effects/EffectActionCompiler.ts`, `src/services/effects/EffectActionAccess.ts`
 
 ### Timing model
 The backend no longer treats one broad `trigger` field as the full meaning of timing.
@@ -135,6 +136,33 @@ Simple meaning:
 - `activationWindows` = player may choose to use the rule now
 - `duration` = effect stays active for some period
 - `compiledTiming.timingClass` = backend summary such as `event_triggered` or `player_activated`
+
+### Action model
+The backend also no longer has to treat authored `action` as one flat meaning.
+
+Current authoring reality:
+
+- source card JSON still mostly stores one `action` field
+
+Runtime meaning:
+
+- backend compiles `compiledEffectNode`
+- runtime code should prefer `compiledEffectNode` over guessing from raw `action`
+
+Simple meaning:
+
+- `structure` = how the rule is organized
+- `operation` = what primitive effect it performs
+- `playMode` = how the card may be used or played
+- `metaRef` = the rule tells the engine to run another ability
+
+Examples:
+
+- `damage` -> primitive operation
+- `sequence` -> structural flow
+- `conditional` -> structural flow
+- `designate_pilot` -> play-mode rule
+- `activate_ability` -> meta ability routing
 
 ## 9) Choice Resolution Logic
 Choice APIs in routes:
@@ -167,9 +195,9 @@ When something is wrong:
 1. inspect `phase`, `currentPlayer`, queue head event
 2. inspect `currentBattle`
 3. inspect last choice event and whether user decision was saved
-4. inspect effect trigger/action/target shape
-4. inspect `timing.eventTrigger`, `timing.activationWindows`, `timing.duration`, and `compiledTiming`
-5. check matching manager file
+4. inspect authored rule shape: `type`, `timing`, `action`, `target`
+5. inspect compiled runtime shape: `compiledTiming` and `compiledEffectNode`
+6. check matching manager file
 
 ## 12) Mapping Bugs to Files
 - Play card fails: `CardPlayExecutor`, `PlayCardPreparationManager`
@@ -184,7 +212,7 @@ Before saying "fixed":
 1. queue order still correct
 2. choice gating still works
 3. timing fields are canonical (`eventTrigger`, `activationWindows`, `duration`)
-4. action names are canonical
+4. compiled action meaning is clear (`structure`, `operation`, `playMode`, `metaRef`)
 5. no turn-rule bypass created
 6. scenario/test still passes
 
