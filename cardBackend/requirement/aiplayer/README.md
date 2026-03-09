@@ -69,6 +69,7 @@ The v1 release should deliver:
 10. [10-subtasks-and-delivery-phases.md](./10-subtasks-and-delivery-phases.md)
 11. [11-open-questions-and-assumptions.md](./11-open-questions-and-assumptions.md)
 12. [12-computer-opponent-implementation-plan.md](./12-computer-opponent-implementation-plan.md)
+13. [13-v1-computer-opponent-protocol.md](./13-v1-computer-opponent-protocol.md)
 
 ## Document Map
 
@@ -87,3 +88,4 @@ The v1 release should deliver:
 | `10-subtasks-and-delivery-phases.md` | Delivery sequence and implementation phases |
 | `11-open-questions-and-assumptions.md` | Open product questions and current defaults |
 | `12-computer-opponent-implementation-plan.md` | Concrete plan for the first playable computer opponent |
+| `13-v1-computer-opponent-protocol.md` | Runtime protocol and ordered subtasks for v1 implementation |
