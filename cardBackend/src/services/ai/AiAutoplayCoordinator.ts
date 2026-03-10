@@ -3,7 +3,7 @@ import { GameEnvironment } from '../../models/GameEnvironment';
 import { GameEnvViewBuilder } from '../views/GameEnvViewBuilder';
 import { GameAiService } from './GameAiService';
 import { AsyncMutex } from '../../utils/AsyncMutex';
-import { AI_AUTOPLAY_DEFAULT_STEPS } from './AiAutoplayConfig';
+import { AI_ACTION_DELAY_MS, AI_AUTOPLAY_DEFAULT_STEPS, AI_TURN_START_DELAY_MS } from './AiAutoplayConfig';
 import { AiAutoplayPacingStore } from './AiAutoplayPacingStore';
 import { getPendingAiChoiceOwners, hasPendingChoiceForNonAi } from './AiAutoplayChoiceGuards';
 import { AiDecisionExecutor } from './AiDecisionExecutor';
@@ -12,6 +12,7 @@ import { GameLogicResult } from '../GameLogic';
 
 export class AiAutoplayCoordinator {
     private static readonly gameLocks = new Map<string, AsyncMutex>();
+    private static readonly scheduledAutoplayByGameId = new Map<string, NodeJS.Timeout>();
     private static readonly pacingStore = new AiAutoplayPacingStore();
     private readonly decisionExecutor: AiDecisionExecutor;
 
@@ -33,6 +34,32 @@ export class AiAutoplayCoordinator {
         return gameEnv.aiPlayerIds.filter((playerId: unknown): playerId is string => typeof playerId === 'string');
     }
 
+    private hasAiWork(gameEnv: GameEnvironment | null | undefined, aiPlayerIds: string[]): boolean {
+        if (!gameEnv || gameEnv.gameEnded || aiPlayerIds.length === 0) {
+            return false;
+        }
+
+        if (hasPendingChoiceForNonAi(gameEnv, aiPlayerIds)) {
+            return false;
+        }
+
+        if (getPendingAiChoiceOwners(gameEnv, aiPlayerIds).length > 0) {
+            return true;
+        }
+
+        const currentPlayer = typeof gameEnv.currentPlayer === 'string' ? gameEnv.currentPlayer : '';
+        if (currentPlayer && aiPlayerIds.includes(currentPlayer)) {
+            return true;
+        }
+
+        const battle = gameEnv.currentBattle;
+        if (!battle) {
+            return false;
+        }
+
+        return aiPlayerIds.includes(battle.attackingPlayerId) || aiPlayerIds.includes(battle.defendingPlayerId);
+    }
+
     private static getGameLock(gameId: string): AsyncMutex {
         let lock = this.gameLocks.get(gameId);
         if (!lock) {
@@ -40,6 +67,19 @@ export class AiAutoplayCoordinator {
             this.gameLocks.set(gameId, lock);
         }
         return lock;
+    }
+
+    private static clearScheduledAutoplay(gameId: string): void {
+        const timer = this.scheduledAutoplayByGameId.get(gameId);
+        if (!timer) {
+            return;
+        }
+        clearTimeout(timer);
+        this.scheduledAutoplayByGameId.delete(gameId);
+    }
+
+    private static getFollowUpDelayMs(): number {
+        return Math.max(AI_ACTION_DELAY_MS, AI_TURN_START_DELAY_MS, 1000);
     }
 
     async runWithGameLock<T>(gameId: string, work: () => Promise<T>): Promise<T> {
@@ -141,6 +181,27 @@ export class AiAutoplayCoordinator {
         return this.runAiAutoplay(gameId, humanPlayerId, maxSteps);
     }
 
+    private scheduleFollowUpAutoplay(gameId: string, viewerPlayerId: string): void {
+        AiAutoplayCoordinator.clearScheduledAutoplay(gameId);
+        const timer = setTimeout(() => {
+            AiAutoplayCoordinator.scheduledAutoplayByGameId.delete(gameId);
+            void this.runWithGameLock(gameId, async () => {
+                const result = await this.runAiAutoplayForHuman(gameId, viewerPlayerId, AI_AUTOPLAY_DEFAULT_STEPS);
+                if (!result.success || !result.gameEnv) {
+                    console.error('❌ Scheduled AI autoplay failed:', result.error || 'unknown_error');
+                    return;
+                }
+
+                const aiPlayerIds = this.getAiPlayerIds(result.gameEnv);
+                if (this.hasAiWork(result.gameEnv, aiPlayerIds)) {
+                    this.scheduleFollowUpAutoplay(gameId, viewerPlayerId);
+                }
+            });
+        }, AiAutoplayCoordinator.getFollowUpDelayMs());
+        timer.unref?.();
+        AiAutoplayCoordinator.scheduledAutoplayByGameId.set(gameId, timer);
+    }
+
     async maybeRunAiAfterHuman(
         gameId: string,
         humanPlayerId: string,
@@ -149,8 +210,16 @@ export class AiAutoplayCoordinator {
         if (this.isAiPlayer(gameEnv, humanPlayerId) || this.getAiPlayerIds(gameEnv).length === 0) {
             return { success: true, gameEnv };
         }
-        return this.runWithGameLock(gameId, () =>
-            this.runAiAutoplayForHuman(gameId, humanPlayerId, AI_AUTOPLAY_DEFAULT_STEPS)
-        );
+        return this.runWithGameLock(gameId, async () => {
+            AiAutoplayCoordinator.clearScheduledAutoplay(gameId);
+            const result = await this.runAiAutoplayForHuman(gameId, humanPlayerId, AI_AUTOPLAY_DEFAULT_STEPS);
+            if (result.success && result.gameEnv) {
+                const aiPlayerIds = this.getAiPlayerIds(result.gameEnv);
+                if (this.hasAiWork(result.gameEnv, aiPlayerIds)) {
+                    this.scheduleFollowUpAutoplay(gameId, humanPlayerId);
+                }
+            }
+            return result;
+        });
     }
 }

@@ -1,6 +1,7 @@
 const { GamePhase, PlayerActionType } = require('../models/GameEnums');
 const { GameEnvironment } = require('../models/GameEnvironment');
 const { AiAutoplayCoordinator } = require('../services/ai/AiAutoplayCoordinator');
+const { GameAiService } = require('../services/ai/GameAiService');
 
 function createUnit(carduid, ap, hp, isRested = false) {
     return {
@@ -168,5 +169,114 @@ describe('AiAutoplayCoordinator v1 completion', () => {
         expect(result.success).toBe(true);
         expect(result.gameEnv.gameEnded).toBe(true);
         expect(result.gameEnv.winnerId).toBe('player_ai_1');
+    });
+});
+
+describe('AiAutoplayCoordinator scheduled follow-up pacing', () => {
+    afterEach(() => {
+        jest.useRealTimers();
+        jest.restoreAllMocks();
+    });
+
+    test('runs the next AI action only after the 1 second follow-up delay', async () => {
+        jest.useFakeTimers();
+        jest.spyOn(AiAutoplayCoordinator.pacingStore, 'getThrottleWaitMs').mockReturnValue(0);
+
+        const gameEnv = new GameEnvironment();
+        gameEnv.addPlayer('player_human', 'Human');
+        gameEnv.addPlayer('player_ai', 'AI');
+        gameEnv.aiPlayerIds = ['player_ai'];
+        gameEnv.phase = GamePhase.MAIN_PHASE;
+        gameEnv.currentTurn = 3;
+        gameEnv.currentPlayer = 'player_ai';
+        gameEnv.gameStarted = true;
+
+        const playCardCalls = [];
+        const endTurnCalls = [];
+
+        const logic = {
+            gameEnv,
+            async getPlayerGameState() {
+                return { success: true, gameEnv: this.gameEnv };
+            },
+            async loadGameFromFile() {
+                return this.gameEnv;
+            },
+            async saveGameToFile(_gameId, nextGameEnv) {
+                this.gameEnv = nextGameEnv;
+            },
+            async playerActionWithAction() {
+                return { success: false, error: 'unexpected playerActionWithAction' };
+            },
+            async playCardWithAction(_gameId, _playerId, action) {
+                playCardCalls.push(action);
+                return { success: true, gameEnv: this.gameEnv };
+            },
+            async confirmBurstChoice() {
+                return { success: false, error: 'unexpected confirmBurstChoice' };
+            },
+            async confirmTargetChoice() {
+                return { success: false, error: 'unexpected confirmTargetChoice' };
+            },
+            async confirmBlockerChoice() {
+                return { success: false, error: 'unexpected confirmBlockerChoice' };
+            },
+            async confirmTokenChoice() {
+                return { success: false, error: 'unexpected confirmTokenChoice' };
+            },
+            async confirmOptionChoice() {
+                return { success: false, error: 'unexpected confirmOptionChoice' };
+            },
+            async processAction(currentEnv, action) {
+                if (action.type === PlayerActionType.END_TURN) {
+                    endTurnCalls.push(action);
+                    currentEnv.currentPlayer = 'player_human';
+                    currentEnv.currentTurn += 1;
+                    return { success: true };
+                }
+                return { success: false, error: `Unexpected processAction type: ${action.type}` };
+            }
+        };
+
+        const decideSpy = jest.spyOn(GameAiService, 'decide')
+            .mockResolvedValueOnce({
+                kind: 'playCard',
+                reason: 'test_play_card',
+                payload: {
+                    action: {
+                        type: 'PlayCard',
+                        carduid: 'ST01-010_ai_pair_hand_0001',
+                        playAs: 'pilot',
+                        targetUnit: 'unit_1'
+                    }
+                }
+            })
+            .mockResolvedValueOnce({
+                kind: 'endTurn',
+                reason: 'test_end_turn'
+            })
+            .mockResolvedValue({
+                kind: 'wait',
+                reason: 'test_wait'
+            });
+
+        const coordinator = new AiAutoplayCoordinator(logic);
+        const result = await coordinator.maybeRunAiAfterHuman('game_follow_up', 'player_human', gameEnv);
+
+        expect(result.success).toBe(true);
+        expect(playCardCalls).toHaveLength(1);
+        expect(endTurnCalls).toHaveLength(0);
+        expect(decideSpy).toHaveBeenCalledTimes(1);
+
+        await jest.advanceTimersByTimeAsync(999);
+        expect(endTurnCalls).toHaveLength(0);
+        expect(decideSpy).toHaveBeenCalledTimes(1);
+
+        await jest.advanceTimersByTimeAsync(1);
+        await Promise.resolve();
+
+        expect(endTurnCalls).toHaveLength(1);
+        expect(decideSpy).toHaveBeenCalledTimes(2);
+        expect(gameEnv.currentPlayer).toBe('player_human');
     });
 });
