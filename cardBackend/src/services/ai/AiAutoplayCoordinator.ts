@@ -9,6 +9,7 @@ import { getPendingAiChoiceOwners, hasPendingChoiceForNonAi } from './AiAutoplay
 import { AiDecisionExecutor } from './AiDecisionExecutor';
 import { AiDecision } from './AiTypes';
 import { GameLogicResult } from '../GameLogic';
+import { GamePhase } from '../../models/GameEnums';
 
 export type AiAutoplayStateSummary = {
     isAiMatch: boolean;
@@ -63,6 +64,10 @@ export class AiAutoplayCoordinator {
             return true;
         }
 
+        if (this.hasPendingAiSetupWork(gameEnv, aiPlayerIds)) {
+            return true;
+        }
+
         const currentPlayer = typeof gameEnv.currentPlayer === 'string' ? gameEnv.currentPlayer : '';
         if (currentPlayer && aiPlayerIds.includes(currentPlayer)) {
             return true;
@@ -74,6 +79,21 @@ export class AiAutoplayCoordinator {
         }
 
         return aiPlayerIds.includes(battle.attackingPlayerId) || aiPlayerIds.includes(battle.defendingPlayerId);
+    }
+
+    private hasPendingAiSetupWork(gameEnv: GameEnvironment, aiPlayerIds: string[]): boolean {
+        if (gameEnv.phase === GamePhase.DECIDE_FIRST_PLAYER_PHASE) {
+            return typeof gameEnv.firstPlayerChooser === 'string' && aiPlayerIds.includes(gameEnv.firstPlayerChooser);
+        }
+
+        if (gameEnv.phase === GamePhase.REDRAW_PHASE) {
+            return aiPlayerIds.some((playerId) => {
+                const player = gameEnv.players?.[playerId];
+                return Boolean(player && player.confirmIsRedraw !== true);
+            });
+        }
+
+        return false;
     }
 
     private static getGameLock(gameId: string): AsyncMutex {
