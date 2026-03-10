@@ -11,5 +11,5 @@ const readEnvDelayMs = (name: string, fallbackMs: number): number => {
 };
 
 export const AI_AUTOPLAY_DEFAULT_STEPS = 1;
-export const AI_ACTION_DELAY_MS = readEnvDelayMs('AI_ACTION_DELAY_MS', 1000);
-export const AI_TURN_START_DELAY_MS = readEnvDelayMs('AI_TURN_START_DELAY_MS', 1000);
+export const AI_ACTION_DELAY_MS = readEnvDelayMs('AI_ACTION_DELAY_MS', 2000);
+export const AI_TURN_START_DELAY_MS = readEnvDelayMs('AI_TURN_START_DELAY_MS', 2000);

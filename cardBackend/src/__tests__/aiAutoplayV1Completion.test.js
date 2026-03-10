@@ -178,7 +178,7 @@ describe('AiAutoplayCoordinator scheduled follow-up pacing', () => {
         jest.restoreAllMocks();
     });
 
-    test('runs the next AI action only after the 1 second follow-up delay', async () => {
+    test('runs the next AI action only after the 2 second follow-up delay', async () => {
         jest.useFakeTimers();
         jest.spyOn(AiAutoplayCoordinator.pacingStore, 'getThrottleWaitMs').mockReturnValue(0);
 
@@ -268,7 +268,7 @@ describe('AiAutoplayCoordinator scheduled follow-up pacing', () => {
         expect(endTurnCalls).toHaveLength(0);
         expect(decideSpy).toHaveBeenCalledTimes(1);
 
-        await jest.advanceTimersByTimeAsync(999);
+        await jest.advanceTimersByTimeAsync(3999);
         expect(endTurnCalls).toHaveLength(0);
         expect(decideSpy).toHaveBeenCalledTimes(1);
 
@@ -278,5 +278,241 @@ describe('AiAutoplayCoordinator scheduled follow-up pacing', () => {
         expect(endTurnCalls).toHaveLength(1);
         expect(decideSpy).toHaveBeenCalledTimes(2);
         expect(gameEnv.currentPlayer).toBe('player_human');
+    });
+
+    test('keeps a prompt follow-up on the same 2 second delay boundary', async () => {
+        jest.useFakeTimers();
+        jest.spyOn(AiAutoplayCoordinator.pacingStore, 'getThrottleWaitMs').mockReturnValue(0);
+
+        const gameEnv = new GameEnvironment();
+        gameEnv.addPlayer('player_human', 'Human');
+        gameEnv.addPlayer('player_ai', 'AI');
+        gameEnv.aiPlayerIds = ['player_ai'];
+        gameEnv.phase = GamePhase.MAIN_PHASE;
+        gameEnv.currentTurn = 4;
+        gameEnv.currentPlayer = 'player_ai';
+        gameEnv.gameStarted = true;
+        gameEnv.notificationQueue = [
+            {
+                id: 'target_prompt_1',
+                type: 'TARGET_CHOICE',
+                payload: {
+                    playerId: 'player_ai',
+                    isCompleted: false,
+                    event: {
+                        id: 'target_prompt_1',
+                        type: 'TARGET_CHOICE',
+                        status: 'DECLARED',
+                        playerId: 'player_ai',
+                        data: {
+                            playerId: 'player_ai',
+                            availableTargets: [
+                                { carduid: 'enemy_unit_1', zone: 'slot1', playerId: 'player_human' }
+                            ]
+                        }
+                    }
+                }
+            }
+        ];
+
+        const confirmTargetCalls = [];
+        const endTurnCalls = [];
+
+        const logic = {
+            gameEnv,
+            async getPlayerGameState() {
+                return { success: true, gameEnv: this.gameEnv };
+            },
+            async loadGameFromFile() {
+                return this.gameEnv;
+            },
+            async saveGameToFile(_gameId, nextGameEnv) {
+                this.gameEnv = nextGameEnv;
+            },
+            async playerActionWithAction() {
+                return { success: false, error: 'unexpected playerActionWithAction' };
+            },
+            async playCardWithAction() {
+                return { success: false, error: 'unexpected playCardWithAction' };
+            },
+            async confirmBurstChoice() {
+                return { success: false, error: 'unexpected confirmBurstChoice' };
+            },
+            async confirmTargetChoice(_gameId, _playerId, payload) {
+                confirmTargetCalls.push(payload);
+                this.gameEnv.notificationQueue[0].payload.isCompleted = true;
+                return { success: true, gameEnv: this.gameEnv };
+            },
+            async confirmBlockerChoice() {
+                return { success: false, error: 'unexpected confirmBlockerChoice' };
+            },
+            async confirmTokenChoice() {
+                return { success: false, error: 'unexpected confirmTokenChoice' };
+            },
+            async confirmOptionChoice() {
+                return { success: false, error: 'unexpected confirmOptionChoice' };
+            },
+            async processAction(currentEnv, action) {
+                if (action.type === PlayerActionType.END_TURN) {
+                    endTurnCalls.push(action);
+                    currentEnv.currentPlayer = 'player_human';
+                    currentEnv.currentTurn += 1;
+                    return { success: true };
+                }
+                return { success: false, error: `Unexpected processAction type: ${action.type}` };
+            }
+        };
+
+        const decideSpy = jest.spyOn(GameAiService, 'decide')
+            .mockResolvedValueOnce({
+                kind: 'confirmTargetChoice',
+                reason: 'test_confirm_target',
+                payload: {
+                    eventId: 'target_prompt_1',
+                    selectedTargets: [{ carduid: 'enemy_unit_1', zone: 'slot1', playerId: 'player_human' }]
+                }
+            })
+            .mockResolvedValueOnce({
+                kind: 'endTurn',
+                reason: 'test_end_turn_after_prompt'
+            })
+            .mockResolvedValue({
+                kind: 'wait',
+                reason: 'test_wait'
+            });
+
+        const coordinator = new AiAutoplayCoordinator(logic);
+        const result = await coordinator.maybeRunAiAfterHuman('game_follow_up_prompt', 'player_human', gameEnv);
+
+        expect(result.success).toBe(true);
+        expect(confirmTargetCalls).toHaveLength(1);
+        expect(endTurnCalls).toHaveLength(0);
+        expect(decideSpy).toHaveBeenCalledTimes(1);
+
+        await jest.advanceTimersByTimeAsync(3999);
+        expect(endTurnCalls).toHaveLength(0);
+        expect(decideSpy).toHaveBeenCalledTimes(1);
+
+        await jest.advanceTimersByTimeAsync(1);
+        await Promise.resolve();
+
+        expect(endTurnCalls).toHaveLength(1);
+        expect(decideSpy).toHaveBeenCalledTimes(2);
+        expect(gameEnv.currentPlayer).toBe('player_human');
+    });
+
+    test('advanceAiStep executes only one decision and reports remaining AI work', async () => {
+        jest.spyOn(AiAutoplayCoordinator.pacingStore, 'getThrottleWaitMs').mockReturnValue(0);
+
+        const gameEnv = new GameEnvironment();
+        gameEnv.addPlayer('player_human', 'Human');
+        gameEnv.addPlayer('player_ai', 'AI');
+        gameEnv.aiPlayerIds = ['player_ai'];
+        gameEnv.phase = GamePhase.MAIN_PHASE;
+        gameEnv.currentTurn = 5;
+        gameEnv.currentPlayer = 'player_ai';
+        gameEnv.gameStarted = true;
+
+        const playCardCalls = [];
+        const logic = {
+            gameEnv,
+            async getPlayerGameState() {
+                return { success: true, gameEnv: this.gameEnv };
+            },
+            async loadGameFromFile() {
+                return this.gameEnv;
+            },
+            async saveGameToFile(_gameId, nextGameEnv) {
+                this.gameEnv = nextGameEnv;
+            },
+            async playerActionWithAction() {
+                return { success: false, error: 'unexpected playerActionWithAction' };
+            },
+            async playCardWithAction(_gameId, _playerId, action) {
+                playCardCalls.push(action);
+                return { success: true, gameEnv: this.gameEnv };
+            },
+            async confirmBurstChoice() {
+                return { success: false, error: 'unexpected confirmBurstChoice' };
+            },
+            async confirmTargetChoice() {
+                return { success: false, error: 'unexpected confirmTargetChoice' };
+            },
+            async confirmBlockerChoice() {
+                return { success: false, error: 'unexpected confirmBlockerChoice' };
+            },
+            async confirmTokenChoice() {
+                return { success: false, error: 'unexpected confirmTokenChoice' };
+            },
+            async confirmOptionChoice() {
+                return { success: false, error: 'unexpected confirmOptionChoice' };
+            },
+            async processAction() {
+                return { success: false, error: 'unexpected processAction' };
+            }
+        };
+
+        const decideSpy = jest.spyOn(GameAiService, 'decide')
+            .mockResolvedValueOnce({
+                kind: 'playCard',
+                reason: 'single_visible_step',
+                payload: {
+                    action: {
+                        type: 'PlayCard',
+                        carduid: 'ST01-010_ai_pair_hand_0001',
+                        playAs: 'pilot',
+                        targetUnit: 'unit_1'
+                    }
+                }
+            })
+            .mockResolvedValue({
+                kind: 'endTurn',
+                reason: 'next_step'
+            });
+
+        const coordinator = new AiAutoplayCoordinator(logic);
+        const result = await coordinator.advanceAiStep('game_frontend_step', 'player_human', 1);
+
+        expect(result.success).toBe(true);
+        expect(result.aiStepExecuted).toBe(true);
+        expect(result.hasMoreAiWork).toBe(true);
+        expect(playCardCalls).toHaveLength(1);
+        expect(decideSpy).toHaveBeenCalledTimes(1);
+    });
+
+    test('advanceAiStep reports throttle wait without executing a second visible action early', async () => {
+        jest.spyOn(AiAutoplayCoordinator.pacingStore, 'getThrottleWaitMs').mockReturnValue(750);
+
+        const gameEnv = new GameEnvironment();
+        gameEnv.addPlayer('player_human', 'Human');
+        gameEnv.addPlayer('player_ai', 'AI');
+        gameEnv.aiPlayerIds = ['player_ai'];
+        gameEnv.phase = GamePhase.MAIN_PHASE;
+        gameEnv.currentTurn = 6;
+        gameEnv.currentPlayer = 'player_ai';
+        gameEnv.gameStarted = true;
+
+        const logic = {
+            gameEnv,
+            async getPlayerGameState() {
+                return { success: true, gameEnv: this.gameEnv };
+            },
+            async loadGameFromFile() {
+                return this.gameEnv;
+            },
+            async saveGameToFile(_gameId, nextGameEnv) {
+                this.gameEnv = nextGameEnv;
+            }
+        };
+
+        const decideSpy = jest.spyOn(GameAiService, 'decide');
+        const coordinator = new AiAutoplayCoordinator(logic);
+        const result = await coordinator.advanceAiStep('game_frontend_throttle', 'player_human', 1);
+
+        expect(result.success).toBe(true);
+        expect(result.aiStepExecuted).toBe(false);
+        expect(result.hasMoreAiWork).toBe(true);
+        expect(result.throttleWaitMs).toBe(750);
+        expect(decideSpy).not.toHaveBeenCalled();
     });
 });

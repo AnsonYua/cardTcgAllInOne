@@ -56,6 +56,13 @@ export interface ErrorResponse {
     context?: string;
 }
 
+type AiAutoplayResponseMeta = {
+    isAiMatch: boolean;
+    aiPlayerIds: string[];
+    hasMoreAiWork: boolean;
+    throttleWaitMs: number;
+};
+
 // ============ CUSTOM TRADING CARD GAME CONTROLLER ============
 
 export class GameController {
@@ -87,7 +94,7 @@ export class GameController {
         playerId: string,
         gameEnv: GameEnvironment,
         context: string
-    ): Promise<GameEnvironment | null> {
+    ): Promise<{ gameEnv: GameEnvironment; aiAutoplay: AiAutoplayResponseMeta } | null> {
         const autoResult = await this.aiCoordinator.maybeRunAiAfterHuman(gameId, playerId, gameEnv);
         if (!autoResult.success || !autoResult.gameEnv) {
             res.status(400).json({
@@ -97,7 +104,20 @@ export class GameController {
             });
             return null;
         }
-        return autoResult.gameEnv;
+        return {
+            gameEnv: autoResult.gameEnv,
+            aiAutoplay: this.buildAiAutoplayMeta(gameId, autoResult.gameEnv),
+        };
+    }
+
+    private buildAiAutoplayMeta(gameId: string, gameEnv: GameEnvironment): AiAutoplayResponseMeta {
+        const summary = this.aiCoordinator.describeAutoplayState(gameId, gameEnv);
+        return {
+            isAiMatch: summary.isAiMatch,
+            aiPlayerIds: summary.aiPlayerIds,
+            hasMoreAiWork: summary.hasMoreAiWork,
+            throttleWaitMs: summary.throttleWaitMs,
+        };
     }
 
     private static getResourceBundleSecret(): string {
@@ -451,14 +471,14 @@ export class GameController {
                     }
 
                     await this.aiCoordinator.saveAiPlayerIds(gameState.gameId, [aiPlayerId]);
-                    const autoEnv = await this.applyAiAutoplayOrRespond(
+                    const autoResult = await this.applyAiAutoplayOrRespond(
                         res,
                         gameState.gameId,
                         playerId,
                         joinState.gameEnv,
                         'startGame endpoint - ai autoplay'
                     );
-                    if (!autoEnv) {
+                    if (!autoResult) {
                         return;
                     }
 
@@ -470,7 +490,8 @@ export class GameController {
                         sessionToken: session.token,
                         sessionExpiresAt: session.expiresAt,
                         joinToken: null,
-                        gameEnv: GameEnvViewBuilder.toPlayerView(autoEnv, playerId)
+                        gameEnv: GameEnvViewBuilder.toPlayerView(autoResult.gameEnv, playerId),
+                        aiAutoplay: autoResult.aiAutoplay,
                     });
                     return;
                 }
@@ -676,21 +697,22 @@ export class GameController {
             const gameState = await this.gameLogic.chooseFirstPlayer(gameId, playerId, chosenFirstPlayerId);
 
             if (gameState.success && gameState.gameEnv) {
-                const finalEnv = await this.applyAiAutoplayOrRespond(
+                const autoResult = await this.applyAiAutoplayOrRespond(
                     res,
                     gameId,
                     playerId,
                     gameState.gameEnv,
                     'chooseFirstPlayer endpoint'
                 );
-                if (!finalEnv) {
+                if (!autoResult) {
                     return;
                 }
 
                 res.json({
                     success: true,
                     gameId: gameState.gameId,
-                    gameEnv: GameEnvViewBuilder.toPlayerView(finalEnv, playerId)
+                    gameEnv: GameEnvViewBuilder.toPlayerView(autoResult.gameEnv, playerId),
+                    aiAutoplay: autoResult.aiAutoplay,
                 });
             } else {
                 res.status(400).json({
@@ -731,21 +753,22 @@ export class GameController {
             const gameState = await this.gameLogic.startReady(gameId, playerId, isRedraw || false);
             
             if (gameState.success && gameState.gameEnv) {
-                const finalEnv = await this.applyAiAutoplayOrRespond(
+                const autoResult = await this.applyAiAutoplayOrRespond(
                     res,
                     gameId,
                     playerId,
                     gameState.gameEnv,
                     'startReady endpoint'
                 );
-                if (!finalEnv) {
+                if (!autoResult) {
                     return;
                 }
 
                 res.json({
                     success: true,
                     gameId: gameState.gameId,
-                    gameEnv: GameEnvViewBuilder.toPlayerView(finalEnv, playerId)
+                    gameEnv: GameEnvViewBuilder.toPlayerView(autoResult.gameEnv, playerId),
+                    aiAutoplay: autoResult.aiAutoplay,
                 });
             } else {
                 res.status(400).json({
@@ -914,21 +937,8 @@ export class GameController {
             const gameState = await this.gameLogic.getPlayerGameState(gameId as string, playerId);
             
             if (gameState.success && gameState.gameEnv) {
-                let finalEnv = gameState.gameEnv;
-                if (!this.aiCoordinator.isAiPlayer(gameState.gameEnv, playerId) &&
-                    this.aiCoordinator.getAiPlayerIds(gameState.gameEnv).length > 0) {
-                    const autoEnv = await this.applyAiAutoplayOrRespond(
-                        res,
-                        gameId as string,
-                        playerId,
-                        gameState.gameEnv,
-                        'getPlayerData endpoint'
-                    );
-                    if (!autoEnv) {
-                        return;
-                    }
-                    finalEnv = autoEnv;
-                }
+                const finalEnv = gameState.gameEnv;
+                const aiAutoplay = this.buildAiAutoplayMeta(gameId as string, finalEnv);
 
                 const secret = GameController.getResourceBundleSecret();
                 const resourceBundleToken = signResourceBundleToken(
@@ -940,6 +950,7 @@ export class GameController {
                     gameId: gameState.gameId,
                     gameEnv: GameEnvViewBuilder.toPlayerView(finalEnv, playerId),
                     resourceBundleToken,
+                    aiAutoplay,
                 });
             } else {
                 res.status(400).json({
@@ -1017,21 +1028,22 @@ export class GameController {
                     const result = await this.gameLogic.playCardWithAction(gameId, playerId, action);
                     
                     if (result.success && result.gameEnv) {
-                        const finalEnv = await this.applyAiAutoplayOrRespond(
+                        const autoResult = await this.applyAiAutoplayOrRespond(
                             res,
                             gameId,
                             playerId,
                             result.gameEnv,
                             'playCard endpoint'
                         );
-                        if (!finalEnv) {
+                        if (!autoResult) {
                             return;
                         }
 
                         res.json({
                             success: true,
                             gameId: result.gameId,
-                            gameEnv: GameEnvViewBuilder.toPlayerView(finalEnv, playerId)
+                            gameEnv: GameEnvViewBuilder.toPlayerView(autoResult.gameEnv, playerId),
+                            aiAutoplay: autoResult.aiAutoplay,
                         });
                     } else {
                         res.status(400).json({
@@ -1135,21 +1147,22 @@ export class GameController {
             const result = await this.gameLogic.playerActionWithAction(gameId, playerId, actionData);
             
             if (result.success && result.gameEnv) {
-                const finalEnv = await this.applyAiAutoplayOrRespond(
+                const autoResult = await this.applyAiAutoplayOrRespond(
                     res,
                     gameId,
                     playerId,
                     result.gameEnv,
                     'playerAction endpoint'
                 );
-                if (!finalEnv) {
+                if (!autoResult) {
                     return;
                 }
 
                 res.json({
                     success: true,
                     gameId: result.gameId,
-                    gameEnv: GameEnvViewBuilder.toPlayerView(finalEnv, playerId),
+                    gameEnv: GameEnvViewBuilder.toPlayerView(autoResult.gameEnv, playerId),
+                    aiAutoplay: autoResult.aiAutoplay,
                     actionType: actionType,
                     result: result.result || 'Action completed successfully'
                 });
@@ -1243,6 +1256,54 @@ export class GameController {
     }
 
     /**
+     * Execute at most one AI follow-up step for the current viewer.
+     * POST /api/game/player/advanceAiStep
+     * Body: { gameId, playerId }
+     */
+    async advanceAiStep(req: GameRequest, res: Response): Promise<void> {
+        try {
+            const { gameId, playerId } = req.body;
+            if (!gameId || !playerId) {
+                res.status(400).json({
+                    error: 'gameId and playerId are required',
+                    timestamp: new Date().toISOString(),
+                    context: 'advanceAiStep endpoint'
+                });
+                return;
+            }
+
+            const result = await this.aiCoordinator.advanceAiStep(gameId, playerId, 1);
+            if (!result.success || !result.gameEnv) {
+                res.status(400).json({
+                    error: result.error || 'Failed to advance AI step',
+                    timestamp: new Date().toISOString(),
+                    context: 'advanceAiStep endpoint'
+                });
+                return;
+            }
+
+            const aiAutoplay = this.buildAiAutoplayMeta(gameId, result.gameEnv);
+            res.json({
+                success: true,
+                gameId,
+                gameEnv: GameEnvViewBuilder.toPlayerView(result.gameEnv, playerId),
+                aiAutoplay,
+                aiStepExecuted: result.aiStepExecuted === true,
+                hasMoreAiWork: aiAutoplay.hasMoreAiWork,
+                retryAfterMs: Math.max(result.throttleWaitMs ?? aiAutoplay.throttleWaitMs ?? 0, 0),
+                timestamp: new Date().toISOString(),
+            });
+        } catch (error) {
+            console.error('❌ Error in advanceAiStep:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'advanceAiStep endpoint'
+            });
+        }
+    }
+
+    /**
      * End current player's turn and advance game state
      * POST /api/game/player/endTurn
      */
@@ -1308,21 +1369,22 @@ export class GameController {
             // Save updated game state
             await this.gameLogic.saveGameToFile(gameId, gameEnv);
 
-            const finalEnv = await this.applyAiAutoplayOrRespond(
+            const autoResult = await this.applyAiAutoplayOrRespond(
                 res,
                 gameId,
                 playerId,
                 gameEnv,
                 'endTurn endpoint'
             );
-            if (!finalEnv) {
+            if (!autoResult) {
                 return;
             }
             
             console.log(`✅ End turn processed successfully for ${playerId}`);
             res.json({
                 success: true,
-                gameEnv: GameEnvViewBuilder.toPlayerView(finalEnv, playerId),
+                gameEnv: GameEnvViewBuilder.toPlayerView(autoResult.gameEnv, playerId),
+                aiAutoplay: autoResult.aiAutoplay,
                 message: `Turn ended for ${playerId}`,
                 timestamp: new Date().toISOString()
             });
@@ -2492,21 +2554,22 @@ export class GameController {
             const result = await this.gameLogic.confirmBurstChoice(gameId, playerId, eventId, confirmed);
             
             if (result.success && result.gameEnv) {
-                const finalEnv = await this.applyAiAutoplayOrRespond(
+                const autoResult = await this.applyAiAutoplayOrRespond(
                     res,
                     gameId,
                     playerId,
                     result.gameEnv,
                     'confirmBurstChoice endpoint'
                 );
-                if (!finalEnv) {
+                if (!autoResult) {
                     return;
                 }
 
                 res.json({
                     success: true,
                     gameId: result.gameId,
-                    gameEnv: GameEnvViewBuilder.toPlayerView(finalEnv, playerId),
+                    gameEnv: GameEnvViewBuilder.toPlayerView(autoResult.gameEnv, playerId),
+                    aiAutoplay: autoResult.aiAutoplay,
                     message: `Burst effect ${confirmed ? 'confirmed' : 'declined'} successfully`
                 });
             } else {
@@ -2576,21 +2639,22 @@ export class GameController {
             const result = await this.gameLogic.confirmTargetChoice(gameId, playerId, eventId, selectedTargets);
             
             if (result.success && result.gameEnv) {
-                const finalEnv = await this.applyAiAutoplayOrRespond(
+                const autoResult = await this.applyAiAutoplayOrRespond(
                     res,
                     gameId,
                     playerId,
                     result.gameEnv,
                     'confirmTargetChoice endpoint'
                 );
-                if (!finalEnv) {
+                if (!autoResult) {
                     return;
                 }
 
                 res.json({
                     success: true,
                     gameId: result.gameId,
-                    gameEnv: GameEnvViewBuilder.toPlayerView(finalEnv, playerId),
+                    gameEnv: GameEnvViewBuilder.toPlayerView(autoResult.gameEnv, playerId),
+                    aiAutoplay: autoResult.aiAutoplay,
                     message: `Target selection successful (${selectedTargets.length} target${selectedTargets.length > 1 ? 's' : ''})`
                 });
             } else {
@@ -2643,21 +2707,22 @@ export class GameController {
             const result = await this.gameLogic.confirmTokenChoice(gameId, playerId, eventId, selectedChoiceIndex);
 
             if (result.success && result.gameEnv) {
-                const finalEnv = await this.applyAiAutoplayOrRespond(
+                const autoResult = await this.applyAiAutoplayOrRespond(
                     res,
                     gameId,
                     playerId,
                     result.gameEnv,
                     'confirmTokenChoice endpoint'
                 );
-                if (!finalEnv) {
+                if (!autoResult) {
                     return;
                 }
 
                 res.json({
                     success: true,
                     gameId: result.gameId,
-                    gameEnv: GameEnvViewBuilder.toPlayerView(finalEnv, playerId),
+                    gameEnv: GameEnvViewBuilder.toPlayerView(autoResult.gameEnv, playerId),
+                    aiAutoplay: autoResult.aiAutoplay,
                     message: `Token choice successful (index ${selectedChoiceIndex})`
                 });
             } else {
@@ -2710,21 +2775,22 @@ export class GameController {
             const result = await this.gameLogic.confirmOptionChoice(gameId, playerId, eventId, selectedOptionIndex);
 
             if (result.success && result.gameEnv) {
-                const finalEnv = await this.applyAiAutoplayOrRespond(
+                const autoResult = await this.applyAiAutoplayOrRespond(
                     res,
                     gameId,
                     playerId,
                     result.gameEnv,
                     'confirmOptionChoice endpoint'
                 );
-                if (!finalEnv) {
+                if (!autoResult) {
                     return;
                 }
 
                 res.json({
                     success: true,
                     gameId: result.gameId,
-                    gameEnv: GameEnvViewBuilder.toPlayerView(finalEnv, playerId),
+                    gameEnv: GameEnvViewBuilder.toPlayerView(autoResult.gameEnv, playerId),
+                    aiAutoplay: autoResult.aiAutoplay,
                     message: `Option choice successful (index ${selectedOptionIndex})`
                 });
             } else {
@@ -2791,21 +2857,22 @@ export class GameController {
             const result = await this.gameLogic.confirmBlockerChoice(gameId, playerId, eventId, targetsArray, notificationId);
 
             if (result.success && result.gameEnv) {
-                const finalEnv = await this.applyAiAutoplayOrRespond(
+                const autoResult = await this.applyAiAutoplayOrRespond(
                     res,
                     gameId,
                     playerId,
                     result.gameEnv,
                     'confirmBlockerChoice endpoint'
                 );
-                if (!finalEnv) {
+                if (!autoResult) {
                     return;
                 }
 
                 res.json({
                     success: true,
                     gameId: result.gameId,
-                    gameEnv: GameEnvViewBuilder.toPlayerView(finalEnv, playerId),
+                    gameEnv: GameEnvViewBuilder.toPlayerView(autoResult.gameEnv, playerId),
+                    aiAutoplay: autoResult.aiAutoplay,
                     message: targetsArray.length > 0 ? 'Blocker assigned successfully' : 'Blocker choice declined'
                 });
             } else {

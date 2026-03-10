@@ -10,6 +10,22 @@ import { AiDecisionExecutor } from './AiDecisionExecutor';
 import { AiDecision } from './AiTypes';
 import { GameLogicResult } from '../GameLogic';
 
+export type AiAutoplayStateSummary = {
+    isAiMatch: boolean;
+    aiPlayerIds: string[];
+    hasMoreAiWork: boolean;
+    throttleWaitMs: number;
+};
+
+export type AiAutoplayRunResult = {
+    success: boolean;
+    gameEnv?: GameEnvironment;
+    error?: string;
+    aiStepExecuted?: boolean;
+    hasMoreAiWork?: boolean;
+    throttleWaitMs?: number;
+};
+
 export class AiAutoplayCoordinator {
     private static readonly gameLocks = new Map<string, AsyncMutex>();
     private static readonly scheduledAutoplayByGameId = new Map<string, NodeJS.Timeout>();
@@ -79,7 +95,7 @@ export class AiAutoplayCoordinator {
     }
 
     private static getFollowUpDelayMs(): number {
-        return Math.max(AI_ACTION_DELAY_MS, AI_TURN_START_DELAY_MS, 1000);
+        return Math.max(AI_ACTION_DELAY_MS, AI_TURN_START_DELAY_MS, 1000) + 2000;
     }
 
     async runWithGameLock<T>(gameId: string, work: () => Promise<T>): Promise<T> {
@@ -109,11 +125,23 @@ export class AiAutoplayCoordinator {
         return this.runWithGameLock(gameId, () => this.executeAiDecision(gameId, aiPlayerId, decision));
     }
 
+    describeAutoplayState(gameId: string, gameEnv: GameEnvironment | null | undefined): AiAutoplayStateSummary {
+        const aiPlayerIds = this.getAiPlayerIds(gameEnv);
+        const now = Date.now();
+        return {
+            isAiMatch: aiPlayerIds.length > 0,
+            aiPlayerIds,
+            hasMoreAiWork: this.hasAiWork(gameEnv, aiPlayerIds),
+            throttleWaitMs: gameEnv ? AiAutoplayCoordinator.pacingStore.getThrottleWaitMs(gameId, gameEnv, aiPlayerIds, now) : 0,
+        };
+    }
+
     async runAiAutoplay(
         gameId: string,
         viewerPlayerId: string,
         maxSteps: number = AI_AUTOPLAY_DEFAULT_STEPS
-    ): Promise<{ success: boolean; gameEnv?: GameEnvironment; error?: string }> {
+    ): Promise<AiAutoplayRunResult> {
+        let aiStepExecuted = false;
         for (let step = 0; step < maxSteps; step++) {
             const latestState = await this.gameLogic.getPlayerGameState(gameId, viewerPlayerId);
             if (!latestState.success || !latestState.gameEnv) {
@@ -133,7 +161,13 @@ export class AiAutoplayCoordinator {
             const now = Date.now();
             const throttleWaitMs = AiAutoplayCoordinator.pacingStore.getThrottleWaitMs(gameId, gameEnv, aiPlayerIds, now);
             if (throttleWaitMs > 0) {
-                return { success: true, gameEnv };
+                return {
+                    success: true,
+                    gameEnv,
+                    aiStepExecuted,
+                    hasMoreAiWork: this.hasAiWork(gameEnv, aiPlayerIds),
+                    throttleWaitMs,
+                };
             }
 
             if (hasPendingChoiceForNonAi(gameEnv, aiPlayerIds)) {
@@ -157,12 +191,19 @@ export class AiAutoplayCoordinator {
                 }
 
                 AiAutoplayCoordinator.pacingStore.recordAction(gameId);
+                aiStepExecuted = true;
                 progressed = true;
                 break;
             }
 
             if (!progressed) {
-                return { success: true, gameEnv };
+                return {
+                    success: true,
+                    gameEnv,
+                    aiStepExecuted,
+                    hasMoreAiWork: this.hasAiWork(gameEnv, aiPlayerIds),
+                    throttleWaitMs: 0,
+                };
             }
         }
 
@@ -170,15 +211,37 @@ export class AiAutoplayCoordinator {
         if (!finalState.success || !finalState.gameEnv) {
             return { success: false, error: finalState.error || 'Failed to load final game state after AI autoplay' };
         }
-        return { success: true, gameEnv: finalState.gameEnv };
+        const autoplayState = this.describeAutoplayState(gameId, finalState.gameEnv);
+        return {
+            success: true,
+            gameEnv: finalState.gameEnv,
+            aiStepExecuted,
+            hasMoreAiWork: autoplayState.hasMoreAiWork,
+            throttleWaitMs: autoplayState.throttleWaitMs,
+        };
     }
 
     async runAiAutoplayForHuman(
         gameId: string,
         humanPlayerId: string,
         maxSteps: number = AI_AUTOPLAY_DEFAULT_STEPS
-    ): Promise<{ success: boolean; gameEnv?: GameEnvironment; error?: string }> {
+    ): Promise<AiAutoplayRunResult> {
         return this.runAiAutoplay(gameId, humanPlayerId, maxSteps);
+    }
+
+    async advanceAiStep(
+        gameId: string,
+        viewerPlayerId: string,
+        maxSteps: number = AI_AUTOPLAY_DEFAULT_STEPS
+    ): Promise<AiAutoplayRunResult> {
+        return this.runWithGameLock(gameId, async () => {
+            AiAutoplayCoordinator.clearScheduledAutoplay(gameId);
+            const result = await this.runAiAutoplay(gameId, viewerPlayerId, maxSteps);
+            if (result.success && result.gameEnv && result.hasMoreAiWork) {
+                this.scheduleFollowUpAutoplay(gameId, viewerPlayerId);
+            }
+            return result;
+        });
     }
 
     private scheduleFollowUpAutoplay(gameId: string, viewerPlayerId: string): void {
@@ -192,8 +255,7 @@ export class AiAutoplayCoordinator {
                     return;
                 }
 
-                const aiPlayerIds = this.getAiPlayerIds(result.gameEnv);
-                if (this.hasAiWork(result.gameEnv, aiPlayerIds)) {
+                if (result.hasMoreAiWork) {
                     this.scheduleFollowUpAutoplay(gameId, viewerPlayerId);
                 }
             });
@@ -213,11 +275,8 @@ export class AiAutoplayCoordinator {
         return this.runWithGameLock(gameId, async () => {
             AiAutoplayCoordinator.clearScheduledAutoplay(gameId);
             const result = await this.runAiAutoplayForHuman(gameId, humanPlayerId, AI_AUTOPLAY_DEFAULT_STEPS);
-            if (result.success && result.gameEnv) {
-                const aiPlayerIds = this.getAiPlayerIds(result.gameEnv);
-                if (this.hasAiWork(result.gameEnv, aiPlayerIds)) {
-                    this.scheduleFollowUpAutoplay(gameId, humanPlayerId);
-                }
+            if (result.success && result.gameEnv && result.hasMoreAiWork) {
+                this.scheduleFollowUpAutoplay(gameId, humanPlayerId);
             }
             return result;
         });

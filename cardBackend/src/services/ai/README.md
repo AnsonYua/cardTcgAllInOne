@@ -40,3 +40,16 @@ Use `npm run benchmark:ai` when tuning search, ordering, or tactical weights.
 
 - Use `src/services/ai/AiDebugTelemetry.ts` to build a compact AI debug payload from decision telemetry.
 - The validation harness records the last AI debug payload for stalled, bounded, and failed autoplay runs.
+
+## Pacing
+
+- Live AI autoplay is intentionally one decision at a time.
+- Default backend pacing is `2000ms` between AI-owned actions.
+- Frontend polling must stay fast enough to show delayed AI steps separately. The current expected real-game poll interval is `250ms`.
+
+## Manual QA
+
+- Start a game with AI enabled.
+- Make a player action that leaves the AI with at least two follow-up decisions, such as `playCard -> endTurn` or prompt resolution -> `endTurn`.
+- Verify the first AI action appears.
+- Verify the next AI action appears about 2 seconds later, not in the same visible update.

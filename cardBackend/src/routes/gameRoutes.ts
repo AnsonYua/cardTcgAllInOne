@@ -129,6 +129,12 @@ router.post('/player/playCard', requirePlayerSession, gameController.playCard.bi
 router.post('/player/playerAction', requirePlayerSession, gameController.playerAction.bind(gameController));
 
 /**
+ * Execute at most one visible AI follow-up step
+ * POST /api/game/player/advanceAiStep
+ */
+router.post('/player/advanceAiStep', requirePlayerSession, gameController.advanceAiStep.bind(gameController));
+
+/**
  * End current player's turn and advance game state
  * POST /api/game/player/endTurn
  */
