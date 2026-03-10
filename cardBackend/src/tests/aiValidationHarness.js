@@ -10,6 +10,7 @@ const { GameAiService } = require('../services/ai/GameAiService');
 const { AiDecisionExecutor } = require('../services/ai/AiDecisionExecutor');
 const { AiAutoplayCoordinator } = require('../services/ai/AiAutoplayCoordinator');
 const { CHOICE_EVENT_TYPES } = require('../services/ai/AiTypes');
+const { buildAiDebugPayload } = require('../services/ai/AiDebugTelemetry');
 const { getChoiceOwner, getPendingAiChoiceOwners } = require('../services/ai/AiAutoplayChoiceGuards');
 const { loadJson, resolveScenarioFilePath, sharedGameStatesRoot } = require('./testScenarioUtils');
 
@@ -22,7 +23,26 @@ const AI_SCENARIO_IDS = [
   'ai-v1-forced-attack-target'
 ];
 
+const AI_TUNING_SCENARIO_IDS = [
+  'ai-v1-tuning-attack-order',
+  'ai-v1-tuning-shield-push',
+  'ai-v1-tuning-pair-now',
+  'ai-v1-tuning-blocker-preservation',
+  'ai-v1-tuning-action-step-confirm',
+  'ai-v1-tuning-crackback-risk'
+];
+
 const STARTER_SET_IDS = ['ST01', 'ST02', 'ST03', 'ST04', 'ST05', 'ST06', 'ST07', 'ST08'];
+const STARTER_CROSS_MATCH_SAMPLE_PAIRS = [
+  ['ST01', 'ST02'],
+  ['ST01', 'ST04'],
+  ['ST02', 'ST05'],
+  ['ST03', 'ST06'],
+  ['ST04', 'ST07'],
+  ['ST05', 'ST08'],
+  ['ST06', 'ST01'],
+  ['ST07', 'ST03']
+];
 const STARTER_DECK_SOURCE_FILES = {
   ST01: 'gcgdecks.json',
   ST02: 'gcgdecks_st02.json',
@@ -285,6 +305,7 @@ async function requestAiDecision(logic, gameId, aiPlayerId, viewerPlayerId = aiP
   return {
     gameEnv,
     decision,
+    debugPayload: buildAiDebugPayload(decision),
     latencyMs,
     malformedProblems,
     fallbackReason: decision?.telemetry?.fallbackReason || null,
@@ -322,6 +343,22 @@ function evaluateDecisionExpectation(decision, expectation = {}) {
   return {
     passed: errors.length === 0,
     errors
+  };
+}
+
+function summarizeSampleForFailure(sample) {
+  if (!sample) {
+    return null;
+  }
+  return {
+    aiPlayerId: sample.aiPlayerId || null,
+    step: typeof sample.step === 'number' ? sample.step : null,
+    latencyMs: typeof sample.latencyMs === 'number' ? sample.latencyMs : null,
+    kind: sample.kind || sample.decision?.kind || null,
+    reason: sample.reason || sample.decision?.reason || null,
+    fallbackReason: sample.fallbackReason || null,
+    malformedProblems: Array.isArray(sample.malformedProblems) ? sample.malformedProblems : [],
+    debugPayload: sample.debugPayload || null
   };
 }
 
@@ -549,6 +586,10 @@ function buildStarterDeckCardIds(setId, deckSize = 50) {
 }
 
 function buildStarterMirrorMatchGameEnv(setId, options = {}) {
+  return buildStarterMatchGameEnv(setId, setId, options);
+}
+
+function buildStarterMatchGameEnv(playerOneSetId, playerTwoSetId, options = {}) {
   const {
     aiPlayerIds = ['playerId_1', 'playerId_2'],
     currentPlayer = 'playerId_1',
@@ -559,16 +600,18 @@ function buildStarterMirrorMatchGameEnv(setId, options = {}) {
     boardUnitCount = 2
   } = options;
 
-  const deckCardIds = buildStarterDeckCardIds(setId, 50);
-  const unitCardIds = loadSetCards(setId)
-    .filter((card) => String(card.cardType || '') === 'unit')
-    .map((card) => String(card.cardId || card.id).toUpperCase());
-
   const gameEnv = new GameEnvironment();
-  const playerIds = ['playerId_1', 'playerId_2'];
-  for (const playerId of playerIds) {
+  const playerConfigs = [
+    { playerId: 'playerId_1', setId: playerOneSetId },
+    { playerId: 'playerId_2', setId: playerTwoSetId }
+  ];
+  for (const { playerId, setId } of playerConfigs) {
     const player = gameEnv.addPlayer(playerId, playerId);
+    const deckCardIds = buildStarterDeckCardIds(setId, 50);
     const deckCopy = [...deckCardIds];
+    const unitCardIds = loadSetCards(setId)
+      .filter((card) => String(card.cardType || '') === 'unit')
+      .map((card) => String(card.cardId || card.id).toUpperCase());
 
     const boardUnits = unitCardIds.slice(0, boardUnitCount);
     boardUnits.forEach((cardId, index) => {
@@ -657,6 +700,7 @@ async function runInstrumentedAutoplay(options) {
           budgetRemainingMs: Number(decision?.telemetry?.budgetRemainingMs || 0),
           lineHistory: Array.isArray(decision?.telemetry?.lineHistory) ? decision.telemetry.lineHistory : [],
           promptChain: Array.isArray(decision?.telemetry?.promptChain) ? decision.telemetry.promptChain : [],
+          debugPayload: buildAiDebugPayload(decision),
           malformedProblems
         });
 
@@ -674,7 +718,8 @@ async function runInstrumentedAutoplay(options) {
             unresolvedAiPromptCount: promptCount,
             stepsExecuted,
             stalled: false,
-            boundedOut: false
+            boundedOut: false,
+            lastAiDebugPayload: summarizeSampleForFailure(decisionSamples[decisionSamples.length - 1])
           };
         }
 
@@ -692,7 +737,8 @@ async function runInstrumentedAutoplay(options) {
           finalState,
           decisionSamples,
           unresolvedAiPromptCount: countUnresolvedAiPrompts(finalState, aiPlayerIds),
-          stepsExecuted
+          stepsExecuted,
+          lastAiDebugPayload: summarizeSampleForFailure(decisionSamples[decisionSamples.length - 1])
         };
       }
     }
@@ -706,7 +752,8 @@ async function runInstrumentedAutoplay(options) {
       finalState,
       decisionSamples,
       unresolvedAiPromptCount: countUnresolvedAiPrompts(finalState, aiPlayerIds),
-      stepsExecuted
+      stepsExecuted,
+      lastAiDebugPayload: summarizeSampleForFailure(decisionSamples[decisionSamples.length - 1])
     };
   } finally {
     AiAutoplayCoordinator.pacingStore.getThrottleWaitMs = originalThrottle;
@@ -739,10 +786,14 @@ async function runCoordinatorAutoplay(options) {
 }
 
 async function runStarterMirrorMatch(setId, options = {}) {
+  return runStarterMatchup(setId, setId, options);
+}
+
+async function runStarterMatchup(playerOneSetId, playerTwoSetId, options = {}) {
   const { logic, cleanup } = createTempGameLogic();
-  const gameId = `starter_${setId.toLowerCase()}_${Date.now()}`;
+  const gameId = `starter_${playerOneSetId.toLowerCase()}_${playerTwoSetId.toLowerCase()}_${Date.now()}`;
   try {
-    const gameEnv = buildStarterMirrorMatchGameEnv(setId, options);
+    const gameEnv = buildStarterMatchGameEnv(playerOneSetId, playerTwoSetId, options);
     await injectGameEnv(logic, gameId, gameEnv);
     const result = await runInstrumentedAutoplay({
       logic,
@@ -752,7 +803,9 @@ async function runStarterMirrorMatch(setId, options = {}) {
       maxSteps: options.maxSteps || DEFAULT_AUTOPLAY_STEPS
     });
     return {
-      setId,
+      setId: playerOneSetId === playerTwoSetId ? playerOneSetId : `${playerOneSetId}_vs_${playerTwoSetId}`,
+      playerOneSetId,
+      playerTwoSetId,
       gameId,
       ...result
     };
@@ -783,16 +836,54 @@ async function runStarterMirrorMatchCoordinator(setId, options = {}) {
   }
 }
 
+async function runStarterCrossMatchSample(options = {}) {
+  const pairs = Array.isArray(options.crossMatchPairs) && options.crossMatchPairs.length > 0
+    ? options.crossMatchPairs
+    : STARTER_CROSS_MATCH_SAMPLE_PAIRS;
+
+  const results = [];
+  for (const pair of pairs) {
+    const [playerOneSetId, playerTwoSetId] = pair;
+    results.push(await runStarterMatchup(playerOneSetId, playerTwoSetId, options));
+  }
+  return results;
+}
+
+function buildRunSummary(result) {
+  return {
+    success: Boolean(result.success),
+    halted: Boolean(result.halted),
+    stalled: Boolean(result.stalled),
+    boundedOut: Boolean(result.boundedOut),
+    unresolvedAiPromptCount: Number(result.unresolvedAiPromptCount || 0),
+    malformedDecisionCount: Array.isArray(result.decisionSamples)
+      ? result.decisionSamples.reduce((sum, sample) => sum + (sample.malformedProblems?.length || 0), 0)
+      : 0,
+    executionFailure: result.success === false ? (result.error || 'unknown_error') : null,
+    lastAiDebugPayload: result.lastAiDebugPayload || summarizeSampleForFailure(
+      Array.isArray(result.decisionSamples) ? result.decisionSamples[result.decisionSamples.length - 1] : null
+    )
+  };
+}
+
 async function runAiValidationBenchmark(options = {}) {
   const scenarioIds = Array.isArray(options.scenarioIds) && options.scenarioIds.length > 0
     ? options.scenarioIds
     : AI_SCENARIO_IDS;
+  const tuningScenarioIds = Array.isArray(options.tuningScenarioIds) && options.tuningScenarioIds.length > 0
+    ? options.tuningScenarioIds
+    : AI_TUNING_SCENARIO_IDS;
   const starterSetIds = Array.isArray(options.starterSetIds) && options.starterSetIds.length > 0
     ? options.starterSetIds
     : ['ST01', 'ST04', 'ST08'];
+  const crossMatchPairs = Array.isArray(options.crossMatchPairs) && options.crossMatchPairs.length > 0
+    ? options.crossMatchPairs
+    : STARTER_CROSS_MATCH_SAMPLE_PAIRS;
 
   const scenarioResults = [];
+  const tuningScenarioResults = [];
   const starterResults = [];
+  const crossMatchResults = [];
   const allSamples = [];
 
   for (const scenarioId of scenarioIds) {
@@ -821,6 +912,33 @@ async function runAiValidationBenchmark(options = {}) {
     }
   }
 
+  for (const scenarioId of tuningScenarioIds) {
+    const scenarioResult = await runScenarioValidation(scenarioId);
+    tuningScenarioResults.push({
+      scenarioId,
+      unresolvedAiPromptCount: scenarioResult.unresolvedAiPromptCount,
+      stepCount: scenarioResult.stepResults.length,
+      autoplay: scenarioResult.autoplayResult
+        ? {
+            unresolvedAiPromptCount: scenarioResult.autoplayResult.unresolvedAiPromptCount,
+            halted: Boolean(scenarioResult.autoplayResult.halted),
+            stalled: Boolean(scenarioResult.autoplayResult.stalled),
+            boundedOut: Boolean(scenarioResult.autoplayResult.boundedOut),
+            lastAiDebugPayload: scenarioResult.autoplayResult.lastAiDebugPayload || null
+          }
+        : null
+    });
+    allSamples.push(...scenarioResult.stepResults.map((step) => ({
+      latencyMs: step.latencyMs,
+      fallbackReason: step.fallbackReason,
+      simulatedNodeCount: step.simulatedNodeCount,
+      malformedProblems: step.malformedProblems
+    })));
+    if (scenarioResult.autoplayResult?.decisionSamples) {
+      allSamples.push(...scenarioResult.autoplayResult.decisionSamples);
+    }
+  }
+
   for (const setId of starterSetIds) {
     const result = await runStarterMirrorMatch(setId, {
       aiPlayerIds: ['playerId_1', 'playerId_2'],
@@ -828,11 +946,21 @@ async function runAiValidationBenchmark(options = {}) {
     });
     starterResults.push({
       setId,
-      success: result.success,
-      halted: Boolean(result.halted),
-      stalled: Boolean(result.stalled),
-      boundedOut: Boolean(result.boundedOut),
-      unresolvedAiPromptCount: result.unresolvedAiPromptCount
+      ...buildRunSummary(result)
+    });
+    allSamples.push(...result.decisionSamples);
+  }
+
+  for (const [playerOneSetId, playerTwoSetId] of crossMatchPairs) {
+    const result = await runStarterMatchup(playerOneSetId, playerTwoSetId, {
+      aiPlayerIds: ['playerId_1', 'playerId_2'],
+      maxSteps: DEFAULT_MATRIX_TURNS
+    });
+    crossMatchResults.push({
+      setId: `${playerOneSetId}_vs_${playerTwoSetId}`,
+      playerOneSetId,
+      playerTwoSetId,
+      ...buildRunSummary(result)
     });
     allSamples.push(...result.decisionSamples);
   }
@@ -840,9 +968,13 @@ async function runAiValidationBenchmark(options = {}) {
   return {
     timestamp: new Date().toISOString(),
     scenarioIds,
+    tuningScenarioIds,
     starterSetIds,
+    crossMatchPairs,
     scenarioResults,
+    tuningScenarioResults,
     starterResults,
+    crossMatchResults,
     summary: summarizeDecisionSamples(allSamples)
   };
 }
@@ -881,7 +1013,9 @@ function summarizeDecisionSamples(samples) {
 
 module.exports = {
   AI_SCENARIO_IDS,
+  AI_TUNING_SCENARIO_IDS,
   STARTER_SET_IDS,
+  STARTER_CROSS_MATCH_SAMPLE_PAIRS,
   DEFAULT_AUTOPLAY_STEPS,
   DEFAULT_MATRIX_TURNS,
   loadAiScenarioDefinition,
@@ -894,7 +1028,9 @@ module.exports = {
   runScenarioValidation,
   buildStarterMirrorMatchGameEnv,
   runStarterMirrorMatch,
+  runStarterMatchup,
   runStarterMirrorMatchCoordinator,
+  runStarterCrossMatchSample,
   runInstrumentedAutoplay,
   runCoordinatorAutoplay,
   runAiValidationBenchmark,

@@ -6,6 +6,9 @@ const getActionType = (candidate: AiActionCandidate): string =>
 const getEffectAction = (candidate: AiActionCandidate): string =>
     String(candidate.telemetry?.action || '');
 
+const getTelemetryString = (candidate: AiActionCandidate, key: string): string =>
+    String(candidate.telemetry?.[key] || '');
+
 const estimateBurstRisk = (context: AiDecisionContext, attackerCarduid: string | undefined): number => {
     if (!attackerCarduid || context.opponent.shieldCount <= 0) {
         return 0;
@@ -78,6 +81,7 @@ const scoreCandidate = (context: AiDecisionContext, candidate: AiActionCandidate
 
     if (actionType === 'attackShieldArea') {
         const attackerCarduid = String(candidate.decision.payload?.attackerCarduid || candidate.telemetry?.attackerCarduid || '');
+        const attacker = context.self.units.find((unit) => unit.carduid === attackerCarduid);
         if (context.opponent.shieldCount === 0) {
             score += 2000;
         } else {
@@ -89,6 +93,21 @@ const scoreCandidate = (context: AiDecisionContext, candidate: AiActionCandidate
         }
         if (context.self.readyAttackers > 1) {
             score += 10;
+        }
+        if (
+            attacker?.keywords.includes('Blocker')
+            && context.self.shieldCount <= 1
+            && context.opponent.readyAttackers >= Math.max(1, context.self.blockers.length)
+        ) {
+            score -= 48;
+        }
+        if (
+            attacker
+            && attacker.hp.remainingHp <= 2
+            && context.self.shieldCount <= 1
+            && context.opponent.readyAttackers > context.self.blockers.length
+        ) {
+            score -= 22;
         }
     }
 
@@ -120,8 +139,14 @@ const scoreCandidate = (context: AiDecisionContext, candidate: AiActionCandidate
         if (playAs === 'pilot' && context.self.readyAttackers > 0) {
             score += 10;
         }
+        if (playAs === 'pilot' && context.self.readyAttackers === 0) {
+            score += 14;
+        }
         if (playAs === 'pilot' && context.opponent.shieldCount === 0) {
             score += 12;
+        }
+        if (playAs === 'pilot' && getTelemetryString(candidate, 'targetUnit')) {
+            score += 8;
         }
         if (context.self.units.length >= 5 && context.opponent.readyAttackers > context.self.blockers.length + 1) {
             score -= 10;
@@ -176,6 +201,13 @@ const scoreCandidate = (context: AiDecisionContext, candidate: AiActionCandidate
     }
     if (candidate.kind === 'endTurn') {
         score -= context.self.readyAttackers > 0 ? 18 : 0;
+        if (
+            context.self.shieldCount <= 1
+            && context.opponent.readyAttackers > 0
+            && context.self.blockers.some((unit) => unit.canAttack)
+        ) {
+            score += 34;
+        }
     }
 
     if (context.self.shieldCount === 0 && actionType === 'attackUnit' && candidate.tags.includes('lethal_on_target')) {

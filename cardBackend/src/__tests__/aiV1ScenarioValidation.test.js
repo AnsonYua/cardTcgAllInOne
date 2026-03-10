@@ -15,11 +15,19 @@ describe('AI V1 scenario validation suite', () => {
             expect(step.expectation.passed).toBe(true);
             expect(step.lineHistory).toEqual(expect.any(Array));
             expect(step.promptChain).toEqual(expect.any(Array));
+            expect(step.fallbackReason).toBeNull();
             expect(step.search).toEqual(expect.objectContaining({
                 lineHistory: expect.any(Array),
                 simulatedNodeCount: expect.any(Number),
                 budgetUsedMs: expect.any(Number),
                 budgetRemainingMs: expect.any(Number)
+            }));
+            expect(step.debugPayload).toEqual(expect.objectContaining({
+                lineHistory: expect.any(Array),
+                promptChain: expect.any(Array),
+                simulatedNodeCount: expect.anything(),
+                budgetUsedMs: expect.anything(),
+                budgetRemainingMs: expect.anything()
             }));
 
             for (const assertion of step.stateAssertions) {

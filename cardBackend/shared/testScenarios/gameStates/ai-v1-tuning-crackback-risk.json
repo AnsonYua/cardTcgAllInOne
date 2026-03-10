@@ -1,0 +1,113 @@
+{
+  "id": "ai-v1-tuning-crackback-risk",
+  "name": "AI V1 Tuning Crackback Risk",
+  "status": "ready",
+  "purpose": "Prefer preserving the blocker under heavy crackback pressure instead of making a low-value shield attack.",
+  "sourceScenarioPath": "ai-v1-lethal-race.json",
+  "initialGameEnvOverrides": {
+    "players": {
+      "playerId_1": {
+        "playerPoint": 1,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST04-004_ai_blocker_0001",
+              "cardId": "ST04-004",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 1,
+              "originalHP": 1,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "shieldArea": [
+            {
+              "carduid": "ST01-011_self_shield_0001",
+              "cardId": "ST01-011"
+            }
+          ]
+        }
+      },
+      "playerId_2": {
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST01-001_enemy_ready_0001",
+              "cardId": "ST01-001",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 4,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "ST01-002_enemy_ready_0002",
+              "cardId": "ST01-002",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 3,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "shieldArea": [
+            {
+              "carduid": "ST01-014_enemy_shield_0001",
+              "cardId": "ST01-014"
+            },
+            {
+              "carduid": "ST01-014_enemy_shield_0002",
+              "cardId": "ST01-014"
+            },
+            {
+              "carduid": "ST01-014_enemy_shield_0003",
+              "cardId": "ST01-014"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "actingAiPlayerId": "playerId_1",
+  "viewerPlayerId": "playerId_1",
+  "aiPlayerIds": [
+    "playerId_1"
+  ],
+  "decisionSequence": [
+    {
+      "allowedKinds": [
+        "endTurn"
+      ],
+      "executeDecision": false
+    }
+  ]
+}

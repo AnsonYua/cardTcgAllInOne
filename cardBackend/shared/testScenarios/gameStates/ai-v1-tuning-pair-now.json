@@ -1,0 +1,63 @@
+{
+  "id": "ai-v1-tuning-pair-now",
+  "name": "AI V1 Tuning Pair Now",
+  "status": "ready",
+  "purpose": "Prefer pairing a pilot onto the available unit when no attack is available and pairing advances the turn.",
+  "sourceScenarioPath": "ai-v1-lethal-race.json",
+  "initialGameEnvOverrides": {
+    "players": {
+      "playerId_1": {
+        "deck": {
+          "handUids": [
+            "ST01-010_ai_pair_hand_0001"
+          ]
+        },
+        "zones": {
+          "slot1": {
+            "unit": {
+              "isRested": true,
+              "canAttackThisTurn": false
+            }
+          }
+        }
+      },
+      "playerId_2": {
+        "zones": {
+          "shieldArea": [
+            {
+              "carduid": "ST01-014_enemy_shield_0001",
+              "cardId": "ST01-014"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "actingAiPlayerId": "playerId_1",
+  "viewerPlayerId": "playerId_1",
+  "aiPlayerIds": [
+    "playerId_1"
+  ],
+  "decisionSequence": [
+    {
+      "allowedKinds": [
+        "playCard"
+      ],
+      "payloadAssertions": [
+        {
+          "path": "action.playAs",
+          "equals": "pilot"
+        },
+        {
+          "path": "action.carduid",
+          "equals": "ST01-010_ai_pair_hand_0001"
+        },
+        {
+          "path": "action.targetUnit",
+          "equals": "ST01-001_ai_attacker_0001"
+        }
+      ],
+      "executeDecision": true
+    }
+  ]
+}

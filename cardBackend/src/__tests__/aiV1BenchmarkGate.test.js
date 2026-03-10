@@ -20,10 +20,25 @@ describe('AI V1 benchmark gate', () => {
             }
         }
 
+        for (const scenario of benchmark.tuningScenarioResults) {
+            expect(scenario.unresolvedAiPromptCount).toBe(0);
+            if (scenario.autoplay) {
+                expect(scenario.autoplay.unresolvedAiPromptCount).toBe(0);
+                expect(scenario.autoplay.stalled).toBe(false);
+            }
+        }
+
         for (const starter of benchmark.starterResults) {
             expect(starter.success).toBe(true);
             expect(starter.unresolvedAiPromptCount).toBe(0);
             expect(starter.stalled).toBe(false);
+        }
+
+        for (const starter of benchmark.crossMatchResults) {
+            expect(starter.success).toBe(true);
+            expect(starter.unresolvedAiPromptCount).toBe(0);
+            expect(starter.stalled).toBe(false);
+            expect(starter.lastAiDebugPayload).toBeTruthy();
         }
     }, 120000);
 });

@@ -1,0 +1,90 @@
+{
+  "id": "ai-v1-tuning-shield-push",
+  "name": "AI V1 Tuning Shield Push",
+  "status": "ready",
+  "purpose": "Prefer shield pressure near lethal when the available unit attack is low impact.",
+  "sourceScenarioPath": "ai-v1-lethal-race.json",
+  "initialGameEnvOverrides": {
+    "players": {
+      "playerId_1": {
+        "zones": {
+          "slot2": {
+            "unit": {
+              "carduid": "ST01-002_ai_attacker_0002",
+              "cardId": "ST01-002",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 3,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          }
+        }
+      },
+      "playerId_2": {
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST01-006_enemy_slow_0001",
+              "cardId": "ST01-006",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": true,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 4,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": false,
+              "isFirstPlay": false
+            }
+          },
+          "shieldArea": [
+            {
+              "carduid": "ST01-014_enemy_shield_0001",
+              "cardId": "ST01-014"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "actingAiPlayerId": "playerId_1",
+  "viewerPlayerId": "playerId_1",
+  "aiPlayerIds": [
+    "playerId_1"
+  ],
+  "decisionSequence": [
+    {
+      "allowedKinds": [
+        "playerAction"
+      ],
+      "payloadSubset": {
+        "actionType": "attackShieldArea"
+      },
+      "payloadAssertions": [
+        {
+          "path": "attackerCarduid",
+          "oneOf": [
+            "ST01-001_ai_attacker_0001",
+            "ST01-002_ai_attacker_0002"
+          ]
+        }
+      ],
+      "executeDecision": true
+    }
+  ]
+}

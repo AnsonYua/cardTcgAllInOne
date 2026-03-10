@@ -153,4 +153,40 @@ describe('GameAiService v1-only cutover', () => {
             fallbackKind: 'wrapper_end_turn'
         }));
     });
+
+    test('returns the v1 decision unchanged on the normal live path', async () => {
+        jest.spyOn(GameAiV1Service, 'decide').mockResolvedValue({
+            kind: 'wait',
+            reason: 'v1_wait',
+            telemetry: {
+                windowKind: 'WAIT',
+                budgetUsedMs: 0,
+                budgetRemainingMs: 750
+            }
+        });
+
+        const decision = await GameAiService.decide({
+            phase: GamePhase.MAIN_PHASE,
+            currentPlayer: 'player_op',
+            currentTurn: 1,
+            playerId_1: 'player_ai',
+            playerId_2: 'player_op',
+            notificationQueue: [],
+            players: {
+                player_ai: { deck: { hand: [], handCount: 0 }, zones: { shieldCount: 3, energyArea: [], trashArea: [], base: [] } },
+                player_op: { deck: { hand: [], handCount: 0 }, zones: { shieldCount: 3, energyArea: [], trashArea: [], base: [] } }
+            }
+        }, 'player_ai');
+
+        expect(decision).toEqual({
+            kind: 'wait',
+            reason: 'v1_wait',
+            telemetry: {
+                windowKind: 'WAIT',
+                budgetUsedMs: 0,
+                budgetRemainingMs: 750
+            }
+        });
+        expect(decision.telemetry.fallbackReason).toBeUndefined();
+    });
 });

@@ -1,0 +1,51 @@
+{
+  "id": "ai-v1-tuning-action-step-confirm",
+  "name": "AI V1 Tuning Action Step Confirm Pass",
+  "status": "ready",
+  "purpose": "Do not invent a battle trick when the opened battle auto-resolves and only the safe pass-to-end-turn line remains.",
+  "sourceScenarioPath": "GD03/GD03-115/action_prevent_battle_damage_ap_le_5_when_player_level_ge_7.json",
+  "initialGameEnvOverrides": {
+    "players": {
+      "playerId_1": {
+        "deck": {
+          "handUids": []
+        }
+      },
+      "playerId_2": {
+        "zones": {
+          "slot1": {
+            "unit": {
+              "isRested": true
+            }
+          }
+        }
+      }
+    }
+  },
+  "actingAiPlayerId": "playerId_1",
+  "viewerPlayerId": "playerId_1",
+  "aiPlayerIds": [
+    "playerId_1"
+  ],
+  "setupActions": [
+    {
+      "playerId": "playerId_1",
+      "kind": "playerAction",
+      "reason": "scenario_open_action_step",
+      "payload": {
+        "actionType": "attackUnit",
+        "attackerCarduid": "GD03-010_attacker_0001",
+        "targetPlayerId": "playerId_2",
+        "targetUnitUid": "GD03-071_defender_0001"
+      }
+    }
+  ],
+  "decisionSequence": [
+    {
+      "allowedKinds": [
+        "endTurn"
+      ],
+      "executeDecision": false
+    }
+  ]
+}

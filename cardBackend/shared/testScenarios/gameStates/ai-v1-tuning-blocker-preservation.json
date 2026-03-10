@@ -1,0 +1,37 @@
+{
+  "id": "ai-v1-tuning-blocker-preservation",
+  "name": "AI V1 Tuning Blocker Preservation",
+  "status": "ready",
+  "purpose": "Keep blocker-step choice quality locked so tuning changes do not regress blocker preservation.",
+  "sourceScenarioPath": "ST04/ST04-004/shared_keyword_blocker_redirect_attack_target_manual_flow.json",
+  "actingAiPlayerId": "playerId_1",
+  "viewerPlayerId": "playerId_1",
+  "aiPlayerIds": [
+    "playerId_1"
+  ],
+  "setupActions": [
+    {
+      "playerId": "playerId_2",
+      "kind": "playerAction",
+      "reason": "scenario_declare_attack",
+      "payload": {
+        "actionType": "attackShieldArea",
+        "attackerCarduid": "ST04-005_attacker_0001"
+      }
+    }
+  ],
+  "decisionSequence": [
+    {
+      "allowedKinds": [
+        "confirmBlockerChoice"
+      ],
+      "payloadAssertions": [
+        {
+          "path": "selectedTargets.0.carduid",
+          "equals": "ST04-004_unit_0001"
+        }
+      ],
+      "executeDecision": true
+    }
+  ]
+}

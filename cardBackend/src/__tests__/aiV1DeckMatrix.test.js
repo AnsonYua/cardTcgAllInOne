@@ -1,10 +1,12 @@
 const {
     STARTER_SET_IDS,
+    STARTER_CROSS_MATCH_SAMPLE_PAIRS,
     loadAiScenarioDefinition,
     buildGameEnvFromScenarioDefinition,
     createTempGameLogic,
     injectGameEnv,
     runCoordinatorAutoplay,
+    runStarterCrossMatchSample,
     runStarterMirrorMatch
 } = require('../tests/aiValidationHarness');
 
@@ -53,5 +55,32 @@ describe('AI V1 live autoplay validation', () => {
         expect(malformedDecisionCount).toBe(0);
         expect(result.finalState).toBeTruthy();
         expect(result.finalState.gameEnded || result.boundedOut).toBe(true);
+    }, 120000);
+
+    test('starter cross-match sample stays valid across archetype pairs', async () => {
+        const results = await runStarterCrossMatchSample({
+            crossMatchPairs: STARTER_CROSS_MATCH_SAMPLE_PAIRS,
+            aiPlayerIds: ['playerId_1', 'playerId_2'],
+            currentPlayer: 'playerId_1',
+            maxSteps: 40
+        });
+
+        expect(results).toHaveLength(STARTER_CROSS_MATCH_SAMPLE_PAIRS.length);
+
+        for (const result of results) {
+            expect(result.success).toBe(true);
+            expect(result.unresolvedAiPromptCount).toBe(0);
+            expect(result.stalled).toBe(false);
+            expect(result.lastAiDebugPayload).toBeTruthy();
+
+            const malformedDecisionCount = result.decisionSamples.reduce(
+                (sum, sample) => sum + sample.malformedProblems.length,
+                0
+            );
+
+            expect(malformedDecisionCount).toBe(0);
+            expect(result.finalState).toBeTruthy();
+            expect(result.finalState.gameEnded || result.boundedOut).toBe(true);
+        }
     }, 120000);
 });

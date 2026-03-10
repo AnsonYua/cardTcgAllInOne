@@ -28,9 +28,15 @@ Legacy heuristic AI modules remain in the repo for comparison and isolated tests
 
 - `src/__tests__/gameAiV1Cutover.test.js`
 - `src/__tests__/aiV1ScenarioValidation.test.js`
+- `src/__tests__/aiV1TuningScenarioValidation.test.js`
 - `src/__tests__/aiV1DeckMatrix.test.js`
 - `src/__tests__/aiV1BenchmarkGate.test.js`
 - `src/__tests__/aiV1SimulationAdapterSafety.test.js`
 - `src/__tests__/gameAiV1NotificationChoiceDecision.test.js`
 
 Use `npm run benchmark:ai` when tuning search, ordering, or tactical weights.
+
+## Debugging
+
+- Use `src/services/ai/AiDebugTelemetry.ts` to build a compact AI debug payload from decision telemetry.
+- The validation harness records the last AI debug payload for stalled, bounded, and failed autoplay runs.
