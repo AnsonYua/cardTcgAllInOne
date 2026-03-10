@@ -95,7 +95,7 @@ export class AiAutoplayCoordinator {
     }
 
     private static getFollowUpDelayMs(): number {
-        return Math.max(AI_ACTION_DELAY_MS, AI_TURN_START_DELAY_MS, 1000) + 2000;
+        return Math.max(AI_ACTION_DELAY_MS, AI_TURN_START_DELAY_MS, 2500);
     }
 
     async runWithGameLock<T>(gameId: string, work: () => Promise<T>): Promise<T> {

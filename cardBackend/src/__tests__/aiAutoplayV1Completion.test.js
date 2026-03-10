@@ -178,7 +178,7 @@ describe('AiAutoplayCoordinator scheduled follow-up pacing', () => {
         jest.restoreAllMocks();
     });
 
-    test('runs the next AI action only after the 2 second follow-up delay', async () => {
+    test('runs the next AI action only after the shorter recovery fallback delay', async () => {
         jest.useFakeTimers();
         jest.spyOn(AiAutoplayCoordinator.pacingStore, 'getThrottleWaitMs').mockReturnValue(0);
 
@@ -268,7 +268,7 @@ describe('AiAutoplayCoordinator scheduled follow-up pacing', () => {
         expect(endTurnCalls).toHaveLength(0);
         expect(decideSpy).toHaveBeenCalledTimes(1);
 
-        await jest.advanceTimersByTimeAsync(3999);
+        await jest.advanceTimersByTimeAsync(2499);
         expect(endTurnCalls).toHaveLength(0);
         expect(decideSpy).toHaveBeenCalledTimes(1);
 
@@ -389,7 +389,7 @@ describe('AiAutoplayCoordinator scheduled follow-up pacing', () => {
         expect(endTurnCalls).toHaveLength(0);
         expect(decideSpy).toHaveBeenCalledTimes(1);
 
-        await jest.advanceTimersByTimeAsync(3999);
+        await jest.advanceTimersByTimeAsync(2499);
         expect(endTurnCalls).toHaveLength(0);
         expect(decideSpy).toHaveBeenCalledTimes(1);
 
