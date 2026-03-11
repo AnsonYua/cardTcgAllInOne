@@ -9,6 +9,26 @@ const getEffectAction = (candidate: AiActionCandidate): string =>
 const getTelemetryString = (candidate: AiActionCandidate, key: string): string =>
     String(candidate.telemetry?.[key] || '');
 
+const getAttackerForCandidate = (context: AiDecisionContext, candidate: AiActionCandidate) => {
+    const attackerCarduid = String(
+        candidate.decision.payload?.attackerCarduid
+        || candidate.telemetry?.attackerCarduid
+        || candidate.sourceCarduid
+        || ''
+    );
+    return context.self.units.find((unit) => unit.carduid === attackerCarduid) || null;
+};
+
+const getAlternativeAttackersThatCanKill = (
+    context: AiDecisionContext,
+    attackerCarduid: string,
+    targetRemainingHp: number
+) => context.self.units.filter((unit) =>
+    unit.carduid !== attackerCarduid
+    && unit.canAttack
+    && unit.ap >= targetRemainingHp
+);
+
 const estimateBurstRisk = (context: AiDecisionContext, attackerCarduid: string | undefined): number => {
     if (!attackerCarduid || context.opponent.shieldCount <= 0) {
         return 0;
@@ -80,8 +100,8 @@ const scoreCandidate = (context: AiDecisionContext, candidate: AiActionCandidate
     }
 
     if (actionType === 'attackShieldArea') {
-        const attackerCarduid = String(candidate.decision.payload?.attackerCarduid || candidate.telemetry?.attackerCarduid || '');
-        const attacker = context.self.units.find((unit) => unit.carduid === attackerCarduid);
+        const attacker = getAttackerForCandidate(context, candidate);
+        const attackerCarduid = attacker?.carduid || '';
         if (context.opponent.shieldCount === 0) {
             score += 2000;
         } else {
@@ -90,6 +110,16 @@ const scoreCandidate = (context: AiDecisionContext, candidate: AiActionCandidate
                 score += 18;
             }
             score -= estimateBurstRisk(context, attackerCarduid);
+        }
+        const blockerTargets = context.opponent.blockers.filter((unit) => attacker && attacker.ap >= unit.hp.remainingHp);
+        if (blockerTargets.length > 0 && context.opponent.shieldCount > 0) {
+            score -= 28;
+            if (context.self.readyAttackers > 1) {
+                score -= 10;
+            }
+        }
+        if (attacker?.keywords.includes('Breach')) {
+            score += context.opponent.shieldCount <= 1 ? 24 : 10;
         }
         if (context.self.readyAttackers > 1) {
             score += 10;
@@ -112,18 +142,38 @@ const scoreCandidate = (context: AiDecisionContext, candidate: AiActionCandidate
     }
 
     if (actionType === 'attackUnit') {
+        const attacker = getAttackerForCandidate(context, candidate);
         const targetCarduid = String(candidate.decision.payload?.targetUnitUid || candidate.telemetry?.targetCarduid || '');
         const target = context.opponent.units.find((unit) => unit.carduid === targetCarduid);
         if (target) {
             score += target.valueScore;
             if (target.keywords.includes('Blocker')) {
                 score += 18;
+                if (context.opponent.shieldCount > 0 && candidate.tags.includes('lethal_on_target')) {
+                    score += 16;
+                }
             }
             if (target.canAttack) {
                 score += 10;
             }
             if (context.self.readyAttackers > 1 && candidate.tags.includes('lethal_on_target')) {
                 score += 12;
+            }
+            if (attacker && candidate.tags.includes('lethal_on_target')) {
+                const alternatives = getAlternativeAttackersThatCanKill(context, attacker.carduid, target.hp.remainingHp);
+                const bestAlternative = alternatives.sort((left, right) => left.valueScore - right.valueScore)[0];
+                if (bestAlternative && bestAlternative.valueScore + 6 < attacker.valueScore) {
+                    score -= 26;
+                    if (attacker.keywords.includes('Breach')) {
+                        score -= 12;
+                    }
+                    if (target.keywords.includes('Blocker')) {
+                        score -= 8;
+                    }
+                }
+                if (!bestAlternative && target.keywords.includes('Blocker') && context.opponent.shieldCount > 0) {
+                    score += 12;
+                }
             }
         }
     }

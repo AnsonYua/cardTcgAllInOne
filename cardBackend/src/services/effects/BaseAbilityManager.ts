@@ -2,6 +2,7 @@
 // Handles activated abilities originating from base cards
 
 import { GameEnvironment } from '../../models/GameEnvironment';
+import { GamePhase } from '../../models/GameEnums';
 import { PlayerActionEvent, PlayerActionEventData, EffectDefinition } from '../EventQueue/interfaces/GameEvent';
 import { GameActionValidator } from '../GameActionValidator';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
@@ -83,10 +84,16 @@ export class BaseAbilityManager {
         const effectDefinition = effectLookup.effect;
         const normalizedEffect = ensureEffectDefaults({ ...effectDefinition });
         console.log(`🏰 Base effect resolved: effectId=${normalizedEffect.effectId}, type=${normalizedEffect.type || 'none'}, action=${normalizedEffect.action || 'none'}`);
-        if (!fromBurst && !EffectTimingWindowUtils.allowsPhase(normalizedEffect, gameEnv.phase, { defaultToMainPhaseWhenMissing: true })) {
+        const timingCheck = BaseAbilityManager.validateActivatedEffectTiming(
+            gameEnv,
+            actingPlayerId,
+            normalizedEffect,
+            fromBurst
+        );
+        if (!timingCheck.success) {
             return {
                 success: false,
-                error: `Effect ${normalizedEffect.effectId} cannot be activated during ${gameEnv.phase}`
+                error: timingCheck.error || `Effect ${normalizedEffect.effectId} cannot be activated during ${gameEnv.phase}`
             };
         }
 
@@ -297,6 +304,67 @@ export class BaseAbilityManager {
         }
 
         return { success: true, effect };
+    }
+
+    private static validateActivatedEffectTiming(
+        gameEnv: GameEnvironment,
+        actingPlayerId: string,
+        effect: EffectDefinition,
+        fromBurst: boolean
+    ): ExecutionResult {
+        const timingWindows = new Set(EffectTimingWindowUtils.getActivationWindows(effect));
+        const hasMainPhaseWindow = timingWindows.has('MAIN_PHASE');
+        const hasActionStepWindow = timingWindows.has('ACTION_STEP') || timingWindows.has('ACTION');
+        const hasExplicitWindow = hasMainPhaseWindow || hasActionStepWindow;
+        const actionWindowOpen = BattlePhaseManager.isActionWindowOpen(gameEnv);
+
+        if (actionWindowOpen && hasActionStepWindow) {
+            if (!BattlePhaseManager.playerInActiveBattle(gameEnv, actingPlayerId)) {
+                return {
+                    success: false,
+                    error: 'Only players involved in the current battle may use ACTION_STEP abilities'
+                };
+            }
+            return { success: true };
+        }
+
+        if (hasActionStepWindow && !hasMainPhaseWindow) {
+            return {
+                success: false,
+                error: actionWindowOpen
+                    ? 'Only players involved in the current battle may use ACTION_STEP abilities'
+                    : `Effect ${effect.effectId} can only be activated during a valid ACTION_STEP window`
+            };
+        }
+
+        if (!hasExplicitWindow) {
+            return fromBurst || gameEnv.phase === GamePhase.MAIN_PHASE
+                ? { success: true }
+                : {
+                    success: false,
+                    error: `Effect ${effect.effectId} cannot be activated during ${gameEnv.phase}`
+                };
+        }
+
+        if (fromBurst) {
+            return { success: true };
+        }
+
+        if (!hasMainPhaseWindow) {
+            return {
+                success: false,
+                error: `Effect ${effect.effectId} cannot be activated during ${gameEnv.phase}`
+            };
+        }
+
+        if (gameEnv.phase !== GamePhase.MAIN_PHASE) {
+            return {
+                success: false,
+                error: `Effect ${effect.effectId} cannot be activated during ${gameEnv.phase}`
+            };
+        }
+
+        return { success: true };
     }
 
     private static effectUsedThisTurn(baseCard: any, effectId: string, currentTurn: number): boolean {

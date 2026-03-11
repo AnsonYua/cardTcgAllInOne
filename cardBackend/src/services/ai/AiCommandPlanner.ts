@@ -411,6 +411,38 @@ const scoreCommandAction = (
     return score * actionMultiplier;
 };
 
+const isClearlyUsefulNoTargetAction = (
+    context: DecisionContext,
+    effect: EffectDefinition
+): boolean => {
+    switch (effect.action) {
+        case 'heal':
+        case 'repair':
+        case 'modifyHP':
+            return context.boardContext.selfDamagedTotal > 0;
+        case 'setActive':
+            return context.boardContext.selfReadyAttackers < context.boardContext.selfUnitCount;
+        case 'grant_keyword':
+        case 'grant_breach':
+        case 'allow_attack_target':
+            return context.boardContext.selfReadyAttackers > 0 && context.boardContext.opponentUnitCount > 0;
+        case 'modifyAP':
+            return context.boardContext.selfReadyAttackers > 0 || context.boardContext.opponentReadyAttackers > 0;
+        case 'prevent_shield_damage':
+        case 'prevent_battle_damage':
+            return Boolean(context.gameEnvView.currentBattle);
+        case 'draw':
+        case 'addExtraEnergy':
+        case 'addBasicEnergy':
+        case 'scry_top_deck':
+        case 'conditionalTokenDeploy':
+        case 'deploy_from_hand':
+            return true;
+        default:
+            return true;
+    }
+};
+
 const buildPayloadTargets = (targets: TargetReference[]): {
     targetCarduid?: string;
     targets?: Array<{ carduid: string; zone: string; playerId: string }>;
@@ -466,6 +498,9 @@ const buildDecisionForCommandEffect = (
             return [];
         }
     } else {
+        if (!isClearlyUsefulNoTargetAction(context, effect)) {
+            return [];
+        }
         targetEvaluations = [{ selectedTargets: [], score: 0 }];
     }
 

@@ -33,6 +33,8 @@ const ACTION_BASE_SCORE: Record<string, number> = {
     modifyHP: 16,
     heal: 15,
     repair: 15,
+    prevent_battle_damage: 15,
+    prevent_shield_damage: 15,
     addExtraEnergy: 14,
     addBasicEnergy: 12,
     allow_attack_target: 11,
@@ -61,9 +63,14 @@ type BoardContext = {
     selfDamagedTotal: number;
     selfRestedUnits: number;
     selfUnitCount: number;
+    selfBlockerCount: number;
     opponentReadyAttackers: number;
     opponentUnitCount: number;
+    opponentBlockerCount: number;
+    opponentShieldCount: number;
     openSelfSlots: number;
+    handSize: number;
+    currentBattleActive: boolean;
 };
 
 export type FieldAbilityDecisionCandidate = {
@@ -115,6 +122,27 @@ const canAttack = (unit: AiUnitView | undefined): boolean => {
     const playedThisTurn = Boolean(unit.playedThisTurn);
     const canAttackOnPlayTurn = Boolean(unit.canAttackOnPlayTurn);
     return !isRested && (!playedThisTurn || canAttackOnPlayTurn);
+};
+
+const extractKeywords = (cardData: Record<string, unknown> | undefined): string[] => {
+    if (!cardData) {
+        return [];
+    }
+    const raw = JSON.stringify(cardData);
+    const keywords: string[] = [];
+    if (raw.includes('Blocker')) {
+        keywords.push('Blocker');
+    }
+    if (raw.includes('Breach')) {
+        keywords.push('Breach');
+    }
+    if (raw.includes('High-Maneuver')) {
+        keywords.push('High-Maneuver');
+    }
+    if (raw.includes('Suppression')) {
+        keywords.push('Suppression');
+    }
+    return keywords;
 };
 
 const collectSources = (gameEnvView: AiGameEnvView, aiPlayerId: string): SourceCardCandidate[] => {
@@ -172,8 +200,10 @@ const buildBoardContext = (gameEnvView: AiGameEnvView, aiPlayerId: string): Boar
     let selfDamagedTotal = 0;
     let selfRestedUnits = 0;
     let selfUnitCount = 0;
+    let selfBlockerCount = 0;
     let opponentReadyAttackers = 0;
     let opponentUnitCount = 0;
+    let opponentBlockerCount = 0;
     let openSelfSlots = 0;
 
     for (const slotName of SLOT_NAMES) {
@@ -187,6 +217,9 @@ const buildBoardContext = (gameEnvView: AiGameEnvView, aiPlayerId: string): Boar
             if (selfSlot.unit.isRested) {
                 selfRestedUnits += 1;
             }
+            if (extractKeywords(selfSlot.unit.cardData as Record<string, unknown> | undefined).includes('Blocker')) {
+                selfBlockerCount += 1;
+            }
             const totalHp = getSlotTotalHp(selfSlot);
             const damage = getSlotDamage(selfSlot);
             selfDamagedTotal += Math.max(0, Math.min(totalHp, damage));
@@ -199,6 +232,9 @@ const buildBoardContext = (gameEnvView: AiGameEnvView, aiPlayerId: string): Boar
             if (canAttack(opponentSlot.unit)) {
                 opponentReadyAttackers += 1;
             }
+            if (extractKeywords(opponentSlot.unit.cardData as Record<string, unknown> | undefined).includes('Blocker')) {
+                opponentBlockerCount += 1;
+            }
         }
     }
 
@@ -207,9 +243,15 @@ const buildBoardContext = (gameEnvView: AiGameEnvView, aiPlayerId: string): Boar
         selfDamagedTotal,
         selfRestedUnits,
         selfUnitCount,
+        selfBlockerCount,
         opponentReadyAttackers,
         opponentUnitCount,
+        opponentBlockerCount,
+        opponentShieldCount: toNumber(opponent?.zones?.shieldCount, 0),
         openSelfSlots
+        ,
+        handSize: Array.isArray(self?.deck?.hand) ? self.deck.hand.length : toNumber(self?.deck?.handCount, 0),
+        currentBattleActive: Boolean(gameEnvView?.currentBattle)
     };
 };
 
@@ -312,6 +354,11 @@ const scoreEffect = (
             break;
         case 'setActive':
             score += boardContext.selfRestedUnits > 0 ? 14 : -22;
+            if (boardContext.currentBattleActive) {
+                score += 8;
+            } else if (boardContext.opponentReadyAttackers > boardContext.selfBlockerCount) {
+                score += 4;
+            }
             break;
         case 'heal':
         case 'repair':
@@ -319,7 +366,7 @@ const scoreEffect = (
             score += boardContext.selfDamagedTotal > 0 ? Math.min(22, boardContext.selfDamagedTotal * 4) : -35;
             break;
         case 'modifyAP':
-            score += boardContext.selfReadyAttackers > 0 ? 10 : 2;
+            score += boardContext.currentBattleActive ? 12 : boardContext.selfReadyAttackers > 0 ? 10 : 2;
             break;
         case 'rest':
             score += boardContext.opponentReadyAttackers > 0 ? 12 : 4;
@@ -330,12 +377,27 @@ const scoreEffect = (
             score += boardContext.opponentUnitCount > 0 ? 14 : -24;
             break;
         case 'draw':
-            score += 8;
+            score += boardContext.handSize <= 4 ? 12 : 4;
+            if (boardContext.handSize >= 8) {
+                score -= 16;
+            }
+            break;
+        case 'prevent_battle_damage':
+        case 'prevent_shield_damage':
+            score += boardContext.currentBattleActive ? 14 : -24;
             break;
         case 'allow_attack_target':
         case 'grant_breach':
         case 'grant_keyword':
             score += boardContext.selfReadyAttackers > 0 ? 10 : -8;
+            if (boardContext.opponentBlockerCount > 0) {
+                score += 6;
+            }
+            if (boardContext.currentBattleActive) {
+                score += 5;
+            } else if (boardContext.opponentShieldCount === 0 && action !== 'allow_attack_target') {
+                score += 3;
+            }
             break;
         default:
             break;
@@ -345,6 +407,51 @@ const scoreEffect = (
         score += 2;
     }
     return score * actionMultiplier;
+};
+
+const isClearlyUsefulNoTargetAbility = (
+    boardContext: BoardContext,
+    effect: EffectDefinition
+): boolean => {
+    switch (effect.action) {
+        case 'heal':
+        case 'repair':
+        case 'modifyHP':
+            return boardContext.selfDamagedTotal > 0;
+        case 'setActive':
+            return boardContext.selfRestedUnits > 0
+                && (
+                    boardContext.selfReadyAttackers < boardContext.selfUnitCount
+                    || boardContext.currentBattleActive
+                    || boardContext.opponentReadyAttackers > boardContext.selfBlockerCount
+                );
+        case 'grant_keyword':
+        case 'allow_attack_target':
+        case 'grant_breach':
+            return boardContext.selfReadyAttackers > 0
+                && (boardContext.opponentUnitCount > 0 || boardContext.opponentShieldCount > 0);
+        case 'modifyAP':
+            return boardContext.currentBattleActive
+                || boardContext.selfReadyAttackers > 0
+                || boardContext.opponentReadyAttackers > 0;
+        case 'rest':
+        case 'damage':
+        case 'destroy':
+        case 'returnToHand':
+            return boardContext.opponentUnitCount > 0;
+        case 'prevent_battle_damage':
+        case 'prevent_shield_damage':
+            return boardContext.currentBattleActive;
+        case 'draw':
+            return boardContext.handSize < 8;
+        case 'conditionalTokenDeploy':
+            return boardContext.openSelfSlots > 0;
+        case 'addExtraEnergy':
+        case 'addBasicEnergy':
+            return boardContext.handSize > 0 || boardContext.selfUnitCount <= 1;
+        default:
+            return true;
+    }
 };
 
 export function enumerateFieldAbilityCandidates(
@@ -401,6 +508,9 @@ export function enumerateFieldAbilityCandidates(
             }
 
             const action = EffectExecutor.getEffectAction(rule);
+            if (EffectExecutor.actionSupportsNoTargets(action) && !isClearlyUsefulNoTargetAbility(boardContext, rule)) {
+                continue;
+            }
             const targetEvaluations = EffectExecutor.actionSupportsNoTargets(action)
                 ? [{ selectedTargets: [], score: 0 }]
                 : enumerateTargetEvaluations(gameEnvView, aiPlayerId, source.carduid, rule, options);

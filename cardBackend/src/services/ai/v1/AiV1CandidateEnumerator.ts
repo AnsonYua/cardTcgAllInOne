@@ -175,7 +175,10 @@ const tagsForCardEffects = (
 };
 
 const buildAbilityCandidates = (context: AiDecisionContext): AiActionCandidate[] => {
-    const commandCandidates = enumerateCommandActionCandidates(context.gameEnvView, context.aiPlayerId, { maxTargetVariants: 3 })
+    const commandCandidates = enumerateCommandActionCandidates(context.gameEnvView, context.aiPlayerId, {
+        respectThreshold: true,
+        maxTargetVariants: 3
+    })
         .map((candidate) =>
             ({
                 ...createCandidate(
@@ -695,26 +698,6 @@ const buildPlayCandidates = (context: AiDecisionContext): AiActionCandidate[] =>
             }
         }
 
-        if (card.cardType === 'command') {
-            candidates.push(createCandidate(
-                'playCard',
-                context.windowKind,
-                {
-                    kind: 'playCard',
-                    reason: 'v1_play_command',
-                    payload: {
-                        action: {
-                            type: 'PlayCard',
-                            carduid: card.carduid,
-                            playAs: 'command'
-                        }
-                    }
-                },
-                16 + card.cost * 3 + effectActions.length * 4,
-                effectTags,
-                { cardName: name, playAs: 'command', effectActions }
-            ));
-        }
     }
 
     return candidates;

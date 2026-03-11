@@ -1,6 +1,18 @@
 const { GameEnvironment } = require('../models/GameEnvironment');
 const { BaseAbilityManager } = require('../services/effects/BaseAbilityManager');
 
+function setActionStepBattle(gameEnv, attackerCarduid, targetCarduid) {
+    gameEnv.currentBattle = {
+        actionType: 'attackUnit',
+        attackingPlayerId: 'playerId_1',
+        defendingPlayerId: 'playerId_2',
+        attackerCarduid,
+        targetCarduid,
+        targetPlayerId: 'playerId_2',
+        status: 'ACTION_STEP'
+    };
+}
+
 describe('activateCardAbility (pilot source)', () => {
     test('pilot activated ability can resolve from slot pilot carduid', () => {
         const gameEnv = new GameEnvironment();
@@ -315,6 +327,8 @@ describe('activateCardAbility (pilot source)', () => {
             }
         };
 
+        setActionStepBattle(gameEnv, 'host_unit_0002', 'enemy_unit_ap2_0001');
+
         const result = BaseAbilityManager.executeBaseAbility(gameEnv, {
             id: 'player_action_3',
             type: 'PLAYER_ACTION',
@@ -446,6 +460,8 @@ describe('activateCardAbility (pilot source)', () => {
                 effects: { description: [], rules: [] }
             }
         };
+
+        setActionStepBattle(gameEnv, 'host_unit_0003', 'enemy_unit_ap1_0001');
 
         const result = BaseAbilityManager.executeBaseAbility(gameEnv, {
             id: 'player_action_4',

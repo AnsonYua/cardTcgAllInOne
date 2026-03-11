@@ -56,6 +56,23 @@ function createPilotCard(carduid) {
     };
 }
 
+function createCommandCard(carduid, effects = []) {
+    return {
+        carduid,
+        cardData: {
+            cardType: 'command',
+            name: carduid,
+            cost: 1,
+            level: 1,
+            effectiveCost: 1,
+            effectiveLevel: 1,
+            effects: {
+                rules: effects
+            }
+        }
+    };
+}
+
 function createUnitCard(carduid) {
     return {
         carduid,
@@ -180,5 +197,122 @@ describe('GameEnvAiActionAdapter play-card enumeration', () => {
             'slot5',
             'slot6'
         ]);
+    });
+
+    test('does not enumerate blind play-as-command candidates for generic command cards', () => {
+        const aiPlayerId = 'player_ai';
+        const opponentId = 'player_op';
+        const gameEnvView = {
+            phase: GamePhase.MAIN_PHASE,
+            currentPlayer: aiPlayerId,
+            currentTurn: 5,
+            playerId_1: aiPlayerId,
+            playerId_2: opponentId,
+            notificationQueue: [],
+            players: {
+                [aiPlayerId]: {
+                    deck: {
+                        hand: [
+                            createCommandCard('cmd_generic', [
+                                {
+                                    effectId: 'cmd_generic_draw',
+                                    type: 'play',
+                                    action: 'draw'
+                                }
+                            ])
+                        ],
+                        handCount: 1
+                    },
+                    zones: {
+                        energyArea: [{ isRested: false }, { isRested: false }],
+                        shieldArea: [],
+                        shieldCount: 2,
+                        trashArea: [],
+                        base: []
+                    }
+                },
+                [opponentId]: {
+                    deck: { hand: [], handCount: 0 },
+                    zones: {
+                        energyArea: [],
+                        shieldArea: [],
+                        shieldCount: 2,
+                        trashArea: [],
+                        base: []
+                    }
+                }
+            }
+        };
+
+        const context = new GameEnvAiContextAdapter().buildContext(gameEnvView, aiPlayerId);
+        const candidates = new GameEnvAiActionAdapter().enumerateCandidates(context);
+        const blindCommandPlays = candidates.filter(
+            (candidate) => candidate.kind === 'playCard' && candidate.telemetry.playAs === 'command'
+        );
+        const commandActivations = candidates.filter(
+            (candidate) => candidate.kind === 'activate' && candidate.telemetry.source === 'command_planner'
+        );
+
+        expect(blindCommandPlays).toHaveLength(0);
+        expect(commandActivations.length).toBeGreaterThan(0);
+    });
+
+    test('still enumerates command-as-pilot when designate_pilot is legal', () => {
+        const aiPlayerId = 'player_ai';
+        const opponentId = 'player_op';
+        const gameEnvView = {
+            phase: GamePhase.MAIN_PHASE,
+            currentPlayer: aiPlayerId,
+            currentTurn: 5,
+            playerId_1: aiPlayerId,
+            playerId_2: opponentId,
+            notificationQueue: [],
+            players: {
+                [aiPlayerId]: {
+                    deck: {
+                        hand: [
+                            createCommandCard('cmd_pilot', [
+                                {
+                                    effectId: 'cmd_pilot_rule',
+                                    type: 'play',
+                                    action: 'designate_pilot'
+                                }
+                            ])
+                        ],
+                        handCount: 1
+                    },
+                    zones: {
+                        slot1: createUnit('unit_1', 2, 3, false),
+                        energyArea: [{ isRested: false }, { isRested: false }],
+                        shieldArea: [],
+                        shieldCount: 2,
+                        trashArea: [],
+                        base: []
+                    }
+                },
+                [opponentId]: {
+                    deck: { hand: [], handCount: 0 },
+                    zones: {
+                        energyArea: [],
+                        shieldArea: [],
+                        shieldCount: 2,
+                        trashArea: [],
+                        base: []
+                    }
+                }
+            }
+        };
+
+        const context = new GameEnvAiContextAdapter().buildContext(gameEnvView, aiPlayerId);
+        const candidates = new GameEnvAiActionAdapter().enumerateCandidates(context);
+        const commandPilotPlays = candidates.filter(
+            (candidate) =>
+                candidate.kind === 'playCard'
+                && candidate.telemetry.playAs === 'pilot'
+                && candidate.decision.reason === 'v1_pair_command_pilot'
+        );
+
+        expect(commandPilotPlays).toHaveLength(1);
+        expect(commandPilotPlays[0].telemetry.targetUnit).toBe('unit_1');
     });
 });

@@ -59,7 +59,7 @@ function createCommandWithTarget(carduid, action, activationWindow = 'MAIN_PHASE
     };
 }
 
-function createBase(carduid, action) {
+function createBase(carduid, action, activationWindow = 'MAIN_PHASE') {
     return {
         carduid,
         cardId: carduid,
@@ -76,7 +76,7 @@ function createBase(carduid, action) {
                         type: 'activated',
                         action,
                         timing: {
-                            activationWindows: ['MAIN_PHASE']
+                            activationWindows: [activationWindow]
                         },
                         cost: {
                             resource: 1
@@ -245,6 +245,392 @@ describe('GameEnvAiActionAdapter ability enumeration', () => {
 
         expect(commandLines.length).toBeGreaterThanOrEqual(2);
         expect(commandLines.map((candidate) => candidate.decision.payload.targetCarduid).sort()).toEqual(['enemy_a', 'enemy_b']);
+    });
+
+    test('filters target-required command effects when no valid targets exist', () => {
+        const aiPlayerId = 'player_ai';
+        const opponentId = 'player_op';
+        const gameEnvView = {
+            phase: GamePhase.MAIN_PHASE,
+            currentPlayer: aiPlayerId,
+            currentTurn: 4,
+            playerId_1: aiPlayerId,
+            playerId_2: opponentId,
+            notificationQueue: [],
+            players: {
+                [aiPlayerId]: {
+                    deck: {
+                        hand: [
+                            createCommandWithTarget('cmd_damage', 'damage', 'MAIN_PHASE')
+                        ],
+                        handCount: 1
+                    },
+                    zones: {
+                        base: [],
+                        energyArea: [{ isRested: false }, { isRested: false }],
+                        shieldArea: [],
+                        shieldCount: 2,
+                        trashArea: []
+                    }
+                },
+                [opponentId]: {
+                    deck: { hand: [], handCount: 0 },
+                    zones: {
+                        base: [],
+                        energyArea: [],
+                        shieldArea: [],
+                        shieldCount: 2,
+                        trashArea: []
+                    }
+                }
+            }
+        };
+
+        const context = new GameEnvAiContextAdapter().buildContext(gameEnvView, aiPlayerId);
+        const candidates = new GameEnvAiActionAdapter().enumerateCandidates(context);
+        const commandLines = candidates.filter(
+            (candidate) => candidate.kind === 'activate' && candidate.telemetry.carduid === 'cmd_damage'
+        );
+
+        expect(commandLines).toHaveLength(0);
+    });
+
+    test('filters no-target command effects that would be pure no-op in the current board state', () => {
+        const aiPlayerId = 'player_ai';
+        const opponentId = 'player_op';
+        const gameEnvView = {
+            phase: GamePhase.MAIN_PHASE,
+            currentPlayer: aiPlayerId,
+            currentTurn: 4,
+            playerId_1: aiPlayerId,
+            playerId_2: opponentId,
+            notificationQueue: [],
+            players: {
+                [aiPlayerId]: {
+                    deck: {
+                        hand: [
+                            createCommand('cmd_heal', 'heal')
+                        ],
+                        handCount: 1
+                    },
+                    zones: {
+                        base: [],
+                        energyArea: [{ isRested: false }, { isRested: false }],
+                        shieldArea: [],
+                        shieldCount: 2,
+                        trashArea: []
+                    }
+                },
+                [opponentId]: {
+                    deck: { hand: [], handCount: 0 },
+                    zones: {
+                        base: [],
+                        energyArea: [],
+                        shieldArea: [],
+                        shieldCount: 2,
+                        trashArea: []
+                    }
+                }
+            }
+        };
+
+        const context = new GameEnvAiContextAdapter().buildContext(gameEnvView, aiPlayerId);
+        const candidates = new GameEnvAiActionAdapter().enumerateCandidates(context);
+        const commandLines = candidates.filter(
+            (candidate) => candidate.kind === 'activate' && candidate.telemetry.carduid === 'cmd_heal'
+        );
+
+        expect(commandLines).toHaveLength(0);
+    });
+
+    test('keeps useful no-target command effects when they still have positive value', () => {
+        const aiPlayerId = 'player_ai';
+        const opponentId = 'player_op';
+        const gameEnvView = {
+            phase: GamePhase.MAIN_PHASE,
+            currentPlayer: aiPlayerId,
+            currentTurn: 4,
+            playerId_1: aiPlayerId,
+            playerId_2: opponentId,
+            notificationQueue: [],
+            players: {
+                [aiPlayerId]: {
+                    deck: {
+                        hand: [
+                            createCommand('cmd_draw', 'draw')
+                        ],
+                        handCount: 1
+                    },
+                    zones: {
+                        base: [],
+                        energyArea: [{ isRested: false }, { isRested: false }],
+                        shieldArea: [],
+                        shieldCount: 2,
+                        trashArea: []
+                    }
+                },
+                [opponentId]: {
+                    deck: { hand: [], handCount: 0 },
+                    zones: {
+                        base: [],
+                        energyArea: [],
+                        shieldArea: [],
+                        shieldCount: 2,
+                        trashArea: []
+                    }
+                }
+            }
+        };
+
+        const context = new GameEnvAiContextAdapter().buildContext(gameEnvView, aiPlayerId);
+        const candidates = new GameEnvAiActionAdapter().enumerateCandidates(context);
+        const commandLines = candidates.filter(
+            (candidate) => candidate.kind === 'activate' && candidate.telemetry.carduid === 'cmd_draw'
+        );
+
+        expect(commandLines.length).toBeGreaterThan(0);
+    });
+
+    test('filters no-target activated abilities that would be pure no-op in the current board state', () => {
+        const aiPlayerId = 'player_ai';
+        const opponentId = 'player_op';
+        const gameEnvView = {
+            phase: GamePhase.MAIN_PHASE,
+            currentPlayer: aiPlayerId,
+            currentTurn: 4,
+            playerId_1: aiPlayerId,
+            playerId_2: opponentId,
+            notificationQueue: [],
+            players: {
+                [aiPlayerId]: {
+                    deck: {
+                        hand: [],
+                        handCount: 0
+                    },
+                    zones: {
+                        base: [createBase('base_set_active', 'setActive')],
+                        energyArea: [{ isRested: false }, { isRested: false }],
+                        shieldArea: [],
+                        shieldCount: 2,
+                        trashArea: []
+                    }
+                },
+                [opponentId]: {
+                    deck: { hand: [], handCount: 0 },
+                    zones: {
+                        base: [],
+                        energyArea: [],
+                        shieldArea: [],
+                        shieldCount: 2,
+                        trashArea: []
+                    }
+                }
+            }
+        };
+
+        const context = new GameEnvAiContextAdapter().buildContext(gameEnvView, aiPlayerId);
+        const candidates = new GameEnvAiActionAdapter().enumerateCandidates(context);
+        const fieldAbilityLines = candidates.filter(
+            (candidate) => candidate.kind === 'activate' && candidate.telemetry.carduid === 'base_set_active'
+        );
+        const endTurnLines = candidates.filter((candidate) => candidate.kind === 'endTurn');
+
+        expect(fieldAbilityLines).toHaveLength(0);
+        expect(endTurnLines.length).toBe(1);
+    });
+
+    test('keeps useful no-target activated abilities when they still have value', () => {
+        const aiPlayerId = 'player_ai';
+        const opponentId = 'player_op';
+        const gameEnvView = {
+            phase: GamePhase.MAIN_PHASE,
+            currentPlayer: aiPlayerId,
+            currentTurn: 4,
+            playerId_1: aiPlayerId,
+            playerId_2: opponentId,
+            notificationQueue: [],
+            players: {
+                [aiPlayerId]: {
+                    deck: {
+                        hand: [],
+                        handCount: 0
+                    },
+                    zones: {
+                        base: [createBase('base_draw_only', 'draw')],
+                        energyArea: [{ isRested: false }, { isRested: false }],
+                        shieldArea: [],
+                        shieldCount: 2,
+                        trashArea: []
+                    }
+                },
+                [opponentId]: {
+                    deck: { hand: [], handCount: 0 },
+                    zones: {
+                        base: [],
+                        energyArea: [],
+                        shieldArea: [],
+                        shieldCount: 2,
+                        trashArea: []
+                    }
+                }
+            }
+        };
+
+        const context = new GameEnvAiContextAdapter().buildContext(gameEnvView, aiPlayerId);
+        const candidates = new GameEnvAiActionAdapter().enumerateCandidates(context);
+        const fieldAbilityLines = candidates.filter(
+            (candidate) => candidate.kind === 'activate' && candidate.telemetry.carduid === 'base_draw_only'
+        );
+
+        expect(fieldAbilityLines.length).toBeGreaterThan(0);
+    });
+
+    test('filters no-target draw abilities when hand is already too full for immediate value', () => {
+        const aiPlayerId = 'player_ai';
+        const opponentId = 'player_op';
+        const gameEnvView = {
+            phase: GamePhase.MAIN_PHASE,
+            currentPlayer: aiPlayerId,
+            currentTurn: 4,
+            playerId_1: aiPlayerId,
+            playerId_2: opponentId,
+            notificationQueue: [],
+            players: {
+                [aiPlayerId]: {
+                    deck: {
+                        hand: Array.from({ length: 8 }, (_, index) => ({ carduid: `filler_${index}`, cardData: { cardType: 'unit' } })),
+                        handCount: 8
+                    },
+                    zones: {
+                        base: [createBase('base_draw_full_hand', 'draw')],
+                        energyArea: [{ isRested: false }, { isRested: false }],
+                        shieldArea: [],
+                        shieldCount: 2,
+                        trashArea: []
+                    }
+                },
+                [opponentId]: {
+                    deck: { hand: [], handCount: 0 },
+                    zones: {
+                        base: [],
+                        energyArea: [],
+                        shieldArea: [],
+                        shieldCount: 2,
+                        trashArea: []
+                    }
+                }
+            }
+        };
+
+        const context = new GameEnvAiContextAdapter().buildContext(gameEnvView, aiPlayerId);
+        const candidates = new GameEnvAiActionAdapter().enumerateCandidates(context);
+        const fieldAbilityLines = candidates.filter(
+            (candidate) => candidate.kind === 'activate' && candidate.telemetry.carduid === 'base_draw_full_hand'
+        );
+
+        expect(fieldAbilityLines).toHaveLength(0);
+    });
+
+    test('keeps action-step prevention abilities when a real battle action window is open', () => {
+        const aiPlayerId = 'player_ai';
+        const opponentId = 'player_op';
+        const gameEnvView = {
+            phase: GamePhase.ACTION_STEP_PHASE,
+            currentPlayer: aiPlayerId,
+            currentTurn: 4,
+            playerId_1: aiPlayerId,
+            playerId_2: opponentId,
+            currentBattle: {
+                status: 'ACTION_STEP',
+                actionType: 'attackUnit',
+                attackingPlayerId: opponentId,
+                defendingPlayerId: aiPlayerId,
+                attackerCarduid: 'enemy_a',
+                targetCarduid: 'ally_a'
+            },
+            notificationQueue: [],
+            players: {
+                [aiPlayerId]: {
+                    deck: {
+                        hand: [],
+                        handCount: 0
+                    },
+                    zones: {
+                        slot1: { unit: createUnit('ally_a', 3, 4, false) },
+                        base: [createBase('base_prevent_battle_damage', 'prevent_battle_damage', 'ACTION_STEP')],
+                        energyArea: [{ isRested: false }, { isRested: false }],
+                        shieldArea: [],
+                        shieldCount: 2,
+                        trashArea: []
+                    }
+                },
+                [opponentId]: {
+                    deck: { hand: [], handCount: 0 },
+                    zones: {
+                        slot1: { unit: createUnit('enemy_a', 4, 5, false) },
+                        base: [],
+                        energyArea: [],
+                        shieldArea: [],
+                        shieldCount: 2,
+                        trashArea: []
+                    }
+                }
+            }
+        };
+
+        const context = new GameEnvAiContextAdapter().buildContext(gameEnvView, aiPlayerId);
+        const candidates = new GameEnvAiActionAdapter().enumerateCandidates(context);
+        const fieldAbilityLines = candidates.filter(
+            (candidate) => candidate.kind === 'activate' && candidate.telemetry.carduid === 'base_prevent_battle_damage'
+        );
+
+        expect(fieldAbilityLines.length).toBeGreaterThan(0);
+    });
+
+    test('filters target-required activated abilities when no valid targets exist', () => {
+        const aiPlayerId = 'player_ai';
+        const opponentId = 'player_op';
+        const gameEnvView = {
+            phase: GamePhase.MAIN_PHASE,
+            currentPlayer: aiPlayerId,
+            currentTurn: 4,
+            playerId_1: aiPlayerId,
+            playerId_2: opponentId,
+            notificationQueue: [],
+            players: {
+                [aiPlayerId]: {
+                    deck: {
+                        hand: [],
+                        handCount: 0
+                    },
+                    zones: {
+                        base: [createBaseWithTarget('base_damage_only', 'damage')],
+                        energyArea: [{ isRested: false }, { isRested: false }],
+                        shieldArea: [],
+                        shieldCount: 2,
+                        trashArea: []
+                    }
+                },
+                [opponentId]: {
+                    deck: { hand: [], handCount: 0 },
+                    zones: {
+                        base: [],
+                        energyArea: [],
+                        shieldArea: [],
+                        shieldCount: 2,
+                        trashArea: []
+                    }
+                }
+            }
+        };
+
+        const context = new GameEnvAiContextAdapter().buildContext(gameEnvView, aiPlayerId);
+        const candidates = new GameEnvAiActionAdapter().enumerateCandidates(context);
+        const fieldAbilityLines = candidates.filter(
+            (candidate) => candidate.kind === 'activate' && candidate.telemetry.carduid === 'base_damage_only'
+        );
+
+        expect(fieldAbilityLines).toHaveLength(0);
     });
 
     test('enumerates action-step tricks before battle confirmation', () => {

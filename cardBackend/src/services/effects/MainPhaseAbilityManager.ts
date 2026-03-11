@@ -33,6 +33,12 @@ interface TargetResolutionResult {
     error?: string;
 }
 
+interface TimingValidationResult {
+    success: boolean;
+    useActionStep: boolean;
+    error?: string;
+}
+
 export class MainPhaseAbilityManager {
 
     static executeMainPhaseAbility(gameEnv: GameEnvironment, event: PlayerActionEvent): ExecutionResult {
@@ -140,12 +146,15 @@ export class MainPhaseAbilityManager {
 
         const normalizedEffect = ensureEffectDefaults({ ...effectToExecute });
 
-        const timingWindows = this.getTimingWindows(normalizedEffect);
-        const actionWindowOpen = BattlePhaseManager.isActionWindowOpen(gameEnv);
-        const allowsActionStep = timingWindows.has('ACTION_STEP') || timingWindows.has('ACTION');
-        const usingActionStep = actionWindowOpen && allowsActionStep;
+        const timingCheck = this.validateEffectTiming(gameEnv, playerId, normalizedEffect, Boolean(fromBurst));
+        if (!timingCheck.success) {
+            return {
+                success: false,
+                error: timingCheck.error || 'Ability timing requirements were not met'
+            };
+        }
 
-        if (usingActionStep) {
+        if (timingCheck.useActionStep) {
             if (!BattlePhaseManager.playerInActiveBattle(gameEnv, playerId)) {
                 return {
                     success: false,
@@ -156,17 +165,6 @@ export class MainPhaseAbilityManager {
             const turnCheck = GameActionValidator.ensureTurn(gameEnv, playerId, Boolean(fromBurst));
             if (!turnCheck.success) {
                 return turnCheck;
-            }
-
-            if (!timingWindows.has('MAIN_PHASE') && !allowsActionStep) {
-                console.warn(`⚠️ Ability ${normalizedEffect.effectId || normalizedEffect.action} lacks explicit MAIN_PHASE or ACTION_STEP timing; defaulting to MAIN_PHASE validation`);
-            }
-
-            if (gameEnv.phase !== GamePhase.MAIN_PHASE && !fromBurst) {
-                return {
-                    success: false,
-                    error: `Ability can only be used during MAIN_PHASE (current phase: ${gameEnv.phase})`
-                };
             }
         }
 
@@ -247,6 +245,80 @@ export class MainPhaseAbilityManager {
 
     private static getTimingWindows(effect: EffectDefinition): Set<string> {
         return new Set(EffectTimingWindowUtils.getActivationWindows(effect));
+    }
+
+    private static validateEffectTiming(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        effect: EffectDefinition,
+        fromBurst: boolean
+    ): TimingValidationResult {
+        const timingWindows = this.getTimingWindows(effect);
+        const hasMainPhaseWindow = timingWindows.has('MAIN_PHASE');
+        const hasActionStepWindow = timingWindows.has('ACTION_STEP') || timingWindows.has('ACTION');
+        const hasExplicitWindow = hasMainPhaseWindow || hasActionStepWindow;
+        const actionWindowOpen = BattlePhaseManager.isActionWindowOpen(gameEnv);
+        const playerInActiveBattle = BattlePhaseManager.playerInActiveBattle(gameEnv, playerId);
+        const useActionStep = actionWindowOpen && hasActionStepWindow;
+
+        if (useActionStep) {
+            if (!playerInActiveBattle) {
+                return {
+                    success: false,
+                    useActionStep: false,
+                    error: 'Only players involved in the current battle may use ACTION_STEP abilities'
+                };
+            }
+
+            return {
+                success: true,
+                useActionStep: true
+            };
+        }
+
+        if (hasActionStepWindow && !hasMainPhaseWindow) {
+            return {
+                success: false,
+                useActionStep: false,
+                error: actionWindowOpen
+                    ? 'Only players involved in the current battle may use ACTION_STEP abilities'
+                    : 'Ability can only be used during ACTION_STEP'
+            };
+        }
+
+        if (!hasExplicitWindow) {
+            console.warn(
+                `⚠️ Ability ${effect.effectId || effect.action} lacks explicit MAIN_PHASE or ACTION_STEP timing; defaulting to MAIN_PHASE validation`
+            );
+        }
+
+        if (fromBurst) {
+            return {
+                success: true,
+                useActionStep: false
+            };
+        }
+
+        if (gameEnv.phase !== GamePhase.MAIN_PHASE) {
+            return {
+                success: false,
+                useActionStep: false,
+                error: `Ability can only be used during MAIN_PHASE (current phase: ${gameEnv.phase})`
+            };
+        }
+
+        if (hasExplicitWindow && !hasMainPhaseWindow) {
+            return {
+                success: false,
+                useActionStep: false,
+                error: 'Ability can only be used during ACTION_STEP'
+            };
+        }
+
+        return {
+            success: true,
+            useActionStep: false
+        };
     }
 
     private static resolveTargets(
