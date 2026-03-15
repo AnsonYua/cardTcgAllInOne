@@ -12,7 +12,8 @@ const DEFAULT_CARD_FILES = [
   'st05Card.json',
   'st06Card.json',
   'st07Card.json',
-  'st08Card.json'
+  'st08Card.json',
+  'st09Card.json'
 ];
 
 const PLACEHOLDER_PATTERNS = [

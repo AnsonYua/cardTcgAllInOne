@@ -19,7 +19,8 @@ const DEFAULT_CARD_FILES = [
   'st05Card.json',
   'st06Card.json',
   'st07Card.json',
-  'st08Card.json'
+  'st08Card.json',
+  'st09Card.json'
 ];
 
 const DEFAULT_MANIFEST_PATH = path.join('src', 'tests', 'review', 'effectCanonicalizationManifest.json');

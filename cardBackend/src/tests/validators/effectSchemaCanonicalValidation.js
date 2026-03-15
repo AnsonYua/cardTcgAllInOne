@@ -5,7 +5,8 @@ const {
   hasRepairRule,
   hasBlockerRule,
   hasBreachRule,
-  hasRuleCapability
+  hasRuleCapability,
+  getNormalizedTrigger
 } = require('./alwaysOnEffectUtils');
 const {
   validateActionSemantics,
@@ -37,7 +38,8 @@ const CARD_FILES = [
   'st05Card.json',
   'st06Card.json',
   'st07Card.json',
-  'st08Card.json'
+  'st08Card.json',
+  'st09Card.json'
 ];
 
 const LEVEL_COMPARISON_LITERAL_REGEX = /^(<=|>=|<|>|==|!=)\d+$/;
@@ -815,7 +817,7 @@ function detectAlwaysOnTextRuleMismatches(fileName, cards, diagnostics) {
     const hasBlockerRuleCapability = hasBlockerRule(rules);
     const hasBreachRuleCapability = hasBreachRule(rules);
     const hasHealRuleCapability = hasRuleCapability(rules, (rule) => String(rule?.action || '').toLowerCase() === 'heal');
-    const hasRedirectRuleCapability = hasRuleCapability(rules, (rule) => String(rule?.trigger || '').toUpperCase() === 'ATTACK_REDIRECT');
+    const hasRedirectRuleCapability = hasRuleCapability(rules, (rule) => getNormalizedTrigger(rule) === 'ATTACK_REDIRECT');
 
     if (hasAlwaysOnRepairText && !hasRepairRuleCapability) {
       diagnostics.push({

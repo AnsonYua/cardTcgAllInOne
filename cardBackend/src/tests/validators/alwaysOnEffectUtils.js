@@ -51,6 +51,12 @@ function normalizeKeywordValue(value) {
     .trim();
 }
 
+function getNormalizedTrigger(rule) {
+  return String(rule?.trigger || rule?.timing?.eventTrigger || '')
+    .toUpperCase()
+    .trim();
+}
+
 function hasAlwaysOnKeywordText(descriptions, keyword) {
   const normalizedKeyword = String(keyword || '').toLowerCase();
   const keywordPattern = normalizedKeyword === 'repair' || normalizedKeyword === 'breach'
@@ -82,7 +88,7 @@ function hasBlockerRule(rules) {
   return hasRuleCapability(rules, (rule) => {
     const action = String(rule?.action || '').toLowerCase();
     const keyword = normalizeKeywordValue(rule?.parameters?.keyword);
-    const trigger = String(rule?.trigger || '').toUpperCase();
+    const trigger = getNormalizedTrigger(rule);
     return trigger === 'ATTACK_REDIRECT' || (action === 'grant_keyword' && keyword === 'blocker');
   });
 }
@@ -109,5 +115,6 @@ module.exports = {
   hasBlockerRule,
   hasBreachRule,
   hasRuleCapability,
-  hasLegacyEncoding
+  hasLegacyEncoding,
+  getNormalizedTrigger
 };
