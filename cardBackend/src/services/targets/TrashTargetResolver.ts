@@ -5,6 +5,7 @@ import type { TargetFilters, TargetReference } from '../EventQueue/interfaces/Ga
 import type { ResolvedTargetConfig } from './TargetResolver';
 import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 import { TargetFilterUtils } from './TargetFilterUtils';
+import { hasNameIncludes } from '../../utils/CardNameMatcher';
 
 export class TrashTargetResolver {
     static generateTrashTargets(
@@ -30,7 +31,7 @@ export class TrashTargetResolver {
                     continue;
                 }
 
-                if (!this.validateTrashCardFilters(cardData, targetConfig.filters || {})) {
+                if (!this.validateTrashCardFilters(trashCard, targetConfig.filters || {})) {
                     continue;
                 }
 
@@ -46,7 +47,8 @@ export class TrashTargetResolver {
         return targets;
     }
 
-    private static validateTrashCardFilters(cardData: any, filters: TargetFilters = {}): boolean {
+    private static validateTrashCardFilters(trashCard: any, filters: TargetFilters = {}): boolean {
+        const cardData = trashCard?.cardData;
         const filterCardType = typeof (filters as any).cardType === 'string' ? (filters as any).cardType : undefined;
         if (filterCardType && cardData?.cardType !== filterCardType) {
             return false;
@@ -81,6 +83,20 @@ export class TrashTargetResolver {
             if (!hasRequired) {
                 return false;
             }
+        }
+
+        const nameIncludes = typeof (filters as any).nameIncludes === 'string'
+            ? (filters as any).nameIncludes
+            : '';
+        if (nameIncludes && !hasNameIncludes(trashCard, nameIncludes)) {
+            return false;
+        }
+
+        const nameExcludes = typeof (filters as any).nameExcludes === 'string'
+            ? (filters as any).nameExcludes
+            : '';
+        if (nameExcludes && hasNameIncludes(trashCard, nameExcludes)) {
+            return false;
         }
 
         return true;

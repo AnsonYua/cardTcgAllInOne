@@ -4992,7 +4992,6 @@
           {
             "effectId": "pair_effect",
             "type": "triggered",
-            "optional": true,
             "cost": {
               "discardFromHand": 1
             },

@@ -19,7 +19,7 @@ import { applyRestrictAttackEffect } from './actions/EffectRestrictAttackActions
 import { applyDeployFromHandEffect } from './actions/EffectDeployFromHandActions';
 import { applySequenceEffect } from './actions/EffectSequenceActions';
 import { applyDiscardFromHandEffect } from './actions/EffectDiscardActions';
-import { applyMoveFromHandToDeckBottom, applyMoveFromTrashToDeck } from './actions/EffectDeckActions';
+import { applyMoveFromHandToDeckBottom, applyMoveFromTrashToDeck, applyReturnToDeckBottomEffect } from './actions/EffectDeckActions';
 import { applyExileFromTrashEffect } from './actions/EffectExileActions';
 import { applyDestroyEffect } from './actions/EffectDestroyActions';
 import { applyGrantKeywordEffect } from './actions/EffectKeywordActions';
@@ -87,6 +87,8 @@ export class EffectExecutor {
             applyMoveFromHandToDeckBottom(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         moveFromTrashToDeck: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyMoveFromTrashToDeck(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        returnToDeckBottom: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyReturnToDeckBottomEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         exileFromTrash: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyExileFromTrashEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         destroy: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>

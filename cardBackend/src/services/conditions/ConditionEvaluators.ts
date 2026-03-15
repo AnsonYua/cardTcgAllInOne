@@ -72,6 +72,12 @@ export class ConditionEvaluators {
                 if (typeof (condition as any).cardType === 'string') {
                     filters.cardType = (condition as any).cardType;
                 }
+                if (typeof (condition as any).color === 'string') {
+                    filters.color = (condition as any).color;
+                }
+                if (typeof (condition as any).nameIncludes === 'string') {
+                    filters.nameIncludes = (condition as any).nameIncludes;
+                }
 
                 return ConditionEvaluators.cardsInTrashWithFilter(gameEnv, scopedPlayerId, filters, condition.value);
             }
@@ -125,6 +131,8 @@ export class ConditionEvaluators {
                 ? (filters['traitsAny'] as unknown[]).filter((t): t is string => typeof t === 'string')
                 : [],
             cardType: typeof filters['cardType'] === 'string' ? (filters['cardType'] as string) : undefined,
+            color: typeof filters['color'] === 'string' ? (filters['color'] as string) : undefined,
+            nameIncludes: typeof filters['nameIncludes'] === 'string' ? (filters['nameIncludes'] as string) : undefined,
             excludeCarduid: typeof options?.excludeCarduid === 'string' ? options.excludeCarduid : undefined
         });
         if (matchingCount === null) {

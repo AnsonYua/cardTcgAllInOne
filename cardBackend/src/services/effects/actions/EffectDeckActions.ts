@@ -5,6 +5,8 @@ import { CardDatabaseManager, createZoneCard } from '../../../models/CardSystem'
 import type { EffectDefinition, TargetReference } from '../../EventQueue/interfaces/GameEvent';
 import { GameNotificationManager } from '../../GameNotificationManager';
 import { DeckZoneManager } from '../../zones/DeckZoneManager';
+import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
+import { ContinuousEffectManager } from '../../ContinuousEffectManager';
 
 export interface MoveTopDeckToTrashResult {
     success: boolean;
@@ -220,4 +222,162 @@ export function applyMoveFromTrashToDeck(
     }, 'normal');
 
     return { success: true };
+}
+
+export function applyReturnToDeckBottomEffect(
+    gameEnv: GameEnvironment,
+    _sourcePlayerId: string,
+    sourceCarduid: string | undefined,
+    effect: EffectDefinition,
+    selectedTargets: TargetReference[]
+): { success: boolean; error?: string } {
+    if (selectedTargets.length === 0) {
+        return { success: true };
+    }
+
+    const moved: Array<{ carduid: string; fromZone: string; ownerPlayerId: string }> = [];
+
+    for (const target of selectedTargets) {
+        const moveResult = moveTargetToOwnerDeckBottom(gameEnv, target);
+        if (!moveResult.success) {
+            return { success: false, error: moveResult.error || `Failed to return ${target.carduid} to deck bottom` };
+        }
+        if (moveResult.moved) {
+            moved.push(moveResult.moved);
+        }
+    }
+
+    ContinuousEffectManager.processAllContinuousEffects(gameEnv);
+
+    const notificationManager = new GameNotificationManager(gameEnv);
+    notificationManager.addNotificationEvent('CARDS_MOVED_TO_DECK_BOTTOM', {
+        playerId: _sourcePlayerId,
+        sourceCarduid,
+        effectId: effect.effectId,
+        carduids: moved.map((entry) => entry.carduid),
+        count: moved.length,
+        moved,
+        fromZone: moved.length === 1 ? moved[0].fromZone : 'mixed',
+        toZone: 'deck_bottom',
+        reveal: false,
+        revealToOpponent: false,
+        reason: 'returnToDeckBottom',
+        timestamp: Date.now()
+    }, 'normal');
+
+    return { success: true };
+}
+
+function moveTargetToOwnerDeckBottom(
+    gameEnv: GameEnvironment,
+    target: TargetReference
+): {
+    success: boolean;
+    error?: string;
+    moved?: { carduid: string; fromZone: string; ownerPlayerId: string };
+} {
+    const targetPlayer = typeof target.playerId === 'string' ? gameEnv.getPlayer(target.playerId) : null;
+    const zone = typeof target.zone === 'string' ? target.zone : '';
+
+    if (SlotZoneUtils.isSlotZoneName(zone) && targetPlayer?.zones) {
+        const slot = targetPlayer.zones[zone];
+        if (!slot) {
+            return { success: false, error: `Slot ${zone} not found for ${target.carduid}` };
+        }
+
+        if (slot.unit?.carduid === target.carduid) {
+            slot.unit = undefined;
+            targetPlayer.deck.mainDeck.push(target.carduid);
+            return {
+                success: true,
+                moved: {
+                    carduid: target.carduid,
+                    fromZone: zone,
+                    ownerPlayerId: target.playerId
+                }
+            };
+        }
+
+        if (slot.pilot?.carduid === target.carduid) {
+            slot.pilot = undefined;
+            targetPlayer.deck.mainDeck.push(target.carduid);
+            return {
+                success: true,
+                moved: {
+                    carduid: target.carduid,
+                    fromZone: zone,
+                    ownerPlayerId: target.playerId
+                }
+            };
+        }
+
+        return { success: false, error: `Card ${target.carduid} not found in slot ${zone}` };
+    }
+
+    if (zone === 'trash') {
+        if (!targetPlayer?.zones?.trashArea) {
+            return { success: false, error: `Trash area not found for ${target.carduid}` };
+        }
+
+        const index = targetPlayer.zones.trashArea.findIndex((card: any) => card?.carduid === target.carduid);
+        if (index < 0) {
+            return { success: false, error: `Card ${target.carduid} not found in trash` };
+        }
+
+        targetPlayer.zones.trashArea.splice(index, 1);
+        targetPlayer.deck.mainDeck.push(target.carduid);
+        return {
+            success: true,
+            moved: {
+                carduid: target.carduid,
+                fromZone: 'trash',
+                ownerPlayerId: target.playerId
+            }
+        };
+    }
+
+    if (zone === 'hand') {
+        if (!targetPlayer?.deck) {
+            return { success: false, error: `Hand/deck not found for ${target.carduid}` };
+        }
+
+        const removed = targetPlayer.deck.playCardFromHand(target.carduid);
+        if (!removed) {
+            return { success: false, error: `Card ${target.carduid} not found in hand` };
+        }
+
+        targetPlayer.deck.mainDeck.push(target.carduid);
+        return {
+            success: true,
+            moved: {
+                carduid: target.carduid,
+                fromZone: 'hand',
+                ownerPlayerId: target.playerId
+            }
+        };
+    }
+
+    if (zone === 'base') {
+        if (!targetPlayer?.zones?.base) {
+            return { success: false, error: `Base area not found for ${target.carduid}` };
+        }
+
+        const index = targetPlayer.zones.base.findIndex((card: any) => card?.carduid === target.carduid);
+        if (index < 0) {
+            return { success: false, error: `Card ${target.carduid} not found in base area` };
+        }
+
+        targetPlayer.zones.base.splice(index, 1);
+        targetPlayer.deck.mainDeck.push(target.carduid);
+        return {
+            success: true,
+            moved: {
+                carduid: target.carduid,
+                fromZone: 'base',
+                ownerPlayerId: target.playerId
+            }
+        };
+    }
+
+    return { success: false, error: `returnToDeckBottom does not support zone ${zone || 'unknown'}` };
 }

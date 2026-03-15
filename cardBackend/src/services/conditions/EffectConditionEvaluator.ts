@@ -281,6 +281,12 @@ export class EffectConditionEvaluator {
                 if (typeof (typedCondition as any).cardType === 'string') {
                     filters.cardType = (typedCondition as any).cardType;
                 }
+                if (typeof (typedCondition as any).color === 'string') {
+                    filters.color = (typedCondition as any).color;
+                }
+                if (typeof (typedCondition as any).nameIncludes === 'string') {
+                    filters.nameIncludes = (typedCondition as any).nameIncludes;
+                }
                 const excludeSourceCard = (typedCondition as any).excludeSourceCard === true;
                 const sourceCarduid = typeof (sourceCard as any)?.carduid === 'string'
                     ? ((sourceCard as any).carduid as string)

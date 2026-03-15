@@ -15,6 +15,7 @@ const SELF_REFERENTIAL_ACTIONS = new Set([
     'prevent_battle_damage',
     'prevent_damage',
     'restrict_attack',
+    'returnToDeckBottom',
     'setActive'
 ]);
 

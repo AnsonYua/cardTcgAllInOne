@@ -7,6 +7,7 @@ export interface TrashCountOptions {
     traitsAny?: string[];
     cardType?: string;
     cardTypes?: string[];
+    color?: string;
     nameIncludes?: string;
     excludeCarduid?: string;
     uniqueNames?: boolean;
@@ -31,6 +32,9 @@ export class TrashConditionUtils {
         const cardTypes = Array.isArray(options.cardTypes)
             ? options.cardTypes.filter((t): t is string => typeof t === 'string' && t.length > 0)
             : [];
+        const color = typeof options.color === 'string'
+            ? options.color.toLowerCase()
+            : '';
         const nameIncludes = typeof options.nameIncludes === 'string'
             ? options.nameIncludes.toLowerCase()
             : '';
@@ -58,6 +62,12 @@ export class TrashConditionUtils {
             if (cardTypes.length > 0) {
                 const actualType = typeof cardData.cardType === 'string' ? cardData.cardType : '';
                 if (!cardTypes.includes(actualType)) {
+                    return total;
+                }
+            }
+            if (color) {
+                const actualColor = typeof cardData.color === 'string' ? cardData.color.toLowerCase() : '';
+                if (actualColor !== color) {
                     return total;
                 }
             }

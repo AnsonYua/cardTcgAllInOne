@@ -1,6 +1,6 @@
 # ST01-ST08 Effect Audit Report
 
-Generated at: 2026-03-15T12:25:38.386Z
+Generated at: 2026-03-15T12:28:22.200Z
 Rows: 189 | PASS: 187 | WARN: 0 | FAIL: 2
 
 ## Card Summary
